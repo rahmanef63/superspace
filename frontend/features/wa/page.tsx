@@ -8,5 +8,5 @@ export interface MessagePageProps {
 }
 
 export default function MessagePage({ workspaceId }: MessagePageProps) {
-  return <Message />;
+  return <Message workspaceId={workspaceId ?? null} />;
 }

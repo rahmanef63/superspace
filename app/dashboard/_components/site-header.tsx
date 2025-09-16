@@ -18,11 +18,11 @@ function getPageTitle(pathname: string): string {
   // Handle exact matches first
   switch (pathname) {
     case "/dashboard":
-      return "Dashboard"
+      return "Overview"
     case "/dashboard/payment-gated":
       return "Payment gated"
     default:
-      return "Page"
+      return "Overview"
   }
 }
 
@@ -63,3 +63,4 @@ export function SiteHeader() {
     </header>
   )
 }
+

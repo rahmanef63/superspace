@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 import { query, mutation, action } from "../_generated/server"
 import { api } from "../_generated/api"
+import type { Id } from "../_generated/dataModel"
 import { requirePermission, requireActiveMembership, resolveCandidateUserIds } from "../auth/helpers"
 import { PERMS } from "../workspace/permissions"
 
@@ -306,7 +307,7 @@ export const createDefaultMenuItems = mutation({
       )
     }
 
-    const menuItemIds: any[] = []
+    const menuItemIds: Id<"menuItems">[] = []
 
     const insertItemRecursive = async (item: any, parentId?: any, ancestorSelected = false) => {
       const slug = String(item.slug)
@@ -353,7 +354,7 @@ export const createDefaultMenuItems = mutation({
           if ((existingItem.component || undefined) !== (item.component || undefined) && item.component) {
             updates.component = item.component
           }
-          if (!existingItem.path && item.path) {
+          if (item.path && (!existingItem.path || existingItem.path.startsWith("/wa/"))) {
             updates.path = item.path
           }
           if (!existingItem.metadata && item.metadata) {
@@ -674,7 +675,7 @@ export const installFeatureMenus = mutation({
       .first()
     const defaultMenuSetId: any = wsAssignedDefault?.menuSetId ?? null
 
-    const menuItemIds = []
+    const menuItemIds: Id<"menuItems">[] = []
     const featuresToInstall = availableFeatures.filter((feature) => args.featureSlugs.includes(feature.slug))
 
     for (const feature of featuresToInstall) {
@@ -987,7 +988,7 @@ export const updateMenuItem = mutation({
     component: v.optional(v.string()),
     isVisible: v.optional(v.boolean()),
     order: v.optional(v.number()),
-    parentId: v.optional(v.id("menuItems")),
+    parentId: v.optional(v.union(v.id("menuItems"), v.null())),
     visibleForRoleIds: v.optional(v.array(v.id("roles"))),
     metadata: v.optional(
       v.object({
@@ -1013,7 +1014,7 @@ export const updateMenuItem = mutation({
     if (args.component !== undefined) updates.component = args.component
     if (args.isVisible !== undefined) updates.isVisible = args.isVisible
     if (args.order !== undefined) updates.order = args.order
-    if (args.parentId !== undefined) updates.parentId = args.parentId
+    if (Object.prototype.hasOwnProperty.call(args, "parentId")) updates.parentId = args.parentId ?? undefined
     if (args.visibleForRoleIds !== undefined) updates.visibleForRoleIds = args.visibleForRoleIds
     if (args.metadata !== undefined) updates.metadata = args.metadata
 
@@ -1026,7 +1027,7 @@ export const updateMenuItem = mutation({
 export const createMenuItem = mutation({
   args: {
     workspaceId: v.id("workspaces"),
-    parentId: v.optional(v.id("menuItems")),
+    parentId: v.optional(v.union(v.id("menuItems"), v.null())),
     name: v.string(),
     slug: v.string(),
     type: v.union(
@@ -1062,14 +1063,14 @@ export const createMenuItem = mutation({
     if (order === undefined) {
       const existingItems = await ctx.db
         .query("menuItems")
-        .withIndex("by_workspace_parent", (q) => q.eq("workspaceId", args.workspaceId).eq("parentId", args.parentId))
+        .withIndex("by_workspace_parent", (q) => q.eq("workspaceId", args.workspaceId).eq("parentId", args.parentId ?? undefined))
         .collect()
       order = existingItems.length
     }
 
     return await ctx.db.insert("menuItems", {
       workspaceId: args.workspaceId,
-      parentId: args.parentId,
+      parentId: args.parentId ?? undefined,
       name: args.name,
       slug: args.slug,
       type: args.type,
@@ -1125,7 +1126,7 @@ export const updateMenuOrder = mutation({
   args: {
     menuItemId: v.id("menuItems"),
     newOrder: v.number(),
-    parentId: v.optional(v.id("menuItems")),
+    parentId: v.optional(v.union(v.id("menuItems"), v.null())),
   },
   handler: async (ctx, args) => {
     // Any reorder requires manage menus permission in the item's workspace
@@ -1135,7 +1136,7 @@ export const updateMenuOrder = mutation({
 
     await ctx.db.patch(args.menuItemId, {
       order: args.newOrder,
-      parentId: args.parentId,
+      parentId: args.parentId ?? undefined,
     })
 
     return args.menuItemId

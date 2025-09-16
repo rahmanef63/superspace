@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@convex/_generated/api";
+import { useMutation } from "convex/react";\nimport { api } from "@convex/_generated/api";\nimport { useUser } from "@clerk/nextjs";
 import { OnboardingProgress } from "./OnboardingProgress";
 import { OnboardingStep } from "./OnboardingStep";
 import type { OnboardingData } from "@/frontend/shared/pages/static/workspaces/types";
@@ -15,6 +14,16 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
     type: "personal",
     description: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  let clerkAuth: { isSignedIn?: boolean } | undefined
+  try {
+    clerkAuth = useUser()
+  } catch (err) {
+    console.warn("[Onboarding] Clerk unavailable, treating user as signed out", err)
+  }
+  const isSignedIn = Boolean(clerkAuth?.isSignedIn);
 
   const createWorkspace = useMutation(api.workspace.workspaces.createWorkspace);
 
@@ -35,25 +44,27 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      setSubmitError(null);
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
+    if (currentStep > 0 && !isSubmitting) {
+      setSubmitError(null);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleComplete = async () => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[Onboarding] Submitting workspace", {
-        name: workspaceData.name,
-        type: workspaceData.type,
-        description: workspaceData.description,
-      });
+    if (!isSignedIn) {
+      setSubmitError("You need to sign in before creating a workspace.");
+      return;
     }
-    // Normalize the slug the same way the server does
+
+    setSubmitError(null);
+    setIsSubmitting(true);
+
     const slugify = (s: string) =>
       String(s || "")
         .trim()
@@ -65,14 +76,10 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
 
     const base = slugify(workspaceData.name) || "workspace";
 
-    // Try to create, appending -2, -3, ... if the server reports a duplicate
     let attempt = 0;
     while (attempt < 10) {
       const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
       try {
-        if (process.env.NODE_ENV !== "production") {
-          console.debug("[Onboarding] Attempt create", { attempt: attempt + 1, slug: candidate });
-        }
         const workspaceId = await createWorkspace({
           name: workspaceData.name,
           slug: candidate,
@@ -80,62 +87,62 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
           description: workspaceData.description,
           isPublic: false,
         });
-        if (process.env.NODE_ENV !== "production") {
-          console.log("[Onboarding] Workspace created", { workspaceId, slug: candidate });
-        }
         onComplete(workspaceId);
+        setIsSubmitting(false);
         return;
       } catch (error: any) {
         const msg = String(error?.message || error);
         const duplicate = msg.includes("slug already exists") || (msg.includes("slug") && msg.includes("exists"));
+        const unauthenticated = msg.toLowerCase().includes("not authenticated");
+        if (unauthenticated) {
+          setSubmitError("Authentication expired. Please sign in again and retry.");
+          break;
+        }
         if (!duplicate) {
-          console.error("[Onboarding] Failed to create workspace:", error);
+          setSubmitError("We couldn't create the workspace. Please try again.");
           break;
         }
         attempt += 1;
       }
     }
+
+    setIsSubmitting(false);
   };
+
+  const commonStepProps = {
+    step: currentStep,
+    stepData: steps[currentStep],
+    workspaceData,
+    onDataChange: setWorkspaceData,
+    onNext: handleNext,
+    onBack: handleBack,
+    onComplete: handleComplete,
+    isLastStep: currentStep === steps.length - 1,
+    isFirstStep: currentStep === 0,
+    isSubmitting,
+    errorMessage: submitError,
+  } as const;
 
   if (variant === "dialog") {
     return (
       <div className="w-full">
         <OnboardingProgress currentStep={currentStep} totalSteps={steps.length} />
-        <div className="bg-background rounded-lg border border-gray-200 p-6 mt-6">
-          <OnboardingStep
-            step={currentStep}
-            stepData={steps[currentStep]}
-            workspaceData={workspaceData}
-            onDataChange={setWorkspaceData}
-            onNext={handleNext}
-            onBack={handleBack}
-            onComplete={handleComplete}
-            isLastStep={currentStep === steps.length - 1}
-            isFirstStep={currentStep === 0}
-          />
+        <div className="mt-6 rounded-lg border border-gray-200 bg-background p-6">
+          <OnboardingStep {...commonStepProps} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-2xl">
         <OnboardingProgress currentStep={currentStep} totalSteps={steps.length} />
-        <div className="bg-background rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
-          <OnboardingStep
-            step={currentStep}
-            stepData={steps[currentStep]}
-            workspaceData={workspaceData}
-            onDataChange={setWorkspaceData}
-            onNext={handleNext}
-            onBack={handleBack}
-            onComplete={handleComplete}
-            isLastStep={currentStep === steps.length - 1}
-            isFirstStep={currentStep === 0}
-          />
+        <div className="mt-6 rounded-lg border border-gray-200 bg-background p-8 shadow-sm">
+          <OnboardingStep {...commonStepProps} />
         </div>
       </div>
     </div>
   );
 }
+

@@ -2,7 +2,8 @@
 
 import type { Id } from "@convex/_generated/dataModel"
 import type { ElementType, ReactElement } from "react"
-import { useQuery } from "convex/react"
+import { useEffect, useRef } from "react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import OverviewPage from "./dynamic/overview/page"
 import FriendsPage from "./static/friends/page"
@@ -12,7 +13,6 @@ import MembersPage from "./static/member/page"
 import WorkspacesPage from "./static/workspaces/page"
 import MenusPage from "./static/menus/page"
 
-// Feature wrappers (unified entry points)
 import MessagePage from "../../features/wa/page"
 import DocumentsPage from "../../features/documents/page"
 import CanvasPage from "../../features/canvas/page"
@@ -49,23 +49,20 @@ import {
 export type AppPageComponent = (props: { workspaceId?: Id<"workspaces"> | null }) => ReactElement | null
 
 export interface PageManifestItem {
-  // Default route slug this component is commonly mounted at (optional fallback)
-  id: string // e.g. "dashboard"
-  // Stable component identifier used by menus to target this component
-  componentId: string // e.g. "OverviewPage", "ChatPage"
-  title: string // default display title
+  id: string
+  componentId: string
+  title: string
   description?: string
   icon?: ElementType
   color?: string
   component: AppPageComponent
 }
 
-// Default in-code registry (can be overridden by database menu items)
 export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
   {
-    id: "dashboard",
+    id: "overview",
     componentId: "OverviewPage",
-    title: "Dashboard",
+    title: "Overview",
     description: "Overview and analytics",
     icon: Home,
     component: ({ workspaceId }) => <OverviewPage workspaceId={workspaceId as Id<"workspaces">} />,
@@ -220,7 +217,6 @@ export const PAGE_MANIFEST_MAP: Record<string, PageManifestItem> = Object.fromEn
   DEFAULT_PAGE_MANIFEST.map((p) => [p.id, p]),
 )
 
-// Component registry keyed by componentId (many menus can point to the same component)
 export const COMPONENT_REGISTRY_MAP: Record<string, PageManifestItem> = Object.fromEntries(
   DEFAULT_PAGE_MANIFEST.map((p) => [p.componentId, p]),
 )
@@ -242,20 +238,52 @@ interface AppContentProps {
   activeView: string
 }
 
-// Backward-compatible content renderer that uses the manifest
 export function AppContent({ workspaceId, activeView }: AppContentProps) {
-  // 1) Try to resolve directly by slug (legacy/default)
   const fallbackPage =
-    DEFAULT_PAGE_MANIFEST.find((p) => p.id === activeView) ?? DEFAULT_PAGE_MANIFEST.find((p) => p.id === "dashboard")
+    DEFAULT_PAGE_MANIFEST.find((p) => p.id === activeView) ?? DEFAULT_PAGE_MANIFEST.find((p) => p.id === "overview")
 
-  // 2) If we have a workspace, resolve via menu → componentId mapping (many-to-many)
   const menuItem = useQuery(
     api.menu.menuItems.getMenuItemBySlug,
     workspaceId ? { workspaceId: workspaceId as Id<"workspaces">, slug: activeView } : "skip",
-  ) as unknown as { component?: string } | null | undefined
+  ) as unknown as { component?: string; _id?: Id<"menuItems"> } | null | undefined
+
+  const setMenuComponent = useMutation(api.menu.menuItems.setMenuItemComponent)
+  const syncRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!workspaceId) return
+    if (!fallbackPage) return
+    if (menuItem === undefined) return
+
+    const existingComponentId = menuItem?.component && COMPONENT_REGISTRY_MAP[String(menuItem.component)]
+    if (existingComponentId) return
+
+    const syncKey = `${workspaceId}:${activeView}:${fallbackPage.componentId}`
+    if (syncRef.current === syncKey) return
+    syncRef.current = syncKey
+
+    setMenuComponent({
+      workspaceId: workspaceId as Id<"workspaces">,
+      slug: activeView,
+      component: fallbackPage.componentId,
+      createIfMissing: true,
+      name: fallbackPage.title,
+    }).catch(() => {
+      syncRef.current = null
+    })
+  }, [workspaceId, activeView, fallbackPage, menuItem, setMenuComponent])
 
   const targeted = menuItem?.component ? COMPONENT_REGISTRY_MAP[String(menuItem.component)] : undefined
-  const Comp = targeted?.component ?? fallbackPage?.component
 
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[AppContent]", {
+      activeView,
+      menuItemId: menuItem?._id ?? null,
+      componentFromMenu: menuItem?.component ?? null,
+      resolvedComponentId: targeted?.componentId ?? fallbackPage?.componentId ?? null,
+    })
+  }
+
+  const Comp = targeted?.component ?? fallbackPage?.component
   return <div className="flex-1 overflow-hidden">{Comp ? <Comp workspaceId={workspaceId ?? null} /> : null}</div>
 }

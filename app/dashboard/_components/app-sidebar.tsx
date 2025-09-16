@@ -15,9 +15,11 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { NavProjects } from "@/app/dashboard/_components/NavProjects"
 import { NavSecondary } from "./NavSecondary"
 import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/pages/manifest"
+import { iconFromName } from "@/frontend/shared/pages/icons"
+import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 
 const REQUIRED_MENU_SLUGS = [
-  "dashboard",
+  "overview",
   "wa",
   "wa-chats",
   "wa-calls",
@@ -36,8 +38,6 @@ const REQUIRED_MENU_SLUGS = [
   "user-settings",
   "settings",
 ]
-import { iconFromName } from "@/frontend/shared/pages/icons"
-import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 
 interface AppSidebarProps {
   workspaceId?: Id<"workspaces"> | null
@@ -62,27 +62,21 @@ export function AppSidebar({
   const router = useRouter()
   const { workspaceId: ctxWorkspaceId, setWorkspaceId } = useWorkspaceContext()
   const derivedActiveView = React.useMemo(() => {
-    if (!pathname) return "dashboard"
+    if (!pathname) return "overview"
     const parts = pathname.split("?")[0].split("#")[0].split("/").filter(Boolean)
-    // Expecting paths like /dashboard or /dashboard/<view>
     const idx = parts.indexOf("dashboard")
-    const view = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : "dashboard"
+    const view = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : "overview"
     return view
   }, [pathname])
   const effectiveActiveView = activeView ?? derivedActiveView
   const handleViewChange = onViewChange ?? ((view: string) => router.push(`/dashboard/${view}`))
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
-  const workspace = useQuery(
-    api.workspace.workspaces.getWorkspace,
-    effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
-  )
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
   const menuItems = useQuery(
     api.menu.menuItems.getWorkspaceMenuItems,
     effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
   ) as any[] | undefined
 
-  // Opportunistic backfill: if workspace has too few menus, ensure defaults
   const createDefaults = useMutation(api.menu.menuItems.createDefaultMenuItems)
   const seededRef = useRef<string | null>(null)
   useEffect(() => {
@@ -107,15 +101,11 @@ export function AppSidebar({
       })
   }, [effectiveWorkspaceId, menuItems, createDefaults])
 
-  // Build dynamic nav items from menu items or fallback to manifest
   const navItems = useMemo(() => {
-    console.log("[v0] AppSidebar menuItems:", menuItems)
-
     if (Array.isArray(menuItems) && menuItems.length > 0) {
       const itemsMap = new Map()
       const rootItems: any[] = []
 
-      // First pass: organize items by parent
       menuItems
         .filter((mi) => mi && typeof mi.slug === "string" && mi.isVisible !== false)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -141,7 +131,6 @@ export function AppSidebar({
           }
         })
 
-      // Second pass: build parent-child relationships
       menuItems.forEach((mi) => {
         if (mi.parentId && itemsMap.has(mi.parentId)) {
           const parent = itemsMap.get(mi.parentId)
@@ -156,11 +145,9 @@ export function AppSidebar({
         }
       })
 
-      console.log("[v0] Built navItems:", rootItems)
       return rootItems
     }
 
-    // Fallback to default manifest order
     return getDefaultPages().map((p) => ({
       id: p.id,
       title: p.title,
@@ -169,7 +156,6 @@ export function AppSidebar({
     }))
   }, [menuItems])
 
-  // Render a lightweight loading state until workspaces load
   if (userWorkspaces === undefined) {
     return (
       <Sidebar collapsible={collapsible} side={side} variant={variant}>
@@ -180,7 +166,6 @@ export function AppSidebar({
     )
   }
 
-  // Transform workspaces data for WorkspaceSwitcher
   type SwitcherItem = {
     id: Id<"workspaces">
     name: string
@@ -197,22 +182,46 @@ export function AppSidebar({
       plan: ws.type ? String(ws.type).charAt(0).toUpperCase() + String(ws.type).slice(1) : "Workspace",
     }))
 
+  if (workspaces.length === 0) {
+    return (
+      <Sidebar collapsible={collapsible} side={side} variant={variant}>
+        <SidebarHeader>
+          <WorkspaceSwitcher
+            workspaces={[]}
+            currentWorkspace={undefined}
+            onWorkspaceSelect={() => {}}
+            isLoading={false}
+          />
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="h-8 rounded-md bg-muted/80 animate-pulse" />
+            ))}
+          </div>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="px-4 pb-4 text-xs text-muted-foreground">
+            Create a workspace to see navigation and data.
+          </div>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+    )
+  }
+
   const currentWorkspace = workspaces.find((w: SwitcherItem) => String(w.id) === String(effectiveWorkspaceId || ""))
 
-  // Sample projects data
   const projects = [
     { name: "Design System", url: "#", icon: Folder },
     { name: "Website Redesign", url: "#", icon: Folder },
     { name: "Mobile App", url: "#", icon: Folder },
   ]
 
-  // Sample secondary navigation items
   const secondaryItems = [
     { title: "Support", url: "#", icon: BookOpen },
     { title: "Feedback", url: "#", icon: Calendar },
   ]
-
-  // navItems already computed above
 
   return (
     <Sidebar collapsible={collapsible} side={side} variant={variant}>
@@ -232,12 +241,20 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent className="flex justify-between">
         <div>
-          <NavMain
-            workspaceId={effectiveWorkspaceId as Id<"workspaces">}
-            activeView={effectiveActiveView}
-            onViewChange={handleViewChange}
-            items={navItems}
-          />
+          {effectiveWorkspaceId ? (
+            <NavMain
+              workspaceId={effectiveWorkspaceId as Id<"workspaces">}
+              activeView={effectiveActiveView}
+              onViewChange={handleViewChange}
+              items={navItems}
+            />
+          ) : (
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="h-6 rounded bg-muted animate-pulse" />
+              ))}
+            </div>
+          )}
           <NavProjects projects={projects} />
         </div>
         <NavSecondary />
@@ -249,3 +266,6 @@ export function AppSidebar({
     </Sidebar>
   )
 }
+
+
+

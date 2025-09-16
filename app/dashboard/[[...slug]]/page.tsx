@@ -26,7 +26,7 @@ export default function CatchAllPage() {
   // Read dynamic route params in a Client Component via useParams
   const params = useParams<{ slug?: string[] }>()
   const parts = (params?.slug as unknown as string[] | undefined) ?? []
-  const activeSlug = parts[0] || "dashboard"
+  const activeSlug = parts[0] || "overview"
   const isKnownSlug = WORKSPACE_NAVIGATION_ITEMS.some(i => i.key === activeSlug)
 
   const { isAuthed, isLoading, isAuthenticated, isSignedIn } = useAuthed()
@@ -43,10 +43,19 @@ export default function CatchAllPage() {
       workspacesCount: workspaces?.length ?? 'n/a',
       activeSlug,
       parts,
+      componentId: `CatchAllPage-${activeSlug}`,
+      currentPath: `/dashboard/${parts.join('/')}`,
     })
   }
 
   // WorkspaceProvider handles default selection
+
+  // Redirect /dashboard to /dashboard/overview as default
+  useEffect(() => {
+    if (parts.length === 0 && isAuthenticated) {
+      router.replace("/dashboard/overview")
+    }
+  }, [parts.length, isAuthenticated, router])
 
   // If authenticated and no workspace after data loads, redirect to onboarding page as fallback
   useEffect(() => {

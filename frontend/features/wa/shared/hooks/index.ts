@@ -1,5 +1,5 @@
 // Custom hooks for WhatsApp Clone feature
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Id } from '@/convex/_generated/dataModel';
 import { useWhatsAppStore } from '../stores';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,11 +16,17 @@ export const useInitializeWhatsApp = (providedWorkspaceId?: Id<"workspaces"> | n
 
   const effectiveWorkspaceId = (providedWorkspaceId ?? (contextWorkspaceId as Id<"workspaces"> | null)) || null;
 
+  const initializedWorkspaceRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!convex || !effectiveWorkspaceId) return;
+    const key = String(effectiveWorkspaceId);
+    if (initializedWorkspaceRef.current === key) return;
+
     const repo = new ConvexChatRepository({ client: convex as any, workspaceId: effectiveWorkspaceId as any });
-    init(repo, String(effectiveWorkspaceId));
+    init(repo, key);
     loadChats();
+    initializedWorkspaceRef.current = key;
   }, [convex, effectiveWorkspaceId, init, loadChats]);
 };
 

@@ -26,8 +26,8 @@ const DROP_THRESHOLD = 0.3
 type DropPreview = { id: string; position: "above" | "below" | "inside" } | null
 
 const accentColor = 'var(--accent, rgba(59,130,246,0.68))'
-const accentBackground = 'color-mix(in srgb, var(--accent) 14%, transparent)'
-const accentBoundary = 'color-mix(in srgb, var(--accent) 60%, transparent)'
+const accentBackground = 'var(--accent, rgba(59,130,246,0.12))'
+const accentBoundary = 'var(--accent, rgba(59,130,246,0.45))'
 
 export function DragDropMenuTree({ workspaceId, onItemSelect, selectedItemId }: DragDropMenuTreeProps) {
   const [expandedItems, setExpandedItems] = useState<Set<Id<"menuItems">>>(new Set())
@@ -157,7 +157,7 @@ export function DragDropMenuTree({ workspaceId, onItemSelect, selectedItemId }: 
 
       await updateMenuItem({
         menuItemId: draggedItem,
-        parentId: parentId ?? undefined,
+        parentId: parentId ?? null,
         order,
       })
     } catch (error) {
@@ -175,7 +175,7 @@ export function DragDropMenuTree({ workspaceId, onItemSelect, selectedItemId }: 
       const order = computeNextOrder(undefined)
       await updateMenuItem({
         menuItemId: draggedItem,
-        parentId: undefined,
+        parentId: null,
         order,
       })
     } catch (error) {
@@ -245,9 +245,9 @@ export function DragDropMenuTree({ workspaceId, onItemSelect, selectedItemId }: 
             <span
               className="pointer-events-none absolute inset-0 rounded"
               style={{
-                backgroundColor: showInsideOverlay ? accentBackground : 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                backgroundColor: accentColor,
                 border: `1px solid ${accentBoundary}`,
-                opacity: showInsideOverlay ? 1 : 1,
+                opacity: showInsideOverlay ? 0.18 : 0.1,
               }}
             />
           )}
@@ -295,6 +295,7 @@ export function DragDropMenuTree({ workspaceId, onItemSelect, selectedItemId }: 
             ? {
                 borderColor: accentBoundary,
                 backgroundColor: accentBackground,
+                opacity: 0.16,
               }
             : undefined
         }

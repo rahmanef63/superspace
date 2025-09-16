@@ -30,6 +30,8 @@ export interface OnboardingStepProps {
   onComplete: () => void;
   isLastStep: boolean;
   isFirstStep: boolean;
+  isSubmitting?: boolean;
+  errorMessage?: string | null;
 }
 
 export type { OnboardingData };

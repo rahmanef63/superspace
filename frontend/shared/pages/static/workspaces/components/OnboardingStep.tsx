@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
 import type { OnboardingStepProps } from "./types";
 
 export function OnboardingStep({
@@ -11,29 +11,31 @@ export function OnboardingStep({
   onComplete,
   isLastStep,
   isFirstStep,
+  isSubmitting = false,
+  errorMessage,
 }: OnboardingStepProps) {
   const renderStepContent = () => {
     switch (step) {
       case 0:
         return (
           <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+              <div className="h-8 w-8 rounded-full bg-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">{stepData.title}</h2>
-            <p className="text-gray-600 mb-8">{stepData.description}</p>
+            <h2 className="mb-2 text-2xl font-bold">{stepData.title}</h2>
+            <p className="mb-8 text-gray-600">{stepData.description}</p>
           </div>
         );
 
       case 1:
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-2">{stepData.title}</h2>
-            <p className="text-gray-600 mb-6">{stepData.description}</p>
-            
+            <h2 className="mb-2 text-2xl font-bold">{stepData.title}</h2>
+            <p className="mb-6 text-gray-600">{stepData.description}</p>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Workspace Name
                 </label>
                 <input
@@ -41,18 +43,18 @@ export function OnboardingStep({
                   value={workspaceData.name}
                   onChange={(e) => onDataChange({ ...workspaceData, name: e.target.value })}
                   placeholder="My Awesome Workspace"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Workspace Type
                 </label>
                 <select
                   value={workspaceData.type}
                   onChange={(e) => onDataChange({ ...workspaceData, type: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="personal">Personal</option>
                   <option value="organization">Organization</option>
@@ -61,9 +63,9 @@ export function OnboardingStep({
                   <option value="family">Family</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Description (Optional)
                 </label>
                 <textarea
@@ -71,7 +73,7 @@ export function OnboardingStep({
                   onChange={(e) => onDataChange({ ...workspaceData, description: e.target.value })}
                   placeholder="Describe your workspace..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -81,39 +83,34 @@ export function OnboardingStep({
       case 2:
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-2">{stepData.title}</h2>
-            <p className="text-gray-600 mb-6">{stepData.description}</p>
-            
+            <h2 className="mb-2 text-2xl font-bold">{stepData.title}</h2>
+            <p className="mb-6 text-gray-600">{stepData.description}</p>
+
             <div className="space-y-4">
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Chat & Messaging</h3>
-                    <p className="text-sm text-gray-600">Real-time communication with your workspace</p>
+              {[
+                {
+                  title: "Chat & Messaging",
+                  description: "Real-time communication with your workspace",
+                },
+                {
+                  title: "Canvas & Collaboration",
+                  description: "Visual collaboration and brainstorming",
+                },
+                {
+                  title: "Document Management",
+                  description: "Create and manage documents",
+                },
+              ].map((feature) => (
+                <div key={feature.title} className="rounded-lg border border-gray-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">{feature.title}</h3>
+                      <p className="text-sm text-gray-600">{feature.description}</p>
+                    </div>
+                    <input type="checkbox" defaultChecked className="rounded" />
                   </div>
-                  <input type="checkbox" defaultChecked className="rounded" />
                 </div>
-              </div>
-              
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Canvas & Collaboration</h3>
-                    <p className="text-sm text-gray-600">Visual collaboration and brainstorming</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="rounded" />
-                </div>
-              </div>
-              
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Document Management</h3>
-                    <p className="text-sm text-gray-600">Create and manage documents</p>
-                  </div>
-                  <input type="checkbox" defaultChecked className="rounded" />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         );
@@ -126,38 +123,44 @@ export function OnboardingStep({
   return (
     <div>
       {renderStepContent()}
-      
-      <div className="flex items-center justify-between mt-8">
+
+      {errorMessage ? (
+        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      <div className="mt-8 flex items-center justify-between">
         <button
           onClick={onBack}
-          disabled={isFirstStep}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-            isFirstStep
-              ? "text-gray-400 cursor-not-allowed"
+          disabled={isFirstStep || isSubmitting}
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
+            isFirstStep || isSubmitting
+              ? "cursor-not-allowed text-gray-400"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-        
+
         {isLastStep ? (
           <button
             onClick={onComplete}
-            disabled={!workspaceData.name}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!workspaceData.name || isSubmitting}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-primary hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Check className="w-4 h-4" />
-            Complete Setup
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {isSubmitting ? "Creating..." : "Complete Setup"}
           </button>
         ) : (
           <button
             onClick={onNext}
-            disabled={step === 1 && !workspaceData.name}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-primary rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={(step === 1 && !workspaceData.name) || isSubmitting}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-primary hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="h-4 w-4" />
           </button>
         )}
       </div>

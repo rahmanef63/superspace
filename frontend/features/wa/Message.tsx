@@ -1,10 +1,17 @@
+"use client"
+
+import type { Id } from "@/convex/_generated/dataModel"
 import { TooltipProvider } from "@/components/ui/tooltip";
 import WAChatsPage from "./components/chat/page";
 
-const Message = () => {
+interface MessageProps {
+  workspaceId?: Id<"workspaces"> | null;
+}
+
+const Message = ({ workspaceId }: MessageProps) => {
   return (
     <TooltipProvider>
-      <WAChatsPage />
+      <WAChatsPage workspaceId={workspaceId ?? null} />
     </TooltipProvider>
   );
 };

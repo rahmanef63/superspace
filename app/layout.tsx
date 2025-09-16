@@ -4,9 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
-import { ClerkProvider } from "@clerk/nextjs"
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { DebugInfo } from "@/components/debug-info"
+import { SafeClerkProvider } from "@/components/SafeClerkProvider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,12 +39,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased overscroll-none`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ClerkProvider publishableKey={publishableKey!} afterSignOutUrl="/">
+          <SafeClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
             <ConvexClientProvider>
               <DebugInfo />
               {children}
             </ConvexClientProvider>
-          </ClerkProvider>
+          </SafeClerkProvider>
         </ThemeProvider>
       </body>
     </html>

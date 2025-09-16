@@ -103,7 +103,7 @@ export const HeroHeader = () => {
                                 <Authenticated>
                                     <Button asChild size="sm">
                                         <Link href="/dashboard">
-                                            <span>Dashboard</span>
+                                            <span>Overview</span>
                                         </Link>
                                     </Button>
                                     <UserButton appearance={appearance} />

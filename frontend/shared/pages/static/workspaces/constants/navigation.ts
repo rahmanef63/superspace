@@ -1,23 +1,24 @@
-import { 
-  Home, 
-  MessageSquare, 
-  Menu, 
-  FileText, 
-  Settings, 
-  Users, 
+import {
+  Home,
+  MessageSquare,
+  Menu,
+  FileText,
+  Settings,
+  Users,
   Mail,
   Heart,
-  User
+  User,
+  MessageCircle
 } from "lucide-react";
 import { WorkspaceNavigationItem } from "../types";
 
 export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
   {
-    key: "dashboard",
-    label: "Dashboard",
+    key: "overview",
+    label: "Overview",
     icon: Home,
     description: "Overview and analytics",
-    path: "/dashboard"
+    path: "/overview"
   },
   {
     key: "chat",
@@ -27,11 +28,11 @@ export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
     path: "/chat"
   },
   {
-    key: "message",
-    label: "Messages",
-    icon: MessageSquare,
-    description: "WA Page",
-    path: "/message"
+    key: "wa-chats",
+    label: "WA Chats",
+    icon: MessageCircle,
+    description: "WhatsApp chat conversations",
+    path: "/wa-chats"
   },
   {
     key: "members",
@@ -91,3 +92,4 @@ export const WORKSPACE_TYPES = [
   { value: "organization", label: "Organization", desc: "For companies" },
   { value: "institution", label: "Institution", desc: "For schools, hospitals, etc." }
 ] as const;
+

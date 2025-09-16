@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { ChatsView } from "../../views/ChatsView"
+import { ChatsView } from "./ChatsView"
 
 interface WAChatsPageProps {
   workspaceId?: Id<"workspaces"> | null

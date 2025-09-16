@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "../shared/stores";
-import { TopBar } from "../components/navigation/TopBar";
-import { StatusListView } from "../components/status/StatusListView";
-import { StatusDetailView } from "../components/status/StatusDetailView";
+import { useWhatsAppStore } from "../../shared/stores";
+import { TopBar } from "../navigation/TopBar";
+import { StatusListView } from "./StatusListView";
+import { StatusDetailView } from "./StatusDetailView";
 
 export function StatusView() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>();

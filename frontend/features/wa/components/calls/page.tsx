@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { CallsView } from "../../views/CallsView"
+import { CallsView } from "./CallsView"
 
 interface WACallsPageProps {
   workspaceId?: Id<"workspaces"> | null

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "../shared/stores";
-import { TopBar } from "../components/navigation/TopBar";
-import { CallListView } from "../components/calls/CallListView";
-import { CallDetailView } from "../components/calls/CallDetailView";
+import { useWhatsAppStore } from "../../shared/stores";
+import { TopBar } from "../navigation/TopBar";
+import { CallListView } from "./CallListView";
+import { CallDetailView } from "./CallDetailView";
 
 export function CallsView() {
   const [selectedCallId, setSelectedCallId] = useState<string>();

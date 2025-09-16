@@ -1,7 +1,7 @@
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "../shared/stores";
-import { TopBar } from "../components/navigation/TopBar";
-import { SearchBar } from "../components/ui/SearchBar";
+import { useWhatsAppStore } from "../../shared/stores";
+import { TopBar } from "../navigation/TopBar";
+import { SearchBar } from "../ui/SearchBar";
 
 export function StarredView() {
   const isMobile = useIsMobile();

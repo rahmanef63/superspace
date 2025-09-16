@@ -1,8 +1,8 @@
-import { useWhatsAppStore } from "../shared/hooks";
+import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TopBar } from "../components/navigation/TopBar";
-import { ChatListView } from "../components/chat/ChatListView";
-import { ChatDetailView } from "./ChatDetailView";
+import { TopBar } from "../navigation/TopBar";
+import { ChatListView } from "../chat/ChatListView";
+import { ChatDetailView } from "../../views/ChatDetailView";
 
 export function ArchivedView() {
   const { selectedChatId, setActiveTab } = useWhatsAppStore();

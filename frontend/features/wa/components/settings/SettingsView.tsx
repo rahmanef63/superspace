@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SettingsSidebar } from "../components/settings/SettingsSidebar";
+import { SettingsSidebar } from "./SettingsSidebar";
 import {
   GeneralSettings,
   AccountSettings,
@@ -14,7 +14,7 @@ import {
   StorageSettings,
   ShortcutsSettings,
   HelpSettings,
-} from "../components/settings";
+} from ".";
 
 const SETTINGS_COMPONENTS = {
   general: GeneralSettings,

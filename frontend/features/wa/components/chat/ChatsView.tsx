@@ -1,7 +1,7 @@
-import { useWhatsAppStore } from "../shared/hooks";
+import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChatListView } from "../components/chat/ChatListView";
-import { ChatDetailView } from "./ChatDetailView";
+import { ChatListView } from "./ChatListView";
+import { ChatDetailView } from "../../views/ChatDetailView";
 
 export function ChatsView() {
   const { selectedChatId } = useWhatsAppStore();

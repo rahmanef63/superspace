@@ -1,0 +1,8 @@
+export { default as WAChatsPage } from "../../components/chat/page"
+export { default as WACallsPage } from "../../components/calls/page"
+export { default as WAStatusPage } from "../../components/status/page"
+export { default as WAAIPage } from "../../components/ai/page"
+export { default as WAStarredPage } from "../../components/starred/page"
+export { default as WAArchivedPage } from "../../components/archived/page"
+export { default as WASettingsPage } from "../../components/settings/page"
+export { default as WAProfilePage } from "../../components/profile/page"

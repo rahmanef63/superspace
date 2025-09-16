@@ -1,12 +1,12 @@
 import { useInitializeWhatsApp } from '../shared/hooks';
 import { WhatsAppSidebarProvider } from './sidebar-wa';
-import { ChatsView } from '../views/ChatsView';
-import { CallsView } from '../views/CallsView';
-import { StatusView } from '../views/StatusView';
-import { AIView } from '../views/AIView';
-import { StarredView } from '../views/StarredView';
-import { ArchivedView } from '../views/ArchivedView';
-import { SettingsView } from '../views/SettingsView';
+import { ChatsView } from '../components/chat/ChatsView';
+import { CallsView } from '../components/calls/CallsView';
+import { StatusView } from '../components/status/StatusView';
+import { AIView } from '../components/ai/AIView';
+import { StarredView } from '../components/starred/StarredView';
+import { ArchivedView } from '../components/archived/ArchivedView';
+import { SettingsView } from '../components/settings/SettingsView';
 import { useWhatsAppStore } from '../shared/stores';
 import type { TabType } from '../shared/types';
 

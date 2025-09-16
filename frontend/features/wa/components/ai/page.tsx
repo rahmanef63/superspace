@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { AIView } from "../../views/AIView"
+import { AIView } from "./AIView"
 
 interface WAAIPageProps {
   workspaceId?: Id<"workspaces"> | null

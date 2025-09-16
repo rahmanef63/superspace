@@ -2,7 +2,7 @@
 export * from "./components"
 
 // Pages
-export * from "./pages"
+export * from "./shared/pages"
 
 // Views
 export * from "./views"

@@ -25,7 +25,7 @@ import {
   WAArchivedPage,
   WASettingsPage,
   WAProfilePage,
-} from "../../features/wa/pages"
+} from "../../features/wa/shared/pages"
 
 import {
   Home,

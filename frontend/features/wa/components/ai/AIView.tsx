@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "../shared/stores";
-import { TopBar } from "../components/navigation/TopBar";
-import { AIListView } from "../components/ai/AIListView";
-import { AIDetailView } from "../components/ai/AIDetailView";
+import { useWhatsAppStore } from "../../shared/stores";
+import { TopBar } from "../navigation/TopBar";
+import { AIListView } from "./AIListView";
+import { AIDetailView } from "./AIDetailView";
 
 export function AIView() {
   const [selectedChatId, setSelectedChatId] = useState<string>();

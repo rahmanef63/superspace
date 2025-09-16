@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { StatusView } from "../../views/StatusView"
+import { StatusView } from "./StatusView"
 
 interface WAStatusPageProps {
   workspaceId?: Id<"workspaces"> | null

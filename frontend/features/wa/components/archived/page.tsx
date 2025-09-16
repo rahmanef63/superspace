@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { ArchivedView } from "../../views/ArchivedView"
+import { ArchivedView } from "./ArchivedView"
 
 interface WAArchivedPageProps {
   workspaceId?: Id<"workspaces"> | null

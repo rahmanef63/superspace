@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { SettingsView } from "../../views/SettingsView"
+import { SettingsView } from "./SettingsView"
 
 interface WASettingsPageProps {
   workspaceId?: Id<"workspaces"> | null

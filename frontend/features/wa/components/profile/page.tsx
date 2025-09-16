@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { ProfileView } from "../../views/ProfileView"
+import { ProfileView } from "./ProfileView"
 
 interface WAProfilePageProps {
   workspaceId?: Id<"workspaces"> | null

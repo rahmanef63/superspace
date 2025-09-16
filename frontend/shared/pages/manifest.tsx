@@ -13,7 +13,7 @@ import WorkspacesPage from "./static/workspaces/page"
 import MenusPage from "./static/menus/page"
 
 // Feature wrappers (unified entry points)
-import ChatPage from "../../features/wa/page"
+import MessagePage from "../../features/wa/page"
 import DocumentsPage from "../../features/documents/page"
 import CanvasPage from "../../features/canvas/page"
 import {
@@ -76,7 +76,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Chat",
     description: "Messages and AI assistant",
     icon: MessageSquare,
-    component: ({ workspaceId }) => <ChatPage workspaceId={workspaceId as Id<"workspaces">} />,
+    component: ({ workspaceId }) => <MessagePage workspaceId={workspaceId as Id<"workspaces">} />,
   },
   {
     id: "wa-chats",

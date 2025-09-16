@@ -1,12 +1,11 @@
-#!/usr/bin/env node
 /**
  * Script to run Convex development server with the specified configuration.
  * This script runs: npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace
  */
 
-const { spawn } = require("child_process")
-const fs = require("fs")
-const path = require("path")
+import { spawn } from "child_process"
+import fs from "fs"
+import path from "path"
 
 function runConvexDev() {
   console.log("🚀 Starting Convex development server...")

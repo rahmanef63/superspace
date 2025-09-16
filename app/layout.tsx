@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 
 import { ClerkProvider } from "@clerk/nextjs"
 import ConvexClientProvider from "@/components/ConvexClientProvider"
+import { DebugInfo } from "@/components/debug-info"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,10 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased overscroll-none`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
-            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <ConvexClientProvider>
+              <DebugInfo />
+              {children}
+            </ConvexClientProvider>
           </ClerkProvider>
         </ThemeProvider>
       </body>

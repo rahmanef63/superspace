@@ -1,0 +1,620 @@
+// ===== Diagram =====
+colorMode pastel
+styleMode plain
+typeface clean
+notation chen
+
+// ================= CORE (ORG-LESS, DEPTH-LESS) =================
+users [icon: user, color: blue] {
+  id string pk
+  name string
+  email string @unique
+  image string
+  bio string
+  phone string
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+workspaces [icon: building, color: blue] {
+  id string pk
+  ownerUserId string fk           // pencipta → default SUPER_ADMIN (scope=subtree)
+  name string
+  slug string @unique
+  description string
+  labels json                      // bebas: ["pribadi","family","group",...]
+  traits json                      // bebas: {industry:"edu", region:"ID", ...}
+  isPublic boolean
+  parentId string fk               // optional (hirarki workspace)
+  path string                      // materialized path: "root/marketing/ads"
+  order number
+  settings json
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  deletedAt timestamp
+}
+
+workspaceTree [icon: network, color: blue] {
+  id string pk
+  ancestorId string fk            // -> workspaces.id
+  descendantId string fk          // -> workspaces.id
+  distance number                 // 0=self,1=child,2=grandchild,...
+  // UNIQUE(ancestorId,descendantId)
+}
+
+roles [icon: shield, color: purple] {
+  id string pk
+  workspaceId string fk
+  name string                     // SUPER_ADMIN, ADMIN, MANAGER, CLIENT, ...
+  description string
+  level number                    // 100/80/60/20
+  isSystemRole boolean
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(workspaceId,name)
+}
+
+workspaceMemberships [icon: users, color: gray] {
+  id string pk
+  workspaceId string fk
+  userId string fk
+  roleId string fk
+  status string                   // pending|active|suspended|removed
+  joinedAt timestamp @default(now)
+  invitedById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(workspaceId,userId)
+}
+
+roleScopes [icon: target, color: purple] {
+  id string pk
+  roleId string fk
+  scope string                    // self|subtree
+  // UNIQUE(roleId)
+}
+
+permissionGrants [icon: key, color: purple] {
+  id string pk
+  roleId string fk
+  resourceType string             // menu|component|cms_page|cms_model|page|document|chat|admin
+  resourceId string               // null = wildcard semua resourceType tsb
+  actions json                    // ["view","create","update","delete","publish","*"]
+  createdAt timestamp @default(now)
+  // UNIQUE(roleId,resourceType,coalesce(resourceId,''))
+}
+
+activityEvents [icon: activity, color: gray] {
+  id string pk
+  actorUserId string fk
+  workspaceId string fk
+  entityType string
+  entityId string
+  action string
+  diff json
+  createdAt timestamp @default(now)
+}
+
+invitations [icon: mail, color: orange] {
+  id string pk
+  type string                     // workspace|other
+  workspaceId string fk
+  inviterId string fk
+  inviteeEmail string
+  inviteeId string fk
+  roleId string fk
+  status string                   // pending|accepted|declined|expired
+  token string @unique
+  createdAt timestamp @default(now)
+  expiresAt timestamp
+  // (workspaceId,inviteeEmail,status='pending') @unique
+}
+
+notifications [icon: bell, color: orange] {
+  id string pk
+  userId string fk
+  workspaceId string fk
+  type string
+  title string
+  message string
+  isRead boolean
+  createdById string fk
+  createdAt timestamp @default(now)
+}
+
+friendships [icon: handshake, color: pink] {
+  id string pk
+  user1Id string fk
+  user2Id string fk
+  status string                   // pending|accepted|blocked
+  createdAt timestamp @default(now)
+  // UNIQUE(least(user1Id,user2Id), greatest(user1Id,user2Id))
+}
+
+friendRequests [icon: user-plus, color: pink] {
+  id string pk
+  senderId string fk
+  receiverId string fk
+  status string                   // pending|accepted|declined|expired
+  sentAt timestamp @default(now)
+  // (senderId,receiverId) @unique WHERE status='pending'
+}
+
+// ================= MENU SYSTEM (SHARED & PERSONAL) =================
+menuSets [icon: panels-top-left, color: gray] {
+  id string pk
+  ownerType string               // system|workspace|user|cms
+  ownerWorkspaceId string fk
+  ownerUserId string fk
+  name string
+  slug string
+  description string
+  isPublic boolean
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // Exactly-one owner (system=no owner)
+  // UNIQUE(ownerType,coalesce(ownerWorkspaceId,''),coalesce(ownerUserId,''),slug)
+}
+
+workspaceMenuAssignments [icon: link, color: gray] {
+  id string pk
+  workspaceId string fk
+  menuSetId string fk
+  isDefault boolean
+  order number
+  createdAt timestamp @default(now)
+  // UNIQUE(workspaceId,menuSetId)
+  // UNIQUE(workspaceId) WHERE isDefault=true
+}
+
+userMenuAssignments [icon: user-plus, color: gray] {
+  id string pk
+  userId string fk
+  menuSetId string fk
+  scope string                   // global|workspace
+  workspaceId string fk          // nullable jika scope=global
+  isDefault boolean
+  order number
+  createdAt timestamp @default(now)
+  // UNIQUE(userId,menuSetId,coalesce(workspaceId,''))
+}
+
+menuItems [icon: list, color: gray] {
+  id string pk
+  menuSetId string fk
+  parentId string fk             // null = level-1 (maks 2 level via path)
+  path string                    // "cms/pages", "chat/global"
+  name string
+  slug string
+  type string                    // route|divider|external|group
+  icon string
+  order number
+  isVisible boolean
+  route json                     // {href, params?, external?}
+  visibility json                // {roles:[], conditions:[]}
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(menuSetId, path)
+}
+
+// ================= COMPONENT LIB (VERSI-LOCKED) =================
+components [icon: blocks, color: gray] {
+  id string pk
+  workspaceId string fk          // null = system component
+  key string                     // stable identifier
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(coalesce(workspaceId,''), key)
+}
+
+componentVersions [icon: git-branch, color: gray] {
+  id string pk
+  componentId string fk
+  version string
+  category string                // whatsapp|navigation|layout|ui|data|action
+  type string                    // ui|layout|data|action
+  propsSchema json               // JSON Schema
+  defaultProps json
+  slots json                     // {main:"stack", sidebar:"list", ...}
+  status string                  // draft|active|deprecated
+  schemaVersion number
+  migrations json                // optional transform rules
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(componentId,version)
+}
+
+componentAliases [icon: tag, color: gray] {
+  id string pk
+  alias string @unique           // "herov1", "textrich", ... (dipakai di palette "/")
+  componentVersionId string fk
+  displayName string
+  category string
+  icon string
+  description string
+}
+
+menuItemComponents [icon: plug, color: gray] {
+  id string pk
+  menuItemId string fk
+  componentVersionId string fk
+  slot string                    // root|main|sidebar|header|footer|overlay
+  order number
+  props json
+  bindings json
+  layout json
+  visibility json
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(menuItemId,componentVersionId,slot,order)
+}
+
+componentBindings [icon: cable, color: gray] {
+  id string pk
+  componentVersionId string fk
+  sourceType string              // cmsModel|api|sql|convexQuery|custom
+  sourceRef string               // identifier endpoint / query key
+  select json                    // fields, filters, sort, paging
+  map json                       // {propName:"path.in.data", transformId?}
+  cacheTtl number
+  authScope string               // server|client|role
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(componentVersionId,sourceType,sourceRef)
+}
+
+// ================= PAGE (NOTION-LIKE BLOCKS) =================
+pages [icon: file-text, color: orange] {
+  id string pk
+  workspaceId string fk
+  title string
+  slug string
+  icon string
+  coverUrl string
+  isPublic boolean
+  createdById string fk
+  updatedById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  deletedAt timestamp
+  // UNIQUE(workspaceId,slug)
+}
+
+pageBlocks [icon: blocks, color: orange] {
+  id string pk
+  pageId string fk
+  parentId string fk             // null = root
+  order number
+  aliasId string fk              // -> componentAliases.id (opsional)
+  componentVersionId string fk   // -> componentVersions.id (opsional)
+  props json
+  bindings json
+  layout json                    // position/size/style (e.g., w-full,h-50,fixed)
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // CHECK: exactly one of aliasId or componentVersionId (XOR)
+}
+
+// ================= CMS HEADLESS (GRAPH → PRERENDER) =================
+contentGraphs [icon: file-code, color: teal] {
+  id string pk
+  workspaceId string fk
+  name string
+  slug string
+  status string                  // draft|published|archived
+  createdById string fk
+  updatedById string fk
+  publishedAt timestamp
+  preRender json                 // hasil build (tree versi-locked + props resolved)
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  deletedAt timestamp
+  // UNIQUE(workspaceId,slug)
+}
+
+contentNodes [icon: box, color: teal] {
+  id string pk
+  graphId string fk
+  key string                      // stable node key
+  aliasId string fk               // cepat via alias (opsional)
+  componentVersionId string fk
+  props json
+  bindings json
+  position json                   // {x,y}
+  size json                       // {w,h}
+  style json                      // class/style
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // CHECK: aliasId optional; componentVersionId wajib
+}
+
+contentEdges [icon: git-branch, color: teal] {
+  id string pk
+  graphId string fk
+  sourceNodeId string fk
+  targetNodeId string fk
+  port string
+  order number
+  props json
+  createdAt timestamp @default(now)
+}
+
+cmsModels [icon: box, color: teal] {
+  id string pk
+  workspaceId string fk
+  name string
+  slug string
+  description string
+  fields json
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  // UNIQUE(workspaceId,slug)
+}
+
+cmsEntries [icon: file-input, color: teal] {
+  id string pk
+  modelId string fk
+  workspaceId string fk
+  locale string
+  status string                  // draft|published
+  data json
+  createdById string fk
+  updatedById string fk
+  publishedAt timestamp
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+  deletedAt timestamp
+  // UNIQUE(modelId,locale, (data->>'slug' if exists))
+}
+
+cmsEntryVersions [icon: git-branch, color: teal] {
+  id string pk
+  entryId string fk
+  data json
+  status string
+  notes string
+  createdById string fk
+  createdAt timestamp @default(now)
+}
+
+cmsAssets [icon: image, color: teal] {
+  id string pk
+  workspaceId string fk
+  fileName string
+  fileType string
+  fileSize number
+  url string @unique
+  hash string
+  storageKey string
+  altText string
+  metadata json
+  uploadedById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+cmsTemplates [icon: layout-template, color: teal] {
+  id string pk
+  workspaceId string fk
+  name string
+  description string
+  schema json
+  thumbnailUrl string
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+cmsWebhooks [icon: webhook, color: teal] {
+  id string pk
+  workspaceId string fk
+  name string
+  url string @unique
+  events json
+  secret string
+  deliveryAttempts number
+  lastStatus string
+  lastError string
+  nextRetryAt timestamp
+  isActive boolean
+  createdById string fk
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+// ================= CHAT (GLOBAL & WORKSPACE) =================
+conversations [icon: messages-square, color: green] {
+  id string pk
+  scopeType string               // global|workspace
+  workspaceId string fk          // null if global
+  kind string                    // one_to_one|group|channel
+  name string
+  createdById string fk
+  lastMessageAt timestamp
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+conversationParticipants [icon: user-check, color: green] {
+  id string pk
+  conversationId string fk
+  userId string fk
+  role string                    // owner|admin|member
+  lastReadMessageId string fk
+  lastReadAt timestamp
+  joinedAt timestamp @default(now)
+  // UNIQUE(conversationId,userId)
+}
+
+messages [icon: message-square, color: green] {
+  id string pk
+  conversationId string fk
+  senderUserId string fk
+  type string                    // text|image|video|audio|doc|sticker|location|system
+  text string
+  mediaAssetId string fk         // -> cmsAssets.id
+  replyToId string fk            // -> messages.id
+  metadata json
+  createdAt timestamp @default(now)
+  editedAt timestamp
+  // INDEX: (conversationId,createdAt)
+}
+
+messageReactions [icon: smile, color: yellow] {
+  id string pk
+  messageId string fk
+  userId string fk
+  emoji string
+  createdAt timestamp @default(now)
+  // UNIQUE(messageId,userId,emoji)
+}
+
+messageReceipts [icon: check-check, color: green] {
+  id string pk
+  messageId string fk
+  recipientUserId string fk
+  status string                   // sent|delivered|read|failed
+  deliveredAt timestamp
+  readAt timestamp
+  // UNIQUE(messageId,recipientUserId)
+}
+
+chatUserSettings [icon: settings, color: green] {
+  id string pk
+  conversationId string fk
+  userId string fk
+  mutedUntil timestamp
+  pinned boolean
+  archivedUntil timestamp
+  customLabel string
+  // UNIQUE(conversationId,userId)
+}
+
+// ================= PAYMENTS (RINGKAS) =================
+paymentAttempts [icon: credit-card, color: red] {
+  id string pk
+  workspaceId string fk
+  userId string fk
+  provider string                // xendit|midtrans|stripe|manual|other
+  paymentId string @unique
+  currency string
+  amount number
+  status string                  // pending|authorized|paid|failed|refunded
+  payer json
+  totals json
+  referenceType string           // document|subscription|invoice|custom
+  referenceId string
+  createdAt timestamp @default(now)
+  updatedAt timestamp @default(now)
+}
+
+// ================= RELATIONSHIPS ("<" = one-to-many, ">" = many-to-one) =================
+// Core
+users.id < workspaces.ownerUserId
+workspaces.id < workspaces.parentId            // anti-siklus via workspaceTree/path
+workspaces.id < workspaceTree.ancestorId
+workspaces.id < workspaceTree.descendantId
+
+workspaces.id < roles.workspaceId
+users.id < roles.createdById
+roles.id < roleScopes.roleId
+
+workspaces.id < workspaceMemberships.workspaceId
+users.id < workspaceMemberships.userId
+roles.id < workspaceMemberships.roleId
+users.id < workspaceMemberships.invitedById
+
+users.id < activityEvents.actorUserId
+workspaces.id < activityEvents.workspaceId
+
+users.id < invitations.inviterId
+users.id < invitations.inviteeId
+roles.id < invitations.roleId
+workspaces.id < invitations.workspaceId
+
+users.id < notifications.userId
+workspaces.id < notifications.workspaceId
+users.id < notifications.createdById
+
+users.id < friendships.user1Id
+users.id < friendships.user2Id
+users.id < friendRequests.senderId
+users.id < friendRequests.receiverId
+
+// Menu
+menuSets.id < workspaceMenuAssignments.menuSetId
+workspaces.id < workspaceMenuAssignments.workspaceId
+menuSets.id < userMenuAssignments.menuSetId
+users.id < userMenuAssignments.userId
+workspaces.id < userMenuAssignments.workspaceId
+
+menuSets.id < menuItems.menuSetId
+menuItems.id < menuItems.parentId
+
+components.id < componentVersions.componentId
+menuItems.id < menuItemComponents.menuItemId
+componentVersions.id < menuItemComponents.componentVersionId
+componentVersions.id < componentBindings.componentVersionId
+componentVersions.id < componentAliases.componentVersionId   // FIX: alias → componentVersion
+
+// Page
+workspaces.id < pages.workspaceId
+users.id < pages.createdById
+users.id < pages.updatedById
+pages.id < pageBlocks.pageId
+pageBlocks.id < pageBlocks.parentId
+componentAliases.id < pageBlocks.aliasId
+componentVersions.id < pageBlocks.componentVersionId
+
+// CMS
+workspaces.id < contentGraphs.workspaceId
+users.id < contentGraphs.createdById
+users.id < contentGraphs.updatedById
+contentGraphs.id < contentNodes.graphId
+contentGraphs.id < contentEdges.graphId
+componentAliases.id < contentNodes.aliasId
+componentVersions.id < contentNodes.componentVersionId
+
+workspaces.id < cmsModels.workspaceId
+users.id < cmsModels.createdById
+cmsModels.id < cmsEntries.modelId
+workspaces.id < cmsEntries.workspaceId
+users.id < cmsEntries.createdById
+users.id < cmsEntries.updatedById
+cmsEntries.id < cmsEntryVersions.entryId
+users.id < cmsEntryVersions.createdById
+
+workspaces.id < cmsAssets.workspaceId
+users.id < cmsAssets.uploadedById
+
+workspaces.id < cmsTemplates.workspaceId
+users.id < cmsTemplates.createdById
+
+workspaces.id < cmsWebhooks.workspaceId
+users.id < cmsWebhooks.createdById
+
+// Chat
+conversations.id < conversationParticipants.conversationId
+users.id < conversationParticipants.userId
+
+conversations.id < messages.conversationId
+users.id < messages.senderUserId
+messages.id < messages.replyToId
+cmsAssets.id < messages.mediaAssetId
+
+messages.id < messageReactions.messageId
+users.id < messageReactions.userId
+
+messages.id < messageReceipts.messageId
+users.id < messageReceipts.recipientUserId
+
+conversations.id < chatUserSettings.conversationId
+users.id < chatUserSettings.userId
+
+// Payments
+workspaces.id < paymentAttempts.workspaceId
+users.id < paymentAttempts.userId

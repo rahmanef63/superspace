@@ -1,0 +1,11 @@
+{
+  "name": "superspace-scripts",
+  "version": "1.0.0",
+  "description": "Development scripts for Superspace project",
+  "scripts": {
+    "convex:dev": "node convex-dev.js",
+    "convex:dev:python": "python3 convex-dev.py"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

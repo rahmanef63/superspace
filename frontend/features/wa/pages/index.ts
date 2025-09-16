@@ -1,0 +1,8 @@
+export { default as WAChatsPage } from "./chats/page"
+export { default as WACallsPage } from "./calls/page"
+export { default as WAStatusPage } from "./status/page"
+export { default as WAAIPage } from "./ai/page"
+export { default as WAStarredPage } from "./starred/page"
+export { default as WAArchivedPage } from "./archived/page"
+export { default as WASettingsPage } from "./settings/page"
+export { default as WAProfilePage } from "./profile/page"

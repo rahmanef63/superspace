@@ -2,7 +2,7 @@ import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TopBar } from "../navigation/TopBar";
 import { ChatListView } from "../chat/ChatListView";
-import { ChatDetailView } from "../../views/ChatDetailView";
+import { ChatDetailView } from "../chat/ChatDetailView";
 
 export function ArchivedView() {
   const { selectedChatId, setActiveTab } = useWhatsAppStore();

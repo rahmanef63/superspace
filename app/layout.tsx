@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "sonner"
 
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { DebugInfo } from "@/components/debug-info"
@@ -43,6 +44,7 @@ export default function RootLayout({
             <ConvexClientProvider>
               <DebugInfo />
               {children}
+              <Toaster position="top-right" richColors />
             </ConvexClientProvider>
           </SafeClerkProvider>
         </ThemeProvider>

@@ -81,13 +81,13 @@ export const waClasses = {
 
   messageBubble: (variant: "sent" | "received" | "system") =>
     cn(
-      "rounded-lg px-3 py-2 max-w-[70%] break-words",
-      variant === "sent" && "wa-message-bubble-sent",
-      variant === "received" && "wa-message-bubble-received",
-      variant === "system" && "wa-message-bubble-system",
+      "rounded-2xl px-3 py-2 max-w-[70%] break-words",
+      variant === "sent" && "bg-primary text-primary-foreground rounded-br-md",
+      variant === "received" && "bg-muted text-foreground rounded-bl-md",
+      variant === "system" && "bg-transparent text-muted-foreground",
     ),
 
-  scrollArea: cn("wa-scrollbar overflow-y-auto"),
+  scrollArea: cn("overflow-y-auto"),
 
   mobileOnly: cn("block lg:hidden"),
   desktopOnly: cn("hidden lg:block"),

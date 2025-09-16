@@ -51,9 +51,17 @@ export class ConvexChatRepository extends AbstractChatRepository {
     const chats: Chat[] = (items || []).map((c: any) => {
       const lastMsg = c.lastMessage;
       const isGroup = (c.participants?.length ?? 0) > 2 || c.type === 'group';
+      const tags: string[] = [];
+      tags.push(isGroup ? 'Group' : 'Direct');
+      tags.push(c.workspaceId ? 'Workspace' : 'Global');
+      if (c.type === 'personal') tags.push('Friends');
       return {
         id: String(c._id),
-        name: c.name || (isGroup ? 'Group' : c.participants?.find((p: any) => String(p.user?._id) !== String(this.currentUserId))?.user?.name || 'Direct Chat'),
+        name:
+          c.name ||
+          (isGroup
+            ? 'Group'
+            : c.participants?.find((p: any) => String(p.user?._id) !== String(this.currentUserId))?.user?.name || 'Direct Chat'),
         lastMessage: lastMsg?.content || '',
         timestamp: formatTime(lastMsg?._creationTime),
         unreadCount: c.unreadCount || 0,
@@ -62,37 +70,42 @@ export class ConvexChatRepository extends AbstractChatRepository {
         isGroup,
         avatar: c.metadata?.avatar,
         participants: (c.participants || []).map((p: any) => String(p.user?._id)),
+        tags,
       } as Chat;
     });
 
     return chats;
   }
 
-  async getArchivedChats(): Promise<Chat[]> {
-    // No archive concept yet; return empty list (no placeholders)
+  async getArchivedChats(opts?: { global?: boolean }): Promise<Chat[]> {
+    // For now, return empty array as archived chats functionality might not be implemented yet
     return [];
   }
 
   async getMessages(chatId: string): Promise<Message[]> {
-    const messages = await this.client.query(api.menu.chat.messages.getConversationMessages as any, {
-      conversationId: chatId as unknown as Id<'conversations'>,
-      limit: 100,
-    });
+    try {
+      const messages = await this.client.query(api.menu.chat.messages.getConversationMessages as any, {
+        conversationId: chatId as unknown as Id<'conversations'>,
+      });
 
-    const me = await this.ensureUser();
+      const me = await this.ensureUser();
 
-    const result: Message[] = (messages || []).map((m: any) => ({
-      id: String(m._id),
-      text: m.content || '',
-      timestamp: formatTime(m._creationTime),
-      variant: String(m.senderId) === String(me) ? 'sent' : 'received',
-      type: (m.type as any) || 'text',
-      mediaUrl: undefined,
-      fileName: m.metadata?.fileName,
-      fileSize: m.metadata?.fileSize ? String(m.metadata.fileSize) : undefined,
-    }));
+      const result: Message[] = (messages || []).map((m: any) => ({
+        id: String(m._id),
+        text: m.content || '',
+        timestamp: formatTime(m._creationTime),
+        variant: String(m.senderId) === String(me) ? 'sent' : 'received',
+        type: (m.type as any) || 'text',
+        mediaUrl: undefined,
+        fileName: m.metadata?.fileName,
+        fileSize: m.metadata?.fileSize ? String(m.metadata.fileSize) : undefined,
+      }));
 
-    return result;
+      return result;
+    } catch (err) {
+      console.error('[ConvexChatRepository.getMessages] failed', { chatId, err });
+      return [];
+    }
   }
 
   async sendMessage(chatId: string, text: string): Promise<Message> {
@@ -125,3 +138,6 @@ export class ConvexChatRepository extends AbstractChatRepository {
     } catch {}
   }
 }
+
+
+

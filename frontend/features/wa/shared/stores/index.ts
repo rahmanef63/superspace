@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'sonner';
 import type { WhatsAppStore, Message, TabType, Chat } from '../types';
 import { DEFAULT_TAB, MESSAGE_STATUS_TIMEOUT } from '../constants';
 import type { ChatRepository } from '../data/repositories/chat.repository';
@@ -50,6 +51,7 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
       });
     } catch (error) {
       console.error('Failed to load chats:', error);
+      toast.error('Gagal memuat daftar chat');
       set({ isLoading: false });
     }
   },
@@ -65,6 +67,7 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
       }));
     } catch (error) {
       console.error('Failed to load messages:', error);
+      toast.error('Gagal memuat pesan');
       set({ isLoading: false });
     }
   },
@@ -98,8 +101,32 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
           },
         }));
       }, MESSAGE_STATUS_TIMEOUT.DELIVERED);
+
+      // Optional: simulate read after a bit longer to reflect UI like WhatsApp
+      setTimeout(() => {
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [chatId]: state.messages[chatId]?.map(m => 
+              m.id === message.id ? { ...m, status: 'read' } : m
+            ) || [],
+          },
+        }));
+      }, MESSAGE_STATUS_TIMEOUT.DELIVERED + 3000);
     } catch (error) {
       console.error('Failed to send message:', error);
+      toast.error('Gagal mengirim pesan');
+    }
+  },
+
+  markAsRead: async (chatId: string, messageId: string) => {
+    try {
+      const repo = get().repo;
+      if (!repo) return;
+      await repo.markAsRead(chatId, messageId);
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+      // Avoid noisy toast for background action
     }
   },
 }));

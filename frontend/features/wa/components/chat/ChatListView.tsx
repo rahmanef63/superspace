@@ -16,6 +16,7 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 import { CreateConversationModal } from "./CreateConversationModal" // Updated import path to use local CreateConversationModal
 import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
 interface ChatListViewProps {
   showArchived?: boolean
 }
@@ -23,9 +24,10 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [openNewChat, setOpenNewChat] = useState(false)
   const isMobile = useIsMobile()
-  const { chats, selectedChatId, setSelectedChat, globalMode, setGlobalMode, loadChats } = useWhatsAppStore()
+  const { chats, selectedChatId, setSelectedChat, globalMode, setGlobalMode, loadChats, loadMessages } = useWhatsAppStore()
   const { workspaceId } = useWorkspaceContext()
   const friends = useQuery(api.user.friends.getUserFriends) as any[] | undefined
+  const me = useQuery(api.auth.auth.loggedInUser) as any
   const createConv = useMutation(api.menu.chat.conversations.createConversation as any)
   const createGlobalDirect = useMutation(api.menu.chat.conversations.createOrGetDirectGlobal as any)
   const filteredChats = chats.filter((chat: Chat) => {
@@ -84,14 +86,18 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
           </div>
         ) : (
           <div>
-            {filteredChats.map((chat) => (
-              <ChatListItem
-                key={chat.id}
-                {...chat}
-                isActive={chat.id === selectedChatId}
-                onClick={() => setSelectedChat(chat.id)}
-              />
-            ))}
+              {filteredChats.map((chat) => (
+                <ChatListItem
+                  key={chat.id}
+                  {...chat}
+                  isActive={chat.id === selectedChatId}
+                  onClick={() => {
+                    setSelectedChat(chat.id)
+                    // Prefetch messages for selected chat
+                    loadMessages?.(chat.id)
+                  }}
+                />
+              ))}
           </div>
         )}
       </div>
@@ -102,7 +108,21 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
           isOpen={openNewChat}
           onClose={() => setOpenNewChat(false)}
           workspaceId={(workspaceId as Id<"workspaces">) || ("000000000000000000000000" as unknown as Id<"workspaces">)}
-          friends={(friends as any[]) || []}
+          friends={(() => {
+            const list = (friends as any[]) || []
+            const meId = String((me as any)?._id || "")
+            return list.map((row: any) => {
+              const u = (row && (row.friend || row)) || {}
+              // Resolve the friend's user id; avoid using friendship._id
+              const candidateUserId = u?._id || ((row?.user1Id && String(row.user1Id) !== meId) ? row.user1Id : row?.user2Id)
+              const id = candidateUserId
+              const nameRaw = u.name || u.fullName || (u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.firstName) || ""
+              const email = u.email || u.emailAddress || u.primaryEmail || (u.emailAddresses?.[0]?.emailAddress) || ""
+              const safeName = String(nameRaw || (email ? String(email).split('@')[0] : "")).trim() || "Unknown"
+              const imageUrl = u.imageUrl || u.image || u.avatar || u.profileImageUrl || u.photoUrl || undefined
+              return { _id: id, name: safeName, email, imageUrl }
+            })
+          })()}
           onCreateDirectChat={async (friendId: Id<"users">) => {
             try {
               let convId: Id<"conversations">
@@ -115,17 +135,20 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
                   participantIds: [friendId],
                 })
               } else {
-                throw new Error("Workspace not selected")
+                throw new Error("Workspace belum dipilih")
               }
               await loadChats()
               setSelectedChat(String(convId))
+              toast.success("Percakapan langsung berhasil dibuat")
             } catch (e) {
               console.error("Failed to create conversation", e)
+              const msg = (e as any)?.message || "Gagal membuat percakapan langsung"
+              toast.error(msg)
             }
           }}
           onCreateGroupChat={async (name: string, participantIds: Id<"users">[]) => {
             try {
-              if (!workspaceId) throw new Error("Workspace not selected")
+              if (!workspaceId) throw new Error("Workspace belum dipilih")
               const convId = await createConv({
                 workspaceId: workspaceId as Id<"workspaces">,
                 type: "group",
@@ -134,8 +157,11 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
               })
               await loadChats()
               setSelectedChat(String(convId))
+              toast.success("Grup berhasil dibuat")
             } catch (e) {
               console.error("Failed to create group", e)
+              const msg = (e as any)?.message || "Gagal membuat grup"
+              toast.error(msg)
             }
           }}
         />
@@ -143,3 +169,5 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
     </div>
   )
 }
+
+

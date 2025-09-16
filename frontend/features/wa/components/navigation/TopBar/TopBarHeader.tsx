@@ -19,37 +19,37 @@ export function TopBarHeader({
   onContactClick,
 }: TopBarHeaderProps) {
   return (
-    <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+    <div className="flex items-center gap-3 min-w-0 flex-1">
       {onMenuClick && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onMenuClick} 
-          className="text-wa-muted hover:text-wa-text hover:bg-wa-hover flex-shrink-0"
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMenuClick}
+          className="text-wa-muted hover:text-wa-text hover:bg-wa-hover flex-shrink-0 h-10 w-10"
         >
-          <Menu className="h-4 w-4 md:h-5 md:w-5" />
+          <Menu className="h-5 w-5" />
         </Button>
       )}
-      
-      <div 
-        className="flex items-center gap-2 md:gap-3 cursor-pointer min-w-0 flex-1"
+
+      <div
+        className="flex items-center gap-3 cursor-pointer min-w-0 flex-1 hover:bg-wa-hover rounded-lg p-2 -ml-2 transition-colors"
         onClick={onContactClick}
       >
         {avatar && (
-          <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-primary/20 flex-shrink-0">
+          <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src={avatar} />
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs md:text-sm">
+            <AvatarFallback className="bg-wa-primary text-white font-medium text-sm">
               {getInitials(title)}
             </AvatarFallback>
           </Avatar>
         )}
-        
+
         <div className="min-w-0 flex-1">
-          <h1 className="font-semibold text-wa-text text-sm md:text-base truncate">
+          <h1 className="font-medium text-wa-text text-base truncate leading-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs md:text-sm text-wa-muted truncate">
+            <p className="text-sm text-wa-muted truncate leading-tight mt-0.5">
               {subtitle}
             </p>
           )}

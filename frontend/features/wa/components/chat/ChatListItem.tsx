@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Pin } from "lucide-react";
 import { getInitials, truncateText, waClasses } from "../../utils";
-import type { Chat } from "../../types";
+import type { Chat } from "../../shared/types";
 
 interface ChatListItemProps extends Chat {
   isActive?: boolean;
@@ -81,8 +81,13 @@ export function ChatListItem({
               <Badge className="bg-primary text-primary-foreground text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </Badge>
-            )}
-          </div>
+             )}
+             </div>
+            </div>
+             <div className="flex items-center gap-1 flex-wrap">
+              {(Array.isArray((arguments[0] as any)?.tags) ? (arguments[0] as any).tags : undefined)?.slice(0,3).map((tag: string) => (
+               <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0">{tag}</Badge>
+              ))}
         </div>
       </div>
     </div>

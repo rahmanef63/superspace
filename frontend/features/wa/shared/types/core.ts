@@ -26,6 +26,7 @@ export interface Chat {
   isMuted?: boolean;
   avatar?: string;
   participants?: string[];
+  tags?: string[];
 }
 
 export interface Contact {

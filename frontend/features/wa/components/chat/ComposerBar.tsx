@@ -10,11 +10,15 @@ import { AttachmentMenu } from "./composer/AttachmentMenu";
 interface ComposerBarProps {
   onSendMessage?: (message: string) => void;
   placeholder?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export function ComposerBar({
   onSendMessage,
   placeholder = PLACEHOLDERS.TYPE_MESSAGE,
+  disabled = false,
+  disabledReason,
 }: ComposerBarProps) {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -22,6 +26,7 @@ export function ComposerBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
+    if (disabled) return;
     if (message.trim() && onSendMessage) {
       onSendMessage(message.trim());
       setMessage("");
@@ -37,17 +42,19 @@ export function ComposerBar({
   };
 
   const handleEmojiSelect = (emoji: string) => {
+    if (disabled) return;
     setMessage(prev => prev + emoji);
     inputRef.current?.focus();
   };
 
   const handleAttachmentSelect = (type: string) => {
+    if (disabled) return;
     console.log("Attachment type selected:", type);
     // Handle different attachment types
   };
 
   return (
-    <div className="flex items-center gap-2 p-4 border-t border-wa-border bg-wa-surface">
+    <div className="flex items-center gap-2 p-4 border-t border-border bg-card">
       <ComposerActions 
         onEmojiSelect={handleEmojiSelect}
         onAttachmentSelect={handleAttachmentSelect}
@@ -63,21 +70,22 @@ export function ComposerBar({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder={placeholder}
-          className="bg-wa-surface-2 border-none text-wa-text placeholder:text-wa-muted focus-visible:ring-wa-accent pr-10"
+          placeholder={disabled ? (disabledReason || "You don't have permission to send messages") : placeholder}
+          disabled={disabled}
+          className="bg-card border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-primary pr-10"
         />
       </div>
 
-      {message.trim() ? (
+      {message.trim() && !disabled ? (
         <Button
           onClick={handleSend}
           size="icon"
-          className="bg-wa-accent hover:bg-wa-accent-2 text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Send className="h-4 w-4" />
         </Button>
       ) : (
-        <Button variant="ghost" size="icon" className="text-wa-muted hover:text-wa-text">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" disabled={disabled}>
           <Mic className="h-5 w-5" />
         </Button>
       )}
@@ -107,7 +115,7 @@ function ComposerActions({
       {/* Emoji Picker */}
       <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-wa-muted hover:text-wa-text">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <Smile className="h-5 w-5" />
           </Button>
         </PopoverTrigger>
@@ -126,7 +134,7 @@ function ComposerActions({
       {/* Attachment Menu */}
       <Popover open={showAttachmentMenu} onOpenChange={setShowAttachmentMenu}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-wa-muted hover:text-wa-text">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <Paperclip className="h-5 w-5" />
           </Button>
         </PopoverTrigger>
@@ -144,3 +152,4 @@ function ComposerActions({
     </>
   );
 }
+

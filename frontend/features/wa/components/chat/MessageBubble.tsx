@@ -1,6 +1,6 @@
-import { Check, CheckCheck } from "lucide-react";
+import { Check, CheckCheck, Loader2 } from "lucide-react";
 import { formatTimestamp, waClasses } from "../../utils";
-import type { Message } from "../../types";
+import type { Message } from "../../shared/types";
 
 interface MessageBubbleProps extends Message {}
 
@@ -29,15 +29,23 @@ export function MessageBubble({
         <p className="text-sm whitespace-pre-wrap break-words">
           {text}
         </p>
-        <div className={`flex items-center justify-end gap-1 mt-1 text-xs ${
-          isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
-        }`}>
+        <div
+          className={`flex items-center justify-end gap-1 mt-1 text-xs ${
+            isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
+          }`}
+        >
           <span>{formatTimestamp(timestamp)}</span>
           {isOwn && (
-            <div className="flex">
-              {status === 'sent' && <Check className="h-3 w-3" />}
-              {status === 'delivered' && <CheckCheck className="h-3 w-3" />}
-              {status === 'read' && <CheckCheck className="h-3 w-3 text-blue-400" />}
+            <div className="flex items-center" aria-label={status || 'sent'}>
+              {status === 'sending' ? (
+                <Loader2 className="h-3 w-3 animate-spin" aria-label="Sending" />
+              ) : status === 'read' ? (
+                <CheckCheck className="h-3 w-3 text-blue-400" aria-label="Read" />
+              ) : status === 'delivered' ? (
+                <CheckCheck className="h-3 w-3" aria-label="Delivered" />
+              ) : (
+                <Check className="h-3 w-3" aria-label="Sent" />
+              )}
             </div>
           )}
         </div>

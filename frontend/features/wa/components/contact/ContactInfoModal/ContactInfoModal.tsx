@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -39,10 +39,11 @@ export function ContactInfoModal({ contact, isOpen, onClose }: ContactInfoModalP
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`p-0 bg-background border border-border ${
-        isMobile 
-          ? 'max-w-full w-full h-full m-0 rounded-none' 
+        isMobile
+          ? 'max-w-full w-full h-full m-0 rounded-none'
           : 'max-w-5xl w-full h-[90vh] rounded-lg'
-      }`}>
+      }`} showCloseButton={false}>
+        <DialogTitle className="sr-only">{contact.name} Contact Information</DialogTitle>
         <SidebarProvider defaultOpen={!isMobile}>
           <div className="flex h-full w-full">
             <Sidebar 

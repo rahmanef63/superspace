@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";\nimport { api } from "@convex/_generated/api";\nimport { useUser } from "@clerk/nextjs";
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 import { OnboardingProgress } from "./OnboardingProgress";
 import { OnboardingStep } from "./OnboardingStep";
 import type { OnboardingData } from "@/frontend/shared/pages/static/workspaces/types";

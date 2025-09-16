@@ -26,7 +26,7 @@ function AttachmentOption({ icon: Icon, label, description, onClick }: Attachmen
       onClick={onClick}
       className="flex items-center gap-3 w-full p-3 text-left hover:bg-wa-hover transition-colors rounded-lg"
     >
-      <div className="w-12 h-12 bg-wa-accent rounded-full flex items-center justify-center">
+      <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
         <Icon className="h-6 w-6 text-white" />
       </div>
       <div className="flex-1">

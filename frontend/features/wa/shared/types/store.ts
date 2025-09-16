@@ -24,4 +24,5 @@ export interface WhatsAppStore {
   sendMessage: (chatId: string, text: string) => Promise<void>;
   loadChats: () => Promise<void>;
   loadMessages: (chatId: string) => Promise<void>;
+  markAsRead: (chatId: string, messageId: string) => Promise<void>;
 }

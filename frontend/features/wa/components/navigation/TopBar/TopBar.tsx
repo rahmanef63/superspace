@@ -38,7 +38,7 @@ export function TopBar({
 
   return (
     <>
-      <div className="flex items-center justify-between p-3 md:p-4 border-b border-wa-border bg-wa-surface">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-wa-border bg-wa-surface min-h-[60px] md:min-h-[64px]">
         <TopBarHeader 
           title={title}
           subtitle={subtitle}

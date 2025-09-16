@@ -1,11 +1,11 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { WhatsAppLayout } from "./layout";
+import WAChatsPage from "./components/chat/page";
 
 const Message = () => {
   return (
-      <TooltipProvider>
-        <WhatsAppLayout />
-      </TooltipProvider>
+    <TooltipProvider>
+      <WAChatsPage />
+    </TooltipProvider>
   );
 };
 

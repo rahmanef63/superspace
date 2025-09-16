@@ -7,9 +7,6 @@ export * from "./shared/pages"
 // Views
 export * from "./views"
 
-// Layout
-export * from "./layout"
-
 // Lib utilities
 export * from "./lib"
 

@@ -7,7 +7,7 @@ globs: **/*.ts,**/*.tsx,**/*.js,**/*.jsx
 ## Function guidelines
 ### New function syntax
 - ALWAYS use the new function syntax for Convex functions. For example:
-\`\`\`typescript
+```typescript
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 export const f = query({
@@ -17,11 +17,11 @@ export const f = query({
     // Function body
     },
 });
-\`\`\`
+```
 
 ### Http endpoint syntax
 - HTTP endpoints are defined in `convex/http.ts` and require an `httpAction` decorator. For example:
-\`\`\`typescript
+```typescript
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 const http = httpRouter();
@@ -33,12 +33,12 @@ http.route({
     return new Response(body, { status: 200 });
     }),
 });
-\`\`\`
+```
 - HTTP endpoints are always registered at the exact path you specify in the `path` field. For example, if you specify `/api/someRoute`, the endpoint will be registered at `/api/someRoute`.
 
 ### Validators
 - Below is an example of an array validator:
-\`\`\`typescript
+```typescript
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -50,9 +50,9 @@ handler: async (ctx, args) => {
     //...
 },
 });
-\`\`\`
+```
 - Below is an example of a schema with validators that codify a discriminated union type:
-\`\`\`typescript
+```typescript
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -70,9 +70,9 @@ export default defineSchema({
         ),
     )
 });
-\`\`\`
+```
 - Always use the `v.null()` validator when returning a null value. Below is an example query that returns a null value:
-\`\`\`typescript
+```typescript
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -84,7 +84,7 @@ export const exampleQuery = query({
       return null;
   },
 });
-\`\`\`
+```
 - Here are the valid Convex types along with their respective validators:
 Convex Type  | TS/JS type  |  Example Usage         | Validator for argument validation and schemas  | Notes                                                                                                                                                                                                 |
 | ----------- | ------------| -----------------------| -----------------------------------------------| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -114,7 +114,7 @@ Convex Type  | TS/JS type  |  Example Usage         | Validator for argument val
 - Try to use as few calls from actions to queries and mutations as possible. Queries and mutations are transactions, so splitting logic up into multiple calls introduces the risk of race conditions.
 - All of these calls take in a `FunctionReference`. Do NOT try to pass the callee function directly into one of these calls.
 - When using `ctx.runQuery`, `ctx.runMutation`, or `ctx.runAction` to call a function in the same file, specify a type annotation on the return value to work around TypeScript circularity limitations. For example,
-\`\`\`
+```
 export const f = query({
   args: { name: v.string() },
   returns: v.string(),
@@ -131,7 +131,7 @@ export const g = query({
     return null;
   },
 });
-\`\`\`
+```
 
 ### Function references
 - Function references are pointers to registered Convex functions.
@@ -150,7 +150,7 @@ export const g = query({
 - Paginated queries are queries that return a list of results in incremental pages.
 - You can define pagination using the following syntax:
 
-\`\`\`ts
+```ts
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
@@ -164,7 +164,7 @@ export const listWithExtraArg = query({
         .paginate(args.paginationOpts);
     },
 });
-\`\`\`
+```
 Note: `paginationOpts` is an object with the following properties:
 - `numItems`: the maximum number of documents to return (the validator is `v.number()`)
 - `cursor`: the cursor to use to fetch the next page of documents (the validator is `v.union(v.string(), v.null())`)
@@ -188,7 +188,7 @@ Note: `paginationOpts` is an object with the following properties:
 ## Typescript guidelines
 - You can use the helper typescript type `Id` imported from './_generated/dataModel' to get the type of the id for a given table. For example if there is a table called 'users' you can use `Id<'users'>` to get the type of the id for that table.
 - If you need to define a `Record` make sure that you correctly provide the type of the key and value in the type. For example a validator `v.record(v.id('users'), v.string())` would have the type `Record<Id<'users'>, string>`. Below is an example of using `Record` with an `Id` type in a query:
-\`\`\`ts
+```ts
 import { query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
@@ -207,7 +207,7 @@ export const exampleQuery = query({
         return idToUsername;
     },
 });
-\`\`\`
+```
 - Be strict with types, particularly around id's of documents. For example, if a function takes in an id for a document in the 'users' table, take in `Id<'users'>` rather than `string`.
 - Always use `as const` for string literals in discriminated union types.
 - When using the `Array` type, make sure to always define your arrays as `const array: Array<T> = [...];`
@@ -243,7 +243,7 @@ const messages = await ctx.db
 - Always add `"use node";` to the top of files containing actions that use Node.js built-in modules.
 - Never use `ctx.db` inside of an action. Actions don't have access to the database.
 - Below is an example of the syntax for an action:
-\`\`\`ts
+```ts
 import { action } from "./_generated/server";
 
 export const exampleAction = action({
@@ -254,14 +254,14 @@ export const exampleAction = action({
         return null;
     },
 });
-\`\`\`
+```
 
 ## Scheduling guidelines
 ### Cron guidelines
 - Only use the `crons.interval` or `crons.cron` methods to schedule cron jobs. Do NOT use the `crons.hourly`, `crons.daily`, or `crons.weekly` helpers.
 - Both cron methods take in a FunctionReference. Do NOT try to pass the function directly into one of these methods.
 - Define crons by declaring the top-level `crons` object, calling some methods on it, and then exporting it as default. For example,
-\`\`\`ts
+```ts
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
 import { internalAction } from "./_generated/server";
@@ -280,7 +280,7 @@ const crons = cronJobs();
 crons.interval("delete inactive users", { hours: 2 }, internal.crons.empty, {});
 
 export default crons;
-\`\`\`
+```
 - You can register Convex functions within `crons.ts` just like any other file.
 - If a cron calls an internal function, always import the `internal` object from '_generated/api', even if the internal function is registered in the same file.
 
@@ -291,7 +291,7 @@ export default crons;
 - Do NOT use the deprecated `ctx.storage.getMetadata` call for loading a file's metadata.
 
                     Instead, query the `_storage` system table. For example, you can use `ctx.db.system.get` to get an `Id<"_storage">`.
-\`\`\`
+```
 import { query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 
@@ -312,7 +312,7 @@ export const exampleQuery = query({
         return null;
     },
 });
-\`\`\`
+```
 - Convex storage stores items as `Blob` objects. You must convert all items to/from a `Blob` when using Convex storage.
 
 
@@ -320,7 +320,7 @@ export const exampleQuery = query({
 ## Example: chat-app
 
 ### Task
-\`\`\`
+```
 Create a real-time chat application backend with AI responses. The app should:
 - Allow creating users with names
 - Support multiple chat channels
@@ -337,7 +337,7 @@ The backend should provide APIs for:
 Messages should be stored with their channel, author, and content. The system should maintain message order
 and limit history display to the 10 most recent messages per channel.
 
-\`\`\`
+```
 
 ### Analysis
 1. Task Requirements Summary:
@@ -428,7 +428,7 @@ Internal Functions:
 ### Implementation
 
 #### package.json
-\`\`\`typescript
+```typescript
 {
   "name": "chat-app",
   "description": "This example shows how to build a chat app without authentication.",
@@ -441,10 +441,10 @@ Internal Functions:
     "typescript": "^5.7.3"
   }
 }
-\`\`\`
+```
 
 #### tsconfig.json
-\`\`\`typescript
+```typescript
 {
   "compilerOptions": {
     "target": "ESNext",
@@ -464,10 +464,10 @@ Internal Functions:
   "exclude": ["convex"],
   "include": ["**/src/**/*.tsx", "**/src/**/*.ts", "vite.config.ts"]
 }
-\`\`\`
+```
 
 #### convex/index.ts
-\`\`\`typescript
+```typescript
 import {
   query,
   mutation,
@@ -643,10 +643,10 @@ export const writeAgentResponse = internalMutation({
     return null;
   },
 });
-\`\`\`
+```
 
 #### convex/schema.ts
-\`\`\`typescript
+```typescript
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -665,11 +665,12 @@ export default defineSchema({
     content: v.string(),
   }).index("by_channel", ["channelId"]),
 });
-\`\`\`
+```
 
 #### src/App.tsx
-\`\`\`typescript
+```typescript
 export default function App() {
   return <div>Hello World</div>;
 }
-\`\`\`
+```
+

@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel";
-import { MenuStore } from "../../../layout/menus/components/MenuStore";
+import { MenuStore } from "./components/MenuStore";
 
 export interface MenusPageProps {
   workspaceId?: Id<"workspaces"> | null;

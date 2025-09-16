@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
+import { useInitializeWhatsApp } from "../../shared/hooks"
 import { StarredView } from "./StarredView"
 
 interface WAStarredPageProps {
@@ -8,6 +9,8 @@ interface WAStarredPageProps {
 }
 
 export default function WAStarredPage({ workspaceId }: WAStarredPageProps) {
+  useInitializeWhatsApp(workspaceId ?? null)
+
   return (
     <div className="h-full">
       <StarredView />

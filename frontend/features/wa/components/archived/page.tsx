@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
+import { useInitializeWhatsApp } from "../../shared/hooks"
 import { ArchivedView } from "./ArchivedView"
 
 interface WAArchivedPageProps {
@@ -8,6 +9,8 @@ interface WAArchivedPageProps {
 }
 
 export default function WAArchivedPage({ workspaceId }: WAArchivedPageProps) {
+  useInitializeWhatsApp(workspaceId ?? null)
+
   return (
     <div className="h-full">
       <ArchivedView />

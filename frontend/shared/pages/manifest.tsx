@@ -79,6 +79,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: ({ workspaceId }) => <MessagePage workspaceId={workspaceId as Id<"workspaces">} />,
   },
   {
+    id: "wa",
+    componentId: "WAPage",
+    title: "WhatsApp",
+    description: "WhatsApp workspace overview",
+    icon: MessageCircle,
+    component: ({ workspaceId }) => <MessagePage workspaceId={workspaceId as Id<"workspaces">} />,
+  },
+  {
     id: "wa-chats",
     componentId: "WAChatsPage",
     title: "WA Chats",

@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
+import { useInitializeWhatsApp } from "../../shared/hooks"
 import { SettingsView } from "./SettingsView"
 
 interface WASettingsPageProps {
@@ -8,6 +9,8 @@ interface WASettingsPageProps {
 }
 
 export default function WASettingsPage({ workspaceId }: WASettingsPageProps) {
+  useInitializeWhatsApp(workspaceId ?? null)
+
   return (
     <div className="h-full">
       <SettingsView />

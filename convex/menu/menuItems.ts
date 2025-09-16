@@ -238,6 +238,12 @@ export const createDefaultMenuItems = mutation({
       .withIndex("by_menuSet", (q) => q.eq("menuSetId", menuSetId))
       .collect()
     const setSlugs = new Set(existingSetItems.map((i: any) => i.slug))
+    const slugToId = new Map<string, any>()
+    const slugToExisting = new Map<string, any>()
+    existingSetItems.forEach((item: any) => {
+      slugToId.set(item.slug, item._id)
+      slugToExisting.set(item.slug, item)
+    })
     for (const it of legacyWorkspaceItems) {
       if (setSlugs.has(it.slug)) continue
       const clonedId = await ctx.db.insert("menuItems", {
@@ -257,84 +263,128 @@ export const createDefaultMenuItems = mutation({
         createdBy: userId,
       } as any)
       setSlugs.add(it.slug)
+      slugToId.set(it.slug, clonedId)
+      slugToExisting.set(it.slug, { ...it, _id: clonedId })
     }
 
-    // Determine which roles can see certain admin pages
     const allRoles = await ctx.db
       .query("roles")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect()
 
-    const rolesCanManageWorkspace = allRoles
-      .filter((r: any) => (r.permissions || []).includes("*") || (r.permissions || []).includes(PERMS.MANAGE_WORKSPACE))
-      .map((r: any) => r._id)
+    const permissionCache = new Map<string, any[]>()
 
-    const menuItemIds = []
-    const itemsToCreate =
-      args.selectedSlugs && args.selectedSlugs.length > 0
-        ? defaultMenuItems.filter((i) => args.selectedSlugs!.includes(i.slug))
-        : defaultMenuItems
+    const resolvePermissionValue = (permKey?: string) => {
+      if (!permKey) return undefined
+      const permsRecord = PERMS as Record<string, string>
+      return permsRecord[permKey as keyof typeof PERMS] ?? permKey
+    }
 
-    const parentItems = itemsToCreate.filter((item) => !("children" in item))
-    const childrenMap = new Map()
+    const resolveVisibleRoleIds = (permKey?: string) => {
+      const permissionValue = resolvePermissionValue(permKey)
+      if (!permissionValue) return []
+      const cached = permissionCache.get(permissionValue)
+      if (cached) return cached
+      const visibleRoles = allRoles
+        .filter((role: any) => {
+          const permissions = role.permissions || []
+          return permissions.includes("*") || permissions.includes(permissionValue)
+        })
+        .map((role: any) => role._id)
+      permissionCache.set(permissionValue, visibleRoles)
+      return visibleRoles
+    }
 
-    // Process items with children to extract parent-child relationships
-    itemsToCreate.forEach((item) => {
-      if ("children" in item && Array.isArray((item as any).children)) {
-        childrenMap.set(item.slug, (item as any).children)
-      }
-    })
+    const hasSelection = Array.isArray(args.selectedSlugs) && args.selectedSlugs.length > 0
+    const selectedSlugs = new Set((args.selectedSlugs ?? []).map((slug) => String(slug)))
 
-    // Create parent items first
-    for (const item of parentItems) {
-      if (setSlugs.has(item.slug)) continue // Skip duplicates
+    const hasSelectedDescendant = (item: any): boolean => {
+      if (!hasSelection) return false
+      if (!Array.isArray((item as any).children)) return false
+      return (item as any).children.some((child: any) =>
+        selectedSlugs.has(String(child.slug)) || hasSelectedDescendant(child),
+      )
+    }
 
-      const menuItemId = await ctx.db.insert("menuItems", {
-        workspaceId: args.workspaceId,
-        menuSetId,
-        name: item.name,
-        slug: item.slug,
-        type: item.type,
-        icon: item.icon,
-        path: item.path,
-        component: item.component,
-        order: item.order,
-        isVisible: true,
-        visibleForRoleIds: (item as any).requiresPermission === PERMS.MANAGE_WORKSPACE ? rolesCanManageWorkspace : [],
-        metadata: item.metadata,
-        createdBy: userId,
-      } as any)
+    const menuItemIds: any[] = []
 
-      menuItemIds.push(menuItemId)
-      setSlugs.add(item.slug)
+    const insertItemRecursive = async (item: any, parentId?: any, ancestorSelected = false) => {
+      const slug = String(item.slug)
+      const isExplicitlySelected = selectedSlugs.has(slug)
+      const shouldInclude =
+        !hasSelection || isExplicitlySelected || ancestorSelected || hasSelectedDescendant(item)
 
-      // Create children if they exist
-      const children = childrenMap.get(item.slug)
-      if (children) {
-        for (const child of children) {
-          if (setSlugs.has(child.slug)) continue
+      if (!shouldInclude) return
 
-          const childMenuItemId = await ctx.db.insert("menuItems", {
-            workspaceId: args.workspaceId,
-            menuSetId,
-            parentId: menuItemId,
-            name: child.name,
-            slug: child.slug,
-            type: child.type,
-            icon: child.icon,
-            path: child.path,
-            component: child.component,
-            order: child.order,
-            isVisible: true,
-            visibleForRoleIds: [],
-            metadata: child.metadata,
-            createdBy: userId,
-          } as any)
+      const visibleForRoleIds = resolveVisibleRoleIds((item as any).requiresPermission)
+      let menuItemId = slugToId.get(slug)
 
-          menuItemIds.push(childMenuItemId)
-          setSlugs.add(child.slug)
+      if (!menuItemId) {
+        menuItemId = await ctx.db.insert("menuItems", {
+          workspaceId: args.workspaceId,
+          menuSetId,
+          parentId: parentId ?? undefined,
+          name: item.name,
+          slug,
+          type: item.type,
+          icon: item.icon,
+          path: item.path,
+          component: item.component,
+          order: item.order,
+          isVisible: true,
+          visibleForRoleIds,
+          metadata: item.metadata,
+          createdBy: userId,
+        } as any)
+
+        menuItemIds.push(menuItemId)
+        setSlugs.add(slug)
+        slugToId.set(slug, menuItemId)
+        slugToExisting.set(slug, { ...item, _id: menuItemId })
+      } else {
+        const existingItem = slugToExisting.get(slug)
+        if (existingItem) {
+          const expectedParentId = parentId ?? undefined
+          const updates: any = {}
+
+          if (String(existingItem.parentId || "") !== String(expectedParentId || "")) {
+            updates.parentId = expectedParentId
+          }
+          if ((existingItem.component || undefined) !== (item.component || undefined) && item.component) {
+            updates.component = item.component
+          }
+          if (!existingItem.path && item.path) {
+            updates.path = item.path
+          }
+          if (!existingItem.metadata && item.metadata) {
+            updates.metadata = item.metadata
+          }
+          if (existingItem.isVisible === false) {
+            updates.isVisible = true
+          }
+          const expectedRoles = visibleForRoleIds
+          const existingRoles = Array.isArray(existingItem.visibleForRoleIds) ? existingItem.visibleForRoleIds : []
+          const shouldSyncRoles = expectedRoles.length > 0 && (existingRoles.length !== expectedRoles.length || expectedRoles.some((r: any, idx: number) => String(r) !== String(existingRoles[idx])))
+          if (shouldSyncRoles) {
+            updates.visibleForRoleIds = expectedRoles
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await ctx.db.patch(menuItemId, updates)
+            slugToExisting.set(slug, { ...existingItem, ...updates })
+          }
         }
       }
+
+      if (Array.isArray((item as any).children) && (item as any).children.length > 0) {
+        for (const child of (item as any).children) {
+          await insertItemRecursive(child, menuItemId, ancestorSelected || isExplicitlySelected)
+        }
+      }
+    }
+
+    for (const item of defaultMenuItems) {
+      await insertItemRecursive(item)
     }
 
     console.log("[v0] Created menu items:", menuItemIds.length)

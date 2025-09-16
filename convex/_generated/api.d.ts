@@ -25,7 +25,6 @@ import type * as menu_chat_messages from "../menu/chat/messages.js";
 import type * as menu_cms_canvas from "../menu/cms/canvas.js";
 import type * as menu_itemComponents from "../menu/itemComponents.js";
 import type * as menu_menuItems from "../menu/menuItems.js";
-import type * as menu_menu_data from "../menu/menu_data.js";
 import type * as menu_menu_manifest_data from "../menu/menu_manifest_data.js";
 import type * as menu_menus from "../menu/menus.js";
 import type * as menu_page_documents from "../menu/page/documents.js";
@@ -67,7 +66,6 @@ declare const fullApi: ApiFromModules<{
   "menu/cms/canvas": typeof menu_cms_canvas;
   "menu/itemComponents": typeof menu_itemComponents;
   "menu/menuItems": typeof menu_menuItems;
-  "menu/menu_data": typeof menu_menu_data;
   "menu/menu_manifest_data": typeof menu_menu_manifest_data;
   "menu/menus": typeof menu_menus;
   "menu/page/documents": typeof menu_page_documents;

@@ -15,6 +15,27 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { NavProjects } from "@/app/dashboard/_components/NavProjects"
 import { NavSecondary } from "./NavSecondary"
 import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/pages/manifest"
+
+const REQUIRED_MENU_SLUGS = [
+  "dashboard",
+  "wa",
+  "wa-chats",
+  "wa-calls",
+  "wa-status",
+  "wa-ai",
+  "wa-starred",
+  "wa-archived",
+  "wa-settings",
+  "wa-profile",
+  "members",
+  "friends",
+  "documents",
+  "canvas",
+  "menus",
+  "invitations",
+  "user-settings",
+  "settings",
+]
 import { iconFromName } from "@/frontend/shared/pages/icons"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 
@@ -68,16 +89,22 @@ export function AppSidebar({
     if (!effectiveWorkspaceId) return
     if (!Array.isArray(menuItems)) return
     const key = String(effectiveWorkspaceId)
-    if (seededRef.current === key) return
-    if (menuItems.length <= 3) {
-      createDefaults({ workspaceId: effectiveWorkspaceId as Id<"workspaces"> })
-        .then(() => {
-          seededRef.current = key
-        })
-        .catch(() => {
-          /* ignore */
-        })
+    const missingSlugs = REQUIRED_MENU_SLUGS.filter((slug) => !menuItems.some((mi) => String(mi.slug) === slug))
+    if (missingSlugs.length === 0) {
+      seededRef.current = key
+      return
     }
+    const trackedKey = `${key}:${missingSlugs.join(",")}`
+    if (seededRef.current === trackedKey) return
+
+    seededRef.current = trackedKey
+    createDefaults({ workspaceId: effectiveWorkspaceId as Id<"workspaces">, selectedSlugs: missingSlugs })
+      .then(() => {
+        seededRef.current = key
+      })
+      .catch(() => {
+        seededRef.current = null
+      })
   }, [effectiveWorkspaceId, menuItems, createDefaults])
 
   // Build dynamic nav items from menu items or fallback to manifest

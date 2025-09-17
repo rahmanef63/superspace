@@ -1,56 +1,19 @@
-import { useState } from "react";
-import { Id } from "@convex/_generated/dataModel";
-import { DocumentsView } from "./DocumentsView";
-import { DocumentEditor } from "./DocumentEditor";
-import { CreateDocumentModal } from "./CreateDocumentModal";
+﻿import type { Id } from "@convex/_generated/dataModel";
+import type { DocumentEditorMode } from "../shared";
+import { WorkspaceDocumentsManager } from "../shared";
 
 interface DocumentsManagerProps {
   workspaceId: Id<"workspaces">;
+  editorMode?: DocumentEditorMode;
+  storageKey?: string;
 }
 
-export function DocumentsManager({ workspaceId }: DocumentsManagerProps) {
-  const [selectedDocumentId, setSelectedDocumentId] = useState<Id<"documents"> | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const handleDocumentSelect = (documentId: Id<"documents">) => {
-    setSelectedDocumentId(documentId);
-  };
-
-  const handleBackToList = () => {
-    setSelectedDocumentId(null);
-  };
-
-  const handleCreateDocument = () => {
-    setShowCreateModal(true);
-  };
-
-  const handleDocumentCreated = (documentId: Id<"documents">) => {
-    setSelectedDocumentId(documentId);
-  };
-
-  if (selectedDocumentId) {
-    return (
-      <DocumentEditor
-        documentId={selectedDocumentId}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
+export function DocumentsManager({ workspaceId, editorMode = "block", storageKey }: DocumentsManagerProps) {
   return (
-    <>
-      <DocumentsView
-        workspaceId={workspaceId}
-        onDocumentSelect={handleDocumentSelect}
-        onCreateDocument={handleCreateDocument}
-      />
-
-      <CreateDocumentModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        workspaceId={workspaceId}
-        onDocumentCreated={handleDocumentCreated}
-      />
-    </>
+    <WorkspaceDocumentsManager
+      workspaceId={workspaceId}
+      editorMode={editorMode}
+      storageKey={storageKey}
+    />
   );
 }

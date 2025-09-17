@@ -50,5 +50,6 @@ export interface ViewToolbarProps {
   setMode: (m: ViewMode) => void;
   query: string;
   setQuery: (q: string) => void;
+  searchable?: boolean;
   className?: string;
 }

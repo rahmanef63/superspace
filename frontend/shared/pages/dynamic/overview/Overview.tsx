@@ -48,7 +48,7 @@ export function Overview({ workspaceId }: OverviewProps) {
   ];
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="container flex-col mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Welcome back!</h1>

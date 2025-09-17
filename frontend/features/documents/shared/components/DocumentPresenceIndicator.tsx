@@ -1,0 +1,48 @@
+﻿"use client";
+
+import usePresence from "@convex-dev/presence/react";
+import FacePile from "@convex-dev/presence/facepile";
+import { api } from "@convex/_generated/api";
+import { cn } from "@/lib/utils";
+
+export interface DocumentPresenceIndicatorProps {
+  roomId: string;
+  userId: string;
+  showLabel?: boolean;
+  className?: string;
+}
+
+export function DocumentPresenceIndicator({
+  roomId,
+  userId,
+  showLabel = true,
+  className,
+}: DocumentPresenceIndicatorProps) {
+  // Don't render if we don't have valid room or user data
+  if (!roomId || !userId) {
+    return null;
+  }
+
+  let presenceState = [];
+  try {
+    presenceState = usePresence(api.menu.page.presence, roomId, userId) ?? [];
+  } catch (error) {
+    console.error("Error in presence hook:", error);
+    presenceState = [];
+  }
+
+  const audience = presenceState.length;
+
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      {showLabel && (
+        <span className="text-sm text-gray-500">
+          {audience > 0
+            ? `${audience} user${audience === 1 ? "" : "s"} online`
+            : "You're alone"}
+        </span>
+      )}
+      <FacePile presenceState={presenceState} />
+    </div>
+  );
+}

@@ -8,11 +8,6 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
 import type * as auth_auth from "../auth/auth.js";
 import type * as auth_helpers from "../auth/helpers.js";
 import type * as components_registry from "../components/registry.js";
@@ -27,7 +22,13 @@ import type * as menu_itemComponents from "../menu/itemComponents.js";
 import type * as menu_menuItems from "../menu/menuItems.js";
 import type * as menu_menu_manifest_data from "../menu/menu_manifest_data.js";
 import type * as menu_menus from "../menu/menus.js";
+import type * as menu_page_db_fields from "../menu/page/db/fields.js";
+import type * as menu_page_db_rows from "../menu/page/db/rows.js";
+import type * as menu_page_db_tables from "../menu/page/db/tables.js";
+import type * as menu_page_db_utils from "../menu/page/db/utils.js";
 import type * as menu_page_documents from "../menu/page/documents.js";
+import type * as menu_page_presence from "../menu/page/presence.js";
+import type * as menu_page_prosemirror from "../menu/page/prosemirror.js";
 import type * as menu_sets from "../menu/sets.js";
 import type * as payment_paymentAttemptTypes from "../payment/paymentAttemptTypes.js";
 import type * as payment_paymentAttempts from "../payment/paymentAttempts.js";
@@ -44,6 +45,12 @@ import type * as workspace_roleMenuPermissions from "../workspace/roleMenuPermis
 import type * as workspace_roles from "../workspace/roles.js";
 import type * as workspace_search from "../workspace/search.js";
 import type * as workspace_workspaces from "../workspace/workspaces.js";
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -68,7 +75,13 @@ declare const fullApi: ApiFromModules<{
   "menu/menuItems": typeof menu_menuItems;
   "menu/menu_manifest_data": typeof menu_menu_manifest_data;
   "menu/menus": typeof menu_menus;
+  "menu/page/db/fields": typeof menu_page_db_fields;
+  "menu/page/db/rows": typeof menu_page_db_rows;
+  "menu/page/db/tables": typeof menu_page_db_tables;
+  "menu/page/db/utils": typeof menu_page_db_utils;
   "menu/page/documents": typeof menu_page_documents;
+  "menu/page/presence": typeof menu_page_presence;
+  "menu/page/prosemirror": typeof menu_page_prosemirror;
   "menu/sets": typeof menu_sets;
   "payment/paymentAttemptTypes": typeof payment_paymentAttemptTypes;
   "payment/paymentAttempts": typeof payment_paymentAttempts;
@@ -86,11 +99,143 @@ declare const fullApi: ApiFromModules<{
   "workspace/search": typeof workspace_search;
   "workspace/workspaces": typeof workspace_workspaces;
 }>;
+declare const fullApiWithMounts: typeof fullApi;
+
 export declare const api: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "public">
 >;
 export declare const internal: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {
+  presence: {
+    public: {
+      disconnect: FunctionReference<
+        "mutation",
+        "internal",
+        { sessionToken: string },
+        null
+      >;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          interval?: number;
+          roomId: string;
+          sessionId: string;
+          userId: string;
+        },
+        { roomToken: string; sessionToken: string }
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; roomToken: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listRoom: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; roomId: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listUser: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; userId: string },
+        Array<{ lastDisconnected: number; online: boolean; roomId: string }>
+      >;
+      removeRoom: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string },
+        null
+      >;
+      removeRoomUser: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string; userId: string },
+        null
+      >;
+    };
+  };
+  prosemirrorSync: {
+    lib: {
+      deleteDocument: FunctionReference<
+        "mutation",
+        "internal",
+        { id: string },
+        null
+      >;
+      deleteSnapshots: FunctionReference<
+        "mutation",
+        "internal",
+        { afterVersion?: number; beforeVersion?: number; id: string },
+        null
+      >;
+      deleteSteps: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          afterVersion?: number;
+          beforeTs: number;
+          deleteNewerThanLatestSnapshot?: boolean;
+          id: string;
+        },
+        null
+      >;
+      getSnapshot: FunctionReference<
+        "query",
+        "internal",
+        { id: string; version?: number },
+        { content: null } | { content: string; version: number }
+      >;
+      getSteps: FunctionReference<
+        "query",
+        "internal",
+        { id: string; version: number },
+        {
+          clientIds: Array<string | number>;
+          steps: Array<string>;
+          version: number;
+        }
+      >;
+      latestVersion: FunctionReference<
+        "query",
+        "internal",
+        { id: string },
+        null | number
+      >;
+      submitSnapshot: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          content: string;
+          id: string;
+          pruneSnapshots?: boolean;
+          version: number;
+        },
+        null
+      >;
+      submitSteps: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          clientId: string | number;
+          id: string;
+          steps: Array<string>;
+          version: number;
+        },
+        | {
+            clientIds: Array<string | number>;
+            status: "needs-rebase";
+            steps: Array<string>;
+          }
+        | { status: "synced" }
+      >;
+    };
+  };
+};

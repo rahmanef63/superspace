@@ -3,40 +3,59 @@
 import { LayoutGrid, List, Table as TableIcon, Search } from "lucide-react";
 import type { ViewToolbarProps } from "./types";
 
-export function ViewToolbar({ mode, setMode, query, setQuery, className }: ViewToolbarProps) {
+const modes = [
+  { id: "table" as const, icon: TableIcon, label: "Table view" },
+  { id: "card" as const, icon: LayoutGrid, label: "Card view" },
+  { id: "details" as const, icon: List, label: "Details view" },
+];
+
+export function ViewToolbar({
+  mode,
+  setMode,
+  query,
+  setQuery,
+  searchable = true,
+  className,
+}: ViewToolbarProps) {
   return (
-    <div className={["flex items-center gap-3", className].filter(Boolean).join(" ")}> 
-      <div className="relative max-w-sm w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search..."
-          className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
-        />
-      </div>
-      <div className="ml-auto flex items-center gap-1">
-        <button
-          className={`px-2.5 py-1.5 rounded ${mode === "table" ? "bg-gray-900 text-primary" : "hover:bg-gray-100"}`}
-          title="Table view"
-          onClick={() => setMode("table")}
-        >
-          <TableIcon className="w-4 h-4" />
-        </button>
-        <button
-          className={`px-2.5 py-1.5 rounded ${mode === "card" ? "bg-gray-900 text-primary" : "hover:bg-gray-100"}`}
-          title="Card view"
-          onClick={() => setMode("card")}
-        >
-          <LayoutGrid className="w-4 h-4" />
-        </button>
-        <button
-          className={`px-2.5 py-1.5 rounded ${mode === "details" ? "bg-gray-900 text-primary" : "hover:bg-gray-100"}`}
-          title="Details view"
-          onClick={() => setMode("details")}
-        >
-          <List className="w-4 h-4" />
-        </button>
+    <div
+      className={["flex flex-wrap items-center gap-3 sm:gap-4", className]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {searchable && (
+        <div className="relative min-w-[200px] flex-1 max-w-xl">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..."
+            className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 shadow-sm focus:border-gray-400 focus:outline-none"
+          />
+        </div>
+      )}
+      <div
+        className={`flex items-center justify-end gap-2 ${
+          searchable ? "w-full sm:w-auto" : "w-full"
+        }`}
+      >
+        {modes.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setMode(id)}
+            className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition ${
+              mode === id
+                ? "border-gray-900 bg-gray-900 text-white shadow"
+                : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+            }`}
+            aria-pressed={mode === id}
+            title={label}
+          >
+            <Icon className="h-4 w-4" />
+            <span className="hidden sm:inline">{label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

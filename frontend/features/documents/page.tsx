@@ -1,12 +1,12 @@
-"use client"
+﻿"use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import { DocumentsManager } from "./components/DocumentsManager";
+import DocumentsFeaturePage from "./page/page";
 
 export interface DocumentsPageProps {
   workspaceId?: Id<"workspaces"> | null;
 }
 
 export default function DocumentsPage({ workspaceId }: DocumentsPageProps) {
-  return <DocumentsManager workspaceId={workspaceId as Id<"workspaces">} />;
+  return <DocumentsFeaturePage workspaceId={workspaceId ?? null} />;
 }

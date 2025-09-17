@@ -1,4 +1,4 @@
-import { defineSchema, defineTable } from "convex/server"
+﻿import { defineSchema, defineTable } from "convex/server"
 import { v } from "convex/values"
 import { authTables } from "@convex-dev/auth/server"
 import { paymentAttemptSchemaValidator } from "./payment/paymentAttemptTypes"
@@ -257,7 +257,7 @@ const applicationTables = {
     .index("by_user", ["userId"])
     .index("by_message_user", ["messageId", "userId"]),
 
-  // Role ⇄ Menu granular permissions (M:N)
+  // Role â‡„ Menu granular permissions (M:N)
   roleMenuPermissions: defineTable({
     roleId: v.id("roles"),
     menuItemId: v.id("menuItems"),
@@ -279,6 +279,7 @@ const applicationTables = {
     createdBy: v.id("users"),
     isPublic: v.boolean(),
     content: v.optional(v.string()),
+    lastModified: v.optional(v.number()),
     metadata: v.optional(
       v.object({
         description: v.optional(v.string()),
@@ -290,11 +291,128 @@ const applicationTables = {
   })
     .index("by_workspace", ["workspaceId"])
     .index("by_creator", ["createdBy"])
+    .index("by_isPublic", ["isPublic"])
     .searchIndex("search_documents", {
       searchField: "title",
-      filterFields: ["workspaceId", "isPublic"],
+      filterFields: ["workspaceId", "isPublic", "createdBy"],
     }),
 
+  // Database tables (Notion-like)
+  dbTables: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    coverUrl: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
+    createdById: v.id("users"),
+    updatedById: v.id("users"),
+    isTemplate: v.boolean(),
+    settings: v.object({
+      showProperties: v.boolean(),
+      wrapCells: v.boolean(),
+      showCalculations: v.boolean(),
+    }),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_workspace", ["workspaceId"]),
+
+  dbFields: defineTable({
+    tableId: v.id("dbTables"),
+    name: v.string(),
+    type: v.union(
+      v.literal("text"),
+      v.literal("number"),
+      v.literal("select"),
+      v.literal("multiSelect"),
+      v.literal("date"),
+      v.literal("person"),
+      v.literal("files"),
+      v.literal("checkbox"),
+      v.literal("url"),
+      v.literal("email"),
+      v.literal("phone"),
+      v.literal("formula"),
+      v.literal("relation"),
+      v.literal("rollup"),
+    ),
+    options: v.optional(
+      v.object({
+        selectOptions: v.optional(
+          v.array(
+            v.object({
+              id: v.string(),
+              name: v.string(),
+              color: v.string(),
+            }),
+          ),
+        ),
+        dateFormat: v.optional(v.string()),
+        numberFormat: v.optional(v.string()),
+        formula: v.optional(v.string()),
+      }),
+    ),
+    isRequired: v.boolean(),
+    isPrimary: v.optional(v.boolean()),
+    position: v.number(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  }).index("by_table", ["tableId"]),
+
+  dbViews: defineTable({
+    tableId: v.id("dbTables"),
+    name: v.string(),
+    type: v.union(
+      v.literal("table"),
+      v.literal("board"),
+      v.literal("calendar"),
+      v.literal("gallery"),
+      v.literal("list"),
+      v.literal("timeline"),
+    ),
+    settings: v.object({
+      filters: v.array(
+        v.object({
+          fieldId: v.string(),
+          operator: v.union(
+            v.literal("equals"),
+            v.literal("contains"),
+            v.literal("isEmpty"),
+            v.literal("isNotEmpty"),
+          ),
+          value: v.optional(v.any()),
+        }),
+      ),
+      sorts: v.array(
+        v.object({
+          fieldId: v.string(),
+          direction: v.union(v.literal("asc"), v.literal("desc")),
+        }),
+      ),
+      visibleFields: v.array(v.id("dbFields")),
+      fieldWidths: v.optional(v.record(v.string(), v.number())),
+    }),
+    createdById: v.id("users"),
+    isDefault: v.boolean(),
+    position: v.optional(v.number()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  }).index("by_table", ["tableId"]),
+
+  dbRows: defineTable({
+    tableId: v.id("dbTables"),
+    workspaceId: v.id("workspaces"),
+    data: v.record(v.string(), v.any()),
+    computed: v.optional(v.record(v.string(), v.any())),
+    docId: v.optional(v.id("documents")),
+    createdById: v.id("users"),
+    updatedById: v.id("users"),
+    position: v.number(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_table", ["tableId"]),
   // Comments
   comments: defineTable({
     documentId: v.id("documents"),
@@ -562,3 +680,4 @@ export default defineSchema({
     .index("byUserId", ["userId"])
     .index("byPayerUserId", ["payer.user_id"]),
 })
+

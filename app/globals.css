@@ -122,7 +122,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Removed WhatsApp-specific global styles to keep globals clean.
-   Use Tailwind + shadcn tokens (bg-primary, bg-muted, text-muted-foreground, etc.)
-   within components instead. */

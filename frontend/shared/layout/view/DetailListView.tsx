@@ -2,6 +2,13 @@
 
 import type { Column, RowAction, ViewConfig } from "./types";
 
+function resolveValue<T>(column: Column<T>, row: T) {
+  if (column.cell) return column.cell(row);
+  if (typeof column.accessor === "function") return column.accessor(row);
+  if (column.accessor) return (row as any)[column.accessor as string];
+  return null;
+}
+
 export function DetailListView<T>({
   data,
   columns,
@@ -17,39 +24,59 @@ export function DetailListView<T>({
 }) {
   const defaultFields = columns.map((c) => ({
     label: c.header,
-    value: (row: T) =>
-      c.cell ? c.cell(row) : typeof c.accessor === "function" ? c.accessor(row) : c.accessor ? (row as any)[c.accessor as string] : null,
+    value: (row: T) => resolveValue(c, row),
   }));
   const fields = details?.fields ?? defaultFields;
 
+  const renderActions = (row: T) => {
+    if (!actions || actions.length === 0) return null;
+    return actions.map((action) => {
+      const visible = action.visible ? action.visible(row) : true;
+      if (!visible) return null;
+      const hasIcon = Boolean(action.icon);
+      const hasLabel = Boolean(action.label);
+      return (
+        <button
+          key={action.id}
+          onClick={() => action.onClick(row)}
+          className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100"
+          title={action.label}
+        >
+          {hasIcon && <span className="text-gray-600">{action.icon}</span>}
+          {hasLabel && <span>{action.label}</span>}
+        </button>
+      );
+    });
+  };
+
+  if (data.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-gray-200 bg-background p-6 text-center text-sm text-gray-500">
+        No data
+      </div>
+    );
+  }
+
   return (
-    <div className="divide-y divide-gray-200 bg-background rounded-lg border">
-      {data.map((row) => (
-        <div key={String(getId(row))} className="p-4">
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            {fields.map((f, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <dt className="text-gray-500 min-w-[140px]">{f.label}</dt>
-                <dd className="flex-1 text-gray-900">{f.value(row)}</dd>
+    <div className="overflow-hidden rounded-lg border border-gray-200/80 bg-background">
+      {data.map((row, index) => (
+        <div
+          key={String(getId(row))}
+          className={`p-4 sm:p-5 ${index !== 0 ? "border-t border-gray-200/70" : ""}`.trim()}
+        >
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
+            {fields.map((field, idx) => (
+              <div key={idx} className="flex items-start gap-3 text-sm">
+                <dt className="min-w-[120px] text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {field.label}
+                </dt>
+                <dd className="flex-1 text-gray-900">{field.value(row)}</dd>
               </div>
             ))}
           </dl>
           {actions && actions.length > 0 && (
-            <div className="pt-3 mt-3 border-t flex items-center gap-2">
-              {actions.map((a) => {
-                const visible = a.visible ? a.visible(row) : true;
-                if (!visible) return null;
-                return (
-                  <button
-                    key={a.id}
-                    onClick={() => a.onClick(row)}
-                    className="px-2 py-1 rounded border hover:bg-gray-100 text-gray-700"
-                    title={a.label}
-                  >
-                    {a.icon || a.label}
-                  </button>
-                );
-              })}
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-200/70 pt-3">
+              {renderActions(row)}
             </div>
           )}
         </div>

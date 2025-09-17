@@ -1,183 +1,314 @@
-import { v } from "convex/values";
 import { query, mutation } from "../../_generated/server";
-import { requirePermission, canPermission, getExistingUserId, ensureUser, requireActiveMembership } from "../../auth/helpers";
-import { PERMS } from "../../workspace/permissions";
+import { v } from "convex/values";
+import { ensureUser, getExistingUserId } from "../../auth/helpers";
+import { Doc, Id } from "../../_generated/dataModel";
 
-export const createDocument = mutation({
-  args: {
-    workspaceId: v.id("workspaces"),
-    title: v.string(),
-    parentId: v.optional(v.id("documents")),
-  },
-  handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
+type Document = Doc<"documents">;
 
-    await requirePermission(ctx, args.workspaceId, PERMS.DOCUMENTS_CREATE);
+const sortByLastModifiedDesc = (a: Document, b: Document) => {
+  const aTime = a.lastModified ?? a._creationTime;
+  const bTime = b.lastModified ?? b._creationTime;
+  return bTime - aTime;
+};
 
-    const workspace = await ctx.db.get(args.workspaceId);
-    if (!workspace) throw new Error("Workspace not found");
-
-    const documentId = await ctx.db.insert("documents", {
-      workspaceId: args.workspaceId,
-      title: args.title,
-      content: JSON.stringify({
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "",
-              },
-            ],
-          },
-        ],
-      }),
-      isPublic: false,
-      createdBy: userId,
-
-    });
-
-    return documentId;
-  },
-});
-
-export const getWorkspaceDocuments = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, args) => {
-    try {
-      await requireActiveMembership(ctx, args.workspaceId);
-    } catch {
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getExistingUserId(ctx);
+    if (!userId) {
       return [];
     }
 
-    const documents = await ctx.db
-      .query("documents")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
-      .collect();
+    const [privateDocuments, publicDocuments] = await Promise.all([
+      ctx.db
+        .query("documents")
+        .withIndex("by_creator", (q) => q.eq("createdBy", userId))
+        .collect(),
+      ctx.db
+        .query("documents")
+        .withIndex("by_isPublic", (q) => q.eq("isPublic", true))
+        .collect(),
+    ]);
 
-    // Get author information for each document
-    const documentsWithAuthors = await Promise.all(
-      documents.map(async (document) => {
-        const author = document.createdBy ? await ctx.db.get(document.createdBy) : null;
-        return {
-          ...document,
-          author,
-        };
-      })
-    );
+    const docsById = new Map<Id<"documents">, Document>();
+    for (const doc of privateDocuments) {
+      docsById.set(doc._id, doc);
+    }
+    for (const doc of publicDocuments) {
+      if (!docsById.has(doc._id)) {
+        docsById.set(doc._id, doc);
+      }
+    }
 
-    return documentsWithAuthors;
+    return Array.from(docsById.values()).sort(sortByLastModifiedDesc);
   },
 });
 
-export const getDocument = query({
-  args: { documentId: v.id("documents") },
+export const search = query({
+  args: { query: v.string() },
   handler: async (ctx, args) => {
-    const document = await ctx.db.get(args.documentId);
-    if (!document) return null;
-    
-    // Allow public docs without membership
-    if (!document.isPublic) {
-      try {
-        await requireActiveMembership(ctx, document.workspaceId);
-      } catch {
-        return null;
+    const userId = await getExistingUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const trimmedQuery = args.query.trim();
+    if (!trimmedQuery) {
+      return [];
+    }
+
+    const [userResults, publicResults] = await Promise.all([
+      ctx.db
+        .query("documents")
+        .withSearchIndex("search_documents", (q) =>
+          q.search("title", trimmedQuery).eq("createdBy", userId)
+        )
+        .take(10),
+      ctx.db
+        .query("documents")
+        .withSearchIndex("search_documents", (q) =>
+          q.search("title", trimmedQuery).eq("isPublic", true)
+        )
+        .take(10),
+    ]);
+
+    const deduped = new Map<Id<"documents">, Document>();
+    for (const doc of userResults) {
+      deduped.set(doc._id, doc);
+    }
+    for (const doc of publicResults) {
+      if (!deduped.has(doc._id)) {
+        deduped.set(doc._id, doc);
       }
+    }
+
+    return Array.from(deduped.values());
+  },
+});
+
+export const get = query({
+  args: { id: v.id("documents") },
+  handler: async (ctx, args) => {
+    const userId = await getExistingUserId(ctx);
+    const document = await ctx.db.get(args.id);
+
+    if (!document) {
+      return null;
+    }
+
+    if (!document.isPublic && document.createdBy !== userId) {
+      return null;
     }
 
     return document;
   },
 });
 
-export const updateDocument = mutation({
+export const create = mutation({
   args: {
-    documentId: v.id("documents"),
-    title: v.optional(v.string()),
+    title: v.string(),
+    isPublic: v.boolean(),
+    workspaceId: v.id("workspaces"),
     content: v.optional(v.string()),
-    emoji: v.optional(v.string()),
-    coverImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
 
-    const document = await ctx.db.get(args.documentId);
-    if (!document) throw new Error("Document not found");
+    return await ctx.db.insert("documents", {
+      title: args.title,
+      isPublic: args.isPublic,
+      createdBy: userId,
+      workspaceId: args.workspaceId,
+      content: args.content,
+      lastModified: Date.now(),
+    });
+  },
+});
 
-    await requirePermission(ctx, document.workspaceId, PERMS.DOCUMENTS_EDIT);
+export const updateTitle = mutation({
+  args: {
+    id: v.id("documents"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
 
-    const updates: any = {
-      lastEditedBy: userId,
-      lastEditedAt: Date.now(),
+    const document = await ctx.db.get(args.id);
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    if (document.createdBy !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      lastModified: Date.now(),
+    });
+  },
+});
+
+export const togglePublic = mutation({
+  args: { id: v.id("documents") },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+
+    const document = await ctx.db.get(args.id);
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    if (document.createdBy !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      isPublic: !document.isPublic,
+      lastModified: Date.now(),
+    });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("documents"),
+    title: v.optional(v.string()),
+    content: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+
+    const document = await ctx.db.get(args.id);
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    if (document.createdBy !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const updates: Partial<Document> = {
+      lastModified: Date.now(),
     };
 
-    if (args.title !== undefined) updates.title = args.title;
-    if (args.content !== undefined) updates.content = args.content;
-    if (args.emoji !== undefined) updates.emoji = args.emoji;
-    if (args.coverImage !== undefined) updates.coverImage = args.coverImage;
+    if (args.title !== undefined) {
+      updates.title = args.title;
+    }
+    if (args.content !== undefined) {
+      updates.content = args.content;
+    }
+    if (args.isPublic !== undefined) {
+      updates.isPublic = args.isPublic;
+    }
 
-    await ctx.db.patch(args.documentId, updates);
+    await ctx.db.patch(args.id, updates);
+  },
+});
+
+export const deleteDocument = mutation({
+  args: { id: v.id("documents") },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+
+    const document = await ctx.db.get(args.id);
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    if (document.createdBy !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const getDocument = get;
+export const createDocument = create;
+export const updateDocument = update;
+
+export const getWorkspaceDocuments = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, { workspaceId }) => {
+    const userId = await getExistingUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .collect();
+
+    const visibleDocuments = documents.filter(
+      (doc) => doc.isPublic || doc.createdBy === userId
+    );
+
+    const withAuthor = await Promise.all(
+      visibleDocuments.map(async (doc) => {
+        const author = await ctx.db.get(doc.createdBy);
+        return {
+          ...doc,
+          author: author
+            ? {
+                name: author.name ?? undefined,
+                image: author.image ?? undefined,
+              }
+            : undefined,
+        };
+      })
+    );
+
+    return withAuthor.sort(sortByLastModifiedDesc);
   },
 });
 
 export const searchDocuments = query({
-  args: {
-    workspaceId: v.id("workspaces"),
-    query: v.string(),
-  },
-  handler: async (ctx, args) => {
-    try {
-      await requireActiveMembership(ctx, args.workspaceId);
-    } catch {
+  args: { workspaceId: v.id("workspaces"), query: v.string() },
+  handler: async (ctx, { workspaceId, query: rawQuery }) => {
+    const userId = await getExistingUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const trimmedQuery = rawQuery.trim();
+    if (!trimmedQuery) {
       return [];
     }
 
     const results = await ctx.db
       .query("documents")
       .withSearchIndex("search_documents", (q) =>
-        q.search("title", args.query).eq("workspaceId", args.workspaceId)
+        q.search("title", trimmedQuery).eq("workspaceId", workspaceId)
       )
       .take(20);
 
-    return results;
+    const visible = results.filter(
+      (doc) => doc.isPublic || doc.createdBy === userId
+    );
+
+    const withAuthor = await Promise.all(
+      visible.map(async (doc) => {
+        const author = await ctx.db.get(doc.createdBy);
+        return {
+          ...doc,
+          author: author
+            ? {
+                name: author.name ?? undefined,
+                image: author.image ?? undefined,
+              }
+            : undefined,
+        };
+      })
+    );
+
+    return withAuthor.sort(sortByLastModifiedDesc);
   },
 });
 
-export const togglePublic = mutation({
-  args: {
-    documentId: v.id("documents"),
-  },
-  handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
 
-    const document = await ctx.db.get(args.documentId);
-    if (!document) throw new Error("Document not found");
 
-    await requirePermission(ctx, document.workspaceId, PERMS.DOCUMENTS_MANAGE);
 
-    await ctx.db.patch(args.documentId, {
-      isPublic: !document.isPublic,
-    });
-  },
-});
 
-export const deleteDocument = mutation({
-  args: {
-    documentId: v.id("documents"),
-  },
-  handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-
-    const document = await ctx.db.get(args.documentId);
-    if (!document) throw new Error("Document not found");
-
-    // Allow if creator; otherwise require permission
-    if (document.createdBy !== userId) {
-      const allowed = await canPermission(ctx, document.workspaceId, PERMS.DOCUMENTS_DELETE);
-      if (!allowed) throw new Error("Not authorized to delete this document");
-    }
-
-    await ctx.db.delete(args.documentId);
-  },
-});

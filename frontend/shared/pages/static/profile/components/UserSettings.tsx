@@ -50,7 +50,7 @@ export function UserSettings() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-2xl">
+    <div className="container flex-col mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <User className="w-6 h-6" />

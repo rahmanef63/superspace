@@ -1,4 +1,4 @@
-"use client"
+﻿"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
@@ -34,13 +36,33 @@ interface WorkspaceSwitcherProps {
   isLoading?: boolean;
 }
 
-export function WorkspaceSwitcher({ workspaces, currentWorkspace, onWorkspaceSelect, isLoading = false }: WorkspaceSwitcherProps) {
+export function WorkspaceSwitcher({
+  workspaces,
+  currentWorkspace,
+  onWorkspaceSelect,
+  isLoading = false,
+}: WorkspaceSwitcherProps) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
-  const activeWorkspace = currentWorkspace ?? (mounted && workspaces.length > 0 ? workspaces[0] : undefined);
+  const activeWorkspace =
+    currentWorkspace ?? (mounted && workspaces.length > 0 ? workspaces[0] : undefined);
+  const activeWorkspaceId = activeWorkspace ? String(activeWorkspace.id) : "";
+
+  const handleWorkspaceValueChange = React.useCallback(
+    (value: string) => {
+      if (!value || value === activeWorkspaceId) {
+        return;
+      }
+      const next = workspaces.find((workspace) => String(workspace.id) === value);
+      if (next) {
+        onWorkspaceSelect(next);
+      }
+    },
+    [activeWorkspaceId, onWorkspaceSelect, workspaces],
+  );
 
   // Stable shell before hydration to avoid mismatches
   if (!mounted) {
@@ -51,7 +73,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace, onWorkspaceSel
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg border" />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">Workspace</span>
-              <span className="truncate text-xs">Loading…</span>
+              <span className="truncate text-xs">Loading...</span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -68,7 +90,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace, onWorkspaceSel
               <Loader2 className="size-4 animate-spin" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Loading workspaces…</span>
+              <span className="truncate font-semibold">Loading workspaces...</span>
               <span className="truncate text-xs">Please wait</span>
             </div>
           </SidebarMenuButton>
@@ -133,21 +155,37 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace, onWorkspaceSel
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Workspaces
             </DropdownMenuLabel>
-            {workspaces.map((workspace, index) => (
-              <DropdownMenuItem
-                key={workspace.id}
-                onClick={() => onWorkspaceSelect(workspace)}
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <workspace.logo className="size-4 shrink-0" />
-                </div>
-                {workspace.name}
-                <DropdownMenuShortcut>{index + 1}</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuRadioGroup
+              value={activeWorkspaceId}
+              onValueChange={handleWorkspaceValueChange}
+            >
+              {workspaces.map((workspace, index) => {
+                const workspaceValue = String(workspace.id);
+                return (
+                  <DropdownMenuRadioItem
+                    key={workspace.id}
+                    value={workspaceValue}
+                    className="gap-2 p-2"
+                  >
+                    <div className="flex size-6 items-center justify-center rounded-sm border">
+                      <workspace.logo className="size-4 shrink-0" />
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-medium">{workspace.name}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {workspace.plan}
+                      </span>
+                    </div>
+                    <DropdownMenuShortcut>{index + 1}</DropdownMenuShortcut>
+                  </DropdownMenuRadioItem>
+                );
+              })}
+            </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2" onClick={() => router.push("/dashboard/workspace") }>
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onSelect={() => router.push("/dashboard/workspace")}
+            >
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />
               </div>

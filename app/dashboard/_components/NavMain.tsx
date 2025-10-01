@@ -24,11 +24,8 @@ interface NavItem {
   description?: string
   icon?: ElementType
   isActive?: boolean
-  children?: {
-    id: string
-    title: string
-    url?: string
-  }[]
+  url?: string
+  children?: NavItem[]
 }
 
 interface NavMainProps {
@@ -50,61 +47,103 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
   console.log("[v0] NavMain received items:", items)
   console.log("[v0] NavMain using navItems:", navItems)
 
+  // Recursive function to render nested menu items
+  const renderNavItem = (item: NavItem, depth: number = 0): JSX.Element => {
+    const hasChildren = item.children && item.children.length > 0
+    const isActive = activeView === item.id
+
+    if (hasChildren) {
+      return (
+        <Collapsible
+          key={item.id}
+          asChild
+          defaultOpen={item.isActive || isActive}
+          className="group/collapsible"
+        >
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.description} isActive={isActive}>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {item.children?.map((subItem) => (
+                  <SidebarMenuSubItem key={subItem.id}>
+                    {subItem.children && subItem.children.length > 0 ? (
+                      // Nested child with more children - render as collapsible
+                      <Collapsible
+                        defaultOpen={subItem.isActive || activeView === subItem.id}
+                        className="group/nested-collapsible"
+                      >
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuSubButton>
+                            {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                            <span>{subItem.title}</span>
+                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/nested-collapsible:rotate-90" />
+                          </SidebarMenuSubButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="pl-4">
+                            {subItem.children?.map((nestedItem) => (
+                              <SidebarMenuSubButton key={nestedItem.id} asChild>
+                                <Link
+                                  href={nestedItem.url || `/dashboard/${item.id}/${subItem.id}/${nestedItem.id}`}
+                                  onClick={() => onViewChange?.(nestedItem.id)}
+                                  className={activeView === nestedItem.id ? "bg-accent" : ""}
+                                >
+                                  {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
+                                  <span>{nestedItem.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ) : (
+                      // Leaf node - render as link
+                      <SidebarMenuSubButton asChild>
+                        <Link
+                          href={subItem.url || `/dashboard/${item.id}/${subItem.id}`}
+                          onClick={() => onViewChange?.(subItem.id)}
+                          className={activeView === subItem.id ? "bg-accent" : ""}
+                        >
+                          {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                          <span>{subItem.title}</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    )}
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
+      )
+    }
+
+    return (
+      <SidebarMenuItem key={item.id}>
+        <SidebarMenuButton asChild tooltip={item.description} isActive={isActive}>
+          <Link
+            href={item.url || `/dashboard/${item.id}`}
+            onClick={() => onViewChange?.(item.id)}
+          >
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {navItems.map((item) => {
-          const hasChildren = item.children && item.children.length > 0
-
-          if (hasChildren) {
-            return (
-              <Collapsible
-                key={item.id}
-                asChild
-                defaultOpen={item.isActive || activeView === item.id}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.description} isActive={activeView === item.id}>
-                      {item.icon && <item.icon />}
-                      <span>{item.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.children?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.id}>
-                          <SidebarMenuSubButton asChild>
-                            <Link
-                              href={subItem.url || `/dashboard/${item.id}/${subItem.id}`}
-                              onClick={() => onViewChange?.(subItem.id)}
-                            >
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            )
-          }
-
-          return (
-            <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton asChild tooltip={item.description} isActive={activeView === item.id}>
-                <Link href={`/dashboard/${item.id}`} onClick={() => onViewChange?.(item.id)}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )
-        })}
+        {navItems.map((item) => renderNavItem(item))}
       </SidebarMenu>
     </SidebarGroup>
   )

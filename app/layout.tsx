@@ -1,6 +1,7 @@
-import type React from "react"
+﻿import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
@@ -8,16 +9,6 @@ import { Toaster } from "sonner"
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { DebugInfo } from "@/components/debug-info"
 import { SafeClerkProvider } from "@/components/SafeClerkProvider"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -38,7 +29,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased overscroll-none`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased overscroll-none`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SafeClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
             <ConvexClientProvider>

@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { MenuItemForm } from "./MenuItemForm";
 import { DragDropMenuTree } from "./DragDropMenuTree";
 import { MenuDisplay } from "./MenuDisplay";
 import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
-import { Plus, Search, Trash2, Edit, Download, Check } from "lucide-react";
+import { Plus, Search, Trash2, Edit, Download, Check, Copy, Share, MoreHorizontal, FileInput } from "lucide-react";
 import { iconFromName } from "@/frontend/shared/pages/icons";
 
 interface MenuStoreProps {
@@ -39,13 +43,21 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingItemId, setEditingItemId] = useState<Id<"menuItems"> | undefined>();
   const [viewMode, setViewMode] = useState<'tree' | 'grid'>('tree');
-  const [activeTab, setActiveTab] = useState<'installed' | 'available'>('installed');
+  const [activeTab, setActiveTab] = useState<'installed' | 'available' | 'import'>('installed');
   const [installingFeatures, setInstallingFeatures] = useState<Set<string>>(new Set());
+  const [renameDialog, setRenameDialog] = useState<{ isOpen: boolean; item?: MenuItem; newName: string }>({ isOpen: false, newName: '' });
+  const [shareDialog, setShareDialog] = useState<{ isOpen: boolean; shareableId?: string }>({ isOpen: false });
+  const [importMenuId, setImportMenuId] = useState('');
+  const [importing, setImporting] = useState(false);
 
   const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
   const availableFeatures = useQuery(api.menu.menuItems.getAvailableFeatureMenus, { workspaceId });
   const deleteMenuItem = useMutation(api.menu.menuItems.deleteMenuItem);
   const installFeatureMenus = useMutation(api.menu.menuItems.installFeatureMenus);
+  const renameMenuItem = useMutation(api.menu.menuItems.renameMenuItem);
+  const duplicateMenuItem = useMutation(api.menu.menuItems.duplicateMenuItem);
+  const shareMenuItem = useMutation(api.menu.menuItems.shareMenuItem);
+  const importMenuFromShareableId = useMutation(api.menu.menuItems.importMenuFromShareableId);
 
   const filteredItems = (menuItems as MenuItem[] | undefined)?.filter((item: MenuItem) => {
     if (!searchQuery) return true;
@@ -99,6 +111,75 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
     }
   };
 
+  const handleRenameItem = async (item: MenuItem) => {
+    setRenameDialog({ isOpen: true, item, newName: item.name });
+  };
+
+  const handleRenameConfirm = async () => {
+    if (!renameDialog.item || !renameDialog.newName.trim()) return;
+
+    try {
+      await renameMenuItem({
+        menuItemId: renameDialog.item._id,
+        name: renameDialog.newName.trim()
+      });
+      setRenameDialog({ isOpen: false, newName: '' });
+      toast.success('Menu item renamed successfully');
+    } catch (error) {
+      console.error('Failed to rename menu item:', error);
+      toast.error('Failed to rename menu item');
+    }
+  };
+
+  const handleDuplicateItem = async (item: MenuItem) => {
+    try {
+      await duplicateMenuItem({ menuItemId: item._id });
+      toast.success('Menu item duplicated successfully');
+    } catch (error) {
+      console.error('Failed to duplicate menu item:', error);
+      toast.error('Failed to duplicate menu item');
+    }
+  };
+
+  const handleShareItem = async (item: MenuItem) => {
+    try {
+      const result = await shareMenuItem({ menuItemId: item._id });
+      setShareDialog({ isOpen: true, shareableId: result.shareableId });
+    } catch (error) {
+      console.error('Failed to share menu item:', error);
+      toast.error('Failed to share menu item');
+    }
+  };
+
+  const handleCopyShareableId = () => {
+    if (shareDialog.shareableId) {
+      navigator.clipboard.writeText(shareDialog.shareableId);
+      toast.success('Shareable ID copied to clipboard');
+    }
+  };
+
+  const handleImportMenu = async () => {
+    if (!importMenuId.trim()) {
+      toast.error('Please enter a menu ID');
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const result = await importMenuFromShareableId({
+        workspaceId,
+        shareableId: importMenuId.trim()
+      });
+      setImportMenuId('');
+      toast.success(`Menu "${result.sourceName}" imported successfully`);
+    } catch (error) {
+      console.error('Failed to import menu:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to import menu');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -125,10 +206,11 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'installed' | 'available')}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'installed' | 'available' | 'import')}>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="installed">Installed Menus</TabsTrigger>
             <TabsTrigger value="available">Available Features</TabsTrigger>
+            <TabsTrigger value="import">Import Menu</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -201,23 +283,39 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                               <CardTitle className="text-base">{item.name}</CardTitle>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditItem(item._id)}
-                                >
-                                  <Edit className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteItem(item._id)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRenameItem(item)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    Duplicate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleShareItem(item)}>
+                                    <Share className="w-4 h-4 mr-2" />
+                                    Share
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteItem(item._id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </CardHeader>
                           <CardContent>
@@ -338,8 +436,124 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="import" className="flex-1 overflow-y-auto mt-0">
+            <div className="p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2">Import Menu</h2>
+                <p className="text-muted-foreground">
+                  Import a menu from another workspace using a shareable menu ID.
+                </p>
+              </div>
+
+              <div className="max-w-md space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="menuId">Menu ID</Label>
+                  <Input
+                    id="menuId"
+                    placeholder="Enter shareable menu ID..."
+                    value={importMenuId}
+                    onChange={(e) => setImportMenuId(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleImportMenu}
+                  disabled={!importMenuId.trim() || importing}
+                  className="w-full"
+                >
+                  {importing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <FileInput className="w-4 h-4 mr-2" />
+                      Import Menu
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="mt-8 p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">How to get a Menu ID:</h3>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>Go to the workspace that has the menu you want</li>
+                  <li>Find the menu item in the Installed Menus tab</li>
+                  <li>Click the menu button (⋯) and select "Share"</li>
+                  <li>Copy the shareable ID and paste it here</li>
+                </ol>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Rename Dialog */}
+      <Dialog open={renameDialog.isOpen} onOpenChange={(open) => setRenameDialog(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Menu Item</DialogTitle>
+            <DialogDescription>
+              Enter a new name for "{renameDialog.item?.name}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newName">New Name</Label>
+              <Input
+                id="newName"
+                value={renameDialog.newName}
+                onChange={(e) => setRenameDialog(prev => ({ ...prev, newName: e.target.value }))}
+                placeholder="Enter new name..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameDialog({ isOpen: false, newName: '' })}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameConfirm} disabled={!renameDialog.newName.trim()}>
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialog.isOpen} onOpenChange={(open) => setShareDialog(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Menu Item</DialogTitle>
+            <DialogDescription>
+              Share this menu item with other workspaces using the ID below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Shareable Menu ID</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={shareDialog.shareableId || ''}
+                  readOnly
+                  className="font-mono text-sm"
+                />
+                <Button onClick={handleCopyShareableId} size="sm">
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Anyone with this ID can import this menu item into their workspace.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShareDialog({ isOpen: false })}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

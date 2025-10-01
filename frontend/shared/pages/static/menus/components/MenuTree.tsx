@@ -1,9 +1,26 @@
+"use client"
+
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronDown, Folder, FileText, Hash } from "lucide-react";
+import {
+  createOnDropHandler,
+  dragAndDropFeature,
+  hotkeysCoreFeature,
+  keyboardDragAndDropFeature,
+  selectionFeature,
+  syncDataLoaderFeature,
+} from "@headless-tree/core";
+import { AssistiveTreeDescription, useTree } from "@headless-tree/react";
+import { FolderIcon, FolderOpenIcon, FileText, Hash } from "lucide-react";
+
+import {
+  Tree,
+  TreeDragLine,
+  TreeItem,
+  TreeItemLabel,
+} from "@/components/tree";
 
 interface MenuTreeProps {
   workspaceId: Id<"workspaces">;
@@ -12,133 +29,161 @@ interface MenuTreeProps {
   showActions?: boolean;
 }
 
-interface MenuItemWithChildren {
+interface MenuItemData {
   _id: Id<"menuItems">;
   name: string;
   type: string;
   icon?: string;
   parentId?: Id<"menuItems">;
   order: number;
-  children: MenuItemWithChildren[];
+  children?: Id<"menuItems">[];
 }
 
-export function MenuTree({ 
-  workspaceId, 
-  onItemSelect, 
+export function MenuTree({
+  workspaceId,
+  onItemSelect,
   selectedItemId,
   showActions = false
 }: MenuTreeProps) {
-  const [expandedItems, setExpandedItems] = useState<Set<Id<"menuItems">>>(new Set());
-  
   const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
 
-  const buildTree = (items: any[]): MenuItemWithChildren[] => {
-    const itemMap = new Map();
-    const rootItems: MenuItemWithChildren[] = [];
+  // Build items map for headless-tree
+  const itemsMap: Record<string, MenuItemData> = {};
+  const rootItemIds: Id<"menuItems">[] = [];
 
-    // Initialize all items
-    items.forEach(item => {
-      itemMap.set(item._id, { ...item, children: [] });
+  if (menuItems) {
+    // First pass: create map and identify children
+    menuItems.forEach((item: any) => {
+      itemsMap[item._id] = {
+        ...item,
+        children: []
+      };
     });
 
-    // Build tree structure
-    items.forEach(item => {
-      const treeItem = itemMap.get(item._id);
-      if (item.parentId && itemMap.has(item.parentId)) {
-        itemMap.get(item.parentId).children.push(treeItem);
+    // Second pass: build parent-child relationships
+    menuItems.forEach((item: any) => {
+      if (item.parentId && itemsMap[item.parentId]) {
+        itemsMap[item.parentId].children!.push(item._id);
       } else {
-        rootItems.push(treeItem);
+        rootItemIds.push(item._id);
       }
     });
 
-    // Sort by order
-    const sortByOrder = (items: MenuItemWithChildren[]) => {
-      items.sort((a, b) => a.order - b.order);
-      items.forEach(item => sortByOrder(item.children));
-    };
-    
-    sortByOrder(rootItems);
-    return rootItems;
-  };
+    // Sort children by order
+    Object.values(itemsMap).forEach(item => {
+      if (item.children && item.children.length > 0) {
+        item.children.sort((a, b) => {
+          const orderA = itemsMap[a]?.order ?? 0;
+          const orderB = itemsMap[b]?.order ?? 0;
+          return orderA - orderB;
+        });
+      }
+    });
 
-  const toggleExpanded = (itemId: Id<"menuItems">) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId);
-    } else {
-      newExpanded.add(itemId);
+    // Sort root items by order
+    rootItemIds.sort((a, b) => {
+      const orderA = itemsMap[a]?.order ?? 0;
+      const orderB = itemsMap[b]?.order ?? 0;
+      return orderA - orderB;
+    });
+  }
+
+  const indent = 20;
+
+  const tree = useTree<MenuItemData>({
+    initialState: {
+      expandedItems: [],
+      selectedItems: selectedItemId ? [selectedItemId] : [],
+    },
+    indent,
+    rootItemId: "root",
+    getItemName: (item) => item.getItemData().name,
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    canReorder: showActions,
+    onPrimaryAction: (item) => {
+      const itemId = item.getId() as Id<"menuItems">;
+      if (itemId !== "root") {
+        onItemSelect?.(itemId);
+      }
+    },
+    dataLoader: {
+      getItem: (itemId) => {
+        if (itemId === "root") {
+          return {
+            _id: "root" as Id<"menuItems">,
+            name: "Root",
+            type: "folder",
+            order: 0,
+            children: rootItemIds,
+          };
+        }
+        return itemsMap[itemId];
+      },
+      getChildren: (itemId) => {
+        if (itemId === "root") {
+          return rootItemIds;
+        }
+        return itemsMap[itemId]?.children ?? [];
+      },
+    },
+    features: [
+      syncDataLoaderFeature,
+      selectionFeature,
+      hotkeysCoreFeature,
+      ...(showActions ? [dragAndDropFeature, keyboardDragAndDropFeature] : []),
+    ],
+  });
+
+  const getIcon = (type: string, isFolder: boolean, isExpanded: boolean) => {
+    if (isFolder) {
+      return isExpanded ? (
+        <FolderOpenIcon className="text-muted-foreground size-4" />
+      ) : (
+        <FolderIcon className="text-muted-foreground size-4" />
+      );
     }
-    setExpandedItems(newExpanded);
-  };
 
-  const getIcon = (type: string) => {
     switch (type) {
-      case 'folder':
-        return <Folder className="w-4 h-4" />;
       case 'document':
-        return <FileText className="w-4 h-4" />;
+        return <FileText className="text-muted-foreground size-4" />;
       default:
-        return <Hash className="w-4 h-4" />;
+        return <Hash className="text-muted-foreground size-4" />;
     }
-  };
-
-  const renderTreeItem = (item: MenuItemWithChildren, level: number = 0) => {
-    const isExpanded = expandedItems.has(item._id);
-    const hasChildren = item.children.length > 0;
-    const isSelected = selectedItemId === item._id;
-
-    return (
-      <div key={item._id} className="select-none">
-        <div
-          className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 ${
-            isSelected ? 'bg-blue-100 text-blue-900' : ''
-          }`}
-          style={{ paddingLeft: `${level * 20 + 8}px` }}
-          onClick={() => onItemSelect?.(item._id)}
-        >
-          {hasChildren && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-4 h-4 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpanded(item._id);
-              }}
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-3 h-3" />
-              ) : (
-                <ChevronRight className="w-3 h-3" />
-              )}
-            </Button>
-          )}
-          
-          {!hasChildren && <div className="w-4" />}
-          
-          {getIcon(item.type)}
-          <span className="text-sm">{item.name}</span>
-        </div>
-        
-        {hasChildren && isExpanded && (
-          <div>
-            {item.children.map(child => renderTreeItem(child, level + 1))}
-          </div>
-        )}
-      </div>
-    );
   };
 
   if (!menuItems) {
     return <div className="p-4 text-center text-gray-500">Loading...</div>;
   }
 
-  const tree = buildTree(menuItems);
-
   return (
-    <div className="space-y-1">
-      {tree.map(item => renderTreeItem(item))}
-      {tree.length === 0 && (
+    <div className="flex h-full flex-col">
+      <Tree indent={indent} tree={tree}>
+        <AssistiveTreeDescription tree={tree} />
+        {tree.getItems().map((item) => {
+          // Skip rendering the root item itself
+          if (item.getId() === "root") {
+            return null;
+          }
+
+          const itemData = item.getItemData();
+          const isFolder = item.isFolder();
+          const isExpanded = item.isExpanded();
+
+          return (
+            <TreeItem key={item.getId()} item={item}>
+              <TreeItemLabel>
+                <span className="flex items-center gap-2">
+                  {getIcon(itemData.type, isFolder, isExpanded)}
+                  {item.getItemName()}
+                </span>
+              </TreeItemLabel>
+            </TreeItem>
+          );
+        })}
+        {showActions && <TreeDragLine />}
+      </Tree>
+
+      {Object.keys(itemsMap).length === 0 && (
         <div className="p-4 text-center text-gray-500">
           No menu items found
         </div>

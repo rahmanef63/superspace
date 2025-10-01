@@ -1142,3 +1142,182 @@ export const updateMenuOrder = mutation({
     return args.menuItemId
   },
 })
+
+// Rename menu item
+export const renameMenuItem = mutation({
+  args: {
+    menuItemId: v.id("menuItems"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const menuItem = await ctx.db.get(args.menuItemId)
+    if (!menuItem) throw new Error("Menu item not found")
+    await requirePermission(ctx, menuItem.workspaceId, PERMS.MANAGE_MENUS)
+
+    await ctx.db.patch(args.menuItemId, {
+      name: args.name,
+    })
+
+    return args.menuItemId
+  },
+})
+
+// Duplicate menu item
+export const duplicateMenuItem = mutation({
+  args: {
+    menuItemId: v.id("menuItems"),
+    newName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const menuItem = await ctx.db.get(args.menuItemId)
+    if (!menuItem) throw new Error("Menu item not found")
+    const { membership } = await requirePermission(ctx, menuItem.workspaceId, PERMS.MANAGE_MENUS)
+
+    // Get next order number
+    const existingItems = await ctx.db
+      .query("menuItems")
+      .withIndex("by_workspace_parent", (q) =>
+        q.eq("workspaceId", menuItem.workspaceId).eq("parentId", menuItem.parentId ?? undefined)
+      )
+      .collect()
+    const maxOrder = Math.max(...existingItems.map(item => item.order), -1)
+
+    // Create duplicate with new name and slug
+    const baseName = args.newName || `${menuItem.name} (Copy)`
+    const baseSlug = `${menuItem.slug}-copy`
+
+    // Ensure unique slug
+    let uniqueSlug = baseSlug
+    let counter = 1
+    while (true) {
+      const existing = await ctx.db
+        .query("menuItems")
+        .withIndex("by_workspace", (q) => q.eq("workspaceId", menuItem.workspaceId))
+        .filter((q) => q.eq(q.field("slug"), uniqueSlug))
+        .first()
+      if (!existing) break
+      uniqueSlug = `${baseSlug}-${counter}`
+      counter++
+    }
+
+    const duplicateId = await ctx.db.insert("menuItems", {
+      workspaceId: menuItem.workspaceId,
+      menuSetId: menuItem.menuSetId,
+      parentId: menuItem.parentId,
+      name: baseName,
+      slug: uniqueSlug,
+      type: menuItem.type,
+      icon: menuItem.icon,
+      path: menuItem.path,
+      component: menuItem.component,
+      order: maxOrder + 1,
+      isVisible: menuItem.isVisible,
+      visibleForRoleIds: menuItem.visibleForRoleIds,
+      metadata: menuItem.metadata,
+      createdBy: membership?.userId as any,
+    })
+
+    return duplicateId
+  },
+})
+
+// Share menu item (generate shareable menu ID)
+export const shareMenuItem = mutation({
+  args: {
+    menuItemId: v.id("menuItems"),
+  },
+  handler: async (ctx, args) => {
+    const menuItem = await ctx.db.get(args.menuItemId)
+    if (!menuItem) throw new Error("Menu item not found")
+    await requirePermission(ctx, menuItem.workspaceId, PERMS.MANAGE_MENUS)
+
+    // Generate a shareable ID that includes workspace and menu item info
+    const shareableId = `${menuItem.workspaceId}:${menuItem._id}:${menuItem.slug}`
+
+    return {
+      shareableId,
+      menuItemId: menuItem._id,
+      name: menuItem.name,
+      slug: menuItem.slug,
+    }
+  },
+})
+
+// Import menu item from shareable ID
+export const importMenuFromShareableId = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    shareableId: v.string(),
+    newName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
+
+    try {
+      // Parse shareable ID
+      const [sourceWorkspaceId, sourceMenuItemId, sourceSlug] = args.shareableId.split(':')
+      if (!sourceWorkspaceId || !sourceMenuItemId || !sourceSlug) {
+        throw new Error("Invalid shareable ID format")
+      }
+
+      // Get source menu item
+      const sourceMenuItem = await ctx.db.get(sourceMenuItemId as Id<"menuItems">)
+      if (!sourceMenuItem) {
+        throw new Error("Source menu item not found")
+      }
+
+      // Check if user has access to source workspace (optional, could be public sharing)
+      // For now, allow importing from any workspace
+
+      // Generate unique slug for target workspace
+      const baseSlug = sourceSlug
+      let uniqueSlug = baseSlug
+      let counter = 1
+      while (true) {
+        const existing = await ctx.db
+          .query("menuItems")
+          .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+          .filter((q) => q.eq(q.field("slug"), uniqueSlug))
+          .first()
+        if (!existing) break
+        uniqueSlug = `${baseSlug}-${counter}`
+        counter++
+      }
+
+      // Get next order number
+      const existingItems = await ctx.db
+        .query("menuItems")
+        .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+        .collect()
+      const maxOrder = Math.max(...existingItems.map(item => item.order), -1)
+
+      // Create imported menu item
+      const importedId = await ctx.db.insert("menuItems", {
+        workspaceId: args.workspaceId,
+        menuSetId: undefined, // Will be assigned to default menu set if exists
+        parentId: undefined, // Import at root level
+        name: args.newName || `${sourceMenuItem.name} (Imported)`,
+        slug: uniqueSlug,
+        type: sourceMenuItem.type,
+        icon: sourceMenuItem.icon,
+        path: sourceMenuItem.path,
+        component: sourceMenuItem.component,
+        order: maxOrder + 1,
+        isVisible: true,
+        visibleForRoleIds: [], // Reset permissions for new workspace
+        metadata: {
+          ...sourceMenuItem.metadata,
+        },
+        createdBy: membership?.userId as any,
+      })
+
+      return {
+        menuItemId: importedId,
+        imported: true,
+        sourceName: sourceMenuItem.name,
+      }
+    } catch (error) {
+      throw new Error(`Failed to import menu: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  },
+})

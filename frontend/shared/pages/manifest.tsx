@@ -243,11 +243,11 @@ export function AppContent({ workspaceId, activeView }: AppContentProps) {
     DEFAULT_PAGE_MANIFEST.find((p) => p.id === activeView) ?? DEFAULT_PAGE_MANIFEST.find((p) => p.id === "overview")
 
   const menuItem = useQuery(
-    api.menu.menuItems.getMenuItemBySlug,
+    (api as any)["menu/store/menuItems"].getMenuItemBySlug,
     workspaceId ? { workspaceId: workspaceId as Id<"workspaces">, slug: activeView } : "skip",
   ) as unknown as { component?: string; _id?: Id<"menuItems"> } | null | undefined
 
-  const setMenuComponent = useMutation(api.menu.menuItems.setMenuItemComponent)
+  const setMenuComponent = useMutation((api as any)["menu/store/menuItems"].setMenuItemComponent)
   const syncRef = useRef<string | null>(null)
 
   useEffect(() => {

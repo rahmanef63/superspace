@@ -28,8 +28,9 @@ export function DocumentsPageManagementView({
   const manager = useDocumentsManager({ workspaceId });
 
   return (
-    <div className="flex h-full bg-muted/30">
-      <div className="w-16 bg-gray-900 flex flex-col items-center py-4 space-y-4 text-gray-400">
+    <div className="flex h-full bg-muted;
+">
+      <div className="flex flex-col bg-sidebar h-full gap-4 md:gap-6">
         <SidebarIcon
           icon={FileText}
           isActive={appMode === "documents"}
@@ -54,7 +55,7 @@ export function DocumentsPageManagementView({
       <div className="flex-1 flex">
         {appMode === "documents" && (
           <div className="flex flex-1">
-            <div className="w-[360px] border-r bg-white">
+            <div className="w-[360px] border-r  bg-background ">
               <DocumentsBrowser
                 documents={manager.documents}
                 filteredDocuments={manager.filteredDocuments}
@@ -79,7 +80,7 @@ export function DocumentsPageManagementView({
                   className="w-full"
                 />
               ) : (
-                <div className="flex-1 flex items-center justify-center bg-white">
+                <div className="flex-1 flex items-center justify-center  bg-background">
                   <div className="text-center space-y-3">
                     <FileText className="w-16 h-16 text-gray-300 mx-auto" />
                     <h2 className="text-xl font-semibold text-gray-900">Welcome to your workspace</h2>

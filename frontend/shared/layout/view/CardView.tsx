@@ -47,10 +47,10 @@ export function CardView<T>({
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="truncate font-semibold text-gray-900">{getPrimary(row)}</div>
                 {card?.subtitle && (
-                  <div className="truncate text-sm text-gray-500">{card.subtitle(row)}</div>
+                  <div className="truncate text-sm text-muted-foreground">{card.subtitle(row)}</div>
                 )}
               </div>
-              {card?.extra && <div className="ml-auto text-sm text-gray-500">{card.extra(row)}</div>}
+              {card?.extra && <div className="ml-auto text-sm text-muted-foreground">{card.extra(row)}</div>}
             </div>
 
             {visibleColumns.length > 1 && (

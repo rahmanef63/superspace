@@ -68,32 +68,32 @@ export function TableView<T>({
       </div>
 
       <div className="hidden overflow-x-auto sm:block">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-muted">
+          <thead >
             <tr>
               {columns.map((c) => (
                 <th
                   key={c.id}
-                  className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                  className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide"
                   style={c.width ? { width: c.width } : undefined}
                 >
                   {c.header as ReactNode}
                 </th>
               ))}
               {hasActions && (
-                <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-background">
+          <tbody className="divide-y divide-muted bg-background">
             {data.map((row) => (
-              <tr key={String(getId(row))} className="hover:bg-gray-50">
+              <tr key={String(getId(row))} className="hover:bg-gray-50 text-background">
                 {columns.map((c) => (
                   <td
                     key={c.id}
-                    className={`px-4 py-2 text-sm text-gray-700 ${c.className || ""}`.trim()}
+                    className={`px-4 py-2 text-md text-foreground ${c.className || ""}`.trim()}
                   >
                     {resolveValue(c, row) as ReactNode}
                   </td>

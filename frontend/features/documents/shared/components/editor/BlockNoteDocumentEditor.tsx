@@ -84,7 +84,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
   const canEdit = userId === document.createdBy;
 
   return (
-    <div className={cn("h-full flex flex-col bg-white", className)}>
+    <div className={cn("h-full flex flex-col  bg-background", className)}>
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3 flex-1">
@@ -112,7 +112,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
                       setIsEditingTitle(false);
                     }
                   }}
-                  className="text-2xl font-bold text-gray-900 bg-transparent border-none outline-none flex-1"
+                  className="text-2xl font-bold text-foreground bg-transparent border-none outline-none flex-1"
                   autoFocus
                 />
                 <button
@@ -124,7 +124,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
               </div>
             ) : (
               <div className="flex items-center gap-2 flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">{document.title}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{document.title}</h1>
                 {canEdit && (
                   <button
                     onClick={() => setIsEditingTitle(true)}
@@ -163,7 +163,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
           </div>
         </div>
 
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           Last modified: {formatRelativeTime(document.lastModified ?? document._creationTime)}
         </div>
       </div>
@@ -194,7 +194,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center text-red-600">
                         <p>Error loading editor</p>
-                        <p className="text-sm text-gray-500">Check console for details</p>
+                        <p className="text-sm text-muted-foreground">Check console for details</p>
                       </div>
                     </div>
                   );

@@ -58,7 +58,7 @@ export function MemberList({ workspaceId }: { workspaceId: Id<"workspaces"> }) {
             </div>
             <div>
               <div className="font-medium">{member.user?.name || "Unknown User"}</div>
-              <div className="text-sm text-gray-500">{member.user?.email}</div>
+              <div className="text-sm text-muted-foreground">{member.user?.email}</div>
               {member.status !== "active" && (
                 <div className="mt-1 inline-block text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
                   {member.status}

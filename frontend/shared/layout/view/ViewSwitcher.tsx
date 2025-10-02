@@ -59,7 +59,7 @@ export function ViewSwitcher<T>({
   const content = (() => {
     if (!filtered || filtered.length === 0) {
       return (
-        <div className="rounded-lg border border-dashed border-gray-200 bg-background p-8 text-center text-sm text-gray-500">
+        <div className="rounded-lg border border-dashed border-gray-200 bg-background p-8 text-center text-sm text-muted-foreground">
           {emptyState || "No data"}
         </div>
       );
@@ -104,7 +104,7 @@ export function ViewSwitcher<T>({
 
   return (
     <div className={["space-y-4", className].filter(Boolean).join(" ")}>
-      <div className="rounded-lg border border-gray-200 bg-background p-4">
+      <div className="rounded-lg border border-gray-500 bg-background p-4">
         <ViewToolbar
           mode={mode}
           setMode={setMode}

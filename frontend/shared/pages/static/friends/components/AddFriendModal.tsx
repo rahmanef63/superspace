@@ -125,7 +125,7 @@ export function AddFriendModal({ workspaceId, onClose }: AddFriendModalProps) {
                       </span>
                       <Building2 className="w-3 h-3 text-blue-500" />
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {member.role?.name || "Member"}
                     </div>
                   </div>

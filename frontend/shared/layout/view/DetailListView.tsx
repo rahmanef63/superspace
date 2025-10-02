@@ -51,7 +51,7 @@ export function DetailListView<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-200 bg-background p-6 text-center text-sm text-gray-500">
+      <div className="rounded-lg border border-dashed border-gray-200 bg-background p-6 text-center text-sm text-muted-foreground">
         No data
       </div>
     );

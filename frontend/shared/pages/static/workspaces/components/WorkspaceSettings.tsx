@@ -75,7 +75,7 @@ export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
   if (!workspace) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-2xl space-y-6">
+    <div className="flex-col justify-center items-center mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold">Workspace Settings</h1>
         <p className="text-muted-foreground">Manage your workspace configuration</p>

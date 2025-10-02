@@ -29,8 +29,8 @@ export function DragDropMenuTree({
   const [expandedItems, setExpandedItems] = useState<Set<Id<"menuItems">>>(new Set());
   const [draggedItem, setDraggedItem] = useState<Id<"menuItems"> | null>(null);
   
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
-  const updateMenuItem = useMutation(api.menu.menuItems.updateMenuItem);
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
+  const updateMenuItem = useMutation((api as any)["menu/store/menuItems"].updateMenuItem);
 
   const buildTree = (items: any[]): MenuItemWithChildren[] => {
     const itemMap = new Map();

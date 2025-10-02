@@ -1,9 +1,9 @@
 import { v } from "convex/values"
-import { query, mutation, action } from "../_generated/server"
-import { api } from "../_generated/api"
-import type { Id } from "../_generated/dataModel"
-import { requirePermission, requireActiveMembership, resolveCandidateUserIds } from "../auth/helpers"
-import { PERMS } from "../workspace/permissions"
+import { query, mutation, action } from "../../_generated/server"
+import { api } from "../../_generated/api"
+import type { Id } from "../../_generated/dataModel"
+import { requirePermission, requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 
 // Get workspace menu items
 export const getWorkspaceMenuItems = query({
@@ -506,13 +506,13 @@ export const syncMenuMappings = action({
     // Build a set of known componentIds from defaults
     const known = new Set(DEFAULT_MENU_ITEMS.map((d) => d.component))
 
-    const items = await runQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId: args.workspaceId })
+    const items = await runQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId: args.workspaceId })
     for (const item of items as any[]) {
       if (item?.component && !known.has(item.component)) {
         // Try to fallback by slug in defaults
         const def = DEFAULT_MENU_ITEMS.find((d) => d.slug === item.slug)
         if (def?.component) {
-          await runMutation(api.menu.menuItems.setMenuItemComponent, {
+          await runMutation((api as any)["menu/store/menuItems"].setMenuItemComponent, {
             workspaceId: args.workspaceId,
             slug: item.slug,
             component: def.component,

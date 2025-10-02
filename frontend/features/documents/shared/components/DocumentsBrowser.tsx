@@ -63,7 +63,7 @@ export function DocumentsBrowser({
       <div className="p-6 border-b bg-background space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+            <h1 className="text-2xl font-bold text-foreground">Documents</h1>
             <p className="text-gray-600">
               {stats.total} total | {stats.publicCount} public | {stats.privateCount} private
             </p>

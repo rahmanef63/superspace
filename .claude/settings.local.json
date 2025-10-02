@@ -4,7 +4,9 @@
       "Bash(npm run dev:*)",
       "Bash(npm run typecheck:*)",
       "Bash(npm run:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(npx convex dev:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

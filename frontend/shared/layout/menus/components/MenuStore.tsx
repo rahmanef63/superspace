@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { MenuItemForm } from "./MenuItemForm";
 import { DragDropMenuTree } from "./DragDropMenuTree";
 import { MenuDisplay } from "./MenuDisplay";
 import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
-import { Plus, Search, Trash2, Edit, Download, Check } from "lucide-react";
+import { Plus, Search, Trash2, Edit, Download, Check, Copy, MoreHorizontal, Share } from "lucide-react";
 import { iconFromName } from "@/frontend/shared/pages/icons";
 
 interface MenuStoreProps {
@@ -23,6 +27,7 @@ interface MenuItem {
   name: string;
   slug: string;
   type: string;
+  icon?: string;
   path?: string;
   metadata?: {
     description?: string;
@@ -30,7 +35,17 @@ interface MenuItem {
     category?: string;
     lastUpdated?: number;
     previousVersion?: string;
+    color?: string;
   };
+}
+
+interface AvailableFeature {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  version?: string;
+  category?: string;
 }
 
 export function MenuStore({ workspaceId }: MenuStoreProps) {
@@ -41,11 +56,21 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const [viewMode, setViewMode] = useState<'tree' | 'grid'>('tree');
   const [activeTab, setActiveTab] = useState<'installed' | 'available'>('installed');
   const [installingFeatures, setInstallingFeatures] = useState<Set<string>>(new Set());
+  const [renameDialog, setRenameDialog] = useState<{ isOpen: boolean; item?: MenuItem; newName: string }>({
+    isOpen: false,
+    newName: ''
+  });
+  const [shareDialog, setShareDialog] = useState<{ isOpen: boolean; shareableId?: string }>({
+    isOpen: false
+  });
 
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
-  const availableFeatures = useQuery(api.menu.menuItems.getAvailableFeatureMenus, { workspaceId });
-  const deleteMenuItem = useMutation(api.menu.menuItems.deleteMenuItem);
-  const installFeatureMenus = useMutation(api.menu.menuItems.installFeatureMenus);
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
+  const availableFeatures = useQuery((api as any)["menu/store/menuItems"].getAvailableFeatureMenus, { workspaceId });
+  const deleteMenuItem = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
+  const installFeatureMenus = useMutation((api as any)["menu/store/menuItems"].installFeatureMenus);
+  const renameMenuItem = useMutation((api as any)["menu/store/menuItems"].renameMenuItem);
+  const duplicateMenuItem = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
+  const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenuItem);
 
   const filteredItems = (menuItems as MenuItem[] | undefined)?.filter((item: MenuItem) => {
     if (!searchQuery) return true;
@@ -84,18 +109,67 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const handleInstallFeature = async (featureSlug: string) => {
     setInstallingFeatures(prev => new Set(prev).add(featureSlug));
     try {
-      await installFeatureMenus({ 
-        workspaceId, 
-        featureSlugs: [featureSlug] 
+      await installFeatureMenus({
+        workspaceId,
+        featureSlugs: [featureSlug]
       });
+      toast.success('Feature installed successfully');
     } catch (error) {
       console.error('Failed to install feature:', error);
+      toast.error('Failed to install feature');
     } finally {
       setInstallingFeatures(prev => {
         const newSet = new Set(prev);
         newSet.delete(featureSlug);
         return newSet;
       });
+    }
+  };
+
+  const handleRenameItem = async (item: MenuItem) => {
+    setRenameDialog({ isOpen: true, item, newName: item.name });
+  };
+
+  const handleRenameConfirm = async () => {
+    if (!renameDialog.item || !renameDialog.newName.trim()) return;
+
+    try {
+      await renameMenuItem({
+        menuItemId: renameDialog.item._id,
+        name: renameDialog.newName.trim()
+      });
+      setRenameDialog({ isOpen: false, newName: '' });
+      toast.success('Menu item renamed successfully');
+    } catch (error) {
+      console.error('Failed to rename menu item:', error);
+      toast.error('Failed to rename menu item');
+    }
+  };
+
+  const handleDuplicateItem = async (item: MenuItem) => {
+    try {
+      await duplicateMenuItem({ menuItemId: item._id });
+      toast.success('Menu item duplicated successfully');
+    } catch (error) {
+      console.error('Failed to duplicate menu item:', error);
+      toast.error('Failed to duplicate menu item');
+    }
+  };
+
+  const handleShareItem = async (item: MenuItem) => {
+    try {
+      const result = await shareMenuItem({ menuItemId: item._id });
+      setShareDialog({ isOpen: true, shareableId: result.shareableId });
+    } catch (error) {
+      console.error('Failed to share menu item:', error);
+      toast.error('Failed to share menu item');
+    }
+  };
+
+  const handleCopyShareableId = () => {
+    if (shareDialog.shareableId) {
+      navigator.clipboard.writeText(shareDialog.shareableId);
+      toast.success('Shareable ID copied to clipboard');
     }
   };
 
@@ -196,66 +270,93 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                     />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredItems?.map((item) => (
-                        <Card key={item._id} className="hover:shadow-md transition-shadow">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-base">{item.name}</CardTitle>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditItem(item._id)}
-                                >
-                                  <Edit className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteItem(item._id)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="secondary" className="text-xs">
-                                  {item.type}
-                                </Badge>
-                                {item.metadata?.version && (
-                                  <Badge variant="outline" className="text-xs">
-                                    v{item.metadata.version}
-                                  </Badge>
-                                )}
-                                {item.metadata?.category && (
-                                  <Badge variant="default" className="text-xs">
-                                    {item.metadata.category}
-                                  </Badge>
-                                )}
-                              </div>
-                              {item.metadata?.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {item.metadata.description}
-                                </p>
-                              )}
-                              {item.path && (
-                                <div className="text-xs text-muted-foreground">
-                                  {item.path}
+                      {filteredItems?.map((item) => {
+                        const IconComponent = item.icon ? iconFromName(item.icon) : null;
+                        return (
+                          <Card key={item._id} className="hover:shadow-md transition-shadow">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {IconComponent && (
+                                    <IconComponent
+                                      className="w-4 h-4"
+                                      style={item.metadata?.color ? { color: item.metadata.color } : undefined}
+                                    />
+                                  )}
+                                  <CardTitle className="text-base">{item.name}</CardTitle>
                                 </div>
-                              )}
-                              {item.metadata?.lastUpdated && (
-                                <div className="text-xs text-muted-foreground">
-                                  Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Edit Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleRenameItem(item)}>
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Rename
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
+                                      <Copy className="w-4 h-4 mr-2" />
+                                      Duplicate
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleShareItem(item)}>
+                                      <Share className="w-4 h-4 mr-2" />
+                                      Share
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      onClick={() => handleDeleteItem(item._id)}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {item.type}
+                                  </Badge>
+                                  {item.metadata?.version && (
+                                    <Badge variant="outline" className="text-xs">
+                                      v{item.metadata.version}
+                                    </Badge>
+                                  )}
+                                  {item.metadata?.category && (
+                                    <Badge variant="default" className="text-xs">
+                                      {item.metadata.category}
+                                    </Badge>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                                {item.metadata?.description && (
+                                  <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {item.metadata.description}
+                                  </p>
+                                )}
+                                {item.path && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {item.path}
+                                  </div>
+                                )}
+                                {item.metadata?.lastUpdated && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -273,7 +374,7 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {availableFeatures?.map((feature) => {
+                {availableFeatures?.map((feature: AvailableFeature) => {
                   const IconComponent = iconFromName(feature.icon);
                   const isInstalling = installingFeatures.has(feature.slug);
                   
@@ -340,6 +441,77 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Rename Dialog */}
+      <Dialog open={renameDialog.isOpen} onOpenChange={(open) => setRenameDialog(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Menu Item</DialogTitle>
+            <DialogDescription>
+              Enter a new name for "{renameDialog.item?.name}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newName">New Name</Label>
+              <Input
+                id="newName"
+                value={renameDialog.newName}
+                onChange={(e) => setRenameDialog(prev => ({ ...prev, newName: e.target.value }))}
+                placeholder="Enter new name..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleRenameConfirm();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameDialog({ isOpen: false, newName: '' })}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameConfirm} disabled={!renameDialog.newName.trim()}>
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialog.isOpen} onOpenChange={(open) => setShareDialog(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Menu Item</DialogTitle>
+            <DialogDescription>
+              Share this menu item with other workspaces using the ID below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Shareable Menu ID</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={shareDialog.shareableId || ''}
+                  readOnly
+                  className="font-mono text-sm"
+                />
+                <Button onClick={handleCopyShareableId} size="sm">
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Anyone with this ID can import this menu item into their workspace.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShareDialog({ isOpen: false })}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

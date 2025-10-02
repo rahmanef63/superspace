@@ -1,8 +1,15 @@
-import * as Icons from "lucide-react";
-import type { ElementType } from "react";
+// ⚠️ DEPRECATED: This file has been moved to frontend/shared/components/icons
+// Please use the new icon system instead:
+//
+// import { iconFromName, getIconComponent, IconPicker } from "@/frontend/shared/components/icons";
+//
+// Migration guide:
+// - iconFromName() is still available for backward compatibility
+// - Use getIconComponent() for new code (same functionality)
+// - Use IconPicker component for Notion-style icon selection with color picker
+//
+// This file is kept temporarily for backward compatibility and will be removed in a future update.
 
-export function iconFromName(name?: string): ElementType | undefined {
-  if (!name) return undefined;
-  const lib = Icons as unknown as Record<string, ElementType>;
-  return lib[name] || undefined;
-}
+import { iconFromName } from "@/frontend/shared/components/icons";
+
+export { iconFromName };

@@ -36,7 +36,7 @@ export function DocumentPresenceIndicator({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {showLabel && (
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {audience > 0
             ? `${audience} user${audience === 1 ? "" : "s"} online`
             : "You're alone"}

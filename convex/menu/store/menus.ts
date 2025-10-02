@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
-import { ensureUser, requireActiveMembership } from "../auth/helpers";
+import { query, mutation } from "../../_generated/server";
+import { ensureUser, requireActiveMembership } from "../../auth/helpers";
 
 // Get menu siblings for breadcrumb navigation
 export const getMenuSiblings = query({

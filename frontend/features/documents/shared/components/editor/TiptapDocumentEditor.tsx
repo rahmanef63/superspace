@@ -155,7 +155,7 @@ export function TiptapDocumentEditor({ documentId, onBack, className }: TiptapDo
         </div>
 
         <div className="border-t border-gray-200 px-6 py-2 bg-gray-50">
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div>
               {stats.characters} characters • {stats.words} words
             </div>

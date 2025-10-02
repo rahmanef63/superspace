@@ -42,7 +42,7 @@ export function InvitationManagement({ workspaceId, onBack }: InvitationManageme
   const pendingReceived = receivedInvitations.filter((inv: Invitation) => inv.status === "pending");
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="container flex-col mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-auto">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-3">

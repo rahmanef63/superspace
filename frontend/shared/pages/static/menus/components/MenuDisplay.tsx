@@ -5,6 +5,7 @@ import { Id } from "@convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Folder, FileText, Hash, ExternalLink } from "lucide-react";
+import { getIconComponent, getColorValue } from "@/frontend/shared/components/icons";
 
 interface MenuDisplayProps {
   workspaceId: Id<"workspaces">;
@@ -18,18 +19,20 @@ interface MenuItem {
   order: number;
   parentId?: Id<"menuItems">;
   path?: string;
+  icon?: string;
   metadata?: {
     description?: string;
     badge?: string;
+    color?: string;
   };
 }
 
 export function MenuDisplay({ workspaceId, menuItemId }: MenuDisplayProps) {
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId }) as
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId }) as
     | MenuItem[]
     | undefined;
   const currentMenuItemResult = useQuery(
-    api.menu.menuItems.getMenuItem,
+    (api as any)["menu/store/menuItems"].getMenuItem,
     menuItemId ? { menuItemId } : "skip",
   ) as MenuItem | null | undefined;
 
@@ -51,16 +54,28 @@ export function MenuDisplay({ workspaceId, menuItemId }: MenuDisplayProps) {
 
   const itemsToShow = menuItemId ? childItems : rootItems;
 
-  const getIcon = (type: string) => {
-    switch (type) {
+  const getIcon = (item: MenuItem) => {
+    const color = item.metadata?.color;
+    const iconName = item.icon;
+    const className = "w-5 h-5";
+    const style = color ? { color: getColorValue(color) } : undefined;
+
+    // Use custom icon if provided
+    if (iconName) {
+      const IconComponent = getIconComponent(iconName);
+      return <IconComponent className={className} style={style} />;
+    }
+
+    // Fallback to type-based icons
+    switch (item.type) {
       case "folder":
-        return <Folder className="w-5 h-5" />;
+        return <Folder className={className} style={style} />;
       case "document":
-        return <FileText className="w-5 h-5" />;
+        return <FileText className={className} style={style} />;
       case "route":
-        return <ExternalLink className="w-5 h-5" />;
+        return <ExternalLink className={className} style={style} />;
       default:
-        return <Hash className="w-5 h-5" />;
+        return <Hash className={className} style={style} />;
     }
   };
 
@@ -78,7 +93,7 @@ export function MenuDisplay({ workspaceId, menuItemId }: MenuDisplayProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {getIcon(currentMenuItem.type)}
+              {getIcon(currentMenuItem)}
               {currentMenuItem.name}
             </CardTitle>
           </CardHeader>
@@ -108,7 +123,7 @@ export function MenuDisplay({ workspaceId, menuItemId }: MenuDisplayProps) {
           <Card key={item._id} className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
-                {getIcon(item.type)}
+                {getIcon(item)}
                 {item.name}
               </CardTitle>
             </CardHeader>

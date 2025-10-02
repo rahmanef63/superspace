@@ -30,7 +30,7 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
 
   return (
     <div className="flex h-full bg-muted/20">
-      <div className="flex-1 flex flex-col border-r bg-white">
+      <div className="flex-1 flex flex-col border-r bg-background">
         <div className="p-6 border-b">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -39,7 +39,7 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
                 Curate structured documents, track visibility, and surface insights at a glance.
               </p>
             </div>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Badge variant="secondary">{manager.stats.total} documents</Badge>
               <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
                 {manager.stats.publicCount} public
@@ -95,7 +95,7 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
       <aside className="w-[340px] bg-white flex flex-col border-l">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold text-gray-900">Inspector</h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Preview metadata and last activity for the selected document.
           </p>
         </div>
@@ -110,7 +110,7 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
                     {selectedDocument.title}
                   </h3>
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Created {new Date(selectedDocument._creationTime).toLocaleString()}
                 </p>
                 <Badge variant="outline" className="gap-1">

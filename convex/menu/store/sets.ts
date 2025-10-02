@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
-import { ensureUser, requirePermission } from "../auth/helpers";
-import { PERMS } from "../workspace/permissions";
+import { query, mutation } from "../../_generated/server";
+import { ensureUser, requirePermission } from "../../auth/helpers";
+import { PERMS } from "../../workspace/permissions";
 
 // Create a menu set
 export const createMenuSet = mutation({

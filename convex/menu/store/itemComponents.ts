@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
-import { requirePermission } from "../auth/helpers";
-import { PERMS } from "../workspace/permissions";
+import { query, mutation } from "../../_generated/server";
+import { requirePermission } from "../../auth/helpers";
+import { PERMS } from "../../workspace/permissions";
 
 // Add binding of a component version to a menu item
 export const addBinding = mutation({

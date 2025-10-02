@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, X } from "lucide-react";
+import { IconPicker } from "@/frontend/shared/components/icons";
 
 interface MenuItemFormProps {
   workspaceId: Id<"workspaces">;
@@ -46,10 +47,10 @@ export function MenuItemForm({
     color: ''
   });
 
-  const createMenuItem = useMutation(api.menu.menuItems.createMenuItem);
-  const updateMenuItem = useMutation(api.menu.menuItems.updateMenuItem);
+  const createMenuItem = useMutation((api as any)["menu/store/menuItems"].createMenuItem);
+  const updateMenuItem = useMutation((api as any)["menu/store/menuItems"].updateMenuItem);
   const existingItem = useQuery(
-    api.menu.menuItems.getMenuItem,
+    (api as any)["menu/store/menuItems"].getMenuItem,
     editingItemId ? { menuItemId: editingItemId } : "skip"
   );
 
@@ -141,8 +142,8 @@ export function MenuItemForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="type">Type *</Label>
-              <Select 
-                value={formData.type} 
+              <Select
+                value={formData.type}
                 onValueChange={(value) => setFormData({ ...formData, type: value })}
               >
                 <SelectTrigger>
@@ -158,12 +159,15 @@ export function MenuItemForm({
               </Select>
             </div>
             <div>
-              <Label htmlFor="icon">Icon</Label>
-              <Input
-                id="icon"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                placeholder="lucide-react icon name"
+              <Label>Icon & Color</Label>
+              <IconPicker
+                icon={formData.icon || "Folder"}
+                color={formData.color || "default"}
+                onIconChange={(icon) => setFormData({ ...formData, icon })}
+                onColorChange={(color) => setFormData({ ...formData, color })}
+                showColor={true}
+                showBackground={false}
+                className="w-full"
               />
             </div>
           </div>
@@ -202,25 +206,14 @@ export function MenuItemForm({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="badge">Badge</Label>
-              <Input
-                id="badge"
-                value={formData.badge}
-                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                placeholder="Optional badge text"
-              />
-            </div>
-            <div>
-              <Label htmlFor="color">Color</Label>
-              <Input
-                id="color"
-                value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                placeholder="#hex or color name"
-              />
-            </div>
+          <div>
+            <Label htmlFor="badge">Badge (Optional)</Label>
+            <Input
+              id="badge"
+              value={formData.badge}
+              onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+              placeholder="Optional badge text"
+            />
           </div>
 
           <div className="flex justify-end gap-2">

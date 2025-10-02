@@ -24,9 +24,9 @@ interface MenuItem {
 }
 
 export function MenuDisplay({ workspaceId, menuItemId }: MenuDisplayProps) {
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
   const currentMenuItem = menuItemId 
-    ? useQuery(api.menu.menuItems.getMenuItem, { menuItemId })
+    ? useQuery((api as any)["menu/store/menuItems"].getMenuItem, { menuItemId })
     : null;
 
   const getIcon = (type: string) => {

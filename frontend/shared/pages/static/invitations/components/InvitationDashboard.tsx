@@ -45,7 +45,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <Mail className="w-7 h-7 text-blue-600" />
             Invitation Dashboard
           </h2>
@@ -90,7 +90,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Sent</p>
-              <p className="text-2xl font-bold text-gray-900">{sentInvitations.length}</p>
+              <p className="text-2xl font-bold text-foreground">{sentInvitations.length}</p>
             </div>
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <Send className="w-5 h-5 text-blue-600" />
@@ -102,7 +102,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Received</p>
-              <p className="text-2xl font-bold text-gray-900">{receivedInvitations.length}</p>
+              <p className="text-2xl font-bold text-foreground">{receivedInvitations.length}</p>
             </div>
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
               <Mail className="w-5 h-5 text-green-600" />
@@ -114,7 +114,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingReceived.length}</p>
+              <p className="text-2xl font-bold text-foreground">{pendingReceived.length}</p>
             </div>
             <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
               <Clock className="w-5 h-5 text-yellow-600" />
@@ -126,7 +126,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Accepted</p>
-              <p className="text-2xl font-bold text-gray-900">{acceptedInvitations.length}</p>
+              <p className="text-2xl font-bold text-foreground">{acceptedInvitations.length}</p>
             </div>
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-emerald-600" />

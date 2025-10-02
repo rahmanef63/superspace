@@ -30,7 +30,7 @@ export function MenuTree({
 }: MenuTreeProps) {
   const [expandedItems, setExpandedItems] = useState<Set<Id<"menuItems">>>(new Set());
   
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
 
   const buildTree = (items: any[]): MenuItemWithChildren[] => {
     const itemMap = new Map();

@@ -48,7 +48,7 @@ export function WorkspaceSettings({ className }: WorkspaceSettingsProps) {
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label>Public Workspace</Label>
-            <p className="text-sm text-gray-500">Allow others to discover and join this workspace</p>
+            <p className="text-sm text-muted-foreground">Allow others to discover and join this workspace</p>
           </div>
           <Switch checked={isPublic} onCheckedChange={setIsPublic} />
         </div>

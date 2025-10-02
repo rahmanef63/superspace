@@ -76,7 +76,7 @@ export default function CatchAllPage() {
 
   // Access-controlled menu items (use "skip" until ready per Convex types)
   const menuItems = useQuery(
-    api.menu.menuItems.getWorkspaceMenuItems,
+    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
     workspaceId && isAuthed ? { workspaceId } : "skip"
   )
   const accessibleSlugs = useMemo(

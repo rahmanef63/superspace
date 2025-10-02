@@ -73,11 +73,11 @@ export function AppSidebar({
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
   const menuItems = useQuery(
-    api.menu.menuItems.getWorkspaceMenuItems,
+    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
     effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
   ) as any[] | undefined
 
-  const createDefaults = useMutation(api.menu.menuItems.createDefaultMenuItems)
+  const createDefaults = useMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems)
   const seededRef = useRef<string | null>(null)
   useEffect(() => {
     if (!effectiveWorkspaceId) return

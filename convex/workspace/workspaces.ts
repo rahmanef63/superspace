@@ -497,7 +497,7 @@ export const createWorkspace = mutation({
 
     // Create default menu items (best-effort; ignore auth failures in mixed auth setups)
     try {
-      await ctx.runMutation(api.menu.menuItems.createDefaultMenuItems, {
+      await ctx.runMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems, {
         workspaceId,
         selectedSlugs: Array.isArray(args.selectedMenuSlugs) ? args.selectedMenuSlugs : [],
       })
@@ -1013,7 +1013,7 @@ export const resetWorkspace = mutation({
       .collect()
     for (const it of oldItems) await ctx.db.delete(it._id)
 
-    await ctx.runMutation(api.menu.menuItems.createDefaultMenuItems, { workspaceId: args.workspaceId })
+    await ctx.runMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems, { workspaceId: args.workspaceId })
     return true as const
   },
 })

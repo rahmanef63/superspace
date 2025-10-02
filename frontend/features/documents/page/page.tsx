@@ -22,7 +22,7 @@ export default function DocumentsFeaturePage({
 
   if (!workspaceId) {
     return (
-      <div className="flex h-full items-center justify-center bg-white text-gray-500">
+      <div className="flex h-full items-center justify-center">
         Connect this view to a workspace to start managing documents.
       </div>
     );
@@ -30,7 +30,7 @@ export default function DocumentsFeaturePage({
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="flex h-full flex-col">
-      <div className="border-b bg-white px-6 py-4">
+      <div className="border-b bg-background px-6 py-4">
         <TabsList>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
           <TabsTrigger value="database">Database</TabsTrigger>

@@ -16,7 +16,7 @@ import { DragDropMenuTree } from "./DragDropMenuTree";
 import { MenuDisplay } from "./MenuDisplay";
 import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
 import { Plus, Search, Trash2, Edit, Download, Check, Copy, Share, MoreHorizontal, FileInput } from "lucide-react";
-import { iconFromName } from "@/frontend/shared/pages/icons";
+import { getIconComponent } from "@/frontend/shared/components/icons";
 
 interface MenuStoreProps {
   workspaceId: Id<"workspaces">;
@@ -50,14 +50,14 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const [importMenuId, setImportMenuId] = useState('');
   const [importing, setImporting] = useState(false);
 
-  const menuItems = useQuery(api.menu.menuItems.getWorkspaceMenuItems, { workspaceId });
-  const availableFeatures = useQuery(api.menu.menuItems.getAvailableFeatureMenus, { workspaceId });
-  const deleteMenuItem = useMutation(api.menu.menuItems.deleteMenuItem);
-  const installFeatureMenus = useMutation(api.menu.menuItems.installFeatureMenus);
-  const renameMenuItem = useMutation(api.menu.menuItems.renameMenuItem);
-  const duplicateMenuItem = useMutation(api.menu.menuItems.duplicateMenuItem);
-  const shareMenuItem = useMutation(api.menu.menuItems.shareMenuItem);
-  const importMenuFromShareableId = useMutation(api.menu.menuItems.importMenuFromShareableId);
+  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
+  const availableFeatures = useQuery((api as any)["menu/store/menuItems"].getAvailableFeatureMenus, { workspaceId });
+  const deleteMenuItem = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
+  const installFeatureMenus = useMutation((api as any)["menu/store/menuItems"].installFeatureMenus);
+  const renameMenuItem = useMutation((api as any)["menu/store/menuItems"].renameMenuItem);
+  const duplicateMenuItem = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
+  const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenuItem);
+  const importMenuFromShareableId = useMutation((api as any)["menu/store/menuItems"].importMenuFromShareableId);
 
   const filteredItems = (menuItems as MenuItem[] | undefined)?.filter((item: MenuItem) => {
     if (!searchQuery) return true;
@@ -372,14 +372,14 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableFeatures?.map((feature) => {
-                  const IconComponent = iconFromName(feature.icon);
+                  const IconComponent = getIconComponent(feature.icon);
                   const isInstalling = installingFeatures.has(feature.slug);
-                  
+
                   return (
                     <Card key={feature.slug} className="hover:shadow-md transition-shadow">
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-3">
-                          {IconComponent && <IconComponent className="w-5 h-5 text-primary" />}
+                          <IconComponent className="w-5 h-5 text-primary" />
                           <CardTitle className="text-base">{feature.name}</CardTitle>
                         </div>
                       </CardHeader>

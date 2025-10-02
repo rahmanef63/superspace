@@ -20,7 +20,7 @@ export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50">
       <div className="bg-background rounded-lg w-full max-w-2xl mx-4 max-h-96 flex flex-col">
         <div className="p-4 border-b">
           <input
@@ -28,11 +28,11 @@ export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search documents..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
             autoFocus
           />
         </div>
-        
+
         <div className="flex-1 overflow-auto p-4">
           {query.trim() && searchResults ? (
             <div className="space-y-2">
@@ -43,31 +43,31 @@ export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: 
                     onSelectDocument(doc._id);
                     onClose();
                   }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-md"
+                  className="w-full text-left p-3 hover:bg-muted rounded-md"
                 >
                   <div className="font-medium">{doc.title}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     Created {new Date(doc._creationTime).toLocaleDateString()}
                   </div>
                 </button>
               ))}
               {searchResults.length === 0 && (
-                <div className="text-center text-gray-500 py-8">
+                <div className="text-center text-muted-foreground py-8">
                   No documents found
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-muted-foreground py-8">
               Start typing to search documents
             </div>
           )}
         </div>
-        
+
         <div className="p-4 border-t flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
           >
             Close
           </button>

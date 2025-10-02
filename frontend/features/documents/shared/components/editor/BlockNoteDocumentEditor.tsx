@@ -74,8 +74,8 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-500">Loading document...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading document...</p>
         </div>
       </div>
     );
@@ -85,13 +85,13 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
 
   return (
     <div className={cn("h-full flex flex-col  bg-background", className)}>
-      <div className="border-b border-gray-200 p-6">
+      <div className="border-b border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3 flex-1">
             {onBack && (
               <button
                 onClick={onBack}
-                className="text-sm text-gray-600 hover:text-gray-900"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 {"<- Back"}
               </button>
@@ -117,7 +117,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
                 />
                 <button
                   onClick={handleSaveTitle}
-                  className="p-1 text-blue-600 hover:text-blue-700"
+                  className="p-1 text-primary hover:text-primary/80"
                 >
                   <Save className="w-4 h-4" />
                 </button>
@@ -128,7 +128,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
                 {canEdit && (
                   <button
                     onClick={() => setIsEditingTitle(true)}
-                    className="p-1 text-gray-400 hover:text-gray-600"
+                    className="p-1 text-muted-foreground hover:text-foreground"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -145,7 +145,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
             {canEdit && (
               <button
                 onClick={handleTogglePublic}
-                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors", document.isPublic ? "bg-green-50 text-green-700 hover:bg-green-100" : "bg-gray-50 text-gray-700 hover:bg-gray-100")}
+                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors", document.isPublic ? "bg-accent text-accent-foreground hover:bg-accent/90" : "bg-muted text-foreground hover:bg-muted/80")}
               >
                 {document.isPublic ? (
                   <>

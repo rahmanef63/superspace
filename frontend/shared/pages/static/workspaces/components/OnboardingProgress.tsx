@@ -8,8 +8,8 @@ export function OnboardingProgress({ currentStep, totalSteps }: OnboardingProgre
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
               index <= currentStep
-                ? "bg-blue-600 text-primary"
-                : "bg-gray-200 text-gray-600"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
             }`}
           >
             {index + 1}
@@ -17,7 +17,7 @@ export function OnboardingProgress({ currentStep, totalSteps }: OnboardingProgre
           {index < totalSteps - 1 && (
             <div
               className={`w-12 h-0.5 mx-2 ${
-                index < currentStep ? "bg-blue-600" : "bg-gray-200"
+                index < currentStep ? "bg-primary" : "bg-border"
               }`}
             />
           )}

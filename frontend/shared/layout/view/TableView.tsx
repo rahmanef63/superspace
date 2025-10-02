@@ -34,10 +34,10 @@ export function TableView<T>({
         <button
           key={action.id}
           onClick={() => action.onClick(row)}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100"
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
           title={action.label}
         >
-          {hasIcon && <span className="text-gray-600">{action.icon}</span>}
+          {hasIcon && <span className="text-muted-foreground">{action.icon}</span>}
           {hasLabel && <span>{action.label}</span>}
         </button>
       );
@@ -50,15 +50,15 @@ export function TableView<T>({
         {data.map((row) => (
           <div
             key={String(getId(row))}
-            className="rounded-lg border border-gray-200/80 bg-background p-4 shadow-sm"
+            className="rounded-lg border border-border bg-background p-4 shadow-sm"
           >
-            <dl className="space-y-2 text-sm text-gray-700">
+            <dl className="space-y-2 text-sm text-foreground">
               {columns.map((column) => (
                 <div key={column.id} className="flex items-start gap-3">
-                  <dt className="min-w-[120px] text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <dt className="min-w-[120px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {column.header as ReactNode}
                   </dt>
-                  <dd className="flex-1 text-gray-900">{resolveValue(column, row)}</dd>
+                  <dd className="flex-1 text-foreground">{resolveValue(column, row)}</dd>
                 </div>
               ))}
             </dl>
@@ -89,7 +89,7 @@ export function TableView<T>({
           </thead>
           <tbody className="divide-y divide-muted bg-background">
             {data.map((row) => (
-              <tr key={String(getId(row))} className="hover:bg-gray-50 text-background">
+              <tr key={String(getId(row))} className="hover:bg-muted text-background">
                 {columns.map((c) => (
                   <td
                     key={c.id}

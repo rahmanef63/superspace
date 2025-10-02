@@ -25,12 +25,12 @@ export function ViewToolbar({
     >
       {searchable && (
         <div className="relative min-w-[200px] flex-1 max-w-xl">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search..."
-            className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 shadow-sm focus:border-gray-400 focus:outline-none"
+            className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground shadow-sm focus:border-ring focus:outline-none"
           />
         </div>
       )}
@@ -46,8 +46,8 @@ export function ViewToolbar({
             onClick={() => setMode(id)}
             className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition ${
               mode === id
-                ? "border-gray-900 bg-gray-900 text-white shadow"
-                : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                ? "border-primary bg-primary text-primary-foreground shadow"
+                : "border-border bg-background text-muted-foreground hover:bg-muted"
             }`}
             aria-pressed={mode === id}
             title={label}

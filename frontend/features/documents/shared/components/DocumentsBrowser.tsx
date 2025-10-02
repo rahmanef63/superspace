@@ -64,16 +64,16 @@ export function DocumentsBrowser({
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Documents</h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               {stats.total} total | {stats.publicCount} public | {stats.privateCount} private
             </p>
             {stats.lastUpdated && (
-              <p className="text-xs text-gray-400">Updated {formatRelativeTime(stats.lastUpdated)}</p>
+              <p className="text-xs text-muted-foreground">Updated {formatRelativeTime(stats.lastUpdated)}</p>
             )}
           </div>
 
           {onCreate && (
-            <Button onClick={onCreate} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={onCreate} className="bg-primary hover:bg-primary/90">
               <Plus className="w-4 h-4 mr-2" />
               New Document
             </Button>
@@ -82,7 +82,7 @@ export function DocumentsBrowser({
 
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search documents..."
               value={search}
@@ -98,7 +98,7 @@ export function DocumentsBrowser({
                 variant={option === visibility ? "default" : "outline"}
                 className={cn(
                   option === visibility
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                     : ""
                 )}
                 onClick={() => onVisibilityChange(option)}
@@ -112,14 +112,14 @@ export function DocumentsBrowser({
 
       <div className="flex-1 overflow-auto p-6">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 text-gray-400 h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             <span>Loading documents...</span>
           </div>
         ) : filteredDocuments.length === 0 ? (
           emptyState ?? (
-            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500" >
-              <FileText className="w-12 h-12 text-gray-300 mb-3" />
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground" >
+              <FileText className="w-12 h-12 text-muted-foreground mb-3" />
               <p>No documents match your current filters.</p>
             </div>
           )

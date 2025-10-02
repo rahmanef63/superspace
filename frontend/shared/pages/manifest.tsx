@@ -16,6 +16,8 @@ import MenusPage from "./static/menus/page"
 import MessagePage from "../../features/wa/page"
 import DocumentsPage from "../../features/documents/page"
 import CanvasPage from "../../features/canvas/page"
+import PagesPage from "./static/pages/page"
+import DatabasesPage from "./static/databases/page"
 import {
   WAChatsPage,
   WACallsPage,
@@ -44,6 +46,7 @@ import {
   Bot,
   Star,
   Archive,
+  Database,
 } from "lucide-react"
 
 export type AppPageComponent = (props: { workspaceId?: Id<"workspaces"> | null }) => ReactElement | null
@@ -170,6 +173,22 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Collaborative documents",
     icon: FileText,
     component: ({ workspaceId }) => <DocumentsPage workspaceId={workspaceId as Id<"workspaces">} />,
+  },
+  {
+    id: "pages",
+    componentId: "PagesPage",
+    title: "Pages",
+    description: "Notion-like pages",
+    icon: FileText,
+    component: ({ workspaceId }) => <PagesPage workspaceId={workspaceId as Id<"workspaces">} />,
+  },
+  {
+    id: "databases",
+    componentId: "DatabasesPage",
+    title: "Databases",
+    description: "Database management",
+    icon: Database,
+    component: ({ workspaceId }) => <DatabasesPage workspaceId={workspaceId as Id<"workspaces">} />,
   },
   {
     id: "canvas",

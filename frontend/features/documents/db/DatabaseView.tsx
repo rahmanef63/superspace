@@ -36,7 +36,7 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
   if (table === undefined || fieldsData === undefined || rowsData === undefined) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-gray-500">Loading database...</div>
+        <div className="text-muted-foreground">Loading database...</div>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
   if (table === null) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-gray-500">You do not have access to this table.</div>
+        <div className="text-muted-foreground">You do not have access to this table.</div>
       </div>
     );
   }
@@ -104,30 +104,30 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="border-b border-gray-200 p-6">
+      <div className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-2xl">{tableRecord.icon ?? "🗂️"}</div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">{tableRecord.name}</h1>
-              {tableRecord.description && <p className="text-gray-600 mt-1">{tableRecord.description}</p>}
+              {tableRecord.description && <p className="text-muted-foreground mt-1">{tableRecord.description}</p>}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-muted rounded-lg">
               <Filter className="w-4 h-4" />
               Filter
             </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-muted rounded-lg">
               <SortAsc className="w-4 h-4" />
               Sort
             </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-muted rounded-lg">
               <Eye className="w-4 h-4" />
               View
             </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-muted rounded-lg">
               <Settings className="w-4 h-4" />
               Settings
             </button>
@@ -137,17 +137,17 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-muted sticky top-0">
             <tr>
               {fields.map((field: DbField) => (
                 <th
                   key={field._id}
-                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-r border-gray-200 min-w-[150px]"
+                  className="px-4 py-3 text-left text-sm font-medium text-foreground border-r border-border min-w-[150px]"
                 >
                   <div className="flex items-center gap-2">
                     <span>{field.name}</span>
-                    <span className="text-xs text-gray-500 capitalize">{field.type}</span>
-                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded">
+                    <span className="text-xs text-muted-foreground capitalize">{field.type}</span>
+                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded">
                       <MoreHorizontal className="w-3 h-3" />
                     </button>
                   </div>
@@ -156,21 +156,21 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
               <th className="px-4 py-3 w-12">
                 <button
                   onClick={handleAddField}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-muted rounded"
                   title="Add property"
                 >
-                  <Plus className="w-4 h-4 text-gray-500" />
+                  <Plus className="w-4 h-4 text-muted-foreground" />
                 </button>
               </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row: DbRow) => (
-              <tr key={row._id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={row._id} className="border-b border-border hover:bg-muted">
                 {fields.map((field: DbField) => (
                   <td
                     key={field._id}
-                    className="px-4 py-3 border-r border-gray-100 cursor-pointer"
+                    className="px-4 py-3 border-r border-border cursor-pointer"
                     onClick={() => handleCellClick(row._id, field._id)}
                   >
                     {editingCell?.rowId === row._id && editingCell?.fieldId === field._id ? (
@@ -192,25 +192,25 @@ export function DatabaseView({ tableId }: DatabaseViewProps) {
                     ) : (
                       <div className="min-h-[20px]">
                         {(row.data?.[field._id] as string | undefined) ?? (
-                          <span className="text-gray-400">Empty</span>
+                          <span className="text-muted-foreground">Empty</span>
                         )}
                       </div>
                     )}
                   </td>
                 ))}
                 <td className="px-4 py-3">
-                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded">
-                    <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded">
+                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </td>
               </tr>
             ))}
 
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-border">
               <td colSpan={fields.length + 1} className="px-4 py-3">
                 <button
                   onClick={handleAddRow}
-                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 px-2 py-1 rounded w-full"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted px-2 py-1 rounded w-full"
                   disabled={isAddingRow}
                 >
                   <Plus className="w-4 h-4" />

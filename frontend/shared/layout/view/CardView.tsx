@@ -40,12 +40,12 @@ export function CardView<T>({
         return (
           <div
             key={id}
-            className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-background shadow-sm"
+            className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm"
           >
-            <div className="flex items-start gap-3 border-b border-gray-200/70 p-4">
+            <div className="flex items-start gap-3 border-b border-border p-4">
               {card?.avatar && <div className="shrink-0">{card.avatar(row)}</div>}
               <div className="min-w-0 flex-1 space-y-1">
-                <div className="truncate font-semibold text-gray-900">{getPrimary(row)}</div>
+                <div className="truncate font-semibold text-foreground">{getPrimary(row)}</div>
                 {card?.subtitle && (
                   <div className="truncate text-sm text-muted-foreground">{card.subtitle(row)}</div>
                 )}
@@ -54,17 +54,17 @@ export function CardView<T>({
             </div>
 
             {visibleColumns.length > 1 && (
-              <div className="p-4 text-sm text-gray-700">
+              <div className="p-4 text-sm text-foreground">
                 <dl className="space-y-3">
                   {visibleColumns.slice(1).map((c) => (
                     <div
                       key={c.id}
                       className="grid grid-cols-[auto,1fr] items-start gap-x-3 gap-y-1"
                     >
-                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {c.header}
                       </dt>
-                      <dd className="text-gray-900">{resolveValue(c, row)}</dd>
+                      <dd className="text-foreground">{resolveValue(c, row)}</dd>
                     </div>
                   ))}
                 </dl>
@@ -72,7 +72,7 @@ export function CardView<T>({
             )}
 
             {actions && actions.length > 0 && (
-              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-gray-200/70 bg-gray-50 p-3">
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-muted p-3">
                 {actions.map((a) => {
                   const visible = a.visible ? a.visible(row) : true;
                   if (!visible) return null;
@@ -82,10 +82,10 @@ export function CardView<T>({
                     <button
                       key={a.id}
                       onClick={() => a.onClick(row)}
-                      className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100"
+                      className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
                       title={a.label}
                     >
-                      {hasIcon && <span className="text-gray-600">{a.icon}</span>}
+                      {hasIcon && <span className="text-muted-foreground">{a.icon}</span>}
                       {hasLabel && <span>{a.label}</span>}
                     </button>
                   );

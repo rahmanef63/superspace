@@ -39,10 +39,10 @@ export function DetailListView<T>({
         <button
           key={action.id}
           onClick={() => action.onClick(row)}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100"
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
           title={action.label}
         >
-          {hasIcon && <span className="text-gray-600">{action.icon}</span>}
+          {hasIcon && <span className="text-muted-foreground">{action.icon}</span>}
           {hasLabel && <span>{action.label}</span>}
         </button>
       );
@@ -51,31 +51,31 @@ export function DetailListView<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-200 bg-background p-6 text-center text-sm text-muted-foreground">
+      <div className="rounded-lg border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
         No data
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200/80 bg-background">
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
       {data.map((row, index) => (
         <div
           key={String(getId(row))}
-          className={`p-4 sm:p-5 ${index !== 0 ? "border-t border-gray-200/70" : ""}`.trim()}
+          className={`p-4 sm:p-5 ${index !== 0 ? "border-t border-border" : ""}`.trim()}
         >
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
             {fields.map((field, idx) => (
               <div key={idx} className="flex items-start gap-3 text-sm">
-                <dt className="min-w-[120px] text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <dt className="min-w-[120px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {field.label}
                 </dt>
-                <dd className="flex-1 text-gray-900">{field.value(row)}</dd>
+                <dd className="flex-1 text-foreground">{field.value(row)}</dd>
               </div>
             ))}
           </dl>
           {actions && actions.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-200/70 pt-3">
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
               {renderActions(row)}
             </div>
           )}

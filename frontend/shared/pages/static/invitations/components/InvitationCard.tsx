@@ -73,34 +73,34 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-accent-foreground" />;
       case "accepted":
-        return <Check className="w-4 h-4 text-green-600" />;
+        return <Check className="w-4 h-4 text-accent-foreground" />;
       case "declined":
-        return <X className="w-4 h-4 text-destructive-600" />;
+        return <X className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-400" />;
+        return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-accent text-accent-foreground border-border";
       case "accepted":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-accent text-accent-foreground border-border";
       case "declined":
-        return "bg-red-100 text-destructive-800 border-red-200";
+        return "bg-destructive/10 text-destructive border-destructive/30";
       case "expired":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-muted-foreground border-border";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
   return (
-    <div 
-      className="bg-background border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-200"
+    <div
+      className="bg-background border border-border rounded-lg p-6 hover:shadow-md transition-all duration-200"
       data-status={invitation.status}
     >
       <div className="flex items-start justify-between">
@@ -108,12 +108,12 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
           {/* Icon */}
           <div className="flex-shrink-0 mt-1">
             {invitation.type === "workspace" ? (
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             ) : (
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                <UserPlus className="w-6 h-6 text-accent-foreground" />
               </div>
             )}
           </div>
@@ -121,8 +121,8 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="font-semibold text-gray-900 text-lg">
-                {invitation.type === "workspace" 
+              <h3 className="font-semibold text-foreground text-lg">
+                {invitation.type === "workspace"
                   ? `Workspace: ${invitation.workspace?.name || "Unknown"}`
                   : "Friend Request"
                 }
@@ -133,26 +133,26 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
               </span>
             </div>
 
-            <div className="space-y-2 text-sm text-gray-600">
+            <div className="space-y-2 text-sm text-muted-foreground">
               {invitation.direction === "sent" ? (
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  <span>Sent to: <span className="font-medium text-gray-900">{invitation.inviteeEmail}</span></span>
+                  <span>Sent to: <span className="font-medium text-foreground">{invitation.inviteeEmail}</span></span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>From: <span className="font-medium text-gray-900">{invitation.inviter?.name || "Unknown"}</span></span>
+                  <span>From: <span className="font-medium text-foreground">{invitation.inviter?.name || "Unknown"}</span></span>
                 </div>
               )}
-              
+
               {invitation.role && (
                 <div className="flex items-center gap-2">
                   <Building className="w-4 h-4" />
-                  <span>Role: <span className="font-medium text-gray-900">{invitation.role.name}</span></span>
+                  <span>Role: <span className="font-medium text-foreground">{invitation.role.name}</span></span>
                 </div>
               )}
-              
+
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>{formatDistanceToNow(new Date(invitation._creationTime), { addSuffix: true })}</span>
@@ -160,10 +160,10 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
             </div>
 
             {invitation.message && (
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-3 p-3 bg-muted rounded-lg border border-border">
                 <div className="flex items-start gap-2">
-                  <MessageSquare className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-gray-700 italic">"{invitation.message}"</p>
+                  <MessageSquare className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-foreground italic">"{invitation.message}"</p>
                 </div>
               </div>
             )}
@@ -177,11 +177,11 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
               <Button
                 size="sm"
                 onClick={handleAccept}
-                className="bg-green-600 hover:bg-green-700 text-primary"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 disabled={isProcessing}
               >
                 {isProcessing ? (
-                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
@@ -192,7 +192,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
                 variant="outline"
                 onClick={handleDecline}
                 disabled={isProcessing}
-                className="border-gray-300 hover:bg-gray-50"
+                className="border-border hover:bg-muted"
               >
                 <X className="w-4 h-4 mr-1" />
                 Decline
@@ -206,7 +206,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
               variant="outline"
               onClick={handleCancel}
               disabled={isProcessing}
-              className="border-gray-300 hover:bg-gray-50"
+              className="border-border hover:bg-muted"
             >
               <X className="w-4 h-4 mr-1" />
               Cancel

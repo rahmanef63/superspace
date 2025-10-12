@@ -1,3 +1,4 @@
+// Last updated: 2025-10-02
 // ===== Diagram =====
 colorMode pastel
 styleMode plain
@@ -18,7 +19,7 @@ users [icon: user, color: blue] {
 
 workspaces [icon: building, color: blue] {
   id string pk
-  ownerUserId string fk           // pencipta → default SUPER_ADMIN (scope=subtree)
+  ownerUserId string fk           // creator -> default SUPER_ADMIN (scope=subtree)
   name string
   slug string @unique
   description string
@@ -298,7 +299,7 @@ pageBlocks [icon: blocks, color: orange] {
   // CHECK: exactly one of aliasId or componentVersionId (XOR)
 }
 
-// ================= CMS HEADLESS (GRAPH → PRERENDER) =================
+// ================= CMS HEADLESS (GRAPH -> PRERENDER) =================
 contentGraphs [icon: file-code, color: teal] {
   id string pk
   workspaceId string fk
@@ -559,7 +560,7 @@ components.id < componentVersions.componentId
 menuItems.id < menuItemComponents.menuItemId
 componentVersions.id < menuItemComponents.componentVersionId
 componentVersions.id < componentBindings.componentVersionId
-componentVersions.id < componentAliases.componentVersionId   // FIX: alias → componentVersion
+componentVersions.id < componentAliases.componentVersionId   // FIX: alias -> componentVersion
 
 // Page
 workspaces.id < pages.workspaceId

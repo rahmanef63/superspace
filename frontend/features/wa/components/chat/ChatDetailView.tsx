@@ -133,6 +133,11 @@ export function ChatDetailView() {
       <TopBar 
         title={selectedChat.name}
         subtitle="last seen recently"
+        contact={{
+          id: selectedChat.id,
+          name: selectedChat.name,
+          avatar: selectedChat.avatar,
+        }}
       />
       
       <div className="flex-1 overflow-y-auto p-4">

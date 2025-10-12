@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { Column, RowAction } from "./types";
+import { RowActions } from "./RowActions";
 
 function resolveValue<T>(column: Column<T>, row: T) {
   if (column.cell) return column.cell(row);
@@ -23,27 +24,6 @@ export function TableView<T>({
 }) {
   const hasActions = Boolean(actions?.length);
 
-  const renderActions = (row: T) => {
-    if (!actions || actions.length === 0) return null;
-    return actions.map((action) => {
-      const visible = action.visible ? action.visible(row) : true;
-      if (!visible) return null;
-      const hasIcon = Boolean(action.icon);
-      const hasLabel = Boolean(action.label);
-      return (
-        <button
-          key={action.id}
-          onClick={() => action.onClick(row)}
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
-          title={action.label}
-        >
-          {hasIcon && <span className="text-muted-foreground">{action.icon}</span>}
-          {hasLabel && <span>{action.label}</span>}
-        </button>
-      );
-    });
-  };
-
   return (
     <div className="space-y-4">
       <div className="space-y-3 sm:hidden">
@@ -62,7 +42,13 @@ export function TableView<T>({
                 </div>
               ))}
             </dl>
-            {hasActions && <div className="mt-3 flex flex-wrap gap-2">{renderActions(row)}</div>}
+            {hasActions && (
+              <RowActions
+                actions={actions}
+                row={row}
+                className="mt-3"
+              />
+            )}
           </div>
         ))}
       </div>
@@ -89,7 +75,7 @@ export function TableView<T>({
           </thead>
           <tbody className="divide-y divide-muted bg-background">
             {data.map((row) => (
-              <tr key={String(getId(row))} className="hover:bg-muted text-background">
+              <tr key={String(getId(row))} className="hover:bg-muted text-foreground">
                 {columns.map((c) => (
                   <td
                     key={c.id}
@@ -100,9 +86,11 @@ export function TableView<T>({
                 ))}
                 {hasActions && (
                   <td className="px-4 py-2 text-sm text-right">
-                    <div className="inline-flex flex-wrap items-center justify-end gap-2">
-                      {renderActions(row)}
-                    </div>
+                    <RowActions
+                      actions={actions}
+                      row={row}
+                      className="justify-end"
+                    />
                   </td>
                 )}
               </tr>

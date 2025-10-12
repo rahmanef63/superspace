@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -73,12 +73,14 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
               isLoading={manager.isLoading}
               onSelect={manager.selectDocument}
               onCreate={manager.openCreateDialog}
+              selectedDocumentId={manager.state.selectedDocumentId}
               search={manager.search}
               onSearch={manager.setSearch}
               visibility={manager.visibility}
               onVisibilityChange={manager.setVisibility}
               stats={manager.stats}
-              storageKey={storageKey ?? `documents.db.view.${workspaceId}`}
+\
+              workspaceId={workspaceId}
             />
           </TabsContent>
 

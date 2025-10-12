@@ -18,6 +18,7 @@ import type * as menu_chat_conversations from "../menu/chat/conversations.js";
 import type * as menu_chat_messageReactions from "../menu/chat/messageReactions.js";
 import type * as menu_chat_messages from "../menu/chat/messages.js";
 import type * as menu_cms_canvas from "../menu/cms/canvas.js";
+import type * as menu_database_databases from "../menu/database/databases.js";
 import type * as menu_page_db_fields from "../menu/page/db/fields.js";
 import type * as menu_page_db_rows from "../menu/page/db/rows.js";
 import type * as menu_page_db_tables from "../menu/page/db/tables.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   "menu/chat/messageReactions": typeof menu_chat_messageReactions;
   "menu/chat/messages": typeof menu_chat_messages;
   "menu/cms/canvas": typeof menu_cms_canvas;
+  "menu/database/databases": typeof menu_database_databases;
   "menu/page/db/fields": typeof menu_page_db_fields;
   "menu/page/db/rows": typeof menu_page_db_rows;
   "menu/page/db/tables": typeof menu_page_db_tables;

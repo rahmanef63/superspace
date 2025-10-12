@@ -28,9 +28,8 @@ export function DocumentsPageManagementView({
   const manager = useDocumentsManager({ workspaceId });
 
   return (
-    <div className="flex h-full bg-muted;
-">
-      <div className="flex flex-col bg-sidebar h-full gap-4 md:gap-6">
+    <div className="flex h-full bg-muted">
+      <div className="flex h-full flex-col gap-4 bg-sidebar md:gap-6">
         <SidebarIcon
           icon={FileText}
           isActive={appMode === "documents"}
@@ -55,23 +54,25 @@ export function DocumentsPageManagementView({
       <div className="flex-1 flex">
         {appMode === "documents" && (
           <div className="flex flex-1">
-            <div className="w-[360px] border-r  bg-background ">
+            <div className="w-[360px] border-r bg-background">
               <DocumentsBrowser
                 documents={manager.documents}
                 filteredDocuments={manager.filteredDocuments}
                 isLoading={manager.isLoading}
                 onSelect={manager.selectDocument}
                 onCreate={manager.openCreateDialog}
+                selectedDocumentId={manager.state.selectedDocumentId}
                 search={manager.search}
                 onSearch={manager.setSearch}
                 visibility={manager.visibility}
                 onVisibilityChange={manager.setVisibility}
                 stats={manager.stats}
                 storageKey={storageKey ?? `documents.panel.view.${workspaceId}`}
+                workspaceId={workspaceId}
               />
             </div>
 
-            <div className="flex-1 flex items-stretch">
+            <div className="flex flex-1 items-stretch">
               {manager.state.selectedDocumentId ? (
                 <DocumentEditor
                   documentId={manager.state.selectedDocumentId}
@@ -80,10 +81,12 @@ export function DocumentsPageManagementView({
                   className="w-full"
                 />
               ) : (
-                <div className="flex-1 flex items-center justify-center  bg-background">
-                  <div className="text-center space-y-3">
-                    <FileText className="w-16 h-16 text-gray-300 mx-auto" />
-                    <h2 className="text-xl font-semibold text-gray-900">Welcome to your workspace</h2>
+                <div className="flex flex-1 items-center justify-center bg-background">
+                  <div className="space-y-3 text-center">
+                    <FileText className="mx-auto h-16 w-16 text-gray-300" />
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Welcome to your workspace
+                    </h2>
                     <p className="text-gray-600">
                       Select a document from the left panel or create a new one to get started.
                     </p>
@@ -95,11 +98,7 @@ export function DocumentsPageManagementView({
         )}
 
         {appMode === "db" && (
-          <PlaceholderView
-            icon={Database}
-            title="CMS"
-            message="Database builder is in progress."
-          />
+          <PlaceholderView icon={Database} title="CMS" message="Database builder is in progress." />
         )}
         {appMode === "settings" && (
           <PlaceholderView

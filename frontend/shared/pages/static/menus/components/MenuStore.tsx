@@ -15,8 +15,14 @@ import { MenuItemForm } from "./MenuItemForm";
 import { DragDropMenuTree } from "./DragDropMenuTree";
 import { MenuDisplay } from "./MenuDisplay";
 import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
-import { Plus, Search, Trash2, Edit, Download, Check, Copy, Share, MoreHorizontal, FileInput } from "lucide-react";
+import { Plus, Trash2, Edit, Download, Check, Copy, Share, MoreHorizontal, FileInput } from "lucide-react";
 import { getIconComponent } from "@/frontend/shared/components/icons";
+import {
+  SecondarySidebarLayout,
+  type SecondarySidebarHeaderProps,
+  type SecondarySidebarProps,
+} from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { MenuStoreMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
 
 interface MenuStoreProps {
   workspaceId: Id<"workspaces">;
@@ -37,6 +43,15 @@ interface MenuItem {
   };
 }
 
+interface AvailableFeatureMenu {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  version?: string;
+  category?: string;
+}
+
 export function MenuStore({ workspaceId }: MenuStoreProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItemId, setSelectedItemId] = useState<Id<"menuItems"> | undefined>();
@@ -52,6 +67,7 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
 
   const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
   const availableFeatures = useQuery((api as any)["menu/store/menuItems"].getAvailableFeatureMenus, { workspaceId });
+  const availableFeatureList = availableFeatures as AvailableFeatureMenu[] | undefined;
   const deleteMenuItem = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
   const installFeatureMenus = useMutation((api as any)["menu/store/menuItems"].installFeatureMenus);
   const renameMenuItem = useMutation((api as any)["menu/store/menuItems"].renameMenuItem);
@@ -180,188 +196,191 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
     }
   };
 
+  const showTreeSidebar = activeTab === 'installed' && viewMode === 'tree';
+
+  const headerProps: SecondarySidebarHeaderProps = {
+    title: "Menu Store",
+    secondaryActions:
+      activeTab === "installed" ? (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setViewMode(viewMode === "tree" ? "grid" : "tree")}
+        >
+          {viewMode === "tree" ? "Grid View" : "Tree View"}
+        </Button>
+      ) : undefined,
+    primaryAction:
+      activeTab === "installed"
+        ? {
+            label: "Add Custom Item",
+            icon: Plus,
+            onClick: () => setShowForm(true),
+          }
+        : undefined,
+    children: (
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as "installed" | "available" | "import")}
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="installed">Installed Menus</TabsTrigger>
+          <TabsTrigger value="available">Available Features</TabsTrigger>
+          <TabsTrigger value="import">Import Menu</TabsTrigger>
+        </TabsList>
+      </Tabs>
+    ),
+    search:
+      activeTab === "installed"
+        ? {
+            value: searchQuery,
+            onChange: (value: string) => setSearchQuery(value),
+            placeholder: "Search menu items...",
+          }
+        : undefined,
+    toolbar:
+      activeTab === "installed" ? (
+        <BreadcrumbNavigation
+          workspaceId={workspaceId}
+          currentMenuItemId={selectedItemId}
+          onNavigate={setSelectedItemId}
+        />
+      ) : undefined,
+  };
+
+  const sidebarProps: SecondarySidebarProps | undefined = showTreeSidebar
+    ? {
+        sections: [
+          {
+            id: "menu-structure",
+            title: "Menu Structure",
+            content: (
+              <DragDropMenuTree
+                workspaceId={workspaceId}
+                onItemSelect={setSelectedItemId}
+                selectedItemId={selectedItemId}
+              />
+            ),
+          },
+        ],
+        contentClassName: "p-4",
+      }
+    : undefined;
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="border-b border p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Menu Store</h1>
-          <div className="flex items-center gap-2">
-            {activeTab === 'installed' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setViewMode(viewMode === 'tree' ? 'grid' : 'tree')}
-                >
-                  {viewMode === 'tree' ? 'Grid View' : 'Tree View'}
-                </Button>
-                <Button onClick={() => setShowForm(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Custom Item
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'installed' | 'available' | 'import')}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="installed">Installed Menus</TabsTrigger>
-            <TabsTrigger value="available">Available Features</TabsTrigger>
-            <TabsTrigger value="import">Import Menu</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Search - only for installed tab */}
-        {activeTab === 'installed' && (
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search menu items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        )}
-
-        {/* Breadcrumbs - only for installed tab */}
-        {activeTab === 'installed' && (
-          <div className="mt-4">
-            <BreadcrumbNavigation
-              workspaceId={workspaceId}
-              currentMenuItemId={selectedItemId}
-              onNavigate={setSelectedItemId}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
-        <Tabs value={activeTab} className="flex-1 flex flex-col">
-          <TabsContent value="installed" className="flex-1 flex overflow-hidden mt-0">
-            {/* Sidebar - Tree View */}
-            {viewMode === 'tree' && (
-              <div className="w-80 border-r border overflow-y-auto">
-                <div className="p-4">
-                  <h3 className="font-semibold mb-3">Menu Structure</h3>
-                  <DragDropMenuTree
+    <MenuStoreMenuWrapper workspaceId={workspaceId}>
+      <>
+      <SecondarySidebarLayout
+        className="h-full"
+        headerProps={headerProps}
+        sidebarProps={sidebarProps}
+        sidebarClassName="border-r border bg-background"
+        contentClassName="flex flex-col overflow-hidden bg-background"
+      >
+        <Tabs value={activeTab} className="flex flex-1 flex-col overflow-hidden">
+          <TabsContent value="installed" className="mt-0 flex-1 overflow-y-auto">
+            {showForm ? (
+              <div className="p-6">
+                <MenuItemForm
+                  workspaceId={workspaceId}
+                  parentId={selectedItemId}
+                  editingItemId={editingItemId}
+                  onSave={handleFormSave}
+                  onCancel={handleFormCancel}
+                />
+              </div>
+            ) : (
+              <div className="p-6">
+                {viewMode === 'tree' ? (
+                  <MenuDisplay
                     workspaceId={workspaceId}
-                    onItemSelect={setSelectedItemId}
-                    selectedItemId={selectedItemId}
+                    menuItemId={selectedItemId}
                   />
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredItems?.map((item) => (
+                      <Card key={item._id} className="transition-shadow hover:shadow-md">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-base">{item.name}</CardTitle>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRenameItem(item)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleShareItem(item)}>
+                                  <Share className="mr-2 h-4 w-4" />
+                                  Share
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteItem(item._id)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {item.type}
+                              </Badge>
+                              {item.metadata?.version && (
+                                <Badge variant="outline" className="text-xs">
+                                  v{item.metadata.version}
+                                </Badge>
+                              )}
+                              {item.metadata?.category && (
+                                <Badge variant="default" className="text-xs">
+                                  {item.metadata.category}
+                                </Badge>
+                              )}
+                            </div>
+                            {item.metadata?.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {item.metadata.description}
+                              </p>
+                            )}
+                            {item.path && (
+                              <div className="text-xs text-muted-foreground">
+                                {item.path}
+                              </div>
+                            )}
+                            {item.metadata?.lastUpdated && (
+                              <div className="text-xs text-muted-foreground">
+                                Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Main Content */}
-            <div className="flex-1 overflow-y-auto">
-              {showForm ? (
-                <div className="p-6">
-                  <MenuItemForm
-                    workspaceId={workspaceId}
-                    parentId={selectedItemId}
-                    editingItemId={editingItemId}
-                    onSave={handleFormSave}
-                    onCancel={handleFormCancel}
-                  />
-                </div>
-              ) : (
-                <div className="p-6">
-                  {viewMode === 'tree' ? (
-                    <MenuDisplay
-                      workspaceId={workspaceId}
-                      menuItemId={selectedItemId}
-                    />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredItems?.map((item) => (
-                        <Card key={item._id} className="hover:shadow-md transition-shadow">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-base">{item.name}</CardTitle>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleRenameItem(item)}>
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Rename
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
-                                    <Copy className="w-4 h-4 mr-2" />
-                                    Duplicate
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleShareItem(item)}>
-                                    <Share className="w-4 h-4 mr-2" />
-                                    Share
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => handleDeleteItem(item._id)}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="secondary" className="text-xs">
-                                  {item.type}
-                                </Badge>
-                                {item.metadata?.version && (
-                                  <Badge variant="outline" className="text-xs">
-                                    v{item.metadata.version}
-                                  </Badge>
-                                )}
-                                {item.metadata?.category && (
-                                  <Badge variant="default" className="text-xs">
-                                    {item.metadata.category}
-                                  </Badge>
-                                )}
-                              </div>
-                              {item.metadata?.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {item.metadata.description}
-                                </p>
-                              )}
-                              {item.path && (
-                                <div className="text-xs text-muted-foreground">
-                                  {item.path}
-                                </div>
-                              )}
-                              {item.metadata?.lastUpdated && (
-                                <div className="text-xs text-muted-foreground">
-                                  Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </TabsContent>
 
-          <TabsContent value="available" className="flex-1 overflow-y-auto mt-0">
+          <TabsContent value="available" className="mt-0 flex-1 overflow-y-auto">
             <div className="p-6">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Available Features</h2>
@@ -370,16 +389,16 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {availableFeatures?.map((feature) => {
-                  const IconComponent = getIconComponent(feature.icon);
-                  const isInstalling = installingFeatures.has(feature.slug);
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {availableFeatureList?.map((feature) => {
+              const IconComponent = getIconComponent(feature.icon);
+              const isInstalling = installingFeatures.has(feature.slug);
 
                   return (
-                    <Card key={feature.slug} className="hover:shadow-md transition-shadow">
+                    <Card key={feature.slug} className="transition-shadow hover:shadow-md">
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-3">
-                          <IconComponent className="w-5 h-5 text-primary" />
+                          <IconComponent className="h-5 w-5 text-primary" />
                           <CardTitle className="text-base">{feature.name}</CardTitle>
                         </div>
                       </CardHeader>
@@ -408,12 +427,12 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                           >
                             {isInstalling ? (
                               <>
-                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                                <div className="mr-2 h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
                                 Installing...
                               </>
                             ) : (
                               <>
-                                <Download className="w-3 h-3 mr-2" />
+                                <Download className="mr-2 h-3 w-3" />
                                 Install
                               </>
                             )}
@@ -425,10 +444,10 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                 })}
               </div>
 
-              {availableFeatures?.length === 0 && (
-                <div className="text-center py-12">
-                  <Check className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">All Features Installed</h3>
+              {availableFeatureList?.length === 0 && (
+                <div className="py-12 text-center">
+                  <Check className="mx-auto mb-4 h-12 w-12 text-green-500" />
+                  <h3 className="mb-2 text-lg font-semibold">All Features Installed</h3>
                   <p className="text-muted-foreground">
                     You have installed all available features for this workspace.
                   </p>
@@ -437,7 +456,7 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="import" className="flex-1 overflow-y-auto mt-0">
+          <TabsContent value="import" className="mt-0 flex-1 overflow-y-auto">
             <div className="p-6">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Import Menu</h2>
@@ -463,31 +482,31 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                 >
                   {importing ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="mr-2 h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
                       Importing...
                     </>
                   ) : (
                     <>
-                      <FileInput className="w-4 h-4 mr-2" />
+                      <FileInput className="mr-2 h-4 w-4" />
                       Import Menu
                     </>
                   )}
                 </Button>
               </div>
 
-              <div className="mt-8 p-4 bg-muted rounded-lg">
-                <h3 className="font-medium mb-2">How to get a Menu ID:</h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+              <div className="mt-8 rounded-lg bg-muted p-4">
+                <h3 className="mb-2 font-medium">How to get a Menu ID:</h3>
+                <ol className="list-inside list-decimal space-y-1 text-sm text-muted-foreground">
                   <li>Go to the workspace that has the menu you want</li>
                   <li>Find the menu item in the Installed Menus tab</li>
-                  <li>Click the menu button (⋯) and select "Share"</li>
+                  <li>Click the menu button (...) and select "Share"</li>
                   <li>Copy the shareable ID and paste it here</li>
                 </ol>
               </div>
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </SecondarySidebarLayout>
 
       {/* Rename Dialog */}
       <Dialog open={renameDialog.isOpen} onOpenChange={(open) => setRenameDialog(prev => ({ ...prev, isOpen: open }))}>
@@ -554,6 +573,7 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </>
+    </MenuStoreMenuWrapper>
   );
 }

@@ -53,7 +53,7 @@ export function OnboardingGuard() {
       }
       router.replace("/dashboard/workspace")
     }
-  }, [isLoading, workspacesLoaded, isAuthed, isAuthenticated, isSignedIn, hasNoWorkspaces, pathname, router, searchParams, backfillMemberships])
+  }, [isLoading, workspacesLoaded, isAuthed, isAuthenticated, isSignedIn, hasNoWorkspaces, pathname, router, searchParams, backfillMemberships, userWorkspaces])
 
   return null
 }

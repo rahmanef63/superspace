@@ -1,201 +1,48 @@
-└── src
-    ├── frontend
-    │   ├── app/                             # (opsional sekarang; siap migrasi ke Next.js App Router)
-    │   ├── config/                          # env, runtime config, feature flags
-    │   │   ├── env.client.ts
-    │   │   ├── env.shared.ts
-    │   │   └── index.ts
-    │   ├── layout/                          # shell UI (global), reusable layout primitives
-    │   │   ├── navigation/
-    │   │   │   ├── components/
-    │   │   │   │   ├── Sidebar.tsx
-    │   │   │   │   ├── Topbar.tsx
-    │   │   │   │   ├── NavSection.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── hooks/
-    │   │   │   │   ├── useMenuResolution.ts
-    │   │   │   │   ├── useActiveWorkspace.ts
-    │   │   │   │   └── index.ts
-    │   │   │   ├── utils/
-    │   │   │   │   ├── menuTree.ts
-    │   │   │   │   └── index.ts
-    │   │   │   ├── constants.ts
-    │   │   │   └── index.ts
-    │   │   ├── sidebar/
-    │   │   │   ├── components/
-    │   │   │   │   ├── SidebarContainer.tsx
-    │   │   │   │   ├── SidebarItem.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── index.ts
-    │   │   └── shell/
-    │   │       ├── AppProviders.tsx         # theme, query, convex/react, i18n, toasts
-    │   │       ├── AppLayout.tsx
-    │   │       └── index.ts
-    │   ├── shared/                          # hal yang dipakai lintas-feature
-    │   │   ├── ui/                          # design system (shadcn/ui wrapper + atoms/molecules)
-    │   │   │   ├── atoms/
-    │   │   │   │   ├── Button.tsx
-    │   │   │   │   ├── Input.tsx
-    │   │   │   │   ├── Badge.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── richtext/
-    │   │   │   │   ├── RichTextEditor.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── overlays/
-    │   │   │   │   ├── Modal.tsx
-    │   │   │   │   └── Drawer.tsx
-    │   │   │   └── index.ts
-    │   │   ├── blocks/                      # renderer untuk Page/CMS (prerender components)
-    │   │   │   ├── registry/
-    │   │   │   │   ├── aliases.ts           # "herov1", "textrich", ...
-    │   │   │   │   ├── components.map.ts    # id/versi -> implementation
-    │   │   │   │   └── index.ts
-    │   │   │   ├── render/
-    │   │   │   │   ├── RenderTree.tsx
-    │   │   │   │   ├── RenderNode.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── types/
-    │   │   │   │   ├── prerender.ts         # JSON schema types
-    │   │   │   │   └── index.ts
-    │   │   │   └── index.ts
-    │   │   ├── api/
-    │   │   │   ├── convex.client.ts         # convex/react client
-    │   │   │   ├── http.ts                  # fetch wrapper (untuk asset proxy dsb.)
-    │   │   │   └── index.ts
-    │   │   ├── stores/                      # global stores (zustand/jotai)
-    │   │   │   ├── useUserStore.ts
-    │   │   │   ├── useWorkspaceStore.ts
-    │   │   │   ├── useMenuStore.ts
-    │   │   │   └── index.ts
-    │   │   ├── hooks/
-    │   │   │   ├── useSlashPalette.ts
-    │   │   │   ├── useRBAC.ts
-    │   │   │   └── index.ts
-    │   │   ├── constants/
-    │   │   │   ├── rbac.ts
-    │   │   │   ├── menu.ts
-    │   │   │   └── index.ts
-    │   │   ├── types/
-    │   │   │   ├── core.ts
-    │   │   │   ├── menu.ts
-    │   │   │   ├── chat.ts
-    │   │   │   ├── cms.ts
-    │   │   │   ├── page.ts
-    │   │   │   └── index.ts
-    │   │   ├── utils/
-    │   │   │   ├── tree.ts
-    │   │   │   ├── zod.ts
-    │   │   │   └── index.ts
-    │   │   └── index.ts
-    │   ├── features/
-    │   │   ├── wa-clone/                    # (punya kamu; tetap pakai pola modular)
-    │   │   ├── cms-flow/                    # React Flow editor + publish
-    │   │   │   ├── components/
-    │   │   │   │   ├── GraphCanvas.tsx
-    │   │   │   │   ├── NodePalette.tsx      # pakai shared/blocks/registry/aliases
-    │   │   │   │   ├── NodeInspector.tsx
-    │   │   │   │   ├── PublishBar.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── hooks/
-    │   │   │   │   ├── useGraph.ts
-    │   │   │   │   ├── usePublish.ts
-    │   │   │   │   └── index.ts
-    │   │   │   ├── services/
-    │   │   │   │   ├── graphs.service.ts    # Q/M convex wrapper
-    │   │   │   │   └── index.ts
-    │   │   │   ├── pages/                   # (React SPA) / routes sementara
-    │   │   │   │   └── CMSFlowPage.tsx
-    │   │   │   ├── types/
-    │   │   │   │   └── index.ts
-    │   │   │   ├── constants/
-    │   │   │   │   └── index.ts
-    │   │   │   ├── lib/
-    │   │   │   │   ├── graphToPreRender.ts  # builder client-side preview
-    │   │   │   │   └── index.ts
-    │   │   │   ├── utils/
-    │   │   │   │   └── index.ts
-    │   │   │   └── index.ts
-    │   │   ├── notion-page/                  # Notion-like Page + slash "/"
-    │   │   │   ├── components/
-    │   │   │   │   ├── PageEditor.tsx
-    │   │   │   │   ├── Block.tsx
-    │   │   │   │   ├── SlashMenu.tsx
-    │   │   │   │   └── index.ts
-    │   │   │   ├── hooks/
-    │   │   │   │   ├── usePage.ts
-    │   │   │   │   ├── useBlocks.ts
-    │   │   │   │   └── index.ts
-    │   │   │   ├── services/
-    │   │   │   │   ├── pages.service.ts     # Q/M convex wrapper
-    │   │   │   │   └── index.ts
-    │   │   │   ├── pages/
-    │   │   │   │   └── PageEditorView.tsx
-    │   │   │   ├── types/ constants/ lib/ utils/ store/ index.ts
-    │   │   ├── menu-store/
-    │   │   │   ├── components/ hooks/ services/ pages/ ...
-    │   │   ├── settings/                    # (workspace, profile)
-    │   │   ├── users/                       # (friends, members, invitations)
-    │   │   └── overview/
-    │   └── index.ts
-    │
-    └── backend
-        ├── convex/
-        │   ├── schema.ts
-        │   ├── auth/
-        │   │   ├── session.ts
-        │   │   ├── users.ts
-        │   │   └── index.ts
-        │   ├── utils/
-        │   │   ├── idempotency.ts
-        │   │   ├── validation.ts
-        │   │   ├── rbac.ts                  # resolver izin (self/subtree)
-        │   │   ├── workspaceTree.ts         # closure-table ops
-        │   │   └── index.ts
-        │   ├── workspaces/
-        │   │   ├── create.ts
-        │   │   ├── move.ts
-        │   │   ├── get.ts
-        │   │   └── index.ts
-        │   ├── roles/
-        │   │   ├── seed.ts
-        │   │   ├── grants.ts
-        │   │   └── index.ts
-        │   ├── menu/
-        │   │   ├── resolve.ts               # menu resolution
-        │   │   ├── assign.ts
-        │   │   └── index.ts
-        │   ├── components/
-        │   │   ├── registry.ts              # alias->componentVersion id
-        │   │   ├── versions.ts
-        │   │   ├── bindings.ts
-        │   │   └── index.ts
-        │   ├── pages/
-        │   │   ├── list.ts
-        │   │   ├── blocks.ts                # CRUD block, reorder, validate XOR
-        │   │   └── index.ts
-        │   ├── cms/
-        │   │   ├── graphs.ts                # CRUD graph/nodes/edges
-        │   │   ├── publish.ts               # builder → preRender JSON
-        │   │   ├── models.ts
-        │   │   ├── entries.ts
-        │   │   └── index.ts
-        │   ├── chat/
-        │   │   ├── conversations.ts
-        │   │   ├── messages.ts              # send, receipts, reactions
-        │   │   └── index.ts
-        │   ├── assets/
-        │   │   ├── upload.ts                # save cmsAssets + hashes
-        │   │   └── index.ts
-        │   ├── webhooks/
-        │   │   ├── dispatch.ts
-        │   │   ├── retry.ts
-        │   │   └── index.ts
-        │   ├── payments/
-        │   │   ├── attempts.ts
-        │   │   └── index.ts
-        │   └── tests/                       # integration tests (Convex testing harness)
-        ├── workers/
-        │   └── webhookWorker.ts             # background retry/backoff
-        └── scripts/
-            ├── seed.ts                      # seed roles, menus, aliases
-            └── migrate.ts                   # data migrations (component schemaVersion)
+Last updated: 2025-10-02
+
+Repository layout (workspace relative)
+=====================================
+
+app/
+  dashboard/                 → Next.js App Router entry for the authenticated shell.
+    _components/             → Sidebar, header, onboarding guards, and other chrome pieces.
+    WorkspaceProvider.tsx    → React context that exposes the active workspace id for feature modules.
+  (landing)/                 → Marketing pages served from the App Router.
+  api/                       → Serverless route handlers (Convex bridges, webhooks, etc.).
+
+frontend/
+  features/
+    documents/               → Document & CMS management experience.
+      page/                  → Client entry for the documents dashboard tab.
+      views/                 → Page-level views (e.g. Workspace vs Database tabs).
+      shared/                → Hooks, facades, and state shared across document views.
+    wa/                      → WhatsApp-inspired workspace communication.
+      components/            → UI modules grouped by domain (calls, chat, status, etc.).
+        calls/               → Calls list + detail views. Uses shared mockData.ts during development.
+        navigation/TopBar/   → Responsive conversation header & action rail.
+      shared/                → Zustand store, hooks, and repository interfaces.
+    canvas/, search/         → Additional application surfaces (not modified in this pass).
+  shared/
+    layout/view/             → Generic list rendering primitives (table/card/detail).
+      RowActions.tsx         → Centralised button renderer used by all list variants.
+    layout/view/ViewSwitcher → Adaptive view switcher that composes the primitives above.
+    ui/                      → Shared design system elements (atoms/molecules from shadcn/ui).
+
+components/                  → Coarse design system surface (marketing + app overlays).
+convex/                      → Convex backend schema, queries, and auth adapters.
+hooks/, lib/, scripts/       → Cross-cutting utilities (hooks, helpers, local scripts).
+public/, styles/             → Static assets and Tailwind tokens.
+
+doc/                         → Living documentation. Updated files describe architecture, change-log, and task tracking.
+
+Key conventions
+---------------
+- Feature modules live under `frontend/features/<domain>`. Each domain exposes:
+  * `components/` – leaf UI widgets.
+  * `views/` – orchestrated screens that wire data sources + components.
+  * `shared/` – stores, hooks, and adapters.
+- Shared primitives live under `frontend/shared/`. Prefer composing these instead of duplicating layout logic.
+- When introducing list-style UIs, use `RowActions` + `TableView` / `CardView` / `DetailListView` instead of custom action button markup.
+- WhatsApp tooling reads from Zustand (`useWhatsAppStore`). The calls view now consumes `mockData.ts`; replace this with live data sources when the backend is ready.
+- Documentation and architectural guides are colocated in `doc/`. Keep them ASCII and regenerate when feature domains evolve.
+

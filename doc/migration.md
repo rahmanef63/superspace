@@ -1,163 +1,44 @@
-# Migration Guide — Manifest Component Mapping and Dynamic Menu Endpoints
+# Migration Guide – Dynamic Dashboard & 2025-10 Refactors
 
-This document explains how to align data and code with the updated page manifest that supports many‑to‑many mapping between menu items (endpoints) and UI components (by `componentId`). The goal is to enable dynamic endpoints per workspace while keeping progress intact.
+Context
+-------
+The dashboard supports dynamic routing via menu-driven manifests while the feature set continues to expand (documents, WhatsApp-style collaboration, etc.). This guide consolidates the previously scattered notes and the refactors completed on 2025-10-02 so new workstreams can align quickly.
 
-## Summary of Changes
+1. Dashboard manifest ↔ menu alignment
+--------------------------------------
+- Every workspace menu item resolves a page via the `componentId` stored in `menuItems.component`.
+- The App Router catch-all (`app/dashboard/[[...slug]]/page.tsx`) first checks for a workspace menu entry; it then falls back to the default manifest (`frontend/shared/pages/manifest.ts`) if no explicit mapping exists.
+- Built-in pages remain accessible even when a workspace overrides the menu tree, which prevents accidental lock-outs.
 
-- Manifest now defines each page with both a route `id` and a stable `componentId`.
-- A menu item’s `slug` (path under `/dashboard/<slug>`) is decoupled from the component it renders by using `menuItems.component` (string) that must match a `componentId` from the manifest.
-- The dashboard catch‑all resolves the component by looking up the menu item (workspace + slug) and then mapping its `component` to the manifest. If no menu item exists, it falls back to the built‑in manifest route by slug.
-- Access check is relaxed: built‑in manifest pages continue to render even when menus are present but don’t contain that slug.
+Recommended data hygiene:
+- Ensure each menu item has `component` set to one of the manifest ids (`dashboard`, `chat`, `documents`, etc.).
+- Backfill legacy data with a one-off Convex mutation (see previous git history for examples) or a SQL script if you manage data externally.
+- When introducing a new page:
+  1. Implement the React component inside `frontend/features/<domain>`.
+  2. Register it inside the manifest with a stable `componentId`.
+  3. Link a menu item to that `componentId`.
 
-## Files Touched (already applied)
+2. Front-end refactor highlights (Oct 2025)
+------------------------------------------
+- **Shared Row Actions**  
+  The new `frontend/shared/layout/view/RowActions.tsx` centralises rendering for row-level buttons. `TableView`, `CardView`, and `DetailListView` now delegate to it, fixing styling drift and reducing repeated logic. Use these primitives instead of hand-coding action bars in feature views.
 
-- `frontend/shared/pages/manifest.tsx`
-  - Added `componentId` for each entry.
-  - Exported `COMPONENT_REGISTRY_MAP` and `getComponentById`.
-  - `AppContent` now resolves component via `api.menuItems.getMenuItemBySlug` → `component` → manifest.
-- `app/dashboard/[[...slug]]/page.tsx`
-  - Access check allows rendering built‑in manifest pages even if not present in workspace menus.
-- `app/dashboard/_components/app-sidebar.tsx`
-  - Menu→Nav mapping prefers manifest fallback by `componentId`; then by `slug`.
+- **Documents workspace shell**  
+  `frontend/features/documents/views/page-management.tsx` was tidied up (no stray Tailwind tokens) to ensure the split-view layout behaves consistently across themes.
 
-## Current Component IDs (manifest)
+- **WhatsApp Calls experience**  
+  Calls data now lives in `frontend/features/wa/components/calls/mockData.ts` and feeds both the list and detail view. `CallsView` handles mobile vs desktop transitions, and the navigation top bar surfaces real contact data (when available) via the updated `TopBar` props.
 
-- `OverviewPage` (id: `dashboard`)
-- `ChatPage` (id: `chat`)
-- `MembersPage` (id: `members`)
-- `FriendsPage` (id: `friends`)
-- `DocumentsPage` (id: `documents`)
-- `CanvasPage` (id: `canvas`)
-- `MenusPage` (id: `menus`)
-- `InvitationsPage` (id: `invitations`)
-- `ProfilePage` (id: `user-settings`)
-- `WorkspacesPage` (id: `settings`)
+- **Navigation TopBar**  
+  `TopBar`, `TopBarHeader`, and `TopBarActions` accept an optional `contact` object. The contact modal only appears when the caller provides metadata, removing the brittle mock wiring.
 
-You can reuse any of these components under arbitrary slugs by setting `menuItems.component` to the desired `componentId`.
+- **Linting foundation**  
+  Project ships with `.eslintrc.json` (`extends: ["next/core-web-vitals","next/typescript"]`). Install the dev dependency once (`pnpm install eslint@^8.57.0`) to enable `pnpm lint`. This prevents the Next CLI from prompting for interactive setup.
 
-## Data Model Alignment (Convex)
+3. Migration checklist for new contributors
+-------------------------------------------
+1. Run `pnpm install` (to pick up `eslint`) and `pnpm lint` before committing.
+2. Build dashboards by composing the shared view primitives (`ViewSwitcher`, `RowActions`, etc.) instead of cloning markup from feature modules.
+3. When enhancing WhatsApp features, centralise any mock or fixture data inside `frontend/features/wa/components/<area>/mockData.ts`. Swap in Convex queries by replacing the selector used by the view components.
+4. Keep documentation in `doc/` in sync with feature changes—ASCII only, with a `Last updated:` header.
 
-Implemented `menuItems` fields (as used today):
-
-- `workspaceId`: Id of workspace
-- `name`: Display name
-- `slug`: Endpoint under `/dashboard/<slug>`
-- `type`: `route|folder|divider|action|chat|document`
-- `icon`: Icon name (e.g., `MessageSquare`)
-- `path`: Optional internal path
-- `component`: Component identifier (must match a manifest `componentId`)
-- `order`: Sort order
-- `isVisible`: Visibility flag
-- `visibleForRoleIds`: Role gating (array of role ids)
-- `metadata`: Arbitrary object including `description`, etc.
-- `parentId`: Optional for nested menus
-
-Note: The ER doc includes broader concepts (menu sets, component versions, CMS, etc.). Those are planned/aspirational; the implemented subset above is what the app currently uses.
-
-## Backfill: Set `component` on Existing Menu Items
-
-For existing workspaces that have menu items without `component`, backfill using this mapping:
-
-- `dashboard` → `OverviewPage`
-- `chat` → `ChatPage`
-- `members` → `MembersPage`
-- `friends` → `FriendsPage`
-- `documents` → `DocumentsPage`
-- `canvas` → `CanvasPage`
-- `menus` → `MenusPage`
-- `invitations` → `InvitationsPage`
-- `user-settings` → `ProfilePage`
-- `settings` → `WorkspacesPage`
-- Optional alias: `message` → `ChatPage`
-
-Example Convex migration (temporary mutation you can run once):
-
-\`\`\`ts
-// convex/migrations.backfillMenuComponents.ts
-import { v } from "convex/values";
-import { mutation } from "./_generated/server";
-
-export const backfillMenuComponents = mutation({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, args) => {
-    const map: Record<string, string> = {
-      dashboard: "OverviewPage",
-      chat: "ChatPage",
-      message: "ChatPage", // alias
-      members: "MembersPage",
-      friends: "FriendsPage",
-      documents: "DocumentsPage",
-      canvas: "CanvasPage",
-      menus: "MenusPage",
-      invitations: "InvitationsPage",
-      "user-settings": "ProfilePage",
-      settings: "WorkspacesPage",
-    };
-
-    const items = await ctx.db
-      .query("menuItems")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
-      .collect();
-
-    for (const mi of items) {
-      const target = map[mi.slug];
-      if (!mi.component && target) {
-        await ctx.db.patch(mi._id, { component: target });
-      }
-    }
-  },
-});
-\`\`\`
-
-Alternatively, patch directly via an admin UI or a one‑off script using the Convex client.
-
-## Adding a New Dynamic Endpoint
-
-1) Decide the endpoint slug under `/dashboard/<slug>` (e.g., `reports`).
-2) Choose an existing component (`componentId`) from the manifest, or add a new manifest entry:
-   - Add a new record in `DEFAULT_PAGE_MANIFEST` with a unique `componentId`, `id` (optional default slug), and `component` implementation.
-3) Create or update a `menuItems` row in the workspace:
-   - `slug: "reports"`, `component: "DocumentsPage"` (for example).
-4) Navigate to `/dashboard/reports` — it renders the chosen component.
-
-## Behavior Notes
-
-- If menus are installed for a workspace and a slug is not accessible for the user, the page shows a “Not Found or No Access” message unless it is a built‑in manifest page.
-- If a menu item exists for a slug but its `component` doesn’t match any manifest `componentId`, the renderer falls back to the manifest route by slug; if none, it falls back to `dashboard`.
-
-## ERD vs Implementation (What’s Deferred)
-
-The ER document includes advanced concepts like `menuSets`, `componentVersions`, alias registries, CMS graph editors, etc. These are useful as a north‑star. The current implementation intentionally uses:
-
-- One menu item list per workspace (no menu set assignments yet).
-- Direct `component` mapping via stable `componentId` (no versioning layer yet).
-
-This keeps the system flexible and shippable. If/when we introduce sets and versioning, the manifest `componentId` can remain stable and serve as the join key.
-
-## Verification Checklist
-
-- Sign in and ensure at least one workspace exists.
-- Seed or backfill `menuItems` with `component` values as needed.
-- Visit representative endpoints: `/dashboard/chat`, `/dashboard/documents`, `/dashboard/message` (if alias added), etc.
-- Confirm the sidebar shows menu items with correct labels and icons.
-- Confirm that role restrictions (`visibleForRoleIds`) continue to apply.
-
-## Rollback
-
-The changes are additive and non‑destructive:
-
-- If needed, remove the `component` values from `menuItems` to return to direct slug→manifest rendering.
-- The relaxed access check still preserves built‑in pages for comfort during transition.
-
-## Optional: Menu Sets & Component Versioning
-
-These are additive capabilities aligned with the ER document and do not change current behavior unless adopted.
-
-- New schema tables (additive): `menuSets`, `workspaceMenuAssignments`, `userMenuAssignments`, `components`, `componentVersions`, `componentAliases`, `menuItemComponents`, `activityEvents` (see `convex/schema.ts`).
-- New server modules (organized by domain):
-  - `convex/menu/sets.ts`: create/list/assign menu sets.
-  - `convex/menu/itemComponents.ts`: bind component versions to menu items.
-  - `convex/components/registry.ts`: register components, add versions, manage aliases.
-  - `convex/workspace/activity.ts`: activity log utilities.
-
-You can adopt these incrementally without removing existing `menuItems` usage.

@@ -1,111 +1,80 @@
+"use client";
+
 import { Phone, Video, MessageCircle, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { getInitials } from "../../utils";
+import type { CallDetail } from "./mockData";
 
 interface CallDetailViewProps {
-  callId?: string;
+  call?: CallDetail;
 }
 
-const mockCallDetails = {
-  '1': {
-    name: 'Zahra❤️',
-    avatar: '',
-    phoneNumber: '+62 812 3456 7890',
-    lastCall: '2 minutes ago',
-    callHistory: [
-      { date: 'Today', calls: [
-        { time: '2:30 PM', type: 'outgoing', duration: '5:23', status: 'completed' },
-        { time: '10:15 AM', type: 'incoming', duration: '2:45', status: 'completed' },
-      ]},
-      { date: 'Yesterday', calls: [
-        { time: '8:20 PM', type: 'outgoing', duration: '15:30', status: 'completed' },
-        { time: '3:45 PM', type: 'incoming', duration: '', status: 'missed' },
-      ]},
-    ]
-  },
-  '2': {
-    name: 'JUSMAR',
-    avatar: '',
-    phoneNumber: '+62 821 9876 5432',
-    lastCall: '1 hour ago',
-    callHistory: [
-      { date: 'Today', calls: [
-        { time: '5:45 PM', type: 'incoming', duration: '', status: 'missed' },
-      ]},
-    ]
-  }
-};
-
-export function CallDetailView({ callId }: CallDetailViewProps) {
-  if (!callId) {
+export function CallDetailView({ call }: CallDetailViewProps) {
+  if (!call) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
+      <div className="flex flex-1 items-center justify-center bg-background">
         <div className="text-center">
-          <Phone className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h2 className="text-xl font-medium text-foreground mb-2">
-            Make voice and video calls
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Search for a contact to start calling
-          </p>
+          <Phone className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+          <h2 className="mb-2 text-xl font-medium text-foreground">Make voice and video calls</h2>
+          <p className="text-sm text-muted-foreground">Search for a contact to start calling</p>
         </div>
       </div>
     );
   }
 
-  const contact = mockCallDetails[callId as keyof typeof mockCallDetails];
-  if (!contact) return null;
-
   const handleVoiceCall = () => {
-    console.log('Starting voice call with', contact.name);
+    console.log("Starting voice call with", call.name);
   };
 
   const handleVideoCall = () => {
-    console.log('Starting video call with', contact.name);
+    console.log("Starting video call with", call.name);
   };
 
   const handleMessage = () => {
-    console.log('Opening chat with', contact.name);
+    console.log("Opening chat with", call.name);
   };
 
   return (
     <div className="flex-1 bg-background p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Contact Header */}
+      <div className="mx-auto max-w-2xl space-y-6">
         <Card>
           <CardHeader className="text-center">
-            <Avatar className="h-24 w-24 mx-auto mb-4">
-              <AvatarFallback className="bg-primary/10 text-primary font-medium text-2xl">
-                {getInitials(contact.name)}
+            <Avatar className="mx-auto mb-4 h-24 w-24">
+              <AvatarFallback className="bg-primary/10 text-2xl font-medium text-primary">
+                {getInitials(call.name)}
               </AvatarFallback>
             </Avatar>
-            <CardTitle className="text-2xl">{contact.name}</CardTitle>
-            <p className="text-muted-foreground">{contact.phoneNumber}</p>
-            <p className="text-sm text-muted-foreground">Last call: {contact.lastCall}</p>
+            <CardTitle className="text-2xl">{call.name}</CardTitle>
+            <p className="text-muted-foreground">{call.phoneNumber}</p>
+            <p className="text-sm text-muted-foreground">Last call: {call.lastActivity}</p>
           </CardHeader>
-          
-          <CardContent className="flex justify-center gap-4">
-            <Button 
+
+          <CardContent className="flex flex-wrap justify-center gap-4">
+            <Button
               onClick={handleVoiceCall}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+              className="flex items-center gap-2"
+              type="button"
             >
               <Phone className="h-4 w-4" />
               Voice Call
             </Button>
-            <Button 
+            <Button
               onClick={handleVideoCall}
               variant="outline"
               className="flex items-center gap-2"
+              type="button"
             >
               <Video className="h-4 w-4" />
               Video Call
             </Button>
-            <Button 
+            <Button
               onClick={handleMessage}
               variant="outline"
               className="flex items-center gap-2"
+              type="button"
             >
               <MessageCircle className="h-4 w-4" />
               Message
@@ -113,7 +82,6 @@ export function CallDetailView({ callId }: CallDetailViewProps) {
           </CardContent>
         </Card>
 
-        {/* Call History */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -122,26 +90,30 @@ export function CallDetailView({ callId }: CallDetailViewProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {contact.callHistory.map((day, dayIndex) => (
-              <div key={dayIndex}>
-                <h4 className="font-medium text-muted-foreground mb-2">{day.date}</h4>
+            {call.history.map((day) => (
+              <div key={day.date}>
+                <h4 className="mb-2 font-medium text-muted-foreground">{day.date}</h4>
                 <div className="space-y-2">
-                  {day.calls.map((call, callIndex) => (
-                    <div 
-                      key={callIndex}
-                      className="flex items-center justify-between p-3 rounded-lg border"
+                  {day.entries.map((entry, index) => (
+                    <div
+                      key={`${day.date}-${index}`}
+                      className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          call.status === 'missed' ? 'bg-red-500' : 'bg-green-500'
-                        }`} />
+                        <div
+                          className={cn(
+                            "h-2 w-2 rounded-full",
+                            entry.status === "missed" ? "bg-red-500" : "bg-green-500",
+                          )}
+                        />
                         <span className="text-sm">
-                          {call.type === 'incoming' ? 'Incoming' : 'Outgoing'} call
+                          {entry.direction === "incoming" ? "Incoming" : "Outgoing"}
+                          {entry.medium === "video" ? " video" : ""} call
                         </span>
-                        <span className="text-sm text-muted-foreground">{call.time}</span>
+                        <span className="text-sm text-muted-foreground">{entry.time}</span>
                       </div>
-                      {call.duration && (
-                        <span className="text-sm text-muted-foreground">{call.duration}</span>
+                      {entry.duration && (
+                        <span className="text-sm text-muted-foreground">{entry.duration}</span>
                       )}
                     </div>
                   ))}
@@ -154,3 +126,4 @@ export function CallDetailView({ callId }: CallDetailViewProps) {
     </div>
   );
 }
+

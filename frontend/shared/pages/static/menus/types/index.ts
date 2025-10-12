@@ -27,6 +27,7 @@ export type MenuItemType =
   | "route"
   | "document"
   | "chat"
+  | "database"
   | "action"
   | "divider";
 
@@ -121,6 +122,11 @@ export interface MenuStoreProps {
 export interface MenuDisplayProps {
   workspaceId: Id<"workspaces">;
   menuItemId?: Id<"menuItems">;
+  enableActions?: boolean;
+  onSelect?: (item: MenuItemRecord) => void;
+  featureConfig?: Partial<SecondaryMenuFeatureConfig>;
+  variant?: "menu" | "chat" | "document";
+  onOpenDatabaseSheet?: (item: MenuItemRecord) => void;
 }
 
 export interface MenuItemFormProps {
@@ -135,6 +141,7 @@ export interface DragDropMenuTreeProps {
   workspaceId: Id<"workspaces">;
   onItemSelect: (itemId: Id<"menuItems">) => void;
   selectedItemId?: Id<"menuItems">;
+  featureConfig?: Partial<SecondaryMenuFeatureConfig>;
 }
 
 export interface MenuTreeProps {
@@ -169,3 +176,35 @@ export const ACCENT_COLORS = {
 
 // Drop threshold for drag and drop
 export const DROP_THRESHOLD = 0.3;
+
+export type SecondaryMenuAvatarMode = "icon" | "profile" | "both";
+
+export interface SecondaryMenuFeatureConfig {
+  allowDragAndDrop: boolean;
+  allowRename: boolean;
+  allowEditDetails: boolean;
+  allowDelete: boolean;
+  allowDuplicate: boolean;
+  allowAppearanceChange: boolean;
+  showPreviewPanel: boolean;
+  allowAvatarSelection: boolean;
+  avatarMode: SecondaryMenuAvatarMode;
+  enableDatabaseSheet: boolean;
+  allowFeatureInstall: boolean;
+  allowSharing: boolean;
+}
+
+export const DEFAULT_MENU_FEATURE_CONFIG: SecondaryMenuFeatureConfig = {
+  allowDragAndDrop: true,
+  allowRename: true,
+  allowEditDetails: true,
+  allowDelete: true,
+  allowDuplicate: true,
+  allowAppearanceChange: true,
+  showPreviewPanel: false,
+  allowAvatarSelection: false,
+  avatarMode: "both",
+  enableDatabaseSheet: false,
+  allowFeatureInstall: true,
+  allowSharing: true,
+};

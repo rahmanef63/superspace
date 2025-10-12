@@ -18,6 +18,7 @@ export function ViewSwitcher<T>({
   searchable = true,
   className,
   emptyState,
+  showToolbar = true,
 }: {
   storageKey?: string;
   initialMode?: ViewMode;
@@ -28,6 +29,7 @@ export function ViewSwitcher<T>({
   searchable?: boolean;
   className?: string;
   emptyState?: React.ReactNode;
+  showToolbar?: boolean;
 }) {
   const [uncontrolledMode, setUncontrolledMode] = useViewMode(storageKey, initialMode);
   const mode = controlledMode ?? uncontrolledMode;
@@ -104,15 +106,17 @@ export function ViewSwitcher<T>({
 
   return (
     <div className={["space-y-4", className].filter(Boolean).join(" ")}>
-      <div className="rounded-lg border border-border bg-background p-4">
-        <ViewToolbar
-          mode={mode}
-          setMode={setMode}
-          query={searchValue}
-          setQuery={handleQueryChange}
-          searchable={searchable}
-        />
-      </div>
+      {showToolbar ? (
+        <div className="rounded-lg border border-border bg-background p-4">
+          <ViewToolbar
+            mode={mode}
+            setMode={setMode}
+            query={searchValue}
+            setQuery={handleQueryChange}
+            searchable={searchable}
+          />
+        </div>
+      ) : null}
       {content}
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Column, RowAction, ViewConfig } from "./types";
+import { RowActions } from "./RowActions";
 
 function resolveValue<T>(column: Column<T>, row: T) {
   if (column.cell) return column.cell(row);
@@ -28,27 +29,6 @@ export function DetailListView<T>({
   }));
   const fields = details?.fields ?? defaultFields;
 
-  const renderActions = (row: T) => {
-    if (!actions || actions.length === 0) return null;
-    return actions.map((action) => {
-      const visible = action.visible ? action.visible(row) : true;
-      if (!visible) return null;
-      const hasIcon = Boolean(action.icon);
-      const hasLabel = Boolean(action.label);
-      return (
-        <button
-          key={action.id}
-          onClick={() => action.onClick(row)}
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
-          title={action.label}
-        >
-          {hasIcon && <span className="text-muted-foreground">{action.icon}</span>}
-          {hasLabel && <span>{action.label}</span>}
-        </button>
-      );
-    });
-  };
-
   if (data.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
@@ -75,9 +55,11 @@ export function DetailListView<T>({
             ))}
           </dl>
           {actions && actions.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-              {renderActions(row)}
-            </div>
+            <RowActions
+              actions={actions}
+              row={row}
+              className="mt-4 border-t border-border pt-3"
+            />
           )}
         </div>
       ))}

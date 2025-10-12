@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { getInitials } from "../../../utils";
 
 interface TopBarHeaderProps {
@@ -8,7 +9,7 @@ interface TopBarHeaderProps {
   subtitle?: string;
   avatar?: string;
   onMenuClick?: () => void;
-  onContactClick: () => void;
+  onContactClick?: () => void;
 }
 
 export function TopBarHeader({
@@ -18,40 +19,40 @@ export function TopBarHeader({
   onMenuClick,
   onContactClick,
 }: TopBarHeaderProps) {
+  const clickable = Boolean(onContactClick);
+
   return (
-    <div className="flex items-center gap-3 min-w-0 flex-1">
+    <div className="flex min-w-0 flex-1 items-center gap-3">
       {onMenuClick && (
         <Button
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
-          className="text-wa-muted hover:text-wa-text hover:bg-wa-hover flex-shrink-0 h-10 w-10"
+          className="flex h-10 w-10 flex-shrink-0 text-wa-muted transition hover:bg-wa-hover hover:text-wa-text"
+          type="button"
         >
           <Menu className="h-5 w-5" />
         </Button>
       )}
 
       <div
-        className="flex items-center gap-3 cursor-pointer min-w-0 flex-1 hover:bg-wa-hover rounded-lg p-2 -ml-2 transition-colors"
-        onClick={onContactClick}
-      >
-        {avatar && (
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={avatar} />
-            <AvatarFallback className="bg-wa-primary text-white font-medium text-sm">
-              {getInitials(title)}
-            </AvatarFallback>
-          </Avatar>
+        className={cn(
+          "min-w-0 flex-1 rounded-lg p-2 transition-colors",
+          clickable ? "cursor-pointer -ml-2 flex items-center gap-3 hover:bg-wa-hover" : "flex items-center gap-3",
         )}
+        onClick={clickable ? onContactClick : undefined}
+      >
+        <Avatar className="h-10 w-10 flex-shrink-0">
+          {avatar ? <AvatarImage src={avatar} /> : null}
+          <AvatarFallback className="bg-wa-primary text-sm font-medium text-white">
+            {getInitials(title)}
+          </AvatarFallback>
+        </Avatar>
 
         <div className="min-w-0 flex-1">
-          <h1 className="font-medium text-wa-text text-base truncate leading-tight">
-            {title}
-          </h1>
+          <h1 className="truncate text-base font-medium leading-tight text-wa-text">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-wa-muted truncate leading-tight mt-0.5">
-              {subtitle}
-            </p>
+            <p className="mt-0.5 truncate text-sm leading-tight text-wa-muted">{subtitle}</p>
           )}
         </div>
       </div>

@@ -29,19 +29,22 @@ export function DocumentsView({
       isLoading={manager.isLoading}
       onSelect={(documentId) => {
         manager.selectDocument(documentId);
-        onDocumentSelect(documentId);
+        if (documentId) {
+          onDocumentSelect(documentId);
+        }
       }}
       onCreate={onCreateDocument}
+      selectedDocumentId={manager.state.selectedDocumentId}
       search={manager.search}
       onSearch={manager.setSearch}
-      visibility={manager.visibility}
-      onVisibilityChange={manager.setVisibility}
-      stats={manager.stats}
-      storageKey={storageKey}
-      onDelete={async (doc) => {
-        if (!window.confirm(Delete ""?)) {
-          return;
-        }
+  visibility={manager.visibility}
+  onVisibilityChange={manager.setVisibility}
+  stats={manager.stats}
+  storageKey={storageKey}
+  workspaceId={workspaceId}
+  onDelete={async (doc) => {
+        const confirmed = window.confirm(`Delete "${doc.title || "Untitled"}"?`);
+        if (!confirmed) return;
 
         try {
           await deleteDocument({ id: doc._id });

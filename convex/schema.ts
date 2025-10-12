@@ -279,6 +279,7 @@ const applicationTables = {
     createdBy: v.id("users"),
     isPublic: v.boolean(),
     content: v.optional(v.string()),
+    parentId: v.optional(v.id("documents")),
     lastModified: v.optional(v.number()),
     metadata: v.optional(
       v.object({
@@ -292,6 +293,7 @@ const applicationTables = {
     .index("by_workspace", ["workspaceId"])
     .index("by_creator", ["createdBy"])
     .index("by_isPublic", ["isPublic"])
+    .index("by_parent", ["parentId"])
     .searchIndex("search_documents", {
       searchField: "title",
       filterFields: ["workspaceId", "isPublic", "createdBy"],

@@ -57,14 +57,16 @@ export function WorkspaceDocumentsManagerView({
           isLoading={manager.isLoading}
           onSelect={manager.selectDocument}
           onCreate={manager.openCreateDialog}
+          selectedDocumentId={manager.state.selectedDocumentId}
           search={manager.search}
           onSearch={manager.setSearch}
-          visibility={manager.visibility}
-          onVisibilityChange={manager.setVisibility}
-          stats={manager.stats}
-          storageKey={storageKey}
-          onDelete={handleDelete}
-        />
+        visibility={manager.visibility}
+        onVisibilityChange={manager.setVisibility}
+        stats={manager.stats}
+        storageKey={storageKey}
+        onDelete={handleDelete}
+        workspaceId={workspaceId}
+      />
       )}
 
       <CreateDocumentDialog
@@ -104,4 +106,3 @@ export function WorkspaceDocumentsManager({
     />
   );
 }
-

@@ -32,7 +32,10 @@ export default function CatchAllPage() {
   const { isAuthed, isLoading, isAuthenticated, isSignedIn } = useAuthed()
   const { workspaceId, setWorkspaceId, workspaces: userWorkspaces } = useWorkspaceContext();
   const workspacesLoaded = userWorkspaces !== undefined
-  const workspaces = Array.isArray(userWorkspaces) ? userWorkspaces : []
+  const workspaces = useMemo(
+    () => (Array.isArray(userWorkspaces) ? userWorkspaces : []),
+    [userWorkspaces]
+  )
 
   if (process.env.NODE_ENV !== 'production') {
     console.debug('[[...slug]]/page', {

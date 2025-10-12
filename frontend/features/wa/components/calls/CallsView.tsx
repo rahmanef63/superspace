@@ -1,56 +1,70 @@
-import { useState } from "react";
+"use client";
+
+import { useMemo, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useWhatsAppStore } from "../../shared/stores";
 import { TopBar } from "../navigation/TopBar";
 import { CallListView } from "./CallListView";
 import { CallDetailView } from "./CallDetailView";
+import { CALL_SUMMARIES, getCallDetail } from "./mockData";
 
 export function CallsView() {
   const [selectedCallId, setSelectedCallId] = useState<string>();
   const isMobile = useIsMobile();
   const { setActiveTab } = useWhatsAppStore();
 
+  const selectedCall = useMemo(() => getCallDetail(selectedCallId), [selectedCallId]);
+
   const handleBack = () => {
     if (selectedCallId) {
       setSelectedCallId(undefined);
     } else {
-      setActiveTab('chats');
+      setActiveTab("chats");
     }
   };
 
   if (isMobile) {
-    // On mobile, show either call list or call detail, not both
-    if (selectedCallId) {
+    if (selectedCall) {
       return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex h-screen flex-col bg-background">
           <TopBar
-            title="Call Details"
+            title={selectedCall.name}
+            subtitle={selectedCall.phoneNumber}
             showSearch={false}
-            showActions={false}
             onMenuClick={handleBack}
+            contact={{
+              id: selectedCall.id,
+              name: selectedCall.name,
+              avatar: selectedCall.avatar,
+              phoneNumber: selectedCall.phoneNumber,
+            }}
           />
-          <CallDetailView callId={selectedCallId} />
+          <CallDetailView call={selectedCall} />
         </div>
       );
     }
-    
+
     return (
-      <div className="flex flex-col h-screen bg-background">
-        <TopBar
-          title="Calls"
-          showSearch={true}
-          showActions={false}
-          onMenuClick={handleBack}
+      <div className="flex h-screen flex-col bg-background">
+        <TopBar title="Calls" showSearch onMenuClick={handleBack} showActions={false} />
+        <CallListView
+          calls={CALL_SUMMARIES}
+          selectedCallId={selectedCallId}
+          onCallSelect={setSelectedCallId}
         />
-        <CallListView selectedCallId={selectedCallId} onCallSelect={setSelectedCallId} />
       </div>
     );
   }
 
   return (
     <div className="flex h-full w-full">
-      <CallListView selectedCallId={selectedCallId} onCallSelect={setSelectedCallId} />
-      <CallDetailView callId={selectedCallId} />
+      <CallListView
+        calls={CALL_SUMMARIES}
+        selectedCallId={selectedCallId}
+        onCallSelect={setSelectedCallId}
+      />
+      <CallDetailView call={selectedCall} />
     </div>
   );
 }
+

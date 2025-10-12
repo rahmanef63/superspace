@@ -10,6 +10,7 @@ export interface DocumentRecord {
   title: string;
   content?: string | null;
   isPublic: boolean;
+  parentId?: Id<"documents"> | null;
   workspaceId: Id<"workspaces">;
   createdBy: Id<"users">;
   _creationTime: number;

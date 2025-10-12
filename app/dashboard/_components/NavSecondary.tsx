@@ -6,12 +6,17 @@ import { IconBrightness } from "@tabler/icons-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
+} from "@/components/ui/sidebar"
+import { ModeToggle } from "@/components/mode-toggle"
+import Link from "next/link"
+import {
+  SecondarySidebarLayout,
+} from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout"
+import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { ModeToggle } from "@/components/mode-toggle"
-import Link from "next/link"
 
 type SecondaryItem = {
   title: string
@@ -25,30 +30,46 @@ export function NavSecondary({
 }: {
   items?: SecondaryItem[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const secondaryMenu = (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild>
+            <Link href={item.url}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild>
+          <label className="flex w-full items-center gap-2">
+            <IconBrightness className="h-4 w-4" />
+            <span>Dark Mode</span>
+            <span className="ml-auto">
+              <ModeToggle />
+            </span>
+          </label>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+
   return (
     <SidebarGroup {...props}>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <Link href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <label>
-                <IconBrightness />
-                Dark Mode
-                <span className="ml-auto"><ModeToggle/></span>
-              </label>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarGroupContent className="p-0">
+        <SecondarySidebarLayout.Sidebar
+          variant="minimal"
+          sections={[
+            {
+              id: "secondary-nav",
+              content: secondaryMenu,
+            },
+          ]}
+          className="bg-transparent"
+          contentClassName="space-y-2 overflow-visible px-0 py-0"
+        />
       </SidebarGroupContent>
     </SidebarGroup>
   )

@@ -110,9 +110,29 @@ export const create = mutation({
     isPublic: v.boolean(),
     workspaceId: v.id("workspaces"),
     content: v.optional(v.string()),
+    parentId: v.optional(v.union(v.id("documents"), v.null())),
   },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
+
+    let parentId: Id<"documents"> | undefined;
+    if (args.parentId !== undefined) {
+      if (args.parentId === null) {
+        parentId = undefined;
+      } else {
+        const parent = await ctx.db.get(args.parentId);
+        if (!parent) {
+          throw new Error("Parent document not found");
+        }
+        if (parent.workspaceId !== args.workspaceId) {
+          throw new Error("Parent document must belong to the same workspace");
+        }
+        if (!parent.isPublic && parent.createdBy !== userId) {
+          throw new Error("Unauthorized to reference parent document");
+        }
+        parentId = parent._id;
+      }
+    }
 
     return await ctx.db.insert("documents", {
       title: args.title,
@@ -120,6 +140,7 @@ export const create = mutation({
       createdBy: userId,
       workspaceId: args.workspaceId,
       content: args.content,
+      parentId,
       lastModified: Date.now(),
     });
   },
@@ -176,6 +197,7 @@ export const update = mutation({
     title: v.optional(v.string()),
     content: v.optional(v.string()),
     isPublic: v.optional(v.boolean()),
+    parentId: v.optional(v.union(v.id("documents"), v.null())),
   },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
@@ -201,6 +223,26 @@ export const update = mutation({
     }
     if (args.isPublic !== undefined) {
       updates.isPublic = args.isPublic;
+    }
+    if (args.parentId !== undefined) {
+      if (args.parentId === null) {
+        updates.parentId = undefined;
+      } else {
+        const parent = await ctx.db.get(args.parentId);
+        if (!parent) {
+          throw new Error("Parent document not found");
+        }
+        if (parent.workspaceId !== database.workspaceId) {
+          throw new Error("Parent document must belong to the same workspace");
+        }
+        if (!parent.isPublic && parent.createdBy !== userId) {
+          throw new Error("Unauthorized to reference parent document");
+        }
+        if (String(parent._id) === String(database._id)) {
+          throw new Error("Document cannot be its own parent");
+        }
+        updates.parentId = parent._id;
+      }
     }
 
     await ctx.db.patch(args.id, updates);

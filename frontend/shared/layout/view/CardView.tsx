@@ -1,6 +1,7 @@
 "use client";
 
 import type { Column, RowAction, ViewConfig } from "./types";
+import { RowActions } from "./RowActions";
 
 function resolveValue<T>(column: Column<T>, row: T) {
   if (column.cell) return column.cell(row);
@@ -72,25 +73,11 @@ export function CardView<T>({
             )}
 
             {actions && actions.length > 0 && (
-              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-muted p-3">
-                {actions.map((a) => {
-                  const visible = a.visible ? a.visible(row) : true;
-                  if (!visible) return null;
-                  const hasIcon = Boolean(a.icon);
-                  const hasLabel = Boolean(a.label);
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => a.onClick(row)}
-                      className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted"
-                      title={a.label}
-                    >
-                      {hasIcon && <span className="text-muted-foreground">{a.icon}</span>}
-                      {hasLabel && <span>{a.label}</span>}
-                    </button>
-                  );
-                })}
-              </div>
+              <RowActions
+                actions={actions}
+                row={row}
+                className="justify-end border-t border-border bg-muted p-3"
+              />
             )}
           </div>
         );

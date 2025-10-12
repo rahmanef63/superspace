@@ -42,6 +42,7 @@ export interface MenuItemMetadata {
   previousVersion?: string;
   targetId?: string;
   jsonPlaceholder?: Record<string, any>;
+  avatarStyle?: "icon" | "profile";
 }
 
 // Tree node type for rendering (with guaranteed children array)

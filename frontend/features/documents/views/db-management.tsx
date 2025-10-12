@@ -79,7 +79,6 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
               visibility={manager.visibility}
               onVisibilityChange={manager.setVisibility}
               stats={manager.stats}
-\
               workspaceId={workspaceId}
             />
           </TabsContent>

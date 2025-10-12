@@ -1,0 +1,10 @@
+{
+  "workspaceId": "k1234567890abcdef",
+  "name": "Editor",
+  "level": 40,
+  "permissions": ["documents:create", "documents:edit", "view:workspace"],
+  "color": "#3b82f6",
+  "isDefault": false,
+  "icon": "Edit",
+  "description": "Can create and edit documents"
+}

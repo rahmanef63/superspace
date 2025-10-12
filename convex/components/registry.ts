@@ -2,6 +2,11 @@ import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import { ensureUser, requirePermission } from "../auth/helpers";
 
+/**
+ * Component Registry Manager
+ * Manage component versioning, aliases, and binding to menu items with audit logging
+ */
+
 // Create a component registry entry
 export const createComponent = mutation({
   args: {
@@ -14,6 +19,11 @@ export const createComponent = mutation({
       await requirePermission(ctx, args.workspaceId, "MANAGE_MENUS");
     }
 
+    // Validate key format (alphanumeric with hyphens/underscores)
+    if (!/^[a-zA-Z0-9_-]+$/.test(args.key)) {
+      throw new Error("Component key must be alphanumeric with hyphens/underscores only");
+    }
+
     // Uniqueness by (workspaceId,key) is by convention
     const existing = await ctx.db
       .query("components")
@@ -23,11 +33,26 @@ export const createComponent = mutation({
       throw new Error("Component key already exists in this scope");
     }
 
-    return await ctx.db.insert("components", {
+    const componentId = await ctx.db.insert("components", {
       workspaceId: args.workspaceId,
       key: args.key,
       createdBy: userId,
     });
+
+    // Write audit event
+    if (args.workspaceId) {
+      await ctx.db.insert("activityEvents", {
+        actorUserId: userId,
+        workspaceId: args.workspaceId,
+        entityType: "component",
+        entityId: String(componentId),
+        action: "component_created",
+        diff: { key: args.key },
+        createdAt: Date.now(),
+      });
+    }
+
+    return componentId;
   },
 });
 
@@ -46,6 +71,15 @@ export const addComponentVersion = mutation({
     migrations: v.optional(v.object({})),
   },
   handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    const component = await ctx.db.get(args.componentId);
+    if (!component) throw new Error("Component not found");
+
+    // Validate version format (semver)
+    if (!/^\d+\.\d+\.\d+$/.test(args.version)) {
+      throw new Error("Version must be in semver format (e.g., 1.0.0)");
+    }
+
     const now = Date.now();
     const existing = await ctx.db
       .query("componentVersions")
@@ -53,11 +87,32 @@ export const addComponentVersion = mutation({
       .unique();
     if (existing) throw new Error("Version already exists for this component");
 
-    return await ctx.db.insert("componentVersions", {
+    const versionId = await ctx.db.insert("componentVersions", {
       ...args,
+      schemaVersion: args.schemaVersion || 1,
       createdAt: now,
       updatedAt: now,
     } as any);
+
+    // Write audit event
+    if (component.workspaceId) {
+      await ctx.db.insert("activityEvents", {
+        actorUserId: userId,
+        workspaceId: component.workspaceId,
+        entityType: "component_version",
+        entityId: String(versionId),
+        action: "component_version_created",
+        diff: {
+          componentKey: component.key,
+          version: args.version,
+          type: args.type,
+          status: args.status,
+        },
+        createdAt: Date.now(),
+      });
+    }
+
+    return versionId;
   },
 });
 
@@ -116,9 +171,164 @@ export const getComponentByKey = query({
 export const listComponentVersions = query({
   args: { componentId: v.id("components") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const versions = await ctx.db
       .query("componentVersions")
       .withIndex("by_component", (q) => q.eq("componentId", args.componentId))
       .collect();
+
+    // Sort by semver (newest first)
+    return versions.sort((a, b) => {
+      const aParts = a.version.split(".").map(Number);
+      const bParts = b.version.split(".").map(Number);
+      for (let i = 0; i < 3; i++) {
+        if (bParts[i] !== aParts[i]) return bParts[i] - aParts[i];
+      }
+      return 0;
+    });
+  },
+});
+
+// Update component version status with audit trail
+export const updateVersionStatus = mutation({
+  args: {
+    versionId: v.id("componentVersions"),
+    status: v.union(v.literal("draft"), v.literal("active"), v.literal("deprecated")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    const version = await ctx.db.get(args.versionId);
+    if (!version) throw new Error("Component version not found");
+
+    const component = await ctx.db.get(version.componentId);
+    if (!component) throw new Error("Component not found");
+
+    const oldStatus = version.status;
+
+    await ctx.db.patch(args.versionId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
+
+    // Write audit event
+    if (component.workspaceId) {
+      await ctx.db.insert("activityEvents", {
+        actorUserId: userId,
+        workspaceId: component.workspaceId,
+        entityType: "component_version",
+        entityId: String(args.versionId),
+        action: "component_version_status_updated",
+        diff: {
+          componentKey: component.key,
+          version: version.version,
+          oldStatus,
+          newStatus: args.status,
+        },
+        createdAt: Date.now(),
+      });
+    }
+
+    return args.versionId;
+  },
+});
+
+// Search components by key, alias, or category
+export const searchComponents = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    type: v.optional(v.union(v.literal("ui"), v.literal("layout"), v.literal("data"), v.literal("action"))),
+  },
+  handler: async (ctx, args) => {
+    const lowerQuery = args.query.toLowerCase();
+
+    // Search components by key in scope
+    const components = await ctx.db
+      .query("components")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+
+    const matchedComponents: Array<{
+      component: any;
+      version: any;
+      matchType: "key" | "alias" | "category";
+    }> = [];
+
+    for (const component of components) {
+      // Match by key
+      if (component.key.toLowerCase().includes(lowerQuery)) {
+        const activeVersion = await ctx.db
+          .query("componentVersions")
+          .withIndex("by_component", (q) => q.eq("componentId", component._id))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .order("desc")
+          .first();
+
+        if (activeVersion && (!args.type || activeVersion.type === args.type)) {
+          matchedComponents.push({
+            component,
+            version: activeVersion,
+            matchType: "key",
+          });
+        }
+      }
+
+      // Match by category in versions
+      const versions = await ctx.db
+        .query("componentVersions")
+        .withIndex("by_component", (q) => q.eq("componentId", component._id))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect();
+
+      for (const version of versions) {
+        if (!args.type || version.type === args.type) {
+          if (version.category.toLowerCase().includes(lowerQuery)) {
+            matchedComponents.push({
+              component,
+              version,
+              matchType: "category",
+            });
+          }
+        }
+      }
+    }
+
+    // Deduplicate by component+version
+    const seen = new Set<string>();
+    return matchedComponents.filter((item) => {
+      const key = `${item.component._id}_${item.version._id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  },
+});
+
+// List all components for a workspace (or system)
+export const listComponents = query({
+  args: { workspaceId: v.optional(v.id("workspaces")) },
+  handler: async (ctx, args) => {
+    const components = await ctx.db
+      .query("components")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+
+    // Get latest active version for each component
+    const enriched = await Promise.all(
+      components.map(async (component) => {
+        const activeVersion = await ctx.db
+          .query("componentVersions")
+          .withIndex("by_component", (q) => q.eq("componentId", component._id))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .order("desc")
+          .first();
+
+        return {
+          ...component,
+          latestActiveVersion: activeVersion,
+        };
+      })
+    );
+
+    return enriched;
   },
 });

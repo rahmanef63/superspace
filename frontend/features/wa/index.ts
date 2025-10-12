@@ -1,26 +1,9 @@
-// Components
+// Export main components (UI components organized by feature)
 export * from "./components"
 
-// Pages
-export * from "./shared/pages"
-
-// Views
+// Export views (page-level components)
 export * from "./views"
 
-// Lib utilities
-export * from "./lib"
-
-// Configuration
-export * from "./config"
-
-// Utils
-export * from "./utils"
-
-// Types
-export * from "./types"
-
-// Constants
-export * from "./constants"
-
-// Shared functionality
+// Export shared functionality from shared module
+// Note: Shared includes types, constants, utils, hooks, stores, data layers
 export * from "./shared"

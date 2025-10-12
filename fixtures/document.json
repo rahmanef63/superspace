@@ -1,0 +1,12 @@
+{
+  "title": "My Document",
+  "workspaceId": "k1234567890abcdef",
+  "isPublic": false,
+  "content": "# Hello World\n\nThis is a test document.",
+  "parentId": null,
+  "metadata": {
+    "description": "A test document",
+    "tags": ["test", "sample"],
+    "version": 1
+  }
+}

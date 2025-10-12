@@ -1,0 +1,11 @@
+{
+  "postFileWrite": [
+    { "pattern": "convex/workspace/**", "run": "/validate:workspace" },
+    { "pattern": "convex/workspace/settings.ts", "run": "/validate:settings" },
+    { "pattern": "convex/menu/**", "run": "/test" },
+    { "pattern": "convex/components/**", "run": "/test" }
+  ],
+  "postCommand": [
+    { "command": "/install", "run": "/test" }
+  ]
+}

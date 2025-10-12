@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
         { role: "user", content: message },
       ],
       temperature: settings?.temperature || 0.7,
-      maxTokens: settings?.maxTokens || 1000,
     })
 
     return NextResponse.json({

@@ -6,7 +6,9 @@
       "Bash(npm run:*)",
       "Bash(pnpm install:*)",
       "Bash(npx convex dev:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm update:*)"
     ],
     "deny": [],
     "ask": []

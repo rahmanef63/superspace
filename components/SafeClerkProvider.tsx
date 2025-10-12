@@ -39,12 +39,6 @@ export function SafeClerkProvider({ children, publishableKey, afterSignOutUrl = 
     <ClerkProvider
       publishableKey={publishableKey}
       afterSignOutUrl={afterSignOutUrl}
-      isomorphicClerkOptions={{
-        onError: (err) => {
-          console.error("[Clerk] Failed to load", err)
-          setHasError(true)
-        },
-      }}
     >
       {children}
     </ClerkProvider>

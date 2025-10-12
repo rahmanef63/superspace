@@ -1,0 +1,8 @@
+{
+  "name": "My Workspace",
+  "slug": "my-workspace",
+  "type": "personal",
+  "isPublic": false,
+  "description": "A personal workspace for testing",
+  "selectedMenuSlugs": ["chat", "documents", "database"]
+}

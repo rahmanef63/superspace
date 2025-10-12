@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const { message, history, settings } = await request.json()
 
-    const result = await streamText({
+    const result = streamText({
       model: openai("gpt-4"),
       messages: [
         ...history.map((msg: any) => ({
@@ -16,10 +16,9 @@ export async function POST(request: NextRequest) {
         { role: "user", content: message },
       ],
       temperature: settings?.temperature || 0.7,
-      maxTokens: settings?.maxTokens || 1000,
     })
 
-    return result.toAIStreamResponse()
+    return result.toDataStreamResponse()
   } catch (error) {
     console.error("AI Stream API error:", error)
     return new Response("Failed to generate AI response", { status: 500 })

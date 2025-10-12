@@ -1,0 +1,40 @@
+{
+  "key": "custom-button",
+  "version": "1.0.0",
+  "category": "buttons",
+  "type": "ui",
+  "status": "active",
+  "propsSchema": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "description": "Button label text"
+    },
+    "variant": {
+      "type": "string",
+      "enum": ["primary", "secondary", "danger"],
+      "default": "primary",
+      "description": "Button variant style"
+    },
+    "size": {
+      "type": "string",
+      "enum": ["sm", "md", "lg"],
+      "default": "md"
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "defaultProps": {
+    "variant": "primary",
+    "size": "md",
+    "disabled": false
+  },
+  "slots": {
+    "icon": {
+      "description": "Optional icon slot"
+    }
+  },
+  "description": "A customizable button component with multiple variants"
+}

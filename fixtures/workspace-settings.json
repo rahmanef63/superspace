@@ -1,0 +1,7 @@
+{
+  "allowInvites": true,
+  "requireApproval": false,
+  "defaultRoleId": "k1234567890abcdef",
+  "allowPublicDocuments": true,
+  "theme": "light"
+}

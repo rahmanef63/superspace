@@ -1,0 +1,11 @@
+{
+  "/install": "pnpm install",
+  "/test": "pnpm test",
+  "/validate:workspace": "node scripts/validate-workspace.ts fixtures/workspace.json",
+  "/validate:settings": "node scripts/validate-workspace-settings.ts fixtures/workspace-settings.json",
+  "/validate:document": "node scripts/validate-document.ts fixtures/document.json",
+  "/validate:role": "node scripts/validate-role.ts fixtures/role.json",
+  "/validate:conversation": "node scripts/validate-conversation.ts fixtures/conversation.json",
+  "/migrate:settings:dry": "node scripts/migrate-workspace-settings.ts --dry-run",
+  "/migrate:component:dry": "node scripts/migrate-component-schema.ts --dry-run"
+}

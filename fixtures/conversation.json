@@ -1,0 +1,12 @@
+{
+  "workspaceId": "k1234567890abcdef",
+  "type": "group",
+  "name": "Project Team",
+  "participantIds": ["k2222222222222222", "k3333333333333333"],
+  "metadata": {
+    "description": "Team discussion channel",
+    "isFavorite": true,
+    "isPinned": false,
+    "labels": ["work", "project"]
+  }
+}

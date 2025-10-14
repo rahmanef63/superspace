@@ -1,7 +1,6 @@
 "use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import { DocumentsPageManagementView } from "@/frontend/features/documents/views/page-management";
 
 export interface PagesPageProps {
   workspaceId?: Id<"workspaces"> | null;
@@ -17,10 +16,13 @@ export default function PagesPage({ workspaceId }: PagesPageProps) {
   }
 
   return (
-    <DocumentsPageManagementView
-      workspaceId={workspaceId}
-      editorMode="block"
-      storageKey={`pages.view.${workspaceId}`}
-    />
+    <div className="flex items-center justify-center h-full p-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-2xl font-semibold">Pages</h1>
+        <p className="text-muted-foreground">
+          Notion-like pages feature is coming soon.
+        </p>
+      </div>
+    </div>
   );
 }

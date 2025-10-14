@@ -1,10 +1,11 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { useBlockNoteSync } from "@convex-dev/prosemirror-sync/blocknote";
 import { BlockNoteEditor, BlockNoteSchema } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
-import { Edit3, Globe, Lock, Save } from "lucide-react";
+import { ArrowLeft, ArrowLeftIcon, Edit3, Globe, Lock, Save } from "lucide-react";
 import { toast } from "sonner";
 import type { Id } from "@convex/_generated/dataModel";
 import { api } from "@convex/_generated/api";
@@ -13,7 +14,7 @@ import {
   useMenuPresenceUserId,
   useToggleDocumentPublic,
   useUpdateDocumentTitle,
-} from "../../api";
+} from "../../../api/documents";
 import { DocumentPresenceIndicator } from "../DocumentPresenceIndicator";
 import { formatRelativeTime } from "../../utils";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export interface BlockNoteDocumentEditorProps {
 }
 
 export function BlockNoteDocumentEditor({ documentId, onBack, className }: BlockNoteDocumentEditorProps) {
+  const { theme, resolvedTheme } = useTheme();
   const document = useDocumentById(documentId);
   const updateTitle = useUpdateDocumentTitle();
   const togglePublic = useToggleDocumentPublic();
@@ -35,6 +37,9 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
+
+  // Determine the effective theme for BlockNote (only supports 'light' or 'dark')
+  const blockNoteTheme = (resolvedTheme === "dark" ? "dark" : "light") as "light" | "dark";
 
   const sync = useBlockNoteSync<BlockNoteEditor>(
     api.menu.page.prosemirror,
@@ -91,9 +96,9 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
             {onBack && (
               <button
                 onClick={onBack}
-                className="text-sm text-muted-foreground hover:text-foreground"
+                className="text-xl text-muted-foreground hover:text-foreground"
               >
-                {"<- Back"}
+                <ArrowLeftIcon className="w-4 h-4" />
               </button>
             )}
 
@@ -184,7 +189,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
                   return (
                     <BlockNoteView
                       editor={sync.editor}
-                      theme="light"
+                      theme={blockNoteTheme}
                       className="h-full"
                     />
                   );

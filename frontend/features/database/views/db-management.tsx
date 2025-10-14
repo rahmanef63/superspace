@@ -13,7 +13,7 @@ import {
   CreateDocumentDialog,
   TiptapCanvas,
   useDocumentsManager,
-} from "../shared";
+} from "../../documents/shared";
 
 export interface DocumentsDbManagementViewProps {
   workspaceId: Id<"workspaces">;
@@ -146,16 +146,6 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
           </div>
         )}
       </aside>
-
-      <CreateDocumentDialog
-        open={manager.state.createOpen}
-        onOpenChange={manager.toggleCreateDialog}
-        workspaceId={workspaceId}
-        onCreated={(documentId) => {
-          manager.toggleCreateDialog(false);
-          manager.selectDocument(documentId);
-        }}
-      />
     </div>
   );
 }

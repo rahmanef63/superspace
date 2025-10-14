@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { DocumentsBrowser } from "./DocumentsBrowser";
 import { CreateDocumentDialog } from "./CreateDocumentDialog";
 import { DocumentEditor } from "./editor";
-import { useDeleteDocument } from "../api";
+import { useDeleteDocument } from "../../api/documents";
 import { useDocumentsManager } from "../hooks";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
 import type { DocumentEditorMode } from "../types";

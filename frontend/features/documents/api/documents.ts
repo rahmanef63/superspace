@@ -1,7 +1,7 @@
 ﻿import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import type { DocumentRecord } from "../types";
+import type { DocumentRecord } from "../shared/types";
 
 export const useWorkspaceDocuments = (workspaceId?: Id<"workspaces"> | null) => {
   return useQuery(

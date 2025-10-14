@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateDocument } from "../api";
+import { useCreateDocument } from "../../api";
 import { ensureTitle } from "../utils";
 
 export interface CreateDocumentDialogProps {

@@ -17,21 +17,21 @@ export const getUserId = query({
 
 export const heartbeat = mutation({
   args: { roomId: v.string(), userId: v.string(), sessionId: v.string(), interval: v.number() },
+  returns: v.object({ roomToken: v.string(), sessionToken: v.string() }),
   handler: async (ctx, { roomId, userId, sessionId, interval }) => {
-    try {
-      // Validate input parameters
-      if (!roomId || !userId || !sessionId) {
-        console.warn("Invalid parameters for heartbeat:", { roomId, userId, sessionId });
-        return null;
-      }
+    if (!roomId || !userId || !sessionId) {
+      console.warn("Invalid parameters for heartbeat:", { roomId, userId, sessionId });
+      throw new Error("Invalid heartbeat parameters");
+    }
 
+    try {
       const authUserId = await ensureUser(ctx);
-      return await presence.heartbeat(ctx, roomId, authUserId, sessionId, interval);
-    } catch (error) {
-      // If not authenticated, skip heartbeat
-      if (error instanceof Error && error.message === "Not authenticated") {
-        return null;
+      const result = await presence.heartbeat(ctx, roomId, authUserId, sessionId, interval);
+      if (!result) {
+        throw new Error("Presence heartbeat did not return tokens");
       }
+      return result;
+    } catch (error) {
       console.error("Error in presence heartbeat:", error);
       throw error;
     }
@@ -39,7 +39,7 @@ export const heartbeat = mutation({
 });
 
 export const list = query({
-  args: { roomToken: v.optional(v.string()) },
+  args: { roomToken: v.string() },
   handler: async (ctx, { roomToken }) => {
     try {
       // Validate roomToken
@@ -87,4 +87,3 @@ export const disconnect = mutation({
     }
   },
 });
-

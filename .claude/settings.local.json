@@ -8,7 +8,10 @@
       "Bash(npx convex dev:*)",
       "Bash(find:*)",
       "Bash(pnpm remove:*)",
-      "Bash(pnpm update:*)"
+      "Bash(pnpm update:*)",
+      "Bash(where npx)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

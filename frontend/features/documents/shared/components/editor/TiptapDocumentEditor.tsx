@@ -7,7 +7,7 @@ import {
   useDocumentById,
   useMenuPresenceUserId,
   useUpdateDocument,
-} from "../../api";
+} from "../../../api/documents";
 import { TiptapCanvas } from "./TiptapCanvas";
 import { DocumentPresenceIndicator } from "../DocumentPresenceIndicator";
 import { formatRelativeTime, getCharacterCount, getWordCount, ensureTitle } from "../../utils";

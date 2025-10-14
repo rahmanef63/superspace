@@ -1,7 +1,7 @@
 "use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import { DocumentsDbManagementView } from "@/frontend/features/documents/views/db-management";
+import { DocumentsDbManagementView } from "@/frontend/features/database/views/db-management";
 
 export interface DatabasesPageProps {
   workspaceId?: Id<"workspaces"> | null;

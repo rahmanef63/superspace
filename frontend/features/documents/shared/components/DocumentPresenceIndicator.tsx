@@ -23,7 +23,14 @@ export function DocumentPresenceIndicator({
     return null;
   }
 
-  let presenceState = [];
+  let presenceState: Array<{
+    userId: string;
+    online: boolean;
+    lastDisconnected: number;
+    name?: string;
+    image?: string;
+  }> = [];
+
   try {
     presenceState = usePresence(api.menu.page.presence, roomId, userId) ?? [];
   } catch (error) {

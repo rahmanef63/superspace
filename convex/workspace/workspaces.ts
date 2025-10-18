@@ -495,14 +495,23 @@ export const createWorkspace = mutation({
       },
     })
 
-    // Create default menu items (best-effort; ignore auth failures in mixed auth setups)
+    // Create default menu items
+    // IMPORTANT: This must succeed or workspace will have no menus
     try {
       await ctx.runMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems, {
         workspaceId,
         selectedSlugs: Array.isArray(args.selectedMenuSlugs) ? args.selectedMenuSlugs : [],
       })
+      console.log("[createWorkspace] Default menus created successfully for workspace:", workspaceId)
     } catch (err) {
-      console.warn("createDefaultMenuItems failed; continuing", err)
+      console.error("[createWorkspace] CRITICAL: Failed to create default menus", {
+        workspaceId,
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      })
+      // Log detailed error but don't throw to allow workspace creation to complete
+      // User can manually reset menus via resetWorkspace mutation
+      console.warn("[createWorkspace] Workspace created without menus - use resetWorkspace to fix")
     }
 
     return workspaceId

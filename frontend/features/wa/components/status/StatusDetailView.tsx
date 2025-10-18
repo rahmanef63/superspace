@@ -10,7 +10,7 @@ interface StatusDetailViewProps {
 
 const mockStatusDetails = {
   '1': {
-    name: 'Zahra❤️',
+    name: 'User1❤️',
     avatar: '',
     time: '2 hours ago',
     mediaType: 'photo',
@@ -20,7 +20,7 @@ const mockStatusDetails = {
     ]
   },
   '2': {
-    name: 'JUSMAR',
+    name: 'Group1',
     avatar: '',
     time: '4 hours ago',
     mediaType: 'video',

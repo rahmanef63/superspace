@@ -165,8 +165,18 @@ const applicationTables = {
         jsonPlaceholder: v.optional(v.object({})),
         version: v.optional(v.string()),
         category: v.optional(v.string()),
+        tags: v.optional(v.array(v.string())),
         lastUpdated: v.optional(v.number()),
         previousVersion: v.optional(v.string()),
+        status: v.optional(v.union(
+          v.literal("stable"),
+          v.literal("beta"),
+          v.literal("development"),
+          v.literal("experimental"),
+          v.literal("deprecated")
+        )),
+        isReady: v.optional(v.boolean()),
+        expectedRelease: v.optional(v.string()),
       }),
     ),
     createdBy: v.id("users"),
@@ -651,6 +661,38 @@ const applicationTables = {
     .index("by_workspace", ["workspaceId"])
     .index("by_actor", ["actorUserId"])
     .index("by_entity", ["entityType", "entityId"]),
+
+  // Reports
+  reports: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_workspace", ["workspaceId"]),
+
+  // Calendar
+  calendar: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_workspace", ["workspaceId"]),
+
+  // Tasks
+  tasks: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_workspace", ["workspaceId"]),
+
+  // Wiki
+  wiki: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_workspace", ["workspaceId"]),
 }
 
 // Extend the auth users table to include extra fields

@@ -8,9 +8,9 @@ const ComponentSchema = z.object({
   version: z.string().regex(/^\d+\.\d+\.\d+$/, "Version must be semver format (e.g., 1.0.0)"),
   category: z.string().min(1, "Category is required"),
   type: z.enum(["ui", "layout", "data", "action"]),
-  propsSchema: z.record(z.any()).optional(),
-  defaultProps: z.record(z.any()).optional(),
-  slots: z.record(z.any()).optional(),
+  propsSchema: z.record(z.string(), z.any()).optional(),
+  defaultProps: z.record(z.string(), z.any()).optional(),
+  slots: z.record(z.string(), z.any()).optional(),
   status: z.enum(["draft", "active", "deprecated"]),
   description: z.string().optional(),
 });

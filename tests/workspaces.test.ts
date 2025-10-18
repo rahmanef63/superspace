@@ -2,6 +2,7 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { convexTest } from "convex-test";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
+import schema from "../convex/schema";
 
 /**
  * Integration tests for Workspace CRUD operations
@@ -13,7 +14,35 @@ describe("Workspace CRUD", () => {
   let userId: Id<"users">;
 
   beforeEach(async () => {
-    t = convexTest();
+    // Load all Convex modules (TypeScript source + generated JS)
+    // Vite glob doesn't support negation well, so we use multiple positive patterns
+    const modules = {
+      ...import.meta.glob("../convex/**/*.ts", { eager: true }),
+      ...import.meta.glob("../convex/_generated/**/*.js", { eager: true }),
+    };
+
+    // Filter out non-function files (config, schema, router, http, data files)
+    const filtered: Record<string, any> = {};
+    for (const [path, mod] of Object.entries(modules)) {
+      // Skip these files:
+      // - Config files (.config.ts)
+      // - Schema (passed separately to convexTest)
+      // - HTTP routes and router (not standard Convex functions)
+      // - Data-only files (menu_manifest_data, optional_features_catalog)
+      // - Generated TypeScript files (only include .js from _generated)
+      if (path.includes('.config.ts') ||
+          path.endsWith('/schema.ts') ||
+          path.endsWith('/http.ts') ||
+          path.endsWith('/router.ts') ||
+          path.includes('menu_manifest_data.ts') ||
+          path.includes('optional_features_catalog.ts') ||
+          (path.includes('_generated') && path.endsWith('.ts'))) {
+        continue;
+      }
+      filtered[path] = mod;
+    }
+
+    t = convexTest(schema, filtered);
     // Create a test user
     userId = await t.run(async (ctx: any) => {
       return await ctx.db.insert("users", {

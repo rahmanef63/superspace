@@ -11,7 +11,18 @@
       "Bash(pnpm update:*)",
       "Bash(where npx)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(pnpm run validate:features:*)",
+      "Bash(pnpm run:*)",
+      "Bash(tasklist)",
+      "Read(//c/rahman/template/V0/**)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm list:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest run:*)"
     ],
     "deny": [],
     "ask": []

@@ -9,8 +9,8 @@ import { SearchBar } from "../ui/SearchBar";
 import { getInitials } from "../../utils";
 
 const mockStatuses = [
-  { id: '1', name: 'Zahra❤️', avatar: '', time: '2 hours ago', hasUpdate: true, mediaType: 'photo' },
-  { id: '2', name: 'JUSMAR', avatar: '', time: '4 hours ago', hasUpdate: true, mediaType: 'video' },
+  { id: '1', name: 'User1❤️', avatar: '', time: '2 hours ago', hasUpdate: true, mediaType: 'photo' },
+  { id: '2', name: 'Group1', avatar: '', time: '4 hours ago', hasUpdate: true, mediaType: 'video' },
   { id: '3', name: 'Mom', avatar: '', time: '6 hours ago', hasUpdate: false, mediaType: 'photo' },
 ];
 

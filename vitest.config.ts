@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    setupFiles: [],
+    setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts"],
     coverage: {
       provider: "v8",
@@ -18,11 +18,15 @@ export default defineConfig({
         "convex/_generated/",
       ],
     },
+    deps: {
+      inline: ["convex-test"],
+    },
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"),
       "@/convex": path.resolve(__dirname, "./convex"),
     },
+    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"],
   },
 });

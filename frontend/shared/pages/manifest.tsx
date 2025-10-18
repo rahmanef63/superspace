@@ -16,6 +16,7 @@ import MenusPage from "./static/menus/page"
 import MessagePage from "../../features/wa/page"
 import DocumentsPage from "../../features/documents/page"
 import CanvasPage from "../../features/canvas/page"
+import ReportsPage from "../../features/reports/page"
 import PagesPage from "./static/pages/page"
 import DatabasesPage from "./static/databases/page"
 import {
@@ -47,6 +48,7 @@ import {
   Star,
   Archive,
   Database,
+  FileBarChart,
 } from "lucide-react"
 
 export type AppPageComponent = (props: { workspaceId?: Id<"workspaces"> | null }) => ReactElement | null
@@ -189,6 +191,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Database management",
     icon: Database,
     component: ({ workspaceId }) => <DatabasesPage workspaceId={workspaceId as Id<"workspaces">} />,
+  },
+  {
+    id: "reports",
+    componentId: "ReportsPage",
+    title: "Reports",
+    description: "Analytics and reports",
+    icon: FileBarChart,
+    component: ({ workspaceId }) => <ReportsPage workspaceId={workspaceId as Id<"workspaces">} />,
   },
   {
     id: "canvas",

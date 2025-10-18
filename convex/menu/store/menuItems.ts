@@ -185,6 +185,7 @@ export const getMenuItemBySlug = query({
 })
 
 import { DEFAULT_MENU_ITEMS } from "./menu_manifest_data"
+import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
 
 // Create default menu items for a workspace based on manifest
 export const createDefaultMenuItems = mutation({
@@ -536,117 +537,66 @@ export const installFeatureMenus = mutation({
     const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
     const userId = membership?.userId
 
-    // Available feature menus that can be installed with version control
-    const availableFeatures = [
-      {
-        name: "Chat",
-        slug: "chat",
-        type: "route" as const,
-        icon: "MessageSquare",
-        path: "/chat",
-        component: "ChatPage",
-        order: 2,
-        version: "1.0.0", // Version for tracking updates
-        metadata: {
-          description: "Messages and AI assistant",
-          version: "1.0.0",
-          lastUpdated: Date.now(),
-        },
-      },
-      {
-        name: "Documents",
-        slug: "documents",
-        type: "route" as const,
-        icon: "FileText",
-        path: "/documents",
-        component: "DocumentsPage",
-        order: 3,
-        version: "1.2.0",
-        metadata: {
-          description: "Collaborative documents",
-          version: "1.2.0",
-          lastUpdated: Date.now(),
-        },
-      },
-      {
-        name: "Canvas",
-        slug: "canvas",
-        type: "route" as const,
-        icon: "Palette",
-        path: "/canvas",
-        component: "CanvasPage",
-        order: 4,
-        version: "1.0.0",
-        metadata: {
-          description: "Visual collaboration",
-          version: "1.0.0",
-          lastUpdated: Date.now(),
-        },
-      },
-      {
-        name: "Members",
-        slug: "members",
-        type: "route" as const,
-        icon: "Users",
-        path: "/members",
-        component: "MembersPage",
-        order: 5,
-        version: "1.1.0",
-        metadata: {
-          description: "Manage workspace members",
-          version: "1.1.0",
-          lastUpdated: Date.now(),
-        },
-        requiresPermission: PERMS.MANAGE_MEMBERS,
-      },
-      {
-        name: "Friends",
-        slug: "friends",
-        type: "route" as const,
-        icon: "Heart",
-        path: "/friends",
-        component: "FriendsPage",
-        order: 6,
-        version: "1.0.0",
-        metadata: {
-          description: "Manage your friends",
-          version: "1.0.0",
-          lastUpdated: Date.now(),
-        },
-      },
-      {
-        name: "Menu Store",
-        slug: "menus",
-        type: "route" as const,
-        icon: "Menu",
-        path: "/menus",
-        component: "MenusPage",
-        order: 10,
-        version: "1.0.0",
-        metadata: {
-          description: "Install and manage navigation menus",
-          version: "1.0.0",
-          lastUpdated: Date.now(),
-        },
-        requiresPermission: PERMS.MANAGE_MENUS,
-      },
-      {
-        name: "Invitations",
-        slug: "invitations",
-        type: "route" as const,
-        icon: "Mail",
-        path: "/invitations",
-        component: "InvitationsPage",
-        order: 11,
-        version: "1.0.0",
-        metadata: {
-          description: "Manage invitations",
-          version: "1.0.0",
-          lastUpdated: Date.now(),
-        },
-        requiresPermission: PERMS.MANAGE_INVITATIONS,
-      },
-    ]
+    // Build available features from OPTIONAL_FEATURES_CATALOG
+    // We need to match the catalog features with their full menu definitions
+    const catalogFeatureMap = new Map(
+      OPTIONAL_FEATURES_CATALOG.map((f) => [f.slug, f])
+    )
+
+    // Map catalog features to full menu item definitions
+    // For features not in DEFAULT_MENU_ITEMS, derive from catalog
+    const availableFeatures = OPTIONAL_FEATURES_CATALOG.map((catalogFeature) => {
+      // Try to find in DEFAULT_MENU_ITEMS for full definition
+      const defaultFeature = DEFAULT_MENU_ITEMS.find((d) => d.slug === catalogFeature.slug)
+
+      if (defaultFeature) {
+        // Use default feature but mark as optional
+        return {
+          name: defaultFeature.name,
+          slug: defaultFeature.slug,
+          type: defaultFeature.type,
+          icon: defaultFeature.icon,
+          path: defaultFeature.path,
+          component: defaultFeature.component,
+          order: defaultFeature.order,
+          version: catalogFeature.version,
+          metadata: {
+            description: catalogFeature.description,
+            version: catalogFeature.version,
+            category: catalogFeature.category,
+            tags: catalogFeature.tags,
+            status: catalogFeature.status as "development" | "stable" | "beta" | "experimental" | "deprecated" | undefined,
+            isReady: catalogFeature.isReady,
+            expectedRelease: catalogFeature.expectedRelease,
+            lastUpdated: Date.now(),
+          },
+          requiresPermission: catalogFeature.requiresPermission,
+        }
+      } else {
+        // Derive from catalog (for truly optional features)
+        return {
+          name: catalogFeature.name,
+          slug: catalogFeature.slug,
+          type: "route" as const,
+          icon: catalogFeature.icon,
+          path: `/dashboard/${catalogFeature.slug}`,
+          component: `${catalogFeature.name.replace(/\s+/g, '')}Page`,
+          order: 100, // Put at end by default
+          version: catalogFeature.version,
+          metadata: {
+            description: catalogFeature.description,
+            version: catalogFeature.version,
+            category: catalogFeature.category,
+            tags: catalogFeature.tags,
+            status: catalogFeature.status as "development" | "stable" | "beta" | "experimental" | "deprecated" | undefined,
+            isReady: catalogFeature.isReady,
+            expectedRelease: catalogFeature.expectedRelease,
+            lastUpdated: Date.now(),
+          },
+          requiresPermission: catalogFeature.requiresPermission,
+        }
+      }
+    })
 
     // Get role permissions
     const allRoles = await ctx.db
@@ -903,66 +853,18 @@ export const getAvailableFeatureMenus = query({
 
     const installedSlugs = new Set(installedMenus.map((m) => m.slug))
 
-    // Return available features that aren't installed yet
-    const availableFeatures = [
-      {
-        slug: "chat",
-        name: "Chat",
-        description: "Messages and AI assistant",
-        icon: "MessageSquare",
-        version: "1.0.0",
-        category: "communication",
-      },
-      {
-        slug: "documents",
-        name: "Documents",
-        description: "Collaborative documents",
-        icon: "FileText",
-        version: "1.2.0",
-        category: "productivity",
-      },
-      {
-        slug: "canvas",
-        name: "Canvas",
-        description: "Visual collaboration",
-        icon: "Palette",
-        version: "1.0.0",
-        category: "creativity",
-      },
-      {
-        slug: "members",
-        name: "Members",
-        description: "Manage workspace members",
-        icon: "Users",
-        version: "1.1.0",
-        category: "administration",
-      },
-      {
-        slug: "friends",
-        name: "Friends",
-        description: "Manage your friends",
-        icon: "Heart",
-        version: "1.0.0",
-        category: "social",
-      },
-      {
-        slug: "menus",
-        name: "Menu Store",
-        description: "Install and manage navigation menus",
-        icon: "Menu",
-        version: "1.0.0",
-        category: "administration",
-      },
-      {
-        slug: "invitations",
-        name: "Invitations",
-        description: "Manage invitations",
-        icon: "Mail",
-        version: "1.0.0",
-        category: "administration",
-      },
-    ]
+    // Use OPTIONAL_FEATURES_CATALOG as the source of truth
+    // This is auto-generated from features.config.ts via sync:features script
+    const availableFeatures = OPTIONAL_FEATURES_CATALOG.map((feature) => ({
+      slug: feature.slug,
+      name: feature.name,
+      description: feature.description,
+      icon: feature.icon,
+      version: feature.version,
+      category: feature.category,
+    }))
 
+    // Return only features that aren't already installed
     return availableFeatures.filter((feature) => !installedSlugs.has(feature.slug))
   },
 })

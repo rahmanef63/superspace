@@ -90,7 +90,7 @@ export default function CatchAllPage() {
     // If unauthenticated in dev, avoid rendering components that assume a user
     if (!isAuthed) {
       return (
-        <div className="px-4 lg:px-6 space-y-2">
+        <div className="justify-center items-center mx-auto lg:px-6 space-y-2">
           <h2 className="text-lg font-semibold">You are not signed in</h2>
           <p className="text-sm text-muted-foreground">Please go back to the home page to sign in.</p>
           <div>
@@ -103,7 +103,7 @@ export default function CatchAllPage() {
     // Explicit empty state fallback to guide users to onboarding page
     if (workspacesLoaded && isAuthed && workspaces.length === 0) {
       return (
-        <div className="px-4 lg:px-6 space-y-4">
+        <div className="justify-center items-center mx-auto  lg:px-6 space-y-4">
           <h2 className="text-lg font-semibold">No workspace yet</h2>
           <p className="text-sm text-muted-foreground">
             Create your first workspace to get started.
@@ -130,7 +130,7 @@ export default function CatchAllPage() {
     const manifestHas = Boolean(getPageById(activeSlug))
     if (Array.isArray(menuItems) && menuItems.length > 0 && !accessibleSlugs.has(activeSlug) && !manifestHas) {
       return (
-        <div className="px-4 lg:px-6 space-y-2">
+        <div className="justify-center items-center mx-auto  lg:px-6 space-y-2">
           <h2 className="text-lg font-semibold">Not Found or No Access</h2>
           <p className="text-sm text-muted-foreground">
             You don&apos;t have access to this page or it does not exist.
@@ -151,7 +151,7 @@ export default function CatchAllPage() {
       <SetBreadcrumbs items={breadcrumbs} />
       {/* Unknown slug fallback (rendered after hooks to keep them stable) */}
       {parts.length > 0 && !isKnownSlug ? (
-        <div className="px-4 lg:px-6 space-y-2">
+        <div className="flex-1 justify-center items-center mx-auto text-center lg:px-auto space-y-2">
           <h2 className="text-lg font-semibold">Page Not Found</h2>
           <p className="text-sm text-muted-foreground">
             The page you are looking for doesn&apos;t exist.

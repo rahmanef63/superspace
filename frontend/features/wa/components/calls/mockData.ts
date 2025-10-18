@@ -38,7 +38,7 @@ export type CallSummary = Pick<
 const CALL_DATA: CallDetail[] = [
   {
     id: "1",
-    name: "Zahra Khalil",
+    name: "Mock User",
     phoneNumber: "+62 812-3456-7890",
     avatar: undefined,
     lastActivity: "2 minutes ago",
@@ -65,7 +65,7 @@ const CALL_DATA: CallDetail[] = [
   },
   {
     id: "2",
-    name: "Jusmar",
+    name: "Group1",
     phoneNumber: "+62 821-9876-5432",
     avatar: undefined,
     lastActivity: "1 hour ago",

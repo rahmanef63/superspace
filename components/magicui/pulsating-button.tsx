@@ -30,8 +30,8 @@ export const PulsatingButton = React.forwardRef<
         )}
         style={
           {
-            "--pulse-color": pulseColor,
-            "--duration": duration,
+            "-pulse-color": pulseColor,
+            "-duration": duration,
           } as React.CSSProperties
         }
         {...props}

@@ -102,7 +102,7 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
         }));
       }, MESSAGE_STATUS_TIMEOUT.DELIVERED);
 
-      // Optional: simulate read after a bit longer to reflect UI like WhatsApp
+      // Optional: simulate read after a bit longer to reflect UI like Chats
       setTimeout(() => {
         set((state) => ({
           messages: {
@@ -136,6 +136,6 @@ export const initializeWhatsApp = async () => {
   try {
     await useWhatsAppStore.getState().loadChats();
   } catch (error) {
-    console.error('Failed to initialize WhatsApp data:', error);
+    console.error('Failed to initialize Chats data:', error);
   }
 };

@@ -1,4 +1,4 @@
-// Core WhatsApp Types - Shared across all modules
+// Core Chats Types - Shared across all modules
 export type TabType = 'chats' | 'calls' | 'status' | 'ai' | 'starred' | 'archived' | 'settings' | 'profile';
 
 export interface Message {

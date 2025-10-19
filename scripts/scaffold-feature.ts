@@ -45,7 +45,7 @@ interface ScaffoldOptions {
 function parseArgs(): ScaffoldOptions {
   const args = process.argv.slice(2)
 
-  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
+  if (args.length === 0 || args[0] === "-help" || args[0] === "h") {
     console.log(`
 Feature Scaffolding CLI
 
@@ -74,7 +74,7 @@ Examples:
   }
 
   const slug = args[0]
-  if (!slug || slug.startsWith("--")) {
+  if (!slug || slug.startsWith("-")) {
     console.error("Error: Feature slug is required")
     process.exit(1)
   }
@@ -92,16 +92,16 @@ Examples:
 
   const hasFlag = (flag: string): boolean => args.includes(flag)
 
-  const name = getArg("--name") || slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
-  const description = getArg("--description") || `${name} feature`
-  const featureType = (getArg("--type") as ScaffoldOptions["featureType"]) || "optional"
-  const category = (getArg("--category") as ScaffoldOptions["category"]) || "productivity"
-  const icon = getArg("--icon") || "Box"
-  const requiresPermission = getArg("--permission")
+  const name = getArg("-name") || slug.split("").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+  const description = getArg("-description") || `${name} feature`
+  const featureType = (getArg("-type") as ScaffoldOptions["featureType"]) || "optional"
+  const category = (getArg("-category") as ScaffoldOptions["category"]) || "productivity"
+  const icon = getArg("-icon") || "Box"
+  const requiresPermission = getArg("-permission")
 
-  const hasUI = !hasFlag("--no-ui")
-  const hasConvex = !hasFlag("--no-convex")
-  const hasTests = !hasFlag("--no-tests")
+  const hasUI = !hasFlag("-no-ui")
+  const hasConvex = !hasFlag("-no-convex")
+  const hasTests = !hasFlag("-no-tests")
 
   // Validate category
   const validCategories = [
@@ -145,7 +145,7 @@ Examples:
 
 function generateFrontendIndex(slug: string, name: string): string {
   const componentName = slug
-    .split("-")
+    .split("")
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 
@@ -163,7 +163,7 @@ export * from "./types"
 
 function generateFrontendPage(slug: string, name: string): string {
   const componentName = slug
-    .split("-")
+    .split("")
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 
@@ -217,7 +217,7 @@ export default function ${componentName}Page() {
 
 function generateFrontendHook(slug: string, name: string): string {
   const componentName = slug
-    .split("-")
+    .split("")
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 
@@ -414,7 +414,7 @@ export * as mutations from "./mutations"
 
 function generateUnitTest(slug: string, name: string): string {
   const componentName = slug
-    .split("-")
+    .split("")
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 
@@ -494,11 +494,11 @@ function scaffoldFeature(options: ScaffoldOptions) {
 
     writeFileSync(join(featurePath, "index.ts"), generateFrontendIndex(slug, name!))
     writeFileSync(
-      join(featurePath, "views", `${slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("")}Page.tsx`),
+      join(featurePath, "views", `${slug.split("").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("")}Page.tsx`),
       generateFrontendPage(slug, name!)
     )
     writeFileSync(
-      join(featurePath, "hooks", `use${slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("")}.ts`),
+      join(featurePath, "hooks", `use${slug.split("").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("")}.ts`),
       generateFrontendHook(slug, name!)
     )
     writeFileSync(join(featurePath, "types", "index.ts"), generateFrontendTypes(slug, name!))
@@ -561,7 +561,7 @@ function updateFeaturesConfig(options: ScaffoldOptions) {
   }
 
   const componentName = options.slug
-    .split("-")
+    .split("")
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 

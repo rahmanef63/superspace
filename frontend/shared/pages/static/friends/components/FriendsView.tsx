@@ -51,7 +51,7 @@ export function FriendsView({ workspaceId }: { workspaceId?: Id<"workspaces"> })
       {
         id: "since",
         header: "Since",
-        accessor: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "-"),
+        accessor: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""),
         hideOnCard: true,
       },
     ],
@@ -86,14 +86,14 @@ export function FriendsView({ workspaceId }: { workspaceId?: Id<"workspaces"> })
         </Avatar>
       ),
       extra: (r) => (
-        <span className="text-xs text-gray-500">{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "-"}</span>
+        <span className="text-xs text-gray-500">{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}</span>
       ),
     },
     details: {
       fields: [
         { label: "Name", value: (r) => r.friend?.name },
         { label: "Email", value: (r) => r.friend?.email },
-        { label: "Since", value: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleString() : "-") },
+        { label: "Since", value: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleString() : "") },
       ],
     },
     searchFn: (r, q) =>

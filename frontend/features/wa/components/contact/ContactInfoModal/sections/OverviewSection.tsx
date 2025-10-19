@@ -79,7 +79,7 @@ export function OverviewSection({ contact, isMobile }: OverviewSectionProps) {
             <Info className="h-4 w-4" />
             About
           </h3>
-          <p className="text-wa-muted">{contact.about || "Hey there! I am using WhatsApp."}</p>
+          <p className="text-wa-muted">{contact.about || "Hey there! I am using Chats."}</p>
         </div>
 
         {contact.phoneNumber && (

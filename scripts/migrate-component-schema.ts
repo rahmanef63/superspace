@@ -12,7 +12,7 @@
 import { ConvexHttpClient } from "convex/browser";
 
 const CONVEX_URL = process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL;
-const isDryRun = process.argv.includes("--dry-run");
+const isDryRun = process.argv.includes("-dry-run");
 
 if (!CONVEX_URL) {
   console.error("❌ Error: CONVEX_URL or NEXT_PUBLIC_CONVEX_URL environment variable is required");

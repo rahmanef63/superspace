@@ -29,7 +29,7 @@ export function GeneralSettings() {
           <div className="bg-card rounded-lg border p-4">
             <SettingsToggle
               id="start-at-login"
-              label="Start WhatsApp at login"
+              label="Start Chats at login"
               checked={startAtLogin}
               onChange={setStartAtLogin}
             />
@@ -79,7 +79,7 @@ export function GeneralSettings() {
         {/* Logout Section */}
         <section className="pt-6 border-t">
           <p className="text-sm text-muted-foreground">
-            To <strong>log out</strong> of WhatsApp on this computer go to your{" "}
+            To <strong>log out</strong> of Chats on this computer go to your{" "}
             <Button variant="link" className="p-0 h-auto text-primary text-sm">
               Profile
             </Button>

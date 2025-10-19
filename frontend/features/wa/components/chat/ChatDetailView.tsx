@@ -84,7 +84,7 @@ export function ChatDetailView() {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center text-muted-foreground">
-          <p className="text-lg">WhatsApp Clone</p>
+          <p className="text-lg">Chats Clone</p>
           <p className="text-sm mt-2">Select a chat to start messaging</p>
         </div>
       </div>

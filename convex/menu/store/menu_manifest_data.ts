@@ -21,15 +21,15 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "WhatsApp" as const,
-    slug: "wa" as const,
+    name: "Chats" as const,
+    slug: "chat" as const,
     type: "folder" as const,
     icon: "MessageCircle" as const,
     path: "/dashboard/wa",
-    component: "WAPage" as const,
+    component: "Page" as const,
     order: 3,
     metadata: {
-      description: "WhatsApp clone with chat, calls, status, and AI features",
+      description: "Chats clone with chat, calls, status, and AI features",
       version: "2.0.0",
       category: "communication" as const,
       tags: [
@@ -41,11 +41,11 @@ export const DEFAULT_MENU_ITEMS = [
     children: [
       {
         name: "Chats" as const,
-        slug: "wa-chats",
+        slug: "chats",
         type: "route" as const,
         icon: "MessageCircle" as const,
-        path: "/dashboard/wa-chats",
-        component: "WAChatsPage" as const,
+        path: "/dashboard/chats",
+        component: "ChatsPage" as const,
         order: 1,
         metadata: {
           description: "Chat conversations",
@@ -55,11 +55,11 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Calls" as const,
-        slug: "wa-calls",
+        slug: "calls",
         type: "route" as const,
         icon: "Phone" as const,
         path: "/dashboard/wa-calls",
-        component: "WACallsPage" as const,
+        component: "CallsPage" as const,
         order: 2,
         metadata: {
           description: "Voice and video calls",
@@ -69,11 +69,11 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Status" as const,
-        slug: "wa-status",
+        slug: "status",
         type: "route" as const,
         icon: "Camera" as const,
         path: "/dashboard/wa-status",
-        component: "WAStatusPage" as const,
+        component: "StatusPage" as const,
         order: 3,
         metadata: {
           description: "Status updates",
@@ -83,11 +83,11 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Meta AI",
-        slug: "wa-ai",
+        slug: "ai",
         type: "route" as const,
         icon: "Bot" as const,
         path: "/dashboard/wa-ai",
-        component: "WAAIPage" as const,
+        component: "AIPage" as const,
         order: 4,
         metadata: {
           description: "AI assistant",
@@ -97,11 +97,11 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Starred" as const,
-        slug: "wa-starred",
+        slug: "starred",
         type: "route" as const,
         icon: "Star" as const,
         path: "/dashboard/wa-starred",
-        component: "WAStarredPage" as const,
+        component: "StarredPage" as const,
         order: 5,
         metadata: {
           description: "Starred messages",
@@ -111,11 +111,11 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Archived" as const,
-        slug: "wa-archived",
+        slug: "archived",
         type: "route" as const,
         icon: "Archive" as const,
         path: "/dashboard/wa-archived",
-        component: "WAArchivedPage" as const,
+        component: "ArchivedPage" as const,
         order: 6,
         metadata: {
           description: "Archived chats",
@@ -125,25 +125,25 @@ export const DEFAULT_MENU_ITEMS = [
       },
       {
         name: "Settings" as const,
-        slug: "wa-settings",
+        slug: "settings",
         type: "route" as const,
         icon: "Settings" as const,
         path: "/dashboard/wa-settings",
-        component: "WASettingsPage" as const,
+        component: "SettingsPage" as const,
         order: 7,
         metadata: {
-          description: "WhatsApp settings",
+          description: "Chats settings",
           version: "2.0.0",
           category: "communication" as const
         }
       },
       {
         name: "Profile" as const,
-        slug: "wa-profile",
+        slug: "profile",
         type: "route" as const,
         icon: "User" as const,
         path: "/dashboard/wa-profile",
-        component: "WAProfilePage" as const,
+        component: "ProfilePage" as const,
         order: 8,
         metadata: {
           description: "User profile",

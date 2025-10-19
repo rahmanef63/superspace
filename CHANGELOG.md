@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Default Features (85% Complete)
 - ✅ Overview Dashboard
-- ✅ WhatsApp Clone (Chats, Calls, Status, AI, Starred, Archived, Settings, Profile)
+- ✅ Chats Clone (Chats, Calls, Status, AI, Starred, Archived, Settings, Profile)
 - ✅ Members Management
 - ✅ Friends System
 - ✅ Pages (Notion-like)

@@ -5,7 +5,7 @@ export * from "./validators"
 // Legacy utility functions
 import { cn } from "@/lib/utils"
 
-// WhatsApp-specific utility functions with design system classes
+// Chats-specific utility functions with design system classes
 export const formatTimestamp = (timestamp: string): string => {
   if (timestamp.includes(":")) {
     return timestamp // Already formatted
@@ -66,12 +66,12 @@ export const isVideoFile = (fileName: string): boolean => {
 }
 
 export const isAudioFile = (fileName: string): boolean => {
-  const audioExtensions = ["mp3", "wav", "ogg", "m4a", "aac"]
+  const audioExtensions = ["mp3", "v", "ogg", "m4a", "aac"]
   const extension = fileName.split(".").pop()?.toLowerCase()
   return audioExtensions.includes(extension || "")
 }
 
-// WhatsApp-specific component utilities using design system
+// Chats-specific component utilities using design system
 export const waClasses = {
   chatItem: (isActive: boolean) =>
     cn(

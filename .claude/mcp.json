@@ -3,7 +3,7 @@
     "convex": {
       "command": "npx",
       "args": [
-        "-y",
+        "y",
         "@convex-dev/mcp-server@latest"
       ]
     }

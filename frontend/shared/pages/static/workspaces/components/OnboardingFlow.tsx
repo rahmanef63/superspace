@@ -71,9 +71,9 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
       String(s || "")
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9\-\s]/g, "-")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
+        .replace(/[^a-z0-9\-\s]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/-+/g, "")
         .replace(/^-|-$/g, "");
 
     const base = slugify(workspaceData.name) || "workspace";

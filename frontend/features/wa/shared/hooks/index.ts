@@ -1,4 +1,4 @@
-// Custom hooks for WhatsApp Clone feature
+// Custom hooks for Chats Clone feature
 import { useEffect, useRef } from 'react';
 import type { Id } from '@/convex/_generated/dataModel';
 import { useWhatsAppStore } from '../stores';
@@ -7,7 +7,7 @@ import { useConvex } from 'convex/react';
 import { useWorkspaceContext } from '@/app/dashboard/WorkspaceProvider';
 import { ConvexChatRepository } from '../data/adapters/convex.adapter';
 
-// Hook to initialize WhatsApp data
+// Hook to initialize Chats data
 export const useInitializeWhatsApp = (providedWorkspaceId?: Id<"workspaces"> | null) => {
   const convex = useConvex();
   const { workspaceId: contextWorkspaceId } = useWorkspaceContext();
@@ -38,7 +38,7 @@ export const useCurrentChat = () => {
   return { selectedChat, selectedChatId };
 };
 
-// Hook to handle mobile-specific WhatsApp behavior
+// Hook to handle mobile-specific Chats behavior
 export const useMobileWhatsApp = () => {
   const isMobile = useIsMobile();
   const { selectedChatId, setSelectedChat, setActiveTab } = useWhatsAppStore();

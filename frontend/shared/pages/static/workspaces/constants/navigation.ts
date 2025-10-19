@@ -28,11 +28,11 @@ export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
     path: "/chat"
   },
   {
-    key: "wa-chats",
-    label: "WA Chats",
+    key: "chats",
+    label: " Chats",
     icon: MessageCircle,
-    description: "WhatsApp chat conversations",
-    path: "/wa-chats"
+    description: "Chats chat conversations",
+    path: "/chats"
   },
   {
     key: "members",

@@ -82,7 +82,7 @@ export function PersonalizationSettings() {
 
             <SettingsToggle
               id="whatsapp-doodle"
-              label="WhatsApp doodle"
+              label="Chats doodle"
               checked={whatsappDoodle}
               onChange={setWhatsappDoodle}
             />

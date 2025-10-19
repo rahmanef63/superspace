@@ -25,7 +25,7 @@ if (!CONVEX_URL) {
 }
 
 const client = new ConvexHttpClient(CONVEX_URL)
-const shouldFix = process.argv.includes("--fix")
+const shouldFix = process.argv.includes("-fix")
 
 interface HealthIssue {
   workspaceId: string

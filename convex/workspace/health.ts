@@ -15,7 +15,7 @@ import { PERMS } from "./permissions"
  */
 
 interface HealthIssue {
-  severity: "critical" | "warning" | "info"
+  severity: "critical" | "rning" | "info"
   category: string
   message: string
   fix?: string
@@ -78,7 +78,7 @@ export const checkWorkspaceHealth = query({
     const hasMenuSet = !!assignment
     if (!hasMenuSet) {
       issues.push({
-        severity: "warning",
+        severity: "rning",
         category: "menus",
         message: "No default menu set assigned",
         fix: "Menu set will be created on next menu operation",
@@ -103,7 +103,7 @@ export const checkWorkspaceHealth = query({
     const hasDefaultRole = roles.some((r) => r.isDefault)
     if (!hasDefaultRole && roles.length > 0) {
       issues.push({
-        severity: "warning",
+        severity: "rning",
         category: "roles",
         message: "No default role configured",
         fix: "Set one role as default in workspace settings",
@@ -196,7 +196,7 @@ export const checkAllWorkspacesHealth = query({
         workspaceName: workspace.name,
         isHealthy: health.isHealthy,
         criticalIssues: health.issues.filter((i: { severity: string }) => i.severity === "critical").length,
-        warningIssues: health.issues.filter((i: { severity: string }) => i.severity === "warning").length,
+        warningIssues: health.issues.filter((i: { severity: string }) => i.severity === "rning").length,
       })
     }
 

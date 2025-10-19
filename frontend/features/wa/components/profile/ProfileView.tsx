@@ -24,7 +24,7 @@ export function ProfileView() {
     lastName: user?.lastName || "",
     email: user?.emailAddresses[0]?.emailAddress || "",
     phone: user?.phoneNumbers[0]?.phoneNumber || "",
-    bio: "WhatsApp user",
+    bio: "Chats user",
     location: "",
     website: "",
   })
@@ -42,7 +42,7 @@ export function ProfileView() {
       lastName: user?.lastName || "",
       email: user?.emailAddresses[0]?.emailAddress || "",
       phone: user?.phoneNumbers[0]?.phoneNumber || "",
-      bio: "WhatsApp user",
+      bio: "Chats user",
       location: "",
       website: "",
     })

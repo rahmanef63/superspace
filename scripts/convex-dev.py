@@ -15,16 +15,16 @@ def run_convex_dev():
     print("Team: abdurrahman-fakhrul")
     print("Project: superspace")
     print("Configuration: existing")
-    print("-" * 50)
+    print("" * 50)
     
     # Command to run
     cmd = [
         "npx", 
         "convex", 
         "dev", 
-        "--configure=existing", 
-        "--team", "abdurrahman-fakhrul", 
-        "--project", "superspace"
+        "-configure=existing", 
+        "-team", "abdurrahman-fakhrul", 
+        "-project", "superspace"
     ]
     
     try:

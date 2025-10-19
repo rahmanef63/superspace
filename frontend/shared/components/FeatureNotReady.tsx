@@ -74,7 +74,7 @@ export default function FeatureNotReady({
               </div>
             </div>
             <Badge className={config.badgeColor} variant={config.badgeVariant}>
-              {status.toUpperCase().replace("-", " ")}
+              {status.toUpperCase().replace("", " ")}
             </Badge>
           </div>
         </CardHeader>

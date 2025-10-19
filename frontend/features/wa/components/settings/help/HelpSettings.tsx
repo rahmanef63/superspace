@@ -12,7 +12,7 @@ export function HelpSettings() {
     {
       icon: Star,
       label: "Rate the app",
-      description: "Tell us what you think about WhatsApp for Windows",
+      description: "Tell us what you think about Chats for Windows",
       action: "Rate the app"
     },
     {
@@ -40,10 +40,10 @@ export function HelpSettings() {
       <h1 className="text-2xl font-semibold text-foreground mb-6">Help</h1>
       
       <div className="space-y-6">
-        {/* WhatsApp Info */}
+        {/* Chats Info */}
         <section>
           <div className="bg-card rounded-lg border p-6 text-center">
-            <h2 className="text-xl font-semibold text-card-foreground mb-2">WhatsApp for Windows</h2>
+            <h2 className="text-xl font-semibold text-card-foreground mb-2">Chats for Windows</h2>
             <p className="text-muted-foreground mb-4">Version 2.2534.2.0</p>
           </div>
         </section>
@@ -99,7 +99,7 @@ export function HelpSettings() {
 
         {/* Copyright */}
         <section className="pt-6 text-center border-t">
-          <p className="text-sm text-muted-foreground">2025 © WhatsApp Inc.</p>
+          <p className="text-sm text-muted-foreground">2025 © Chats Inc.</p>
         </section>
       </div>
     </div>

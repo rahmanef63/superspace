@@ -204,7 +204,7 @@ const CpuArchitecture = ({
             />
             <rect
               x="80"
-              y="-13.6"
+              y="13.6"
               width="2.5"
               height="5"
               rx="0.7"
@@ -212,7 +212,7 @@ const CpuArchitecture = ({
             />
             <rect
               x="87"
-              y="-13.6"
+              y="13.6"
               width="2.5"
               height="5"
               rx="0.7"
@@ -334,8 +334,8 @@ const CpuArchitecture = ({
         </radialGradient>
         <filter
           id="cpu-light-shadow"
-          x="-50%"
-          y="-50%"
+          x="50%"
+          y="50%"
           width="200%"
           height="200%"
         >
@@ -385,7 +385,7 @@ const CpuArchitecture = ({
           <stop offset="0%" stopColor="#666666">
             <animate
               attributeName="offset"
-              values="-2; -1; 0"
+              values="2; -1; 0"
               dur="5s"
               repeatCount="indefinite"
               calcMode="spline"
@@ -396,7 +396,7 @@ const CpuArchitecture = ({
           <stop offset="25%" stopColor="white">
             <animate
               attributeName="offset"
-              values="-1; 0; 1"
+              values="1; 0; 1"
               dur="5s"
               repeatCount="indefinite"
               calcMode="spline"

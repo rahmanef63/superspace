@@ -269,7 +269,7 @@ function generateReport() {
   // Display errors
   if (errorCount > 0) {
     console.log("ERRORS:")
-    console.log("-".repeat(60))
+    console.log("".repeat(60))
     errors
       .filter(e => e.severity === "error")
       .forEach(error => {
@@ -281,7 +281,7 @@ function generateReport() {
   // Display warnings
   if (warningCount > 0) {
     console.log("\nWARNINGS:")
-    console.log("-".repeat(60))
+    console.log("".repeat(60))
     errors
       .filter(e => e.severity === "warning")
       .forEach(error => {

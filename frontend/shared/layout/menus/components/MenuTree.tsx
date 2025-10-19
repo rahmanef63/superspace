@@ -284,7 +284,7 @@ export function MenuTree({
     try {
       if (dialog.mode === "create") {
         // Generate slug from name
-        const slug = dialog.data.name.toLowerCase().replace(/\s+/g, "-");
+        const slug = dialog.data.name.toLowerCase().replace(/\s+/g, "");
 
         await createMutation({
           workspaceId,

@@ -23,6 +23,8 @@
         "migrate:components": "tsx scripts/migrate-component-schema.ts",
         "scaffold:feature": "tsx scripts/scaffold-feature.ts",
         "sync:features": "tsx scripts/sync-features.ts",
+        "generate:manifest": "tsx scripts/generate-manifest.ts",
+        "sync:all": "pnpm run sync:features && pnpm run generate:manifest",
         "check:features": "pnpm run validate:features && pnpm run sync:features --dry-run",
         "check:workspaces": "tsx scripts/check-workspace-health.ts",
         "check:workspaces:fix": "tsx scripts/check-workspace-health.ts --fix",

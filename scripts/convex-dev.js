@@ -12,10 +12,10 @@ function runConvexDev() {
   console.log("Team: abdurrahman-fakhrul")
   console.log("Project: superspace")
   console.log("Configuration: existing")
-  console.log("-".repeat(50))
+  console.log("".repeat(50))
 
   // Command arguments
-  const args = ["convex", "dev", "--configure=existing", "--team", "abdurrahman-fakhrul", "--project", "superspace"]
+  const args = ["convex", "dev", "-configure=existing", "-team", "abdurrahman-fakhrul", "-project", "superspace"]
 
   // Spawn the process
   const process = spawn("npx", args, {

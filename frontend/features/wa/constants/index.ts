@@ -36,7 +36,7 @@ export const BREAKPOINTS = {
 } as const
 
 export const APP_CONFIG = {
-  name: "WhatsApp Clone",
+  name: "Chats Clone",
   version: "1.0.0",
   defaultTab: "chats" as TabType,
 
@@ -58,7 +58,7 @@ export const APP_CONFIG = {
     allowedTypes: {
       image: ["jpg", "jpeg", "png", "gif", "webp"],
       video: ["mp4", "mov", "avi", "mkv"],
-      audio: ["mp3", "wav", "ogg", "m4a"],
+      audio: ["mp3", "v", "ogg", "m4a"],
       document: ["pdf", "doc", "docx", "txt", "rtf"],
     },
   },

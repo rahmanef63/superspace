@@ -1,6 +1,6 @@
 import { v } from "convex/values"
-import { query, mutation, action } from "../../_generated/server"
-import { api } from "../../_generated/api"
+import { query, mutation, action, internalMutation } from "../../_generated/server"
+import { api, internal } from "../../_generated/api"
 import type { Id } from "../../_generated/dataModel"
 import { requirePermission, requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
 import { PERMS } from "../../workspace/permissions"
@@ -188,15 +188,18 @@ import { DEFAULT_MENU_ITEMS } from "./menu_manifest_data"
 import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
 
 // Create default menu items for a workspace based on manifest
-export const createDefaultMenuItems = mutation({
+// INTERNAL MUTATION: Called from server context (createWorkspace, resetWorkspace)
+// Does not require auth - actorUserId passed from caller (workspace owner)
+export const createDefaultMenuItems = internalMutation({
   args: {
     workspaceId: v.id("workspaces"),
     selectedSlugs: v.optional(v.array(v.string())),
+    actorUserId: v.optional(v.id("users")), // Passed from createWorkspace (owner)
   },
   handler: async (ctx, args) => {
-    // Require manage menus permission; reuses centralized membership/role check
-    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
-    const userId = membership?.userId
+    // Internal mutation - no auth check needed (server-safe)
+    // actorUserId is the workspace creator/owner
+    const userId = args.actorUserId
 
     console.log("[v0] Creating default menu items for workspace:", args.workspaceId)
 

@@ -1,7 +1,7 @@
 import { v } from "convex/values"
 import { query, mutation } from "../_generated/server"
 import { getAuthUserId } from "@convex-dev/auth/server"
-import { api } from "../_generated/api"
+import { api, internal } from "../_generated/api"
 import { resolveCandidateUserIds, hasPermission, ensureUser, requirePermission } from "../auth/helpers"
 import type { Id } from "../_generated/dataModel"
 import { PERMS } from "./permissions"
@@ -495,12 +495,13 @@ export const createWorkspace = mutation({
       },
     })
 
-    // Create default menu items
+    // Create default menu items via internal mutation (server-safe, no auth needed)
     // IMPORTANT: This must succeed or workspace will have no menus
     try {
-      await ctx.runMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems, {
+      await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
         workspaceId,
         selectedSlugs: Array.isArray(args.selectedMenuSlugs) ? args.selectedMenuSlugs : [],
+        actorUserId: userId, // Pass owner userId to internal mutation
       })
       console.log("[createWorkspace] Default menus created successfully for workspace:", workspaceId)
     } catch (err) {
@@ -1022,7 +1023,12 @@ export const resetWorkspace = mutation({
       .collect()
     for (const it of oldItems) await ctx.db.delete(it._id)
 
-    await ctx.runMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems, { workspaceId: args.workspaceId })
+    // Call internal mutation to re-create default menus
+    const actorUserId = await ensureUser(ctx)
+    await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
+      workspaceId: args.workspaceId,
+      actorUserId,
+    })
     return true as const
   },
 })

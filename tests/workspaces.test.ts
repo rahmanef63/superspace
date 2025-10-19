@@ -7,42 +7,37 @@ import schema from "../convex/schema";
 /**
  * Integration tests for Workspace CRUD operations
  * Tests: createWorkspace, updateWorkspace, deleteWorkspace, getUserWorkspaces
+ *
+ * Key learnings for convex-test:
+ * 1. Do NOT use { eager: true } with import.meta.glob - convex-test expects lazy-loaded modules
+ * 2. Call t.mutation/t.query OUTSIDE of t.run
+ * 3. Use t.withIdentity() to provide authentication context
  */
 
 describe("Workspace CRUD", () => {
   let t: any;
   let userId: Id<"users">;
+  let identity: any;
 
   beforeEach(async () => {
-    // Load all Convex modules (TypeScript source + generated JS)
-    // Vite glob doesn't support negation well, so we use multiple positive patterns
-    const modules = {
-      ...import.meta.glob("../convex/**/*.ts", { eager: true }),
-      ...import.meta.glob("../convex/_generated/**/*.js", { eager: true }),
-    };
+    // Load Convex modules using Vite's glob patterns
+    // Pass glob patterns directly to convexTest for proper module resolution
+    // Exclude data-only files and type definitions (.d.ts)
+    // NOTE: Do NOT use { eager: true } - convex-test expects lazy-loaded modules
+    t = convexTest(schema, import.meta.glob([
+      "../convex/auth/auth.ts",
+      "../convex/auth/helpers.ts",
+      "../convex/components/**/*.ts",
+      "../convex/dev/**/*.ts",
+      "../convex/features/**/*.ts",
+      "../convex/lib/**/*.ts",
+      "../convex/menu/**/!(menu_manifest_data|optional_features_catalog|utils|*[Tt]ypes|helpers).ts",
+      "../convex/payment/**/!(utils|*[Tt]ypes|helpers).ts",
+      "../convex/user/**/*.ts",
+      "../convex/workspace/**/*.ts",
+      "../convex/_generated/**/*.js",
+    ]));
 
-    // Filter out non-function files (config, schema, router, http, data files)
-    const filtered: Record<string, any> = {};
-    for (const [path, mod] of Object.entries(modules)) {
-      // Skip these files:
-      // - Config files (.config.ts)
-      // - Schema (passed separately to convexTest)
-      // - HTTP routes and router (not standard Convex functions)
-      // - Data-only files (menu_manifest_data, optional_features_catalog)
-      // - Generated TypeScript files (only include .js from _generated)
-      if (path.includes('.config.ts') ||
-          path.endsWith('/schema.ts') ||
-          path.endsWith('/http.ts') ||
-          path.endsWith('/router.ts') ||
-          path.includes('menu_manifest_data.ts') ||
-          path.includes('optional_features_catalog.ts') ||
-          (path.includes('_generated') && path.endsWith('.ts'))) {
-        continue;
-      }
-      filtered[path] = mod;
-    }
-
-    t = convexTest(schema, filtered);
     // Create a test user
     userId = await t.run(async (ctx: any) => {
       return await ctx.db.insert("users", {
@@ -52,24 +47,24 @@ describe("Workspace CRUD", () => {
       });
     });
 
-    // Mock auth
-    t.auth = {
-      getUserIdentity: async () => ({
-        subject: String(userId),
-        email: "test@example.com",
-      }),
+    // Create identity object for withIdentity
+    identity = {
+      subject: String(userId),
+      email: "test@example.com",
     };
   });
 
   test("createWorkspace creates default roles and membership", async () => {
-    await t.run(async (ctx: any) => {
-      const workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Test Workspace",
-        slug: "test-workspace",
-        type: "personal",
-        isPublic: false,
-      });
+    // Call mutation with identity (outside t.run)
+    const workspaceId = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Test Workspace",
+      slug: "test-workspace",
+      type: "personal",
+      isPublic: false,
+    });
 
+    // Verify results (inside t.run for database queries)
+    await t.run(async (ctx: any) => {
       // Verify workspace created
       const workspace = await ctx.db.get(workspaceId);
       expect(workspace).toBeTruthy();
@@ -101,48 +96,50 @@ describe("Workspace CRUD", () => {
   });
 
   test("createWorkspace normalizes slug and prevents duplicates", async () => {
-    await t.run(async () => {
-      // Create first workspace
-      const workspaceId1 = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Workspace 1",
-        slug: "my-workspace",
-        type: "personal",
-        isPublic: false,
-      });
+    // Create first workspace
+    const workspaceId1 = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Workspace 1",
+      slug: "my-workspace",
+      type: "personal",
+      isPublic: false,
+    });
 
-      const workspace1 = await t.run(async (ctx: any) => ctx.db.get(workspaceId1));
+    await t.run(async (ctx: any) => {
+      const workspace1 = await ctx.db.get(workspaceId1);
       expect(workspace1.slug).toBe("my-workspace");
+    });
 
-      // Create second workspace with same slug - should auto-increment
-      const workspaceId2 = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Workspace 2",
-        slug: "my-workspace",
-        type: "personal",
-        isPublic: false,
-      });
+    // Create second workspace with same slug - should auto-increment
+    const workspaceId2 = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Workspace 2",
+      slug: "my-workspace",
+      type: "personal",
+      isPublic: false,
+    });
 
-      const workspace2 = await t.run(async (ctx: any) => ctx.db.get(workspaceId2));
+    await t.run(async (ctx: any) => {
+      const workspace2 = await ctx.db.get(workspaceId2);
       expect(workspace2.slug).toBe("my-workspace-2");
     });
   });
 
   test("updateWorkspace updates fields correctly", async () => {
+    const workspaceId = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Original Name",
+      slug: "original-slug",
+      type: "personal",
+      isPublic: false,
+    });
+
+    // Update workspace
+    await t.withIdentity(identity).mutation(api.workspace.workspaces.updateWorkspace, {
+      workspaceId,
+      name: "Updated Name",
+      description: "New description",
+      isPublic: true,
+    });
+
     await t.run(async (ctx: any) => {
-      const workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Original Name",
-        slug: "original-slug",
-        type: "personal",
-        isPublic: false,
-      });
-
-      // Update workspace
-      await t.mutation(api.workspace.workspaces.updateWorkspace, {
-        workspaceId,
-        name: "Updated Name",
-        description: "New description",
-        isPublic: true,
-      });
-
       const updated = await ctx.db.get(workspaceId);
       expect(updated.name).toBe("Updated Name");
       expect(updated.description).toBe("New description");
@@ -152,29 +149,32 @@ describe("Workspace CRUD", () => {
   });
 
   test("deleteWorkspace cascades to related entities", async () => {
-    await t.run(async (ctx: any) => {
-      const workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "To Delete",
-        slug: "to-delete",
-        type: "personal",
-        isPublic: false,
-      });
+    const workspaceId = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "To Delete",
+      slug: "to-delete",
+      type: "personal",
+      isPublic: false,
+    });
 
-      // Create a document in workspace
-      const documentId = await ctx.db.insert("documents", {
+    // Create a document in workspace
+    let documentId: Id<"documents">;
+    await t.run(async (ctx: any) => {
+      documentId = await ctx.db.insert("documents", {
         title: "Test Doc",
         workspaceId,
         createdBy: userId,
         isPublic: false,
         lastModified: Date.now(),
       });
+    });
 
-      // Delete workspace
-      await t.mutation(api.workspace.workspaces.deleteWorkspace, {
-        workspaceId,
-      });
+    // Delete workspace
+    await t.withIdentity(identity).mutation(api.workspace.workspaces.deleteWorkspace, {
+      workspaceId,
+    });
 
-      // Verify workspace deleted
+    // Verify workspace deleted
+    await t.run(async (ctx: any) => {
       const workspace = await ctx.db.get(workspaceId);
       expect(workspace).toBeNull();
 
@@ -193,56 +193,57 @@ describe("Workspace CRUD", () => {
       expect(memberships).toHaveLength(0);
 
       // Verify documents deleted
-      const document = await ctx.db.get(documentId);
+      const document = await ctx.db.get(documentId!);
       expect(document).toBeNull();
     });
   });
 
   test("getUserWorkspaces returns user's workspaces", async () => {
-    await t.run(async (ctx: any) => {
-      // Create multiple workspaces
-      const workspace1Id = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Workspace 1",
-        slug: "workspace-1",
-        type: "personal",
-        isPublic: false,
-      });
+    // Create multiple workspaces
+    const workspace1Id = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Workspace 1",
+      slug: "workspace-1",
+      type: "personal",
+      isPublic: false,
+    });
 
-      const workspace2Id = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Workspace 2",
-        slug: "workspace-2",
-        type: "group",
-        isPublic: true,
-      });
+    const workspace2Id = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Workspace 2",
+      slug: "workspace-2",
+      type: "group",
+      isPublic: true,
+    });
 
-      // Get user's workspaces
-      const workspaces = await t.query(api.workspace.workspaces.getUserWorkspaces);
+    // Get user's workspaces
+    const workspaces = await t.withIdentity(identity).query(api.workspace.workspaces.getUserWorkspaces);
 
-      expect(workspaces).toHaveLength(2);
-      const workspaceIds = workspaces.map((w: any) => w._id);
-      expect(workspaceIds).toContain(workspace1Id);
-      expect(workspaceIds).toContain(workspace2Id);
+    expect(workspaces).toHaveLength(2);
+    const workspaceIds = workspaces.map((w: any) => w._id);
+    expect(workspaceIds).toContain(workspace1Id);
+    expect(workspaceIds).toContain(workspace2Id);
 
-      // Each workspace should have membership and role data
-      workspaces.forEach((ws: any) => {
-        expect(ws.membership).toBeTruthy();
-        expect(ws.role).toBeTruthy();
-        expect(ws.role.name).toBe("Owner");
-      });
+    // Each workspace should have membership and role data
+    workspaces.forEach((ws: any) => {
+      expect(ws.membership).toBeTruthy();
+      expect(ws.role).toBeTruthy();
+      expect(ws.role.name).toBe("Owner");
     });
   });
 
   test("addMember adds user to workspace with specified role", async () => {
-    await t.run(async (ctx: any) => {
-      const workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Team Workspace",
-        slug: "team-workspace",
-        type: "organization",
-        isPublic: false,
-      });
+    const workspaceId = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Team Workspace",
+      slug: "team-workspace",
+      type: "organization",
+      isPublic: false,
+    });
 
-      // Create another user
-      const user2Id = await ctx.db.insert("users", {
+    // Create another user and get client role
+    let user2Id: Id<"users">;
+    let clientRoleId: Id<"roles">;
+
+    await t.run(async (ctx: any) => {
+      user2Id = await ctx.db.insert("users", {
         name: "User 2",
         email: "user2@example.com",
         externalId: "user2-external-id",
@@ -254,15 +255,18 @@ describe("Workspace CRUD", () => {
         .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspaceId))
         .filter((q: any) => q.eq(q.field("slug"), "client"))
         .first();
+      clientRoleId = clientRole._id;
+    });
 
-      // Add member
-      await t.mutation(api.workspace.workspaces.addMember, {
-        workspaceId,
-        userId: user2Id,
-        roleId: clientRole._id,
-      });
+    // Add member
+    await t.withIdentity(identity).mutation(api.workspace.workspaces.addMember, {
+      workspaceId,
+      userId: user2Id!,
+      roleId: clientRoleId!,
+    });
 
-      // Verify membership created
+    // Verify membership created
+    await t.run(async (ctx: any) => {
       const membership = await ctx.db
         .query("workspaceMemberships")
         .withIndex("by_user_workspace", (q: any) =>
@@ -272,22 +276,25 @@ describe("Workspace CRUD", () => {
 
       expect(membership).toBeTruthy();
       expect(membership.status).toBe("active");
-      expect(membership.roleId).toBe(clientRole._id);
+      expect(membership.roleId).toBe(clientRoleId);
       expect(membership.invitedBy).toBe(userId);
     });
   });
 
   test("removeMember deactivates membership", async () => {
-    await t.run(async (ctx: any) => {
-      const workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-        name: "Team Workspace",
-        slug: "team-workspace-2",
-        type: "organization",
-        isPublic: false,
-      });
+    const workspaceId = await t.withIdentity(identity).mutation(api.workspace.workspaces.createWorkspace, {
+      name: "Team Workspace",
+      slug: "team-workspace-2",
+      type: "organization",
+      isPublic: false,
+    });
 
-      // Create and add another user
-      const user2Id = await ctx.db.insert("users", {
+    // Create and add another user
+    let user2Id: Id<"users">;
+    let clientRoleId: Id<"roles">;
+
+    await t.run(async (ctx: any) => {
+      user2Id = await ctx.db.insert("users", {
         name: "User 2",
         email: "user2@example.com",
       });
@@ -297,20 +304,23 @@ describe("Workspace CRUD", () => {
         .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspaceId))
         .filter((q: any) => q.eq(q.field("slug"), "client"))
         .first();
+      clientRoleId = clientRole._id;
+    });
 
-      await t.mutation(api.workspace.workspaces.addMember, {
-        workspaceId,
-        userId: user2Id,
-        roleId: clientRole._id,
-      });
+    await t.withIdentity(identity).mutation(api.workspace.workspaces.addMember, {
+      workspaceId,
+      userId: user2Id!,
+      roleId: clientRoleId!,
+    });
 
-      // Remove member
-      await t.mutation(api.workspace.workspaces.removeMember, {
-        workspaceId,
-        userId: user2Id,
-      });
+    // Remove member
+    await t.withIdentity(identity).mutation(api.workspace.workspaces.removeMember, {
+      workspaceId,
+      userId: user2Id!,
+    });
 
-      // Verify membership set to inactive
+    // Verify membership set to inactive
+    await t.run(async (ctx: any) => {
       const membership = await ctx.db
         .query("workspaceMemberships")
         .withIndex("by_user_workspace", (q: any) =>

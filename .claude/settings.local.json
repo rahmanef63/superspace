@@ -1,28 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run dev:*)",
-      "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)",
-      "Bash(pnpm install:*)",
-      "Bash(npx convex dev:*)",
-      "Bash(find:*)",
-      "Bash(pnpm remove:*)",
-      "Bash(pnpm update:*)",
-      "Bash(where npx)",
-      "Bash(netstat:*)",
-      "Bash(findstr:*)",
-      "Bash(pnpm run validate:features:*)",
-      "Bash(pnpm run:*)",
-      "Bash(tasklist)",
-      "Read(//c/rahman/template/V0/**)",
-      "Bash(pnpm add:*)",
-      "Bash(pnpm test:*)",
-      "Bash(pnpm list:*)",
-      "Bash(cat:*)",
-      "Bash(mkdir:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx vitest run:*)"
+      "Bash(pnpm test:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

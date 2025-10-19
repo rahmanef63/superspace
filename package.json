@@ -1,6 +1,7 @@
 {
     "name": "my-v0-project",
     "version": "0.1.0",
+    "type": "module",
     "private": true,
     "scripts": {
         "build": "next build",
@@ -112,6 +113,7 @@
         "zustand": "latest"
     },
     "devDependencies": {
+        "@edge-runtime/vm": "^5.0.0",
         "@tailwindcss/postcss": "^4.1.9",
         "@types/node": "^22",
         "@types/react": "18.2.47",

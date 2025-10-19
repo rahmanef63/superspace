@@ -7,11 +7,12 @@ export const useDocumentsApi = () => {
   // Mutations
   const createDocument = useMutation(api.menu.page.documents.create);
   const updateDocument = useMutation(api.menu.page.documents.update);
-  // Note: deleteDocument function needs to be implemented in convex/documents.ts
+  const deleteDocument = useMutation(api.menu.page.documents.deleteDocument);
 
   return {
     createDocument,
     updateDocument,
+    deleteDocument,
   };
 };
 
@@ -23,4 +24,4 @@ export const useDocument = (documentId: Id<"documents">) =>
 
 export const useCreateDocument = () => useMutation(api.menu.page.documents.create);
 export const useUpdateDocument = () => useMutation(api.menu.page.documents.update);
-
+export const useDeleteDocument = () => useMutation(api.menu.page.documents.deleteDocument);

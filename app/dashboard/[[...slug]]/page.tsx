@@ -151,7 +151,7 @@ export default function CatchAllPage() {
       <SetBreadcrumbs items={breadcrumbs} />
       {/* Unknown slug fallback (rendered after hooks to keep them stable) */}
       {parts.length > 0 && !isKnownSlug ? (
-        <div className="flex-1 justify-center items-center mx-auto text-center lg:px-auto space-y-2">
+        <div className="min-h-dvh flex flex-col justify-center items-center text-center px-4 space-y-2">
           <h2 className="text-lg font-semibold">Page Not Found</h2>
           <p className="text-sm text-muted-foreground">
             The page you are looking for doesn&apos;t exist.

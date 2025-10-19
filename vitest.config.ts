@@ -4,7 +4,7 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node",
+    environment: "edge-runtime",
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts"],
     coverage: {
@@ -18,8 +18,10 @@ export default defineConfig({
         "convex/_generated/",
       ],
     },
-    deps: {
-      inline: ["convex-test"],
+    server: {
+      deps: {
+        inline: ["convex-test"],
+      },
     },
   },
   resolve: {

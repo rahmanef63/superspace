@@ -20,7 +20,7 @@ describe("wiki Integration", () => {
       "../../../convex/user/**/*.ts",
       "../../../convex/workspace/**/*.ts",
       "../../../convex/_generated/**/*.js",
-    ], { eager: true }))
+    ]))
   })
 
   it("should create a new item", async () => {

@@ -11,6 +11,7 @@ describe("calendar Integration", () => {
   let t: any
 
   beforeEach(async () => {
+    // NOTE: Do NOT use { eager: true } - convex-test expects lazy-loaded modules
     t = convexTest(schema, import.meta.glob([
       "../../../convex/auth/auth.ts",
       "../../../convex/components/**/*.ts",
@@ -20,7 +21,7 @@ describe("calendar Integration", () => {
       "../../../convex/user/**/*.ts",
       "../../../convex/workspace/**/*.ts",
       "../../../convex/_generated/**/*.js",
-    ], { eager: true }))
+    ]))
   })
 
   it("should create a new item", async () => {

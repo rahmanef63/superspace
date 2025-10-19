@@ -6,9 +6,9 @@ export interface MemberManagementProps {
   onInviteClick?: () => void;
 }
 
-export interface WorkspaceSettingsProps {
-  workspaceId: Id<"workspaces">;
-}
+// WorkspaceSettingsProps is defined in @/frontend/shared/components/settings/components/WorkspaceSettings
+// Re-export it from there to maintain single source of truth
+export type { WorkspaceSettingsProps } from "@/frontend/shared/components/settings/components/WorkspaceSettings";
 
 export interface OnboardingFlowProps {
   onComplete: (workspaceId: Id<"workspaces">) => void;

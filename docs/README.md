@@ -153,7 +153,7 @@ project/
 │   ├── features/
 │   │   ├── default/                # Default features
 │   │   │   ├── overview/
-│   │   │   ├── wa/
+│   │   │   ├── chat/
 │   │   │   └── members/
 │   │   └── optional/               # Optional features
 │   │       ├── documents/

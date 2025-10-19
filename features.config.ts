@@ -24,7 +24,7 @@ const BaseFeatureMetadataSchema = z.object({
   description: z.string(),
 
   // Feature type
-  featureType: z.enum(["default", "optional", "experimental"]),
+  featureType: z.enum(["default", "system", "optional", "experimental"]),
   category: z.enum([
     "communication",
     "productivity",
@@ -60,8 +60,12 @@ const BaseFeatureMetadataSchema = z.object({
 
   // Development status
   status: z.enum(["stable", "beta", "development", "experimental", "deprecated"]).optional(),
-  isReady: z.boolean().default(true), // Whether the feature is fully implemented
+  isReady: z.boolean().optional(), // Whether the feature is fully implemented
   expectedRelease: z.string().optional(), // Expected release date if not ready
+
+  // Settings integration
+  hasSettings: z.boolean().optional(), // Whether the feature has settings that integrate with workspace settings
+  settingsPath: z.string().optional(), // Path to settings component (e.g., "features/chat/settings")
 })
 
 // Extended schema with children (recursive)
@@ -72,6 +76,8 @@ export const FeatureMetadataSchema: z.ZodType<FeatureMetadata> = BaseFeatureMeta
 export type FeatureMetadata = z.infer<typeof BaseFeatureMetadataSchema> & {
   children?: FeatureMetadata[]
 }
+
+export type FeatureType = FeatureMetadata["featureType"]
 
 // ============================================================================
 // FEATURE REGISTRY - SINGLE SOURCE OF TRUTH
@@ -97,13 +103,13 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
   },
 
   {
-    slug: "chat",
+    slug: "wa",
     name: "Chats",
     description: "Chats clone with chat, calls, status, and AI features",
     featureType: "default",
     category: "communication",
     icon: "MessageCircle",
-    path: "/dashboard/wa",
+    path: "/dashboard/chat",
     component: "Page",
     order: 3,
     type: "folder",
@@ -136,7 +142,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         featureType: "default",
         category: "communication",
         icon: "Phone",
-        path: "/dashboard/wa-calls",
+        path: "/dashboard/calls",
         component: "CallsPage",
         order: 2,
         type: "route",
@@ -144,6 +150,8 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         hasUI: true,
         hasConvex: true,
         hasTests: true,
+        hasSettings: true,
+        settingsPath: "features/chat/components/calls/settings",
       },
       {
         slug: "status",
@@ -152,7 +160,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         featureType: "default",
         category: "communication",
         icon: "Camera",
-        path: "/dashboard/wa-status",
+        path: "/dashboard/status",
         component: "StatusPage",
         order: 3,
         type: "route",
@@ -168,7 +176,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         featureType: "default",
         category: "communication",
         icon: "Bot",
-        path: "/dashboard/wa-ai",
+        path: "/dashboard/ai",
         component: "AIPage",
         order: 4,
         type: "route",
@@ -184,7 +192,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         featureType: "default",
         category: "communication",
         icon: "Star",
-        path: "/dashboard/wa-starred",
+        path: "/dashboard/starred",
         component: "StarredPage",
         order: 5,
         type: "route",
@@ -200,7 +208,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         featureType: "default",
         category: "communication",
         icon: "Archive",
-        path: "/dashboard/wa-archived",
+        path: "/dashboard/archived",
         component: "ArchivedPage",
         order: 6,
         type: "route",
@@ -210,29 +218,13 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
         hasTests: true,
       },
       {
-        slug: "settings",
-        name: "Settings",
-        description: "Chats settings",
-        featureType: "default",
-        category: "communication",
-        icon: "Settings",
-        path: "/dashboard/wa-settings",
-        component: "SettingsPage",
-        order: 7,
-        type: "route",
-        version: "2.0.0",
-        hasUI: true,
-        hasConvex: false,
-        hasTests: true,
-      },
-      {
         slug: "profile",
         name: "Profile",
         description: "User profile",
         featureType: "default",
         category: "communication",
         icon: "User",
-        path: "/dashboard/wa-profile",
+        path: "/dashboard/profile",
         component: "ProfilePage",
         order: 8,
         type: "route",
@@ -331,10 +323,28 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
   },
 
   {
+    slug: "documents",
+    name: "Documents",
+    description: "Collaborative document editor with real-time sync",
+    featureType: "default",
+    category: "productivity",
+    icon: "FileText",
+    path: "/dashboard/documents",
+    component: "DocumentsPage",
+    order: 9,
+    type: "route",
+    version: "1.2.0",
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    tags: ["collaboration", "real-time"],
+  },
+
+  {
     slug: "menus",
     name: "Menu Store",
     description: "Install and manage navigation menus",
-    featureType: "default",
+    featureType: "system",
     category: "administration",
     icon: "Menu",
     path: "/dashboard/menus",
@@ -352,7 +362,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
     slug: "invitations",
     name: "Invitations",
     description: "Manage workspace invitations",
-    featureType: "default",
+    featureType: "system",
     category: "administration",
     icon: "Mail",
     path: "/dashboard/invitations",
@@ -363,6 +373,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
     hasUI: true,
     hasConvex: true,
     hasTests: true,
+    requiresPermission: "MANAGE_INVITATIONS",
   },
 
   {
@@ -383,10 +394,10 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
   },
 
   {
-    slug: "settings",
+    slug: "workspace-settings",
     name: "Settings",
     description: "Workspace configuration and settings",
-    featureType: "default",
+    featureType: "system",
     category: "administration",
     icon: "Settings",
     path: "/dashboard/settings",
@@ -401,42 +412,6 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
   },
 
   // ========== OPTIONAL FEATURES ==========
-
-  {
-    slug: "chat",
-    name: "Chat",
-    description: "Alternative chat interface with AI assistant",
-    featureType: "optional",
-    category: "communication",
-    icon: "MessageSquare",
-    path: "/dashboard/chat",
-    component: "ChatPage",
-    order: 2,
-    type: "route",
-    version: "1.0.0",
-    hasUI: true,
-    hasConvex: true,
-    hasTests: true,
-    tags: ["messaging", "ai"],
-  },
-
-  {
-    slug: "documents",
-    name: "Documents",
-    description: "Collaborative document editor with real-time sync",
-    featureType: "optional",
-    category: "productivity",
-    icon: "FileText",
-    path: "/dashboard/documents",
-    component: "DocumentsPage",
-    order: 3,
-    type: "route",
-    version: "1.2.0",
-    hasUI: true,
-    hasConvex: true,
-    hasTests: true,
-    tags: ["collaboration", "real-time"],
-  },
 
   {
     slug: "calendar",
@@ -530,7 +505,7 @@ export const FEATURES_REGISTRY: FeatureMetadata[] = [
 /**
  * Get all features by type
  */
-export function getFeaturesByType(type: "default" | "optional" | "experimental"): FeatureMetadata[] {
+export function getFeaturesByType(type: FeatureType): FeatureMetadata[] {
   return FEATURES_REGISTRY.filter(f => f.featureType === type)
 }
 
@@ -538,7 +513,7 @@ export function getFeaturesByType(type: "default" | "optional" | "experimental")
  * Get all default features (included by default in workspace)
  */
 export function getDefaultFeatures(): FeatureMetadata[] {
-  return getFeaturesByType("default")
+  return FEATURES_REGISTRY.filter(f => f.featureType === "default" || f.featureType === "system")
 }
 
 /**
@@ -576,7 +551,7 @@ export function validateFeature(feature: unknown): FeatureMetadata {
 /**
  * Convert feature to menu item format
  */
-export function featureToMenuItem(feature: FeatureMetadata) {
+export function featureToMenuItem(feature: FeatureMetadata): any {
   return {
     name: feature.name,
     slug: feature.slug,
@@ -590,6 +565,10 @@ export function featureToMenuItem(feature: FeatureMetadata) {
       version: feature.version,
       category: feature.category,
       tags: feature.tags,
+      featureType: feature.featureType,
+      originalFeatureType: feature.featureType,
+      requiresPermission: feature.requiresPermission,
+      originalRequiresPermission: feature.requiresPermission,
     },
     requiresPermission: feature.requiresPermission,
     children: feature.children?.map(featureToMenuItem),
@@ -616,8 +595,10 @@ export function getOptionalFeaturesCatalog() {
     category: f.category,
     tags: f.tags,
     requiresPermission: f.requiresPermission,
+    originalRequiresPermission: f.requiresPermission,
     status: f.status,
     isReady: f.isReady,
     expectedRelease: f.expectedRelease,
+    featureType: f.featureType,
   }))
 }

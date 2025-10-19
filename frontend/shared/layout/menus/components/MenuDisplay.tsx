@@ -87,6 +87,29 @@ export function MenuDisplay({
       mergedConfig.allowDuplicate ||
       mergedConfig.allowDelete);
 
+  const featureTypeBadgeVariant = (type?: string) => {
+    if (type === "system") return "destructive"
+    if (type === "optional") return "secondary"
+    if (type === "experimental") return "secondary"
+    return "outline"
+  }
+
+  const featureTypeLabel = (type?: string) => {
+    if (type === "system") return "System"
+    if (type === "optional") return "Optional"
+    if (type === "default") return "Default"
+    if (type === "experimental") return "Experimental"
+    return "Custom"
+  }
+
+  const featureVisibilityDescription = (type?: string) => {
+    if (type === "system") return "Owners & admin roles"
+    if (type === "optional") return "All members (optional)"
+    if (type === "default") return "All workspace members"
+    if (type === "experimental") return "All workspace members"
+    return "Custom visibility"
+  }
+
   const fallbackMenuState = useMenuItems(workspaceId);
   const { menuItems, isLoading } = context
     ? {
@@ -319,14 +342,27 @@ export function MenuDisplay({
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{currentMenuItem.type}</Badge>
                 {currentMenuItem.metadata?.badge && (
                   <Badge variant="outline">{currentMenuItem.metadata.badge}</Badge>
                 )}
+                {currentMenuItem.metadata?.featureType && (
+                  <Badge
+                    variant={featureTypeBadgeVariant(currentMenuItem.metadata?.featureType)}
+                    className="text-[10px] uppercase tracking-wide"
+                  >
+                    {featureTypeLabel(currentMenuItem.metadata?.featureType)}
+                  </Badge>
+                )}
               </div>
               {currentMenuItem.metadata?.description && (
                 <p className="text-sm text-muted-foreground">{currentMenuItem.metadata.description}</p>
+              )}
+              {currentMenuItem.metadata?.featureType && (
+                <p className="text-xs text-muted-foreground">
+                  Visibility: {featureVisibilityDescription(currentMenuItem.metadata?.featureType)}
+                </p>
               )}
               {currentMenuItem.path && (
                 <div className="text-sm">

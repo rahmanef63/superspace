@@ -121,11 +121,13 @@ function generateReport() {
   console.log("==================")
 
   const defaultCount = FEATURES_REGISTRY.filter(f => f.featureType === "default").length
+  const systemCount = FEATURES_REGISTRY.filter(f => f.featureType === "system").length
   const optionalCount = FEATURES_REGISTRY.filter(f => f.featureType === "optional").length
   const experimentalCount = FEATURES_REGISTRY.filter(f => f.featureType === "experimental").length
 
   console.log(`  Total features: ${FEATURES_REGISTRY.length}`)
   console.log(`    - Default: ${defaultCount}`)
+  console.log(`    - System: ${systemCount}`)
   console.log(`    - Optional: ${optionalCount}`)
   console.log(`    - Experimental: ${experimentalCount}`)
 

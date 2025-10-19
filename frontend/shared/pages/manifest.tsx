@@ -30,7 +30,6 @@ import {
   Mail,
   Menu,
   MessageCircle,
-  MessageSquare,
   Palette,
   Phone,
   Settings,
@@ -61,19 +60,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/shared/pages/dynamic/overview/page")),
   },
   {
-    id: "chat",
+    id: "wa",
     componentId: "Page",
     title: "Chats",
     description: "Chats clone with chat, calls, status, and AI features",
     icon: MessageCircle,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAPage
-        if (!Component) {
-          throw new Error("Failed to load component WAPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/chat/page")),
   },
   {
     id: "chats",
@@ -81,14 +73,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Chats",
     description: "Chat conversations",
     icon: MessageCircle,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAChatsPage
-        if (!Component) {
-          throw new Error("Failed to load component WAChatsPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/chats/page")),
   },
   {
     id: "calls",
@@ -96,14 +81,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Calls",
     description: "Voice and video calls",
     icon: Phone,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WACallsPage
-        if (!Component) {
-          throw new Error("Failed to load component WACallsPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/calls/page")),
   },
   {
     id: "status",
@@ -111,14 +89,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Status",
     description: "Status updates",
     icon: Camera,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAStatusPage
-        if (!Component) {
-          throw new Error("Failed to load component WAStatusPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/status/page")),
   },
   {
     id: "ai",
@@ -126,14 +97,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Meta AI",
     description: "AI assistant",
     icon: Bot,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAAIPage
-        if (!Component) {
-          throw new Error("Failed to load component WAAIPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/ai/page")),
   },
   {
     id: "starred",
@@ -141,14 +105,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Starred",
     description: "Starred messages",
     icon: Star,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAStarredPage
-        if (!Component) {
-          throw new Error("Failed to load component WAStarredPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/starred/page")),
   },
   {
     id: "archived",
@@ -156,29 +113,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Archived",
     description: "Archived chats",
     icon: Archive,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAArchivedPage
-        if (!Component) {
-          throw new Error("Failed to load component WAArchivedPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
-  },
-  {
-    id: "settings",
-    componentId: "SettingsPage",
-    title: "Settings",
-    description: "Chats settings",
-    icon: Settings,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WASettingsPage
-        if (!Component) {
-          throw new Error("Failed to load component WASettingsPage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/features/archived/page")),
   },
   {
     id: "profile",
@@ -186,14 +121,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Profile",
     description: "User profile",
     icon: User,
-    component: lazy(async () => {
-        const module = await import("@/frontend/features/wa/shared/pages")
-        const Component = module.WAProfilePage
-        if (!Component) {
-          throw new Error("Failed to load component WAProfilePage from @/frontend/features/wa/shared/pages")
-        }
-        return { default: Component }
-      }),
+    component: lazy(() => import("@/frontend/shared/pages/static/profile/page")),
   },
   {
     id: "members",
@@ -236,6 +164,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/canvas/page")),
   },
   {
+    id: "documents",
+    componentId: "DocumentsPage",
+    title: "Documents",
+    description: "Collaborative document editor with real-time sync",
+    icon: FileText,
+    component: lazy(() => import("@/frontend/features/documents/page")),
+  },
+  {
     id: "menus",
     componentId: "MenusPage",
     title: "Menu Store",
@@ -260,28 +196,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/shared/pages/static/profile/page")),
   },
   {
-    id: "settings",
+    id: "workspace-settings",
     componentId: "WorkspacesPage",
     title: "Settings",
     description: "Workspace configuration and settings",
     icon: Settings,
     component: lazy(() => import("@/frontend/shared/pages/static/workspaces/page")),
-  },
-  {
-    id: "chat",
-    componentId: "ChatPage",
-    title: "Chat",
-    description: "Alternative chat interface with AI assistant",
-    icon: MessageSquare,
-    component: lazy(() => import("@/frontend/features/wa/page")),
-  },
-  {
-    id: "documents",
-    componentId: "DocumentsPage",
-    title: "Documents",
-    description: "Collaborative document editor with real-time sync",
-    icon: FileText,
-    component: lazy(() => import("@/frontend/features/documents/page")),
   },
   {
     id: "calendar",

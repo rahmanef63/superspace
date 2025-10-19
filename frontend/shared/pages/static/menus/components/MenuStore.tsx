@@ -15,7 +15,19 @@ import { MenuItemForm } from "./MenuItemForm";
 import { DragDropMenuTree } from "./DragDropMenuTree";
 import { MenuDisplay } from "./MenuDisplay";
 import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
-import { Plus, Trash2, Edit, Download, Check, Copy, Share, MoreHorizontal, FileInput } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Download,
+  Check,
+  Copy,
+  Share,
+  MoreHorizontal,
+  FileInput,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
 import { getIconComponent } from "@/frontend/shared/components/icons";
 import {
   SecondarySidebarLayout,
@@ -23,6 +35,7 @@ import {
   type SecondarySidebarProps,
 } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
 import { MenuStoreMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
+import type { MenuItemMetadata } from "../types";
 
 interface MenuStoreProps {
   workspaceId: Id<"workspaces">;
@@ -34,13 +47,7 @@ interface MenuItem {
   slug: string;
   type: string;
   path?: string;
-  metadata?: {
-    description?: string;
-    version?: string;
-    category?: string;
-    lastUpdated?: number;
-    previousVersion?: string;
-  };
+  metadata?: MenuItemMetadata;
 }
 
 interface AvailableFeatureMenu {
@@ -50,6 +57,11 @@ interface AvailableFeatureMenu {
   icon: string;
   version?: string;
   category?: string;
+  featureType?: MenuItemMetadata["featureType"];
+  tags?: string[];
+  status?: "stable" | "beta" | "development" | "experimental" | "deprecated";
+  isReady?: boolean;
+  expectedRelease?: string;
 }
 
 export function MenuStore({ workspaceId }: MenuStoreProps) {
@@ -64,6 +76,8 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const [shareDialog, setShareDialog] = useState<{ isOpen: boolean; shareableId?: string }>({ isOpen: false });
   const [importMenuId, setImportMenuId] = useState('');
   const [importing, setImporting] = useState(false);
+  const [syncingDefaults, setSyncingDefaults] = useState(false);
+  const [updatingFeatureTypeId, setUpdatingFeatureTypeId] = useState<Id<"menuItems"> | null>(null);
 
   const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
   const availableFeatures = useQuery((api as any)["menu/store/menuItems"].getAvailableFeatureMenus, { workspaceId });
@@ -74,6 +88,12 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
   const duplicateMenuItem = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
   const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenuItem);
   const importMenuFromShareableId = useMutation((api as any)["menu/store/menuItems"].importMenuFromShareableId);
+  const setMenuItemFeatureType = useMutation(
+    (api as any)["menu/store/menuItems"].setMenuItemFeatureType
+  );
+  const syncDefaultMenus = useMutation(
+    (api as any)["menu/store/menuItems"].syncWorkspaceDefaultMenus
+  );
 
   const filteredItems = (menuItems as MenuItem[] | undefined)?.filter((item: MenuItem) => {
     if (!searchQuery) return true;
@@ -196,19 +216,101 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
     }
   };
 
+  const normalizeFeatureType = (type?: string): "default" | "system" | "optional" => {
+    if (type === "system") return "system";
+    if (type === "optional") return "optional";
+    return "default";
+  };
+
+  const getFeatureType = (item: MenuItem): "default" | "system" | "optional" | "custom" => {
+    const current = item.metadata?.featureType as string | undefined;
+    if (current === "system" || current === "optional" || current === "default") {
+      return current;
+    }
+    return "custom";
+  };
+
+  const getOriginalFeatureType = (item: MenuItem): "default" | "system" | "optional" => {
+    const original = item.metadata?.originalFeatureType as string | undefined;
+    return normalizeFeatureType(original ?? (item.metadata?.featureType as string | undefined));
+  };
+
+  const handleFeatureTypeChange = async (item: MenuItem, target: "system" | "default") => {
+    setUpdatingFeatureTypeId(item._id);
+    const originalType = getOriginalFeatureType(item);
+    const desiredType: "default" | "system" | "optional" =
+      target === "default"
+        ? originalType === "system"
+          ? "default"
+          : originalType
+        : "system";
+    try {
+      await setMenuItemFeatureType({
+        menuItemId: item._id,
+        featureType: desiredType,
+      });
+      toast.success(
+        desiredType === "system"
+          ? "Menu restricted to system roles"
+          : desiredType === "optional"
+            ? "Menu marked as optional"
+            : "Menu visibility restored"
+      );
+    } catch (error) {
+      console.error("Failed to update menu visibility:", error);
+      toast.error("Failed to update menu visibility");
+    } finally {
+      setUpdatingFeatureTypeId(null);
+    }
+  };
+
+  const handleSyncDefaults = async () => {
+    setSyncingDefaults(true);
+    try {
+      await syncDefaultMenus({ workspaceId });
+      toast.success("Default menus synced with feature manifest");
+    } catch (error) {
+      console.error("Failed to sync default menus:", error);
+      toast.error("Failed to sync default menus");
+    } finally {
+      setSyncingDefaults(false);
+    }
+  };
+
   const showTreeSidebar = activeTab === 'installed' && viewMode === 'tree';
 
   const headerProps: SecondarySidebarHeaderProps = {
     title: "Menu Store",
     secondaryActions:
       activeTab === "installed" ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setViewMode(viewMode === "tree" ? "grid" : "tree")}
-        >
-          {viewMode === "tree" ? "Grid View" : "Tree View"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSyncDefaults}
+            disabled={syncingDefaults}
+            className="gap-2"
+          >
+            {syncingDefaults ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4" />
+                Sync defaults
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode(viewMode === "tree" ? "grid" : "tree")}
+          >
+            {viewMode === "tree" ? "Grid View" : "Tree View"}
+          </Button>
+        </div>
       ) : undefined,
     primaryAction:
       activeTab === "installed"
@@ -298,82 +400,132 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
                   />
                 ) : (
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredItems?.map((item) => (
-                      <Card key={item._id} className="transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">{item.name}</CardTitle>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRenameItem(item)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Rename
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
-                                  <Copy className="mr-2 h-4 w-4" />
-                                  Duplicate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleShareItem(item)}>
-                                  <Share className="mr-2 h-4 w-4" />
-                                  Share
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteItem(item._id)}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {item.type}
-                              </Badge>
-                              {item.metadata?.version && (
+                    {filteredItems?.map((item) => {
+                      const featureType = getFeatureType(item)
+                      const originalType = getOriginalFeatureType(item)
+                      const isSystem = featureType === "system"
+                      const showRestore = isSystem && originalType !== "system"
+                      const featureBadgeVariant =
+                        featureType === "system" ? "destructive" : featureType === "optional" ? "secondary" : "outline"
+                      const featureLabel =
+                        featureType === "system"
+                          ? "System"
+                          : featureType === "optional"
+                            ? "Optional"
+                            : featureType === "default"
+                              ? "Default"
+                              : "Custom"
+
+                      return (
+                        <Card key={item._id} className="transition-shadow hover:shadow-md">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="flex items-center gap-2 text-base">
+                                {item.name}
+                                {featureType !== "custom" && (
+                                  <Badge variant={featureBadgeVariant} className="text-[10px] uppercase tracking-wide">
+                                    {featureLabel}
+                                  </Badge>
+                                )}
+                              </CardTitle>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditItem(item._id)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRenameItem(item)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDuplicateItem(item)}>
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Duplicate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleShareItem(item)}>
+                                    <Share className="mr-2 h-4 w-4" />
+                                    Share
+                                  </DropdownMenuItem>
+                                  {featureType !== "system" && (
+                                    <DropdownMenuItem
+                                      onClick={() => handleFeatureTypeChange(item, "system")}
+                                      disabled={updatingFeatureTypeId === item._id}
+                                    >
+                                      Restrict to system roles
+                                    </DropdownMenuItem>
+                                  )}
+                                  {showRestore && (
+                                    <DropdownMenuItem
+                                      onClick={() => handleFeatureTypeChange(item, "default")}
+                                      disabled={updatingFeatureTypeId === item._id}
+                                    >
+                                      Restore original visibility
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteItem(item._id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <Badge variant="outline" className="text-xs">
-                                  v{item.metadata.version}
+                                  {item.type}
                                 </Badge>
+                                {item.metadata?.version && (
+                                  <Badge variant="outline" className="text-xs">
+                                    v{item.metadata.version}
+                                  </Badge>
+                                )}
+                                {item.metadata?.category && (
+                                  <Badge variant="default" className="text-xs capitalize">
+                                    {item.metadata.category}
+                                  </Badge>
+                                )}
+                              </div>
+                              {item.metadata?.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {item.metadata.description}
+                                </p>
                               )}
-                              {item.metadata?.category && (
-                                <Badge variant="default" className="text-xs">
-                                  {item.metadata.category}
-                                </Badge>
+                              {featureType !== "custom" && (
+                                <p className="text-xs text-muted-foreground">
+                                  Visibility:{" "}
+                                  {featureType === "system"
+                                    ? "Owners & admin roles"
+                                    : featureType === "optional"
+                                      ? "All members (optional)"
+                                      : "All workspace members"}
+                                </p>
+                              )}
+                              {item.path && (
+                                <div className="text-xs text-muted-foreground">
+                                  {item.path}
+                                </div>
+                              )}
+                              {item.metadata?.lastUpdated && (
+                                <div className="text-xs text-muted-foreground">
+                                  Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
+                                </div>
                               )}
                             </div>
-                            {item.metadata?.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {item.metadata.description}
-                              </p>
-                            )}
-                            {item.path && (
-                              <div className="text-xs text-muted-foreground">
-                                {item.path}
-                              </div>
-                            )}
-                            {item.metadata?.lastUpdated && (
-                              <div className="text-xs text-muted-foreground">
-                                Updated: {new Date(item.metadata.lastUpdated).toLocaleDateString()}
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -393,42 +545,75 @@ export function MenuStore({ workspaceId }: MenuStoreProps) {
             {availableFeatureList?.map((feature) => {
               const IconComponent = getIconComponent(feature.icon);
               const isInstalling = installingFeatures.has(feature.slug);
+              const isNotReady = feature.isReady === false;
+              const statusBadgeVariant =
+                feature.status === "stable" ? "default" :
+                feature.status === "beta" ? "secondary" :
+                feature.status === "development" ? "outline" :
+                feature.status === "experimental" ? "outline" :
+                feature.status === "deprecated" ? "destructive" : "default";
 
                   return (
                     <Card key={feature.slug} className="transition-shadow hover:shadow-md">
                       <CardHeader className="pb-3">
-                        <div className="flex items-center gap-3">
-                          <IconComponent className="h-5 w-5 text-primary" />
-                          <CardTitle className="text-base">{feature.name}</CardTitle>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <IconComponent className="h-5 w-5 text-primary" />
+                            <CardTitle className="text-base">{feature.name}</CardTitle>
+                          </div>
+                          {feature.status && (
+                            <Badge variant={statusBadgeVariant} className="text-[10px] uppercase">
+                              {feature.status}
+                            </Badge>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
                             {feature.description}
                           </p>
-                          {feature.version && (
-                            <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {feature.version && (
                               <Badge variant="outline" className="text-xs">
                                 v{feature.version}
                               </Badge>
-                              {feature.category && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {feature.category}
+                            )}
+                            {feature.category && (
+                              <Badge variant="secondary" className="text-xs capitalize">
+                                {feature.category}
+                              </Badge>
+                            )}
+                          </div>
+                          {feature.tags && feature.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {feature.tags.map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-[10px]">
+                                  {tag}
                                 </Badge>
-                              )}
+                              ))}
                             </div>
+                          )}
+                          {isNotReady && feature.expectedRelease && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              Expected: {feature.expectedRelease}
+                            </p>
                           )}
                           <Button
                             onClick={() => handleInstallFeature(feature.slug)}
-                            disabled={isInstalling}
+                            disabled={isInstalling || isNotReady}
                             className="w-full"
                             size="sm"
+                            variant={isNotReady ? "outline" : "default"}
                           >
                             {isInstalling ? (
                               <>
                                 <div className="mr-2 h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
                                 Installing...
+                              </>
+                            ) : isNotReady ? (
+                              <>
+                                In Development
                               </>
                             ) : (
                               <>

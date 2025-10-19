@@ -177,6 +177,18 @@ const applicationTables = {
         )),
         isReady: v.optional(v.boolean()),
         expectedRelease: v.optional(v.string()),
+        featureType: v.optional(v.union(
+          v.literal("default"),
+          v.literal("system"),
+          v.literal("optional")
+        )),
+        originalFeatureType: v.optional(v.union(
+          v.literal("default"),
+          v.literal("system"),
+          v.literal("optional")
+        )),
+        requiresPermission: v.optional(v.string()),
+        originalRequiresPermission: v.optional(v.string()),
       }),
     ),
     createdBy: v.id("users"),

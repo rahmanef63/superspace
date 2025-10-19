@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import type { ComponentType } from "react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   GripVertical,
   ChevronRight,
@@ -10,6 +11,7 @@ import {
   Hash,
   MoreVertical,
   Copy,
+  ArrowUpCircle,
   Home,
   Settings,
   Users,
@@ -88,6 +90,8 @@ import { useOptionalSecondaryMenuContext } from "../context"
 import { buildMenuTree, computeNextOrder } from "../utils/tree"
 import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
+import { useQuery } from "convex/react"
+import { api } from "@convex/_generated/api"
 
 export function DragDropMenuTree({
   workspaceId,
@@ -122,6 +126,19 @@ export function DragDropMenuTree({
   const [dropPreview, setDropPreview] = useState<DropPreview | null>(null)
   const [renamingItemId, setRenamingItemId] = useState<Id<"menuItems"> | null>(null)
   const [renameValue, setRenameValue] = useState("")
+
+  // Fetch menu updates
+  const menuUpdates = useQuery(api.menu.store.menuItems.getMenuUpdates, { workspaceId }) || []
+  const updatesMap = useMemo(() => {
+    const map = new Map<string, { currentVersion: string; latestVersion: string }>()
+    menuUpdates.forEach((update) => {
+      map.set(String(update.menuItemId), {
+        currentVersion: update.currentVersion,
+        latestVersion: update.latestVersion,
+      })
+    })
+    return map
+  }, [menuUpdates])
 
   const flatItems = useMemo<MenuItemRecord[]>(() => {
     return menuItems
@@ -337,6 +354,28 @@ export function DragDropMenuTree({
   const handleCopyMenuId = (itemId: Id<"menuItems">) => {
     navigator.clipboard.writeText(String(itemId))
     toast.success("Menu ID copied to clipboard")
+  }
+
+  const handleUpdateMenu = async (itemId: Id<"menuItems">) => {
+    const item = itemLookup.get(String(itemId))
+    if (!item) return
+
+    try {
+      // Use installFeatureMenus to update the menu
+      if (allMutations.installFeatureMenus) {
+        await allMutations.installFeatureMenus({
+          workspaceId,
+          featureSlugs: [item.slug],
+          forceUpdate: true,
+        })
+        toast.success("Menu updated successfully")
+      } else {
+        toast.error("Update feature not available")
+      }
+    } catch (error) {
+      console.error("Failed to update menu:", error)
+      toast.error("Failed to update menu")
+    }
   }
 
   const clearDragState = () => {
@@ -560,7 +599,44 @@ export function DragDropMenuTree({
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <span className="z-10 text-sm flex-1">{item.name}</span>
+            <div className="z-10 flex flex-1 items-center gap-2 text-sm">
+              <span className="truncate">{item.name}</span>
+              {item.metadata?.version && (
+                <Badge
+                  variant="outline"
+                  className="text-[9px] uppercase tracking-wide font-mono"
+                >
+                  v{item.metadata.version}
+                </Badge>
+              )}
+              {item.metadata?.featureType && (
+                <Badge
+                  variant={
+                    item.metadata.featureType === "system"
+                      ? "destructive"
+                      : item.metadata.featureType === "optional"
+                        ? "secondary"
+                        : "outline"
+                  }
+                  className="text-[9px] uppercase tracking-wide"
+                >
+                  {item.metadata.featureType === "system"
+                    ? "System"
+                    : item.metadata.featureType === "optional"
+                      ? "Optional"
+                      : "Default"}
+                </Badge>
+              )}
+              {updatesMap.has(key) && (
+                <Badge
+                  variant="default"
+                  className="text-[9px] uppercase tracking-wide bg-blue-500 hover:bg-blue-600 gap-1 animate-pulse"
+                >
+                  <ArrowUpCircle className="w-3 h-3" />
+                  Update Available
+                </Badge>
+              )}
+            </div>
           )}
 
           <DropdownMenu>
@@ -575,6 +651,18 @@ export function DragDropMenuTree({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              {updatesMap.has(key) && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleUpdateMenu(item._id)
+                  }}
+                  className="text-blue-600 dark:text-blue-400 font-medium"
+                >
+                  <ArrowUpCircle className="w-4 h-4 mr-2" />
+                  Update to v{updatesMap.get(key)?.latestVersion}
+                </DropdownMenuItem>
+              )}
               {canRename ? (
                 <DropdownMenuItem
                   onClick={(e) => {

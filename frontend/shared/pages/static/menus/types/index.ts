@@ -43,6 +43,10 @@ export interface MenuItemMetadata {
   targetId?: string;
   jsonPlaceholder?: Record<string, any>;
   avatarStyle?: "icon" | "profile";
+  featureType?: "default" | "system" | "optional" | "experimental" | "custom";
+  originalFeatureType?: "default" | "system" | "optional" | "experimental";
+  requiresPermission?: string;
+  originalRequiresPermission?: string;
 }
 
 // Tree node type for rendering (with guaranteed children array)
@@ -58,6 +62,7 @@ export interface AvailableFeature {
   icon: string;
   version: string;
   category: string;
+  featureType?: "default" | "system" | "optional" | "experimental";
 }
 
 // Share result type

@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel";
-import { WorkspaceSettings } from "./components/WorkspaceSettings";
+import { WorkspaceSettings } from "@/frontend/shared/components/settings/components/WorkspaceSettings";
 
 export interface WorkspacesPageProps {
   workspaceId?: Id<"workspaces"> | null;

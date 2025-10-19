@@ -20,6 +20,12 @@ export function useMenuMutations() {
   const installFeatureMenus = useMutation(
     menuApi.mutations.installFeatureMenus
   );
+  const setMenuItemFeatureType = useMutation(
+    menuApi.mutations.setMenuItemFeatureType
+  );
+  const syncWorkspaceDefaultMenus = useMutation(
+    menuApi.mutations.syncWorkspaceDefaultMenus
+  );
 
   return {
     createMenuItem: async (params: {
@@ -95,11 +101,26 @@ export function useMenuMutations() {
       });
     },
 
-    installFeatureMenus: async (
-      workspaceId: Id<"workspaces">,
-      featureSlugs: string[]
+    installFeatureMenus: async (params: {
+      workspaceId: Id<"workspaces">;
+      featureSlugs: string[];
+      forceUpdate?: boolean;
+    }) => {
+      return await installFeatureMenus(params);
+    },
+
+    setMenuItemFeatureType: async (
+      menuItemId: Id<"menuItems">,
+      featureType: "default" | "system" | "optional"
     ) => {
-      return await installFeatureMenus({ workspaceId, featureSlugs });
+      return await setMenuItemFeatureType({ menuItemId, featureType });
+    },
+
+    syncWorkspaceDefaultMenus: async (
+      workspaceId: Id<"workspaces">,
+      featureSlugs?: string[]
+    ) => {
+      return await syncWorkspaceDefaultMenus({ workspaceId, featureSlugs });
     },
   };
 }

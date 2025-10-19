@@ -45,7 +45,7 @@
   description: "Chats clone with chat, calls, status, and AI features",
   category: "communication",
   icon: "MessageCircle",
-  path: "/dashboard/wa",
+  path: "/dashboard/chat",
   order: 3,
   type: "folder",
   version: "2.0.0",
@@ -63,7 +63,6 @@
 - `wa-ai` - Meta AI assistant
 - `wa-starred` - Starred messages
 - `wa-archived` - Archived chats
-- `wa-settings` - Chats settings
 - `wa-profile` - User profile
 
 ---
@@ -480,7 +479,6 @@ const workspaceId = await ctx.runMutation(api.workspace.workspaces.createWorkspa
 | `wa-ai` | Meta AI | communication | Bot | - |
 | `wa-starred` | Starred | communication | Star | - |
 | `wa-archived` | Archived | communication | Archive | - |
-| `wa-settings` | Settings | communication | Settings | - |
 | `wa-profile` | Profile | communication | User | - |
 | `members` | Members | administration | Users | MANAGE_MEMBERS |
 | `friends` | Friends | social | Heart | - |

@@ -3,7 +3,17 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(pnpm test:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(pnpm run validate:features:*)",
+      "Bash(pnpm run:*)",
+      "Bash(timeout 60 pnpm test:*)",
+      "Bash(cat:*)",
+      "Bash(timeout 60 pnpm run validate:features)",
+      "Bash(powershell:*)",
+      "Bash(Select-String -Pattern \"(error TS|Cannot find module)\")",
+      "Bash(Select-Object -First 20)",
+      "Bash(timeout 30 npx convex dev --once)",
+      "Bash(timeout 60 npm run build:*)"
     ],
     "deny": [],
     "ask": []

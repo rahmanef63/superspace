@@ -77,7 +77,7 @@ export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
     path: "/user-settings"
   },
   {
-    key: "settings",
+    key: "workspace-settings",
     label: "Settings",
     icon: Settings,
     description: "Workspace configuration",

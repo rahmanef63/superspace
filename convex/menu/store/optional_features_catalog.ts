@@ -10,30 +10,6 @@
 
 export const OPTIONAL_FEATURES_CATALOG = [
   {
-    "slug": "chat",
-    "name": "Chat",
-    "description": "Alternative chat interface with AI assistant",
-    "icon": "MessageSquare",
-    "version": "1.0.0",
-    "category": "communication",
-    "tags": [
-      "messaging",
-      "ai"
-    ]
-  },
-  {
-    "slug": "documents",
-    "name": "Documents",
-    "description": "Collaborative document editor with real-time sync",
-    "icon": "FileText",
-    "version": "1.2.0",
-    "category": "productivity",
-    "tags": [
-      "collaboration",
-      "real-time"
-    ]
-  },
-  {
     "slug": "calendar",
     "name": "Calendar",
     "description": "Team calendar with event management",
@@ -46,7 +22,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "status": "development",
     "isReady": false,
-    "expectedRelease": "Q1 2025"
+    "expectedRelease": "Q1 2025",
+    "featureType": "optional"
   },
   {
     "slug": "reports",
@@ -56,9 +33,11 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "version": "1.0.0",
     "category": "analytics",
     "requiresPermission": "VIEW_REPORTS",
+    "originalRequiresPermission": "VIEW_REPORTS",
     "status": "development",
     "isReady": false,
-    "expectedRelease": "Q1 2025"
+    "expectedRelease": "Q1 2025",
+    "featureType": "optional"
   },
   {
     "slug": "tasks",
@@ -73,7 +52,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "status": "development",
     "isReady": false,
-    "expectedRelease": "Q2 2025"
+    "expectedRelease": "Q2 2025",
+    "featureType": "optional"
   },
   {
     "slug": "wiki",
@@ -88,6 +68,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "status": "development",
     "isReady": false,
-    "expectedRelease": "Q2 2025"
+    "expectedRelease": "Q2 2025",
+    "featureType": "optional"
   }
 ]

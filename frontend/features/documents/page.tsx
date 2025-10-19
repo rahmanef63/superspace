@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import DocumentsFeaturePage from "./page/page";
+import DocumentsFeaturePage from "./view/page";
 
 export interface DocumentsPageProps {
   workspaceId?: Id<"workspaces"> | null;

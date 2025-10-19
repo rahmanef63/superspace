@@ -17,15 +17,17 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Dashboard overview with analytics and insights",
       version: "1.0.0",
-      category: "analytics" as const
+      category: "analytics" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
     name: "Chats" as const,
-    slug: "chat" as const,
+    slug: "wa" as const,
     type: "folder" as const,
     icon: "MessageCircle" as const,
-    path: "/dashboard/wa",
+    path: "/dashboard/chat",
     component: "Page" as const,
     order: 3,
     metadata: {
@@ -36,12 +38,14 @@ export const DEFAULT_MENU_ITEMS = [
         "messaging",
         "communication",
         "real-time"
-      ]
+      ],
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     },
     children: [
       {
         name: "Chats" as const,
-        slug: "chats",
+        slug: "chats" as const,
         type: "route" as const,
         icon: "MessageCircle" as const,
         path: "/dashboard/chats",
@@ -50,105 +54,105 @@ export const DEFAULT_MENU_ITEMS = [
         metadata: {
           description: "Chat conversations",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Calls" as const,
-        slug: "calls",
+        slug: "calls" as const,
         type: "route" as const,
         icon: "Phone" as const,
-        path: "/dashboard/wa-calls",
+        path: "/dashboard/calls",
         component: "CallsPage" as const,
         order: 2,
         metadata: {
           description: "Voice and video calls",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Status" as const,
-        slug: "status",
+        slug: "status" as const,
         type: "route" as const,
         icon: "Camera" as const,
-        path: "/dashboard/wa-status",
+        path: "/dashboard/status",
         component: "StatusPage" as const,
         order: 3,
         metadata: {
           description: "Status updates",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Meta AI",
-        slug: "ai",
+        slug: "ai" as const,
         type: "route" as const,
         icon: "Bot" as const,
-        path: "/dashboard/wa-ai",
+        path: "/dashboard/ai",
         component: "AIPage" as const,
         order: 4,
         metadata: {
           description: "AI assistant",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Starred" as const,
-        slug: "starred",
+        slug: "starred" as const,
         type: "route" as const,
         icon: "Star" as const,
-        path: "/dashboard/wa-starred",
+        path: "/dashboard/starred",
         component: "StarredPage" as const,
         order: 5,
         metadata: {
           description: "Starred messages",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Archived" as const,
-        slug: "archived",
+        slug: "archived" as const,
         type: "route" as const,
         icon: "Archive" as const,
-        path: "/dashboard/wa-archived",
+        path: "/dashboard/archived",
         component: "ArchivedPage" as const,
         order: 6,
         metadata: {
           description: "Archived chats",
           version: "2.0.0",
-          category: "communication" as const
-        }
-      },
-      {
-        name: "Settings" as const,
-        slug: "settings",
-        type: "route" as const,
-        icon: "Settings" as const,
-        path: "/dashboard/wa-settings",
-        component: "SettingsPage" as const,
-        order: 7,
-        metadata: {
-          description: "Chats settings",
-          version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       },
       {
         name: "Profile" as const,
-        slug: "profile",
+        slug: "profile" as const,
         type: "route" as const,
         icon: "User" as const,
-        path: "/dashboard/wa-profile",
+        path: "/dashboard/profile",
         component: "ProfilePage" as const,
         order: 8,
         metadata: {
           description: "User profile",
           version: "2.0.0",
-          category: "communication" as const
+          category: "communication" as const,
+          featureType: "default" as const,
+          originalFeatureType: "default" as const
         }
       }
     ]
@@ -164,7 +168,11 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Manage workspace members and permissions",
       version: "1.1.0",
-      category: "administration" as const
+      category: "administration" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const,
+      requiresPermission: "MANAGE_MEMBERS",
+      originalRequiresPermission: "MANAGE_MEMBERS"
     },
     requiresPermission: "MANAGE_MEMBERS"
   },
@@ -179,7 +187,9 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Manage your friends and connections",
       version: "1.0.0",
-      category: "social" as const
+      category: "social" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
@@ -193,7 +203,9 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Notion-like pages for documentation",
       version: "1.0.0",
-      category: "productivity" as const
+      category: "productivity" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
@@ -207,7 +219,9 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Notion-style database views and management",
       version: "1.0.0",
-      category: "productivity" as const
+      category: "productivity" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
@@ -221,7 +235,29 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Visual collaboration and whiteboarding",
       version: "1.0.0",
-      category: "creativity" as const
+      category: "creativity" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
+    }
+  },
+  {
+    name: "Documents" as const,
+    slug: "documents" as const,
+    type: "route" as const,
+    icon: "FileText" as const,
+    path: "/dashboard/documents",
+    component: "DocumentsPage" as const,
+    order: 9,
+    metadata: {
+      description: "Collaborative document editor with real-time sync",
+      version: "1.2.0",
+      category: "productivity" as const,
+      tags: [
+        "collaboration",
+        "real-time"
+      ],
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
@@ -235,7 +271,11 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Install and manage navigation menus",
       version: "1.0.0",
-      category: "administration" as const
+      category: "administration" as const,
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "MANAGE_MENUS",
+      originalRequiresPermission: "MANAGE_MENUS"
     },
     requiresPermission: "MANAGE_MENUS"
   },
@@ -250,8 +290,13 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Manage workspace invitations",
       version: "1.0.0",
-      category: "administration" as const
-    }
+      category: "administration" as const,
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "MANAGE_INVITATIONS",
+      originalRequiresPermission: "MANAGE_INVITATIONS"
+    },
+    requiresPermission: "MANAGE_INVITATIONS"
   },
   {
     name: "Profile" as const,
@@ -264,12 +309,14 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Manage your user profile and preferences",
       version: "1.0.0",
-      category: "administration" as const
+      category: "administration" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
     }
   },
   {
     name: "Settings" as const,
-    slug: "settings" as const,
+    slug: "workspace-settings",
     type: "route" as const,
     icon: "Settings" as const,
     path: "/dashboard/settings",
@@ -278,7 +325,11 @@ export const DEFAULT_MENU_ITEMS = [
     metadata: {
       description: "Workspace configuration and settings",
       version: "1.0.0",
-      category: "administration" as const
+      category: "administration" as const,
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "MANAGE_WORKSPACE",
+      originalRequiresPermission: "MANAGE_WORKSPACE"
     },
     requiresPermission: "MANAGE_WORKSPACE"
   }

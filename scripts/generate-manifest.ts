@@ -19,7 +19,15 @@ interface ComponentImportConfig {
 }
 
 const COMPONENT_IMPORT_OVERRIDES: Record<string, ComponentImportConfig> = {
-  ChatPage: { path: "@/frontend/features/wa/page" },
+  Page: { path: "@/frontend/features/chat/page" }, // wa feature uses "Page" component
+  ChatPage: { path: "@/frontend/features/chat/page" },
+  ChatsPage: { path: "@/frontend/features/chats/page" },
+  StatusPage: { path: "@/frontend/features/status/page" },
+  AIPage: { path: "@/frontend/features/ai/page" },
+  StarredPage: { path: "@/frontend/features/starred/page" },
+  ArchivedPage: { path: "@/frontend/features/archived/page" },
+  CallsPage: { path: "@/frontend/features/calls/page" },
+  DocumentsPage: { path: "@/frontend/features/documents/page" },
   OverviewPage: { path: "@/frontend/shared/pages/dynamic/overview/page" },
   MembersPage: { path: "@/frontend/shared/pages/static/member/page" },
   FriendsPage: { path: "@/frontend/shared/pages/static/friends/page" },
@@ -32,6 +40,8 @@ const COMPONENT_IMPORT_OVERRIDES: Record<string, ComponentImportConfig> = {
   CalendarPage: { path: "@/frontend/features/calendar/views/CalendarPage" },
   TasksPage: { path: "@/frontend/features/tasks/views/TasksPage" },
   WikiPage: { path: "@/frontend/features/wiki/views/WikiPage" },
+  CanvasPage: { path: "@/frontend/features/canvas/page" },
+  ReportsPage: { path: "@/frontend/features/reports/page" },
 }
 
 function fileExists(...segments: string[]): boolean {
@@ -44,8 +54,9 @@ function resolveComponentImport(feature: FeatureMetadata): ComponentImportConfig
     return override
   }
 
-  if (feature.component.startsWith("")) {
-    return { path: "@/frontend/features/wa/shared/pages", namedExport: feature.component }
+  // Check for specific WA (WhatsApp) feature components from chat shared pages
+  if (feature.slug.startsWith("wa-") || feature.component.startsWith("WA")) {
+    return { path: "@/frontend/features/chat/shared/pages", namedExport: feature.component }
   }
 
   if (fileExists("frontend", "shared", "pages", "static", feature.slug, "page.tsx")) {

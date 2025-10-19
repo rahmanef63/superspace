@@ -5,6 +5,35 @@ import type { Id } from "../../_generated/dataModel"
 import { requirePermission, requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
 import { PERMS } from "../../workspace/permissions"
 
+type FeatureVisibilityType = "default" | "system" | "optional"
+
+const SYSTEM_PERMISSION_KEY = "MANAGE_WORKSPACE"
+const SYSTEM_PERMISSION_VALUE =
+  (PERMS as Record<string, string>)[SYSTEM_PERMISSION_KEY as keyof typeof PERMS] ?? "manage_workspace"
+
+function normalizePermissionKey(permKey?: string): string | undefined {
+  if (!permKey) return undefined
+  const permsRecord = PERMS as Record<string, string>
+  const upper = permKey.toUpperCase()
+  return permsRecord[upper as keyof typeof PERMS] ?? permKey
+}
+
+async function getRoleIdsForPermission(ctx: any, workspaceId: Id<"workspaces">, permKey?: string) {
+  const resolved = normalizePermissionKey(permKey)
+  if (!resolved) return []
+
+  const roles = await ctx.db
+    .query("roles")
+    .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspaceId))
+    .collect()
+
+  return roles
+    .filter((role: any) => {
+      const permissions: string[] = role.permissions || []
+      return permissions.includes("*") || permissions.includes(resolved)
+    })
+    .map((role: any) => role._id)
+}
 // Get workspace menu items
 export const getWorkspaceMenuItems = query({
   args: {
@@ -279,14 +308,8 @@ export const createDefaultMenuItems = internalMutation({
 
     const permissionCache = new Map<string, any[]>()
 
-    const resolvePermissionValue = (permKey?: string) => {
-      if (!permKey) return undefined
-      const permsRecord = PERMS as Record<string, string>
-      return permsRecord[permKey as keyof typeof PERMS] ?? permKey
-    }
-
     const resolveVisibleRoleIds = (permKey?: string) => {
-      const permissionValue = resolvePermissionValue(permKey)
+      const permissionValue = normalizePermissionKey(permKey)
       if (!permissionValue) return []
       const cached = permissionCache.get(permissionValue)
       if (cached) return cached
@@ -358,11 +381,30 @@ export const createDefaultMenuItems = internalMutation({
           if ((existingItem.component || undefined) !== (item.component || undefined) && item.component) {
             updates.component = item.component
           }
-          if (item.path && (!existingItem.path || existingItem.path.startsWith("/wa/"))) {
+          if (item.path && (!existingItem.path || existingItem.path.startsWith("/"))) {
             updates.path = item.path
           }
-          if (!existingItem.metadata && item.metadata) {
-            updates.metadata = item.metadata
+          if (item.metadata) {
+            const existingMetadata = existingItem.metadata ?? {}
+            const mergedMetadata: any = { ...existingMetadata }
+            let metadataChanged = false
+
+            const maybeSetMetadata = (key: string, value: any, overwrite = false) => {
+              if (value === undefined) return
+              if (overwrite || mergedMetadata[key] === undefined) {
+                mergedMetadata[key] = value
+                metadataChanged = true
+              }
+            }
+
+            maybeSetMetadata("featureType", item.metadata.featureType)
+            maybeSetMetadata("originalFeatureType", item.metadata.originalFeatureType)
+            maybeSetMetadata("requiresPermission", item.metadata.requiresPermission)
+            maybeSetMetadata("originalRequiresPermission", item.metadata.originalRequiresPermission)
+
+            if (metadataChanged) {
+              updates.metadata = mergedMetadata
+            }
           }
           if (existingItem.isVisible === false) {
             updates.isVisible = true
@@ -572,6 +614,11 @@ export const installFeatureMenus = mutation({
             isReady: catalogFeature.isReady,
             expectedRelease: catalogFeature.expectedRelease,
             lastUpdated: Date.now(),
+            featureType: "optional" as const,
+            originalFeatureType: "optional" as const,
+            requiresPermission: catalogFeature.requiresPermission,
+            originalRequiresPermission:
+              catalogFeature.originalRequiresPermission ?? catalogFeature.requiresPermission,
           },
           requiresPermission: catalogFeature.requiresPermission,
         }
@@ -595,6 +642,11 @@ export const installFeatureMenus = mutation({
             isReady: catalogFeature.isReady,
             expectedRelease: catalogFeature.expectedRelease,
             lastUpdated: Date.now(),
+            featureType: "optional" as const,
+            originalFeatureType: "optional" as const,
+            requiresPermission: catalogFeature.requiresPermission,
+            originalRequiresPermission:
+              catalogFeature.originalRequiresPermission ?? catalogFeature.requiresPermission,
           },
           requiresPermission: catalogFeature.requiresPermission,
         }
@@ -666,6 +718,22 @@ export const installFeatureMenus = mutation({
           },
         })
 
+        // Audit log for version update
+        await ctx.db.insert("activityEvents", {
+          actorUserId: userId,
+          workspaceId: args.workspaceId,
+          entityType: "menuItem",
+          entityId: String(existing._id),
+          action: "version_updated",
+          diff: {
+            slug: feature.slug,
+            previousVersion: existingVersion,
+            newVersion: newVersion,
+            updatedFields: ["name", "icon", "path", "component", "metadata"],
+          },
+          createdAt: Date.now(),
+        })
+
         menuItemIds.push(existing._id)
         continue
       }
@@ -696,6 +764,21 @@ export const installFeatureMenus = mutation({
         createdBy: userId,
       })
       menuItemIds.push(menuItemId)
+
+      // Audit log for new feature installation
+      await ctx.db.insert("activityEvents", {
+        actorUserId: userId,
+        workspaceId: args.workspaceId,
+        entityType: "menuItem",
+        entityId: String(menuItemId),
+        action: "feature_installed",
+        diff: {
+          slug: feature.slug,
+          version: (feature as any).version || "1.0.0",
+          featureType: feature.metadata.featureType,
+        },
+        createdAt: Date.now(),
+      })
     }
 
     return menuItemIds
@@ -843,6 +926,17 @@ export const getAvailableFeatureMenus = query({
       icon: v.string(),
       version: v.string(),
       category: v.string(),
+      tags: v.optional(v.array(v.string())),
+      status: v.optional(v.union(
+        v.literal("stable"),
+        v.literal("beta"),
+        v.literal("development"),
+        v.literal("experimental"),
+        v.literal("deprecated")
+      )),
+      isReady: v.optional(v.boolean()),
+      expectedRelease: v.optional(v.string()),
+      featureType: v.optional(v.string()),
     }),
   ),
   handler: async (ctx, args) => {
@@ -865,12 +959,86 @@ export const getAvailableFeatureMenus = query({
       icon: feature.icon,
       version: feature.version,
       category: feature.category,
+      tags: feature.tags,
+      status: feature.status,
+      isReady: feature.isReady,
+      expectedRelease: feature.expectedRelease,
+      featureType: feature.featureType,
     }))
 
     // Return only features that aren't already installed
     return availableFeatures.filter((feature) => !installedSlugs.has(feature.slug))
   },
 })
+
+// Check for menu updates available
+export const getMenuUpdates = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  returns: v.array(
+    v.object({
+      menuItemId: v.id("menuItems"),
+      slug: v.string(),
+      name: v.string(),
+      currentVersion: v.string(),
+      latestVersion: v.string(),
+      hasUpdate: v.boolean(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    // Get currently installed menus
+    const installedMenus = await ctx.db
+      .query("menuItems")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Build a map of latest versions from catalog
+    const catalogVersionMap = new Map(
+      [...DEFAULT_MENU_ITEMS, ...OPTIONAL_FEATURES_CATALOG].map((item) => [
+        item.slug,
+        (item as any).version || (item as any).metadata?.version || "1.0.0",
+      ])
+    )
+
+    const updates = installedMenus
+      .map((menu) => {
+        const currentVersion = menu.metadata?.version || "0.0.0"
+        const latestVersion = catalogVersionMap.get(menu.slug) || currentVersion
+        const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
+
+        return {
+          menuItemId: menu._id,
+          slug: menu.slug,
+          name: menu.name,
+          currentVersion,
+          latestVersion,
+          hasUpdate,
+        }
+      })
+      .filter((item) => item.hasUpdate)
+
+    return updates
+  },
+})
+
+// Helper function to compare semantic versions
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split(".").map(Number)
+  const parts2 = v2.split(".").map(Number)
+
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const part1 = parts1[i] || 0
+    const part2 = parts2[i] || 0
+
+    if (part1 > part2) return 1
+    if (part1 < part2) return -1
+  }
+
+  return 0
+}
 
 // Update menu item
 export const updateMenuItem = mutation({
@@ -925,6 +1093,55 @@ export const updateMenuItem = mutation({
 
     await ctx.db.patch(args.menuItemId, updates)
     return args.menuItemId
+  },
+})
+
+export const setMenuItemFeatureType = mutation({
+  args: {
+    menuItemId: v.id("menuItems"),
+    featureType: v.union(v.literal("default"), v.literal("system"), v.literal("optional")),
+  },
+  handler: async (ctx, args) => {
+    const menuItem = await ctx.db.get(args.menuItemId)
+    if (!menuItem) throw new Error("Menu item not found")
+
+    await requirePermission(ctx, menuItem.workspaceId, PERMS.MANAGE_MENUS)
+
+    const metadata: any = { ...(menuItem.metadata ?? {}) }
+    const originalFeatureType: FeatureVisibilityType =
+      (metadata.originalFeatureType as FeatureVisibilityType | undefined) ??
+      (metadata.featureType as FeatureVisibilityType | undefined) ??
+      "default"
+
+    if (!metadata.originalFeatureType) {
+      metadata.originalFeatureType = originalFeatureType
+    }
+
+    const targetFeatureType = args.featureType as FeatureVisibilityType
+    metadata.featureType = targetFeatureType
+
+    const originalPermission = metadata.originalRequiresPermission ?? metadata.requiresPermission
+    const visibilityPermission =
+      targetFeatureType === "system" ? SYSTEM_PERMISSION_KEY : originalPermission
+
+    const visibleForRoleIds = await getRoleIdsForPermission(
+      ctx,
+      menuItem.workspaceId,
+      visibilityPermission,
+    )
+
+    const updates: any = {
+      metadata,
+      visibleForRoleIds,
+    }
+
+    await ctx.db.patch(args.menuItemId, updates)
+
+    return {
+      menuItemId: args.menuItemId,
+      featureType: metadata.featureType,
+      visibleForRoleIds,
+    }
   },
 })
 
@@ -988,6 +1205,22 @@ export const createMenuItem = mutation({
       metadata: args.metadata,
       createdBy: membership?.userId as any,
     })
+  },
+})
+
+export const syncWorkspaceDefaultMenus = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    featureSlugs: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
+    await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership?.userId,
+      selectedSlugs: args.featureSlugs ?? undefined,
+    })
+    return true as const
   },
 })
 
@@ -1159,10 +1392,17 @@ export const importMenuFromShareableId = mutation({
     const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
 
     try {
-      // Parse shareable ID
-      const [sourceWorkspaceId, sourceMenuItemId, sourceSlug] = args.shareableId.split(':')
+      // Parse shareable ID - format: workspaceId:menuItemId:slug
+      const parts = args.shareableId.trim().split(':')
+
+      if (parts.length !== 3) {
+        throw new Error("Invalid shareable ID format. Expected format: workspaceId:menuItemId:slug")
+      }
+
+      const [sourceWorkspaceId, sourceMenuItemId, sourceSlug] = parts
+
       if (!sourceWorkspaceId || !sourceMenuItemId || !sourceSlug) {
-        throw new Error("Invalid shareable ID format")
+        throw new Error("Invalid shareable ID format. All parts (workspaceId, menuItemId, slug) are required")
       }
 
       // Get source menu item

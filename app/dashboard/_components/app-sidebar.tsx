@@ -12,7 +12,7 @@ import { NavMain } from "@/app/dashboard/_components/NavMain"
 import { usePathname, useRouter } from "next/navigation"
 import { NavUser } from "@/app/dashboard/_components/NavUser"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
-import { NavProjects } from "@/app/dashboard/_components/NavProjects"
+import { NavSystem } from "@/app/dashboard/_components/NavSystem"
 import { NavSecondary } from "./NavSecondary"
 import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/pages/manifest"
 import { iconFromName } from "@/frontend/shared/pages/icons"
@@ -73,11 +73,11 @@ export function AppSidebar({
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
   const menuItems = useQuery(
-    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
+    api.menu.store.menuItems.getWorkspaceMenuItems,
     effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
   ) as any[] | undefined
 
-  const createDefaults = useMutation((api as any)["menu/store/menuItems"].createDefaultMenuItems)
+  const createDefaults = useMutation(api.menu.store.menuItems.syncWorkspaceDefaultMenus)
   const seededRef = useRef<string | null>(null)
   useEffect(() => {
     if (!effectiveWorkspaceId) return
@@ -92,7 +92,7 @@ export function AppSidebar({
     if (seededRef.current === trackedKey) return
 
     seededRef.current = trackedKey
-    createDefaults({ workspaceId: effectiveWorkspaceId as Id<"workspaces">, selectedSlugs: missingSlugs })
+    createDefaults({ workspaceId: effectiveWorkspaceId as Id<"workspaces">, featureSlugs: missingSlugs })
       .then(() => {
         seededRef.current = key
       })
@@ -101,10 +101,11 @@ export function AppSidebar({
       })
   }, [effectiveWorkspaceId, menuItems, createDefaults])
 
-  const navItems = useMemo(() => {
+  const { navItems, systemItems } = useMemo(() => {
     if (Array.isArray(menuItems) && menuItems.length > 0) {
       const itemsMap = new Map()
       const rootItems: any[] = []
+      const systemMenuItems: any[] = []
 
       menuItems
         .filter((mi) => mi && typeof mi.slug === "string" && mi.isVisible !== false)
@@ -122,12 +123,27 @@ export function AppSidebar({
             type: mi.type,
             parentId: mi.parentId,
             children: [] as any[],
+            metadata: mi.metadata,
           }
 
           itemsMap.set(mi._id, navItem)
 
+          // Separate system items (featureType === "system")
+          const isSystemItem = mi.metadata?.featureType === "system"
+
           if (!mi.parentId) {
-            rootItems.push(navItem)
+            if (isSystemItem) {
+              systemMenuItems.push({
+                id: navItem.id,
+                name: navItem.title,
+                url: `/dashboard/${navItem.id}`,
+                icon: navItem.icon || Building,
+                description: navItem.description,
+                metadata: mi.metadata,
+              })
+            } else {
+              rootItems.push(navItem)
+            }
           }
         })
 
@@ -145,15 +161,18 @@ export function AppSidebar({
         }
       })
 
-      return rootItems
+      return { navItems: rootItems, systemItems: systemMenuItems }
     }
 
-    return getDefaultPages().map((p) => ({
-      id: p.id,
-      title: p.title,
-      description: p.description,
-      icon: p.icon,
-    }))
+    return {
+      navItems: getDefaultPages().map((p) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        icon: p.icon,
+      })),
+      systemItems: [],
+    }
   }, [menuItems])
 
   if (userWorkspaces === undefined) {
@@ -212,12 +231,6 @@ export function AppSidebar({
 
   const currentWorkspace = workspaces.find((w: SwitcherItem) => String(w.id) === String(effectiveWorkspaceId || ""))
 
-  const projects = [
-    { name: "Design System", url: "#", icon: Folder },
-    { name: "Website Redesign", url: "#", icon: Folder },
-    { name: "Mobile App", url: "#", icon: Folder },
-  ]
-
   const secondaryItems = [
     { title: "Support", url: "#", icon: BookOpen },
     { title: "Feedback", url: "#", icon: Calendar },
@@ -255,7 +268,7 @@ export function AppSidebar({
               ))}
             </div>
           )}
-          <NavProjects projects={projects} />
+          <NavSystem system={systemItems} />
         </div>
         <NavSecondary />
       </SidebarContent>

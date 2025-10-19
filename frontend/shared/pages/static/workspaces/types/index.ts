@@ -1,6 +1,6 @@
 export type WorkspaceType = "organization" | "institution" | "group" | "family" | "personal";
 
-export type ViewType = "dashboard" | "chat" | "message" | "menus" | "documents" | "settings" | "members" | "invitations" | "friends" | "user-settings";
+export type ViewType = "overview" | "dashboard" | "chat" | "chats" | "message" | "menus" | "documents" | "settings" | "workspace-settings" | "members" | "invitations" | "friends" | "user-settings";
 
 export interface WorkspaceNavigationItem {
   key: ViewType;

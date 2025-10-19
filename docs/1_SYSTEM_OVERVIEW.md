@@ -286,7 +286,7 @@ frontend/
 ├── features/
 │   ├── default/              # Core features (always installed)
 │   │   ├── overview/
-│   │   ├── wa/
+│   │   ├── chat/
 │   │   ├── members/
 │   │   ├── friends/
 │   │   ├── pages/
@@ -315,7 +315,7 @@ frontend/
 convex/
 ├── features/                 # Mirror frontend structure
 │   ├── overview/
-│   ├── wa/
+│   ├── chat/
 │   ├── documents/
 │   └── ...
 │

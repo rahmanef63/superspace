@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { TopBarHeader } from "./TopBarHeader";
 import { TopBarActions } from "./TopBarActions";
-import { ContactInfoModal } from "../../contact";
+import { MemberInfoModal } from "../../member/MembertInfoModal";
 
-interface ContactSummary {
+interface MemberSummary {
   id: string;
   name: string;
   username?: string;
@@ -19,7 +19,7 @@ interface TopBarProps {
   showSearch?: boolean;
   showActions?: boolean;
   onMenuClick?: () => void;
-  contact?: ContactSummary;
+  contact?: MemberSummary;
   settingsSlug?: string;
 }
 
@@ -33,12 +33,12 @@ export function TopBar({
   contact,
   settingsSlug,
 }: TopBarProps) {
-  const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
-  const hasContact = Boolean(contact);
+  const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
+  const hasMember = Boolean(contact);
 
-  const handleContactInfoClick = () => {
-    if (!hasContact) return;
-    setIsContactInfoOpen(true);
+  const handleMemberInfoClick = () => {
+    if (!hasMember) return;
+    setIsMemberInfoOpen(true);
   };
 
   return (
@@ -49,23 +49,23 @@ export function TopBar({
           subtitle={subtitle}
           avatar={avatar ?? contact?.avatar}
           onMenuClick={onMenuClick}
-          onContactClick={hasContact ? handleContactInfoClick : undefined}
+          onMemberClick={hasMember ? handleMemberInfoClick : undefined}
         />
 
         {showActions && (
           <TopBarActions
             showSearch={showSearch}
-            onContactInfoClick={hasContact ? handleContactInfoClick : undefined}
+            onMemberInfoClick={hasMember ? handleMemberInfoClick : undefined}
             settingsSlug={settingsSlug}
           />
         )}
       </div>
 
       {contact && (
-        <ContactInfoModal
+        <MemberInfoModal
           contact={contact}
-          isOpen={isContactInfoOpen}
-          onClose={() => setIsContactInfoOpen(false)}
+          isOpen={isMemberInfoOpen}
+          onClose={() => setIsMemberInfoOpen(false)}
         />
       )}
     </>

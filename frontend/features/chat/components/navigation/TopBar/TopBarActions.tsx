@@ -7,16 +7,16 @@ import { Search, Video, Phone, MoreVertical, Info, Settings } from "lucide-react
 
 interface TopBarActionsProps {
   showSearch?: boolean
-  onContactInfoClick?: () => void
+  onMemberInfoClick?: () => void
   settingsSlug?: string
 }
 
 export function TopBarActions({
   showSearch,
-  onContactInfoClick,
+  onMemberInfoClick,
   settingsSlug,
 }: TopBarActionsProps) {
-  const canOpenContact = Boolean(onContactInfoClick)
+  const canOpenMember = Boolean(onMemberInfoClick)
   const router = useRouter()
 
   const handleOpenSettings = useCallback(() => {
@@ -56,11 +56,11 @@ export function TopBarActions({
         <Phone className="h-5 w-5" />
       </Button>
 
-      {canOpenContact && (
+      {canOpenMember && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={onContactInfoClick}
+          onClick={onMemberInfoClick}
           className="hidden h-10 w-10 rounded-full text-wa-muted transition-colors hover:bg-wa-hover hover:text-wa-text sm:flex"
           type="button"
         >

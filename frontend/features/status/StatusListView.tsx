@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Camera, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,12 +16,19 @@ const mockStatuses = [
   { id: '3', name: 'Mom', avatar: '', time: '6 hours ago', hasUpdate: false, mediaType: 'photo' },
 ];
 
+type StatusListViewVariant = "standalone" | "layout";
+
 interface StatusListViewProps {
   selectedStatusId?: string;
   onStatusSelect?: (statusId: string) => void;
+  variant?: StatusListViewVariant;
 }
 
-export function StatusListView({ selectedStatusId, onStatusSelect }: StatusListViewProps) {
+export function StatusListView({
+  selectedStatusId,
+  onStatusSelect,
+  variant = "standalone",
+}: StatusListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
 
@@ -28,8 +36,15 @@ export function StatusListView({ selectedStatusId, onStatusSelect }: StatusListV
     status.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const containerClasses = cn(
+    "flex h-full flex-col",
+    variant === "standalone"
+      ? "w-full border-r border-border bg-card lg:w-[320px]"
+      : "bg-background/60",
+  );
+
   return (
-    <div className="w-full h-full lg:w-[320px] border-r border-border bg-card flex flex-col">
+    <div className={containerClasses}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">

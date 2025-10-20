@@ -7,6 +7,7 @@ import { TopBar } from "../chat/components/navigation/TopBar";
 import { CallListView } from "./CallListView";
 import { CallDetailView } from "./CallDetailView";
 import { CALL_SUMMARIES, getCallDetail } from "./mockData";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
 
 export function CallsView() {
   const [selectedCallId, setSelectedCallId] = useState<string>();
@@ -58,13 +59,19 @@ export function CallsView() {
   }
 
   return (
-    <div className="flex h-full w-full">
-      <CallListView
-        calls={CALL_SUMMARIES}
-        selectedCallId={selectedCallId}
-        onCallSelect={setSelectedCallId}
-      />
+    <SecondarySidebarLayout
+      className="h-full bg-background"
+      sidebar={
+        <CallListView
+          calls={CALL_SUMMARIES}
+          selectedCallId={selectedCallId}
+          onCallSelect={setSelectedCallId}
+          variant="layout"
+        />
+      }
+      contentClassName="flex h-full flex-col bg-background"
+    >
       <CallDetailView call={selectedCall} />
-    </div>
+    </SecondarySidebarLayout>
   );
 }

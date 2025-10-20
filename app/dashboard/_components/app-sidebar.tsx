@@ -14,8 +14,8 @@ import { NavUser } from "@/app/dashboard/_components/NavUser"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
 import { NavSystem } from "@/app/dashboard/_components/NavSystem"
 import { NavSecondary } from "./NavSecondary"
-import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/pages/manifest"
-import { iconFromName } from "@/frontend/shared/pages/icons"
+import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/views/manifest"
+import { iconFromName } from "@/frontend/shared/views/icons"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 
 const REQUIRED_MENU_SLUGS = [

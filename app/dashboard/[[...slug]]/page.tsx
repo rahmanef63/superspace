@@ -7,10 +7,10 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { SetBreadcrumbs } from "./SetBreadcrumbs"
 import type { BreadcrumbItem } from "@/app/dashboard/_components/breadcrumbs-context"
-import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/pages/static/workspaces/constants/navigation"
+import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/views/static/workspaces/constants/navigation"
 import { useAuthed } from "@/frontend/shared/auth/hooks/useAuthed"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
-import { AppContent, getPageById } from "@/frontend/shared/pages/manifest"
+import { AppContent, getPageById } from "@/frontend/shared/views/manifest"
 
 function toTitleCase(segment: string) {
   return decodeURIComponent(segment)

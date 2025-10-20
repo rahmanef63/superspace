@@ -1,1 +1,1 @@
-export * from "@/frontend/shared/pages/static/menus/types";
+export * from "@/frontend/shared/views/static/menus/types";

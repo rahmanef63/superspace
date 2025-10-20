@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Smile, Paperclip, Mic, Send } from "lucide-react";
 import { PLACEHOLDERS } from "../../constants";
-import { EmojiPicker } from "./composer/EmojiPicker";
-import { AttachmentMenu } from "./composer/AttachmentMenu";
+import { EmojiPicker } from "../../composer/EmojiPicker";
+import { AttachmentMenu } from "../../composer/AttachmentMenu";
 
 interface ComposerBarProps {
   onSendMessage?: (message: string) => void;

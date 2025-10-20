@@ -4,6 +4,7 @@ import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
 import { StatusListView } from "./StatusListView";
 import { StatusDetailView } from "./StatusDetailView";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
 
 export function StatusView() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>();
@@ -50,9 +51,18 @@ export function StatusView() {
   }
 
   return (
-    <div className="flex h-full w-full">
-      <StatusListView selectedStatusId={selectedStatusId} onStatusSelect={setSelectedStatusId} />
+    <SecondarySidebarLayout
+      className="h-full bg-background"
+      sidebar={
+        <StatusListView
+          selectedStatusId={selectedStatusId}
+          onStatusSelect={setSelectedStatusId}
+          variant="layout"
+        />
+      }
+      contentClassName="flex h-full flex-col bg-background"
+    >
       <StatusDetailView statusId={selectedStatusId} />
-    </div>
+    </SecondarySidebarLayout>
   );
 }

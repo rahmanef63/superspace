@@ -16,7 +16,7 @@ interface AttachmentMenuProps {
   onCameraOpen?: () => void;
   onDocumentSelect?: () => void;
   onLocationShare?: () => void;
-  onContactShare?: () => void;
+  onMemberShare?: () => void;
   onVideoSelect?: () => void;
   onAudioRecord?: () => void;
 }
@@ -26,7 +26,7 @@ export function AttachmentMenu({
   onCameraOpen,
   onDocumentSelect,
   onLocationShare,
-  onContactShare,
+  onMemberShare,
   onVideoSelect,
   onAudioRecord
 }: AttachmentMenuProps) {
@@ -57,9 +57,9 @@ export function AttachmentMenu({
     },
     {
       icon: User,
-      label: "Contact",
+      label: "Member",
       color: "text-orange-600",
-      onClick: onContactShare
+      onClick: onMemberShare
     },
     {
       icon: Video,

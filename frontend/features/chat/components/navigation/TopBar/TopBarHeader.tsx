@@ -9,7 +9,7 @@ interface TopBarHeaderProps {
   subtitle?: string;
   avatar?: string;
   onMenuClick?: () => void;
-  onContactClick?: () => void;
+  onMemberClick?: () => void;
 }
 
 export function TopBarHeader({
@@ -17,9 +17,9 @@ export function TopBarHeader({
   subtitle,
   avatar,
   onMenuClick,
-  onContactClick,
+  onMemberClick,
 }: TopBarHeaderProps) {
-  const clickable = Boolean(onContactClick);
+  const clickable = Boolean(onMemberClick);
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -40,7 +40,7 @@ export function TopBarHeader({
           "min-w-0 flex-1 rounded-lg p-2 transition-colors",
           clickable ? "cursor-pointer -ml-2 flex items-center gap-3 hover:bg-wa-hover" : "flex items-center gap-3",
         )}
-        onClick={clickable ? onContactClick : undefined}
+        onClick={clickable ? onMemberClick : undefined}
       >
         <Avatar className="h-10 w-10 flex-shrink-0">
           {avatar ? <AvatarImage src={avatar} /> : null}

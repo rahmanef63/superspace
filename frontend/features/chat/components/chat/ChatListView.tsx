@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ChatListItem } from "./ChatListItem"
@@ -17,10 +18,13 @@ import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 import { CreateConversationModal } from "./CreateConversationModal" // Updated import path to use local CreateConversationModal
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
+type ChatListViewVariant = "standalone" | "layout"
+
 interface ChatListViewProps {
   showArchived?: boolean
+  variant?: ChatListViewVariant
 }
-export function ChatListView({ showArchived = false }: ChatListViewProps) {
+export function ChatListView({ showArchived = false, variant = "standalone" }: ChatListViewProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [openNewChat, setOpenNewChat] = useState(false)
   const isMobile = useIsMobile()
@@ -39,8 +43,15 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
     }
     return matchesSearch && !chat.isArchived
   })
+  const containerClasses = cn(
+    "flex h-full flex-col",
+    variant === "standalone"
+      ? "w-full border-r border-border bg-card lg:w-[320px]"
+      : "bg-background/60",
+  )
+
   return (
-    <div className="w-full h-full lg:w-[320px] border-r border-border bg-card flex flex-col">
+    <div className={containerClasses}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
@@ -169,5 +180,3 @@ export function ChatListView({ showArchived = false }: ChatListViewProps) {
     </div>
   )
 }
-
-

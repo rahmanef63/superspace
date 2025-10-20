@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Phone, PhoneIncoming, PhoneOff, Video, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,13 +12,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "../chat/utils";
 import type { CallSummary } from "./mockData";
 
+type CallListViewVariant = "standalone" | "layout";
+
 interface CallListViewProps {
   calls: CallSummary[];
   selectedCallId?: string;
   onCallSelect?: (callId: string) => void;
+  variant?: CallListViewVariant;
 }
 
-export function CallListView({ calls, selectedCallId, onCallSelect }: CallListViewProps) {
+export function CallListView({
+  calls,
+  selectedCallId,
+  onCallSelect,
+  variant = "standalone",
+}: CallListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
 
@@ -34,8 +43,15 @@ export function CallListView({ calls, selectedCallId, onCallSelect }: CallListVi
     return <Phone className="h-4 w-4 text-primary" />;
   };
 
+  const containerClasses = cn(
+    "flex h-full flex-col",
+    variant === "standalone"
+      ? "w-full border-r border-border bg-card lg:w-[320px]"
+      : "bg-background/60",
+  );
+
   return (
-    <div className="flex h-full w-full flex-col border-r border-border bg-card lg:w-[320px]">
+    <div className={containerClasses}>
       <div className="border-b border-border p-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -116,4 +132,3 @@ export function CallListView({ calls, selectedCallId, onCallSelect }: CallListVi
     </div>
   );
 }
-

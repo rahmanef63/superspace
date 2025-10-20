@@ -29,7 +29,7 @@ export interface Chat {
   tags?: string[];
 }
 
-export interface Contact {
+export interface Member {
   id: string;
   name: string;
   phoneNumber: string;

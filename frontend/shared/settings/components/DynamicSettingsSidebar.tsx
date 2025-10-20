@@ -28,6 +28,8 @@ interface DynamicSettingsSidebarProps {
   groupByFeature?: boolean
   /** Show feature badges */
   showFeatureBadges?: boolean
+  /** Controls container styling for layout integration */
+  variant?: "standalone" | "layout"
 }
 
 export function DynamicSettingsSidebar({
@@ -37,6 +39,7 @@ export function DynamicSettingsSidebar({
   className,
   groupByFeature = true,
   showFeatureBadges = false,
+  variant = "standalone",
 }: DynamicSettingsSidebarProps) {
   const registry = useSettingsRegistry()
 
@@ -66,8 +69,14 @@ export function DynamicSettingsSidebar({
     return groups
   }, [categories, groupByFeature])
 
+  const containerClasses = cn(
+    "flex h-full flex-col",
+    variant === "standalone" ? "bg-card border-r border-border" : "bg-background/40",
+    className,
+  )
+
   return (
-    <div className={cn("bg-card border-r border-border flex flex-col", className)}>
+    <div className={containerClasses}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <h1 className="text-xl font-semibold text-foreground">Settings</h1>

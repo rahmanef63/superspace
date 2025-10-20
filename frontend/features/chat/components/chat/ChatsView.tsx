@@ -2,6 +2,7 @@ import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ChatListView } from "./ChatListView";
 import { ChatDetailView } from "./ChatDetailView";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
 
 export function ChatsView() {
   const { selectedChatId } = useWhatsAppStore();
@@ -13,9 +14,12 @@ export function ChatsView() {
   }
 
   return (
-    <div className="flex h-full w-full">
-      <ChatListView />
+    <SecondarySidebarLayout
+      className="h-full bg-background"
+      sidebar={<ChatListView variant="layout" />}
+      contentClassName="flex h-full flex-col bg-background"
+    >
       <ChatDetailView />
-    </div>
+    </SecondarySidebarLayout>
   );
 }

@@ -5,7 +5,7 @@ import type { Id } from "@/convex/_generated/dataModel"
 import type { ElementType } from "react"
 import { ChevronRight } from "lucide-react"
 
-import { getDefaultPages } from "@/frontend/shared/pages/manifest"
+import { getDefaultPages } from "@/frontend/shared/views/manifest"
 import {
   SidebarGroup,
   SidebarGroupLabel,

@@ -7,6 +7,21 @@ import { PERMS } from "../../workspace/permissions"
 
 type FeatureVisibilityType = "default" | "system" | "optional"
 
+type FeatureStatus = "stable" | "beta" | "development" | "experimental" | "deprecated"
+
+function normalizeFeatureStatus(status: string | undefined): FeatureStatus | undefined {
+  switch (status) {
+    case "stable":
+    case "beta":
+    case "development":
+    case "experimental":
+    case "deprecated":
+      return status
+    default:
+      return undefined
+  }
+}
+
 const SYSTEM_PERMISSION_KEY = "MANAGE_WORKSPACE"
 const SYSTEM_PERMISSION_VALUE =
   (PERMS as Record<string, string>)[SYSTEM_PERMISSION_KEY as keyof typeof PERMS] ?? "manage_workspace"
@@ -960,7 +975,7 @@ export const getAvailableFeatureMenus = query({
       version: feature.version,
       category: feature.category,
       tags: feature.tags,
-      status: feature.status,
+      status: normalizeFeatureStatus(feature.status),
       isReady: feature.isReady,
       expectedRelease: feature.expectedRelease,
       featureType: feature.featureType,

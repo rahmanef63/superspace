@@ -4,6 +4,7 @@ import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
 import { AIListView } from "./AIListView";
 import { AIDetailView } from "./AIDetailView";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
 
 export function AIView() {
   const [selectedChatId, setSelectedChatId] = useState<string>();
@@ -50,9 +51,18 @@ export function AIView() {
   }
 
   return (
-    <div className="flex h-full w-full">
-      <AIListView selectedChatId={selectedChatId} onChatSelect={setSelectedChatId} />
+    <SecondarySidebarLayout
+      className="h-full bg-background"
+      sidebar={
+        <AIListView
+          selectedChatId={selectedChatId}
+          onChatSelect={setSelectedChatId}
+          variant="layout"
+        />
+      }
+      contentClassName="flex h-full flex-col bg-background"
+    >
       <AIDetailView chatId={selectedChatId} />
-    </div>
+    </SecondarySidebarLayout>
   );
 }

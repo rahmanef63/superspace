@@ -7,7 +7,7 @@ export * from './types';
 export * from './utils';
 
 // Re-export contacts management for compatibility
-export * from './contacts';
+export * from './members';
 
 // Re-export media management for compatibility
 export * from './media-manager';

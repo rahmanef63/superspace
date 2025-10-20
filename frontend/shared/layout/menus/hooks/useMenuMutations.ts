@@ -1,1 +1,1 @@
-export * from "@/frontend/shared/pages/static/menus/hooks/useMenuMutations";
+export * from "@/frontend/shared/views/static/menus/hooks/useMenuMutations";

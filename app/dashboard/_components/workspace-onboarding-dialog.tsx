@@ -6,7 +6,7 @@ import { useQuery } from "convex/react"
 import { useAuthed } from "@/frontend/shared/auth/hooks/useAuthed"
 import { api } from "@/convex/_generated/api"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { OnboardingFlow } from "@/frontend/shared/pages/static/workspaces"
+import { OnboardingFlow } from "@/frontend/shared/views/static/workspaces"
 import type { Id } from "@/convex/_generated/dataModel"
 
 export function WorkspaceOnboardingDialog() {

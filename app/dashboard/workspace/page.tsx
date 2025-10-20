@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { OnboardingFlow } from "@/frontend/shared/pages/static/workspaces"
+import { OnboardingFlow } from "@/frontend/shared/views/static/workspaces"
 
 export default function WorkspaceOnboardingPage() {
   const router = useRouter()

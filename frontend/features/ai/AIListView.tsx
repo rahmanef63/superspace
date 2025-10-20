@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bot, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,12 +38,19 @@ const mockAIChats = [
   },
 ];
 
+type AIListViewVariant = "standalone" | "layout";
+
 interface AIListViewProps {
   selectedChatId?: string;
   onChatSelect?: (chatId: string) => void;
+  variant?: AIListViewVariant;
 }
 
-export function AIListView({ selectedChatId, onChatSelect }: AIListViewProps) {
+export function AIListView({
+  selectedChatId,
+  onChatSelect,
+  variant = "standalone",
+}: AIListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
 
@@ -51,8 +59,15 @@ export function AIListView({ selectedChatId, onChatSelect }: AIListViewProps) {
     chat.topic.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const containerClasses = cn(
+    "flex h-full flex-col",
+    variant === "standalone"
+      ? "w-full border-r border-border bg-card lg:w-[320px]"
+      : "bg-background/60",
+  );
+
   return (
-    <div className="w-full h-full lg:w-[320px] border-r border-border bg-card flex flex-col">
+    <div className={containerClasses}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">

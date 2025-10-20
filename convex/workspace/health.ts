@@ -96,7 +96,7 @@ export const checkWorkspaceHealth = query({
         severity: "critical",
         category: "roles",
         message: "Workspace has no roles",
-        fix: "Contact admin - workspace needs re-initialization",
+        fix: "Member admin - workspace needs re-initialization",
       })
     }
 
@@ -122,7 +122,7 @@ export const checkWorkspaceHealth = query({
         severity: "critical",
         category: "members",
         message: "Workspace has no active members",
-        fix: "Contact admin - workspace is orphaned",
+        fix: "Member admin - workspace is orphaned",
       })
     }
 

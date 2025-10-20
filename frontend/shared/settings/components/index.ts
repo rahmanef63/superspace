@@ -6,3 +6,5 @@
 
 export { DynamicSettingsSidebar } from './DynamicSettingsSidebar'
 export { DynamicSettingsView } from './DynamicSettingsView'
+export * from './SettingsToggle';
+export * from './SettingsDropdown';

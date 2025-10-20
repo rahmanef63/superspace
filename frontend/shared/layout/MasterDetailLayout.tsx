@@ -62,3 +62,5 @@ export function MasterDetailLayout({
     </div>
   )
 }
+
+export default MasterDetailLayout

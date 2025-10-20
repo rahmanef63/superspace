@@ -34,9 +34,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "category": "analytics",
     "requiresPermission": "VIEW_REPORTS",
     "originalRequiresPermission": "VIEW_REPORTS",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q1 2025",
+    "status": "stable",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -69,6 +68,86 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "status": "development",
     "isReady": false,
     "expectedRelease": "Q2 2025",
+    "featureType": "optional"
+  },
+  {
+    "slug": "support",
+    "name": "Support",
+    "description": "Customer support and helpdesk ticketing system",
+    "icon": "Headphones",
+    "version": "1.0.0",
+    "category": "communication",
+    "tags": [
+      "support",
+      "tickets",
+      "helpdesk"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "projects",
+    "name": "Projects",
+    "description": "Project management with team discussions",
+    "icon": "FolderKanban",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "projects",
+      "collaboration",
+      "discussions"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "crm",
+    "name": "CRM",
+    "description": "Customer relationship management with integrated chat",
+    "icon": "Users",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "crm",
+      "customers",
+      "sales"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "notifications",
+    "name": "Notifications",
+    "description": "System notifications and activity feed",
+    "icon": "Bell",
+    "version": "1.0.0",
+    "category": "communication",
+    "tags": [
+      "notifications",
+      "activity",
+      "feed"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "workflows",
+    "name": "Workflows",
+    "description": "Workflow automation with bot assistant",
+    "icon": "Workflow",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "automation",
+      "workflows",
+      "bot"
+    ],
+    "status": "stable",
+    "isReady": true,
     "featureType": "optional"
   }
 ]

@@ -1,12 +1,12 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel"
-import StarredPage from "@/frontend/features/chat/components/starred/page"
+import { StarredView } from "./StarredView"
 
-export default function StarredFeaturePage({
+export default function StarredPage({
   workspaceId,
 }: {
   workspaceId?: Id<"workspaces"> | null
 }) {
-  return <StarredPage workspaceId={workspaceId} />
+  return <StarredView workspaceId={workspaceId} />
 }

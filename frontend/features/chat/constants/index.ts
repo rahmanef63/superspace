@@ -10,7 +10,7 @@ export const RAIL_ITEMS = [
   { id: "chats" as TabType, icon: MessageCircle, label: "Chats" },
   { id: "calls" as TabType, icon: Phone, label: "Calls" },
   { id: "status" as TabType, icon: Camera, label: "Status" },
-  { id: "ai" as TabType, icon: Bot, label: "Meta AI" },
+  { id: "ai" as TabType, icon: Bot, label: "AI" },
   { id: "starred" as TabType, icon: Star, label: "Starred messages" },
   { id: "archived" as TabType, icon: Archive, label: "Archived chats" },
   { id: "settings" as TabType, icon: Settings, label: "Settings" },

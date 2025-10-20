@@ -671,7 +671,7 @@ Before creating a PR, verify:
 pnpm run scaffold:feature {slug} --type {default|optional} --category {category}
 
 # Syncing
-pnpm run sync:all              # Sync features + generate manifest
+pnpm vitest run tests/manifest-content.test.ts          # Sync features + generate manifest
 pnpm run sync:features         # Sync features only
 pnpm run generate:manifest     # Generate manifest only
 

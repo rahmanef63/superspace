@@ -149,7 +149,7 @@ const FEATURE_SETTINGS_BUILDERS: Record<string, FeatureSettingsBuilder> = {
       FEATURE_SETTINGS_DEFAULT_CATEGORY.ai,
       Bot,
       150,
-      menuItem.name || "Meta AI",
+      menuItem.name || "AI",
       "Configure AI assistants, smart replies, and automation settings."
     ),
   ],

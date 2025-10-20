@@ -120,7 +120,9 @@ export const getWorkspace = query({
     if (candidateIds.length === 0) return null as any
 
     const workspace = await ctx.db.get(args.workspaceId)
-    if (!workspace) throw new Error("Workspace not found")
+    if (!workspace) {
+      return null as any
+    }
 
     // Check membership
     let membership: any = null
@@ -139,7 +141,7 @@ export const getWorkspace = query({
     if (!membership) {
       // Allow creators to access their own workspaces even if a membership doc is missing
       const isCreator = candidateIds.includes(String(workspace.createdBy))
-      if (!isCreator) throw new Error("Not authorized")
+      if (!isCreator) return null as any
     }
 
     const role = membership ? await ctx.db.get(membership.roleId) : null
@@ -187,7 +189,9 @@ export const getWorkspaceMembers = query({
         (viewerRoleDoc?.level as number | undefined) ?? (viewerRoleDoc?.permissions?.includes("*") ? 0 : null)
     } else {
       const workspace = await ctx.db.get(args.workspaceId)
-      if (!workspace) throw new Error("Workspace not found")
+      if (!workspace) {
+        return [] as any
+      }
       const isCreator = candidateIds.includes(String(workspace.createdBy))
       if (!isCreator) throw new Error("Not authorized")
       creatorFallback = true
@@ -930,7 +934,7 @@ export const deleteWorkspace = mutation({
     for (const d of docs) {
       const comments = await ctx.db
         .query("comments")
-        .withIndex("by_document", (q) => q.eq("documentId", d._id as any))
+        .withIndex("by_entity", (q) => q.eq("entityType", "document").eq("entityId", d._id))
         .collect()
       for (const c of comments) await ctx.db.delete(c._id)
       const presence = await ctx.db

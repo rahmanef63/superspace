@@ -122,7 +122,7 @@ const handleUpdateMenu = async (itemId: Id<"menuItems">) => {
 ```
 
 #### 2. useMenuMutations Hook
-File: `frontend/shared/pages/static/menus/hooks/useMenuMutations.ts`
+File: `frontend/views/static/menus/hooks/useMenuMutations.ts`
 
 **Enhanced:**
 ```typescript
@@ -232,4 +232,4 @@ npx tsc --noEmit
 - Schema: `convex/schema.ts`
 - Menu Items API: `convex/menu/store/menuItems.ts`
 - UI Component: `frontend/shared/layout/menus/components/DragDropMenuTree.tsx`
-- Hooks: `frontend/shared/pages/static/menus/hooks/useMenuMutations.ts`
+- Hooks: `frontend/views/static/menus/hooks/useMenuMutations.ts`

@@ -14,7 +14,17 @@
       "Bash(Select-Object -First 20)",
       "Bash(timeout 30 npx convex dev --once)",
       "Bash(timeout 60 npm run build:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(for dir in frontend/features/*/)",
+      "Bash(find:*)",
+      "Bash(done)",
+      "Bash(fi)",
+      "Bash(for dir in */)",
+      "Bash(ls:*)",
+      "Bash(awk:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(while read dir)"
     ],
     "deny": [],
     "ask": []

@@ -128,7 +128,7 @@ component: lazy(() => import("@/frontend/features/documents/page")),  // ✅ Cor
 ```
 
 **Files:**
-- [frontend/shared/pages/manifest.tsx:263-270](frontend/shared/pages/manifest.tsx#L263-L270)
+- [frontend/views/manifest.tsx:263-270](frontend/views/manifest.tsx#L263-L270)
 - [frontend/features/chat/shared/pages/index.ts:20-26](frontend/features/chat/shared/pages/index.ts#L20-L26)
 
 ---
@@ -256,7 +256,7 @@ User clicks menu item
     ↓
 Router: /dashboard/{slug}
     ↓
-frontend/shared/pages/manifest.tsx (Component Registry)
+frontend/views/manifest.tsx (Component Registry)
     ↓
 Lazy load React component
     ↓

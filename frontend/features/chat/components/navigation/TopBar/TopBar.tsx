@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TopBarHeader } from "./TopBarHeader";
 import { TopBarActions } from "./TopBarActions";
-import { MemberInfoModal } from "../../member/MembertInfoModal";
+import { MemberInfoModal } from "@/frontend/shared/chat/components/member";
 
 interface MemberSummary {
   id: string;

@@ -60,7 +60,7 @@
 - `chats` - Chat conversations
 - `wa-calls` - Voice and video calls
 - `wa-status` - Status updates
-- `wa-ai` - Meta AI assistant
+- `wa-ai` - AI assistant
 - `wa-starred` - Starred messages
 - `wa-archived` - Archived chats
 - `wa-profile` - User profile
@@ -476,7 +476,7 @@ const workspaceId = await ctx.runMutation(api.workspace.workspaces.createWorkspa
 | `chats` | Chats | communication | MessageCircle | - |
 | `wa-calls` | Calls | communication | Phone | - |
 | `wa-status` | Status | communication | Camera | - |
-| `wa-ai` | Meta AI | communication | Bot | - |
+| `wa-ai` | AI | communication | Bot | - |
 | `wa-starred` | Starred | communication | Star | - |
 | `wa-archived` | Archived | communication | Archive | - |
 | `wa-profile` | Profile | communication | User | - |

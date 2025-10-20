@@ -24,7 +24,7 @@ export const WA_NAVIGATION_ITEMS = [
   },
   {
     id: "ai",
-    title: "Meta AI",
+    title: "AI",
     icon: Bot,
     path: "/ai",
     component: "AIPage",

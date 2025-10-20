@@ -25,7 +25,7 @@ export function AIView() {
       return (
         <div className="flex flex-col h-screen bg-background">
           <TopBar
-            title="Meta AI"
+            title="AI"
             showSearch={false}
             showActions={false}
             onMenuClick={handleBack}
@@ -39,7 +39,7 @@ export function AIView() {
     return (
       <div className="flex flex-col h-screen bg-background">
         <TopBar
-          title="Meta AI"
+          title="AI"
           showSearch={true}
           showActions={false}
           onMenuClick={handleBack}

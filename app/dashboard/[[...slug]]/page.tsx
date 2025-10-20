@@ -7,10 +7,12 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { SetBreadcrumbs } from "./SetBreadcrumbs"
 import type { BreadcrumbItem } from "@/app/dashboard/_components/breadcrumbs-context"
-import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/views/static/workspaces/constants/navigation"
+import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/views/static/workspaces/constants/navigation"
 import { useAuthed } from "@/frontend/shared/auth/hooks/useAuthed"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
-import { AppContent, getPageById } from "@/frontend/shared/views/manifest"
+import { getPageById } from "@/frontend/views/manifest"
+import { AppContentWrapper } from "@/frontend/views/AppContentWrapper"
+import FeatureNotReady from "@/frontend/shared/components/FeatureNotReady"
 
 function toTitleCase(segment: string) {
   return decodeURIComponent(segment)
@@ -36,18 +38,20 @@ export default function CatchAllPage() {
     [userWorkspaces]
   )
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[[...slug]]/page', {
-      isLoading,
-      isAuthenticated,
-      isSignedIn,
-      workspacesLoaded,
-      workspacesCount: workspaces?.length ?? 'n/a',
-      activeSlug,
-      parts,
-      componentId: `CatchAllPage-${activeSlug}`,
-      currentPath: `/dashboard/${parts.join('/')}`,
-    })
+  const debugBasePayload = {
+    isLoading,
+    isAuthenticated,
+    isSignedIn,
+    workspacesLoaded,
+    workspacesCount: workspaces?.length ?? "n/a",
+    activeSlug,
+    parts,
+    componentId: `CatchAllPage-${activeSlug}`,
+    currentPath: `/dashboard/${parts.join("/")}`,
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[[...slug]]/page:init", debugBasePayload)
   }
 
   // WorkspaceProvider handles default selection
@@ -85,10 +89,45 @@ export default function CatchAllPage() {
     () => new Set(((menuItems || []) as Array<{ slug: string }>).map((mi) => mi.slug)),
     [menuItems]
   )
+  const manifestEntry = getPageById(activeSlug)
+  const manifestHas = Boolean(manifestEntry)
+  const activeMenuItem = useMemo(() => {
+    if (!Array.isArray(menuItems)) return undefined
+    return menuItems.find((mi: any) => mi?.slug === activeSlug)
+  }, [menuItems, activeSlug])
+
+  const deriveFallbackStatus = (status?: string) => {
+    switch ((status || "").toLowerCase()) {
+      case "development":
+        return "development"
+      case "beta":
+        return "beta"
+      case "experimental":
+        return "beta"
+      case "deprecated":
+        return "error"
+      default:
+        return "coming-soon"
+    }
+  }
+
+  const logDecision = (type: string, extra: Record<string, unknown> = {}) => {
+    if (process.env.NODE_ENV === "production") return
+    console.debug("[[...slug]]/page:content-decision", {
+      ...debugBasePayload,
+      decision: type,
+      manifestHas,
+      manifestComponentId: manifestEntry?.componentId ?? null,
+      menuItemResolved: Boolean(activeMenuItem),
+      menuItemMetadata: activeMenuItem?.metadata ?? null,
+      ...extra,
+    })
+  }
 
   const renderContent = () => {
     // If unauthenticated in dev, avoid rendering components that assume a user
     if (!isAuthed) {
+      logDecision("unauthenticated", { reason: "No auth context" })
       return (
         <div className="justify-center items-center mx-auto lg:px-6 space-y-2">
           <h2 className="text-lg font-semibold">You are not signed in</h2>
@@ -102,6 +141,7 @@ export default function CatchAllPage() {
 
     // Explicit empty state fallback to guide users to onboarding page
     if (workspacesLoaded && isAuthed && workspaces.length === 0) {
+      logDecision("no-workspaces", { reason: "Authenticated user has no workspace" })
       return (
         <div className="justify-center items-center mx-auto  lg:px-6 space-y-4">
           <h2 className="text-lg font-semibold">No workspace yet</h2>
@@ -117,6 +157,7 @@ export default function CatchAllPage() {
 
     if (!workspaceId) {
       // Loading state
+      logDecision("workspace-loading", { reason: "Workspace context not ready" })
       return (
         <div className="px-4 lg:px-6">
           <div className="animate-pulse h-6 w-40 bg-muted rounded mb-4" />
@@ -127,8 +168,11 @@ export default function CatchAllPage() {
 
     // If menu is loaded and slug is not accessible, show fallback error
     // If menus exist but slug is not accessible AND not a built-in manifest page, show error.
-    const manifestHas = Boolean(getPageById(activeSlug))
     if (Array.isArray(menuItems) && menuItems.length > 0 && !accessibleSlugs.has(activeSlug) && !manifestHas) {
+      logDecision("no-access", {
+        reason: "Slug not accessible in workspace menu and not backed by manifest",
+        menuCount: menuItems.length,
+      })
       return (
         <div className="justify-center items-center mx-auto  lg:px-6 space-y-2">
           <h2 className="text-lg font-semibold">Not Found or No Access</h2>
@@ -142,8 +186,54 @@ export default function CatchAllPage() {
       )
     }
 
-    // Use the dynamic content renderer from menu-manifest
-    return <AppContent workspaceId={workspaceId} activeView={activeSlug} />
+    // Handle features that are known but explicitly marked as not ready yet.
+    if (activeMenuItem && activeMenuItem.metadata && activeMenuItem.metadata.isReady === false) {
+      const status = deriveFallbackStatus(activeMenuItem.metadata.status)
+      const featureName = activeMenuItem.name || toTitleCase(activeSlug)
+      const expectedRelease = activeMenuItem.metadata.expectedRelease as string | undefined
+      const message =
+        activeMenuItem.metadata.notReadyMessage ||
+        "This feature is installed but not ready for use. Please check back soon."
+
+      logDecision("feature-not-ready", {
+        reason: "Feature marked as not ready in metadata",
+        status,
+        expectedRelease,
+      })
+
+      return (
+        <FeatureNotReady
+          featureName={featureName}
+          featureSlug={activeSlug}
+          status={status}
+          message={message}
+          expectedRelease={expectedRelease}
+          docsUrl={activeMenuItem.metadata.docsUrl}
+          onGoBack={() => router.push("/dashboard/overview")}
+        />
+      )
+    }
+
+    // If manifest entry is missing at runtime, surface a clear error for debugging.
+    if (!manifestEntry) {
+      logDecision("missing-manifest-entry", {
+        reason: "Manifest lookup failed for slug",
+      })
+      return (
+        <FeatureNotReady
+          featureName={toTitleCase(activeSlug)}
+          featureSlug={activeSlug}
+          status="error"
+          message="No page component is registered for this slug in the manifest. Ensure the manifest is up to date."
+          onGoBack={() => router.push("/dashboard/overview")}
+          docsUrl="/docs/features"
+        />
+      )
+    }
+
+    logDecision("render-content", { reason: "Manifest entry resolved and ready" })
+    // Use the dynamic content renderer from menu-manifest with error handling
+    return <AppContentWrapper workspaceId={workspaceId} activeView={activeSlug} />
   }
 
   return (

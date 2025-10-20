@@ -1,12 +1,9 @@
 // Main Views
 export * from "../components/chat/ChatsView"
 export * from "../../calls/CallsView"
-export * from "../../status/view/StatusView"
-export * from "../../ai/ai/AIView"
 export * from "../components/chat/ChatDetailView"
-export * from "../archived/components/ArchivedView"
+export * from "../../archived/components/ArchivedView"
 export * from "../components/starred/StarredView"
-export * from "../components/settings/SettingsView"
 export * from "./ChatManagementView"
 export * from "./LockedChatsView"
 export * from "../components/profile/ProfileView"

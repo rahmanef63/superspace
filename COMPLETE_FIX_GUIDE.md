@@ -87,7 +87,7 @@ I ran `pnpm run sync:all` which regenerated:
      - tasks (Tasks) v1.0.0
      - wiki (Wiki) v1.0.0
 
-3. **Component Manifest** (`frontend/shared/pages/manifest.tsx`)
+3. **Component Manifest** (`frontend/views/manifest.tsx`)
    - Generated 24 component entries
    - All lazy imports configured
 
@@ -277,7 +277,7 @@ After applying all fixes, test the following:
 ### 3. Auto-Generated Files (via sync:all)
 - `convex/menu/store/menu_manifest_data.ts` - Updated
 - `convex/menu/store/optional_features_catalog.ts` - Updated
-- `frontend/shared/pages/manifest.tsx` - Updated
+- `frontend/views/manifest.tsx` - Updated
 
 ---
 

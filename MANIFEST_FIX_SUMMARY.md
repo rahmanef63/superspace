@@ -67,7 +67,7 @@ This caused **ALL components** to be incorrectly imported from `@/frontend/featu
 const COMPONENT_IMPORT_OVERRIDES: Record<string, ComponentImportConfig> = {
   ChatPage: { path: "@/frontend/features/chat/page" },
 + DocumentsPage: { path: "@/frontend/features/documents/page" },
-  OverviewPage: { path: "@/frontend/shared/pages/dynamic/overview/page" },
+  OverviewPage: { path: "@/frontend/views/dynamic/overview/page" },
   // ... other overrides
 }
 ```
@@ -108,7 +108,7 @@ const COMPONENT_IMPORT_OVERRIDES: Record<string, ComponentImportConfig> = {
 
 ### Generated Manifest
 
-**File:** [frontend/shared/pages/manifest.tsx:208-214](frontend/shared/pages/manifest.tsx#L208-L214)
+**File:** [frontend/views/manifest.tsx:208-214](frontend/views/manifest.tsx#L208-L214)
 
 ```typescript
 {
@@ -227,7 +227,7 @@ http://localhost:3000/dashboard/menus
 - Line 23: Added `DocumentsPage` override
 - Lines 47-50: Fixed empty string check → WA-specific check
 
-### 2. frontend/shared/pages/manifest.tsx (Auto-generated)
+### 2. frontend/views/manifest.tsx (Auto-generated)
 **Changes:**
 - Line 213: `DocumentsPage` now loads from correct path
 - All other optional features now load from correct paths
@@ -293,8 +293,8 @@ The `resolveComponentImport()` function checks in this order:
 
 1. **Override map** - Explicit overrides (highest priority)
 2. **WA features** - Check if slug starts with `"wa-"`
-3. **Shared static pages** - Check `frontend/shared/pages/static/{slug}/page.tsx`
-4. **Shared dynamic pages** - Check `frontend/shared/pages/dynamic/{slug}/page.tsx`
+3. **Static views** - Check `frontend/views/static/{slug}/page.tsx`
+4. **Dynamic views** - Check `frontend/views/dynamic/{slug}/page.tsx`
 5. **Feature page** - Check `frontend/features/{slug}/page.tsx`
 6. **Feature views** - Check `frontend/features/{slug}/views/{Component}.tsx`
 7. **Feature index** - Check `frontend/features/{slug}/index.ts`
@@ -304,7 +304,7 @@ The `resolveComponentImport()` function checks in this order:
 
 1. **Use Override Map** for features with custom paths
 2. **Follow Standard Structure** for new features:
-   - Default features → `frontend/shared/pages/static/{slug}/page.tsx`
+   - Default features → `frontend/views/static/{slug}/page.tsx`
    - Optional features → `frontend/features/{slug}/page.tsx`
 3. **Always regenerate** after editing `features.config.ts`:
    ```bash
@@ -326,7 +326,7 @@ The `resolveComponentImport()` function checks in this order:
 ### 📝 What Changed
 
 - `scripts/generate-manifest.ts` - Fixed condition logic (2 changes)
-- `frontend/shared/pages/manifest.tsx` - Auto-regenerated with correct paths
+- `frontend/views/manifest.tsx` - Auto-regenerated with correct paths
 
 ### 🚀 Ready to Test
 

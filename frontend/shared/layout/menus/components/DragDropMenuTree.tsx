@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from "react"
 import type { ComponentType } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   GripVertical,
   ChevronRight,
@@ -459,6 +458,7 @@ export function DragDropMenuTree({
     const isPreviewTarget = dropPreview?.id === key
     const previewMode = dropPreview?.position
     const isRenaming = renamingItemId === item._id
+    const showSystemIcon = item.metadata?.featureType === "system"
 
     const showInsideOverlay = isPreviewTarget && previewMode === "inside"
     const showLineAbove = isPreviewTarget && previewMode === "above"
@@ -468,7 +468,7 @@ export function DragDropMenuTree({
       <div key={key} className="relative select-none">
         {(showLineAbove || showLineBelow) && (
           <span
-            className="pointer-events-none absolute left-3 right-3 h-0.5 rounded-full"
+            className="pointer-events-none absolute left-0 right-0 h-0.5 rounded-full"
             style={{
               backgroundColor: ACCENT_COLORS.primary,
               top: showLineAbove ? 0 : undefined,
@@ -477,8 +477,8 @@ export function DragDropMenuTree({
           />
         )}
         <div
-          className="group relative flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-muted"
-          style={{ paddingLeft: `${level * 20 + 12}px` }}
+          className="group relative flex items-center gap-2 py-1.5 pr-2 rounded cursor-pointer transition-colors hover:bg-muted"
+          style={{ paddingLeft: `${level * 20}px` }}
           draggable={allowDragAndDrop}
           onDragStart={(event) => {
             if (!allowDragAndDrop) return
@@ -601,41 +601,15 @@ export function DragDropMenuTree({
           ) : (
             <div className="z-10 flex flex-1 items-center gap-2 text-sm">
               <span className="truncate">{item.name}</span>
-              {item.metadata?.version && (
-                <Badge
-                  variant="outline"
-                  className="text-[9px] uppercase tracking-wide font-mono"
-                >
-                  v{item.metadata.version}
-                </Badge>
-              )}
-              {item.metadata?.featureType && (
-                <Badge
-                  variant={
-                    item.metadata.featureType === "system"
-                      ? "destructive"
-                      : item.metadata.featureType === "optional"
-                        ? "secondary"
-                        : "outline"
-                  }
-                  className="text-[9px] uppercase tracking-wide"
-                >
-                  {item.metadata.featureType === "system"
-                    ? "System"
-                    : item.metadata.featureType === "optional"
-                      ? "Optional"
-                      : "Default"}
-                </Badge>
-              )}
-              {updatesMap.has(key) && (
-                <Badge
-                  variant="default"
-                  className="text-[9px] uppercase tracking-wide bg-blue-500 hover:bg-blue-600 gap-1 animate-pulse"
-                >
-                  <ArrowUpCircle className="w-3 h-3" />
-                  Update Available
-                </Badge>
-              )}
+              {showSystemIcon ? (
+                <Shield className="h-4 w-4 text-muted-foreground" aria-label="System menu item" />
+              ) : null}
+              {updatesMap.has(key) ? (
+                <ArrowUpCircle
+                  className="h-4 w-4 text-blue-500 animate-pulse"
+                  aria-label="Update available"
+                />
+              ) : null}
             </div>
           )}
 
@@ -643,8 +617,8 @@ export function DragDropMenuTree({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="z-20 ml-auto h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                size="icon"
+                className="z-20 ml-auto h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="w-4 h-4" />

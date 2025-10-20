@@ -76,7 +76,7 @@
    - Toast notifications untuk feedback
 
 #### b. useMenuMutations Hook Enhancement
-**File:** `frontend/shared/pages/static/menus/hooks/useMenuMutations.ts`
+**File:** `frontend/views/static/menus/hooks/useMenuMutations.ts`
 
 Updated signature:
 ```typescript
@@ -167,7 +167,7 @@ UI: Update badges, show toast
 
 ### Frontend
 1. ✅ `frontend/shared/layout/menus/components/DragDropMenuTree.tsx` - UI updates
-2. ✅ `frontend/shared/pages/static/menus/hooks/useMenuMutations.ts` - Enhanced hook
+2. ✅ `frontend/views/static/menus/hooks/useMenuMutations.ts` - Enhanced hook
 
 ### Documentation
 1. ✅ `docs/MENU_VERSION_TRACKING.md` - Complete technical docs

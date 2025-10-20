@@ -133,7 +133,7 @@ frontend/shared/components/icons/
 
 ### Updated Components
 ```
-frontend/shared/pages/static/menus/components/
+frontend/views/static/menus/components/
 ├── MenuTree.tsx          # ✅ Updated
 ├── MenuItemForm.tsx      # ✅ Updated
 └── MenuDisplay.tsx       # ✅ Updated

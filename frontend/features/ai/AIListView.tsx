@@ -75,7 +75,7 @@ export function AIListView({
             {isMobile && (
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             )}
-            <h1 className="text-xl font-semibold text-foreground">Meta AI</h1>
+            <h1 className="text-xl font-semibold text-foreground">AI</h1>
           </div>
           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <Plus className="h-5 w-5" />

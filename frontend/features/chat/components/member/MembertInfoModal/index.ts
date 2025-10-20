@@ -1,8 +1,20 @@
-export { MemberInfoModal } from './MemberInfoModal';
-export { MemberInfoHeader } from './MemberInfoHeader';
-export { MemberInfoSidebar } from './MemberInfoSidebar';
-export { MemberInfoContent } from './MemberInfoContent';
-export { NavigationItem } from './NavigationItem';
-export * from './sections';
-export * from './types';
-export * from './constants';
+export {
+  MemberInfoModal,
+  MemberInfoHeader,
+  MemberInfoSidebar,
+  MemberInfoContent,
+  NavigationItem,
+  MEMBER_INFO_SECTIONS,
+  DEFAULT_MEMBER_INFO_SECTION,
+  OverviewSection,
+  MediaSection,
+  FilesSection,
+  LinksSection,
+  EventsSection,
+  EncryptionSection,
+  GroupsSection,
+} from "@/frontend/shared/chat/components/member";
+export type {
+  MemberInfoSection,
+  MemberInfoContact,
+} from "@/frontend/shared/chat/components/member";

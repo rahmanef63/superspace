@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
 import { getExistingUserId, ensureUser, requireActiveMembership } from "../auth/helpers";
 
 // Get comments for a document
@@ -23,20 +24,28 @@ export const getDocumentComments = query({
 
     const comments = await ctx.db
       .query("comments")
-      .withIndex("by_document", (q) => q.eq("documentId", args.documentId))
+      .withIndex("by_entity", (q) => q.eq("entityType", "document").eq("entityId", args.documentId))
+      .filter((q) => q.eq(q.field("workspaceId"), document.workspaceId))
       .collect();
 
     // Get user info for each comment
     const commentsWithUsers = await Promise.all(
       comments.map(async (comment) => {
         const user = await ctx.db.get(comment.authorId);
+        const mentionedUsers: Array<Doc<"users"> | null> =
+          comment.mentions && comment.mentions.length > 0
+            ? await Promise.all(comment.mentions.map((mentionedId) => ctx.db.get(mentionedId)))
+            : [];
         return {
           ...comment,
-          user: user ? {
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          } : null,
+          mentionedUsers,
+          user: user
+            ? {
+                name: user.name,
+                email: user.email,
+                image: user.image,
+              }
+            : null,
         };
       })
     );
@@ -68,7 +77,9 @@ export const addComment = mutation({
     }
 
     const commentId = await ctx.db.insert("comments", {
-      documentId: args.documentId,
+      workspaceId: document.workspaceId,
+      entityType: "document",
+      entityId: args.documentId,
       authorId: userId,
       content: args.content,
       position: args.position ? {
@@ -92,8 +103,13 @@ export const resolveComment = mutation({
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new Error("Comment not found");
 
+    if (comment.entityType !== "document") {
+      throw new Error("Comment is not associated with a document");
+    }
+
+    const documentId = comment.entityId as Id<"documents">;
     // Check document access
-    const document = await ctx.db.get(comment.documentId);
+    const document = await ctx.db.get(documentId);
     if (!document) throw new Error("Document not found");
 
     if (!document.isPublic) {

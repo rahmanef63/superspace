@@ -327,5 +327,5 @@ Planned features:
 
 If you encounter any issues during migration:
 1. Check this guide for examples
-2. Review the updated components in `frontend/shared/pages/static/menus/components/`
+2. Review the updated components in `frontend/views/static/menus/components/`
 3. Consult the [README](./README.md) for detailed API documentation

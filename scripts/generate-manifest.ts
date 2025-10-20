@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Auto-generate frontend/shared/pages/manifest.tsx
+ * Auto-generate frontend/views/manifest.tsx
  *
  * This script reads features.config.ts and generates the component registry
  * to ensure DRY principle - only edit features.config.ts, not manifest.tsx
@@ -21,22 +21,22 @@ interface ComponentImportConfig {
 const COMPONENT_IMPORT_OVERRIDES: Record<string, ComponentImportConfig> = {
   Page: { path: "@/frontend/features/chat/page" }, // wa feature uses "Page" component
   ChatPage: { path: "@/frontend/features/chat/page" },
-  ChatsPage: { path: "@/frontend/features/chats/page" },
+  ChatsPage: { path: "@/frontend/features/chat/page" },
   StatusPage: { path: "@/frontend/features/status/page" },
   AIPage: { path: "@/frontend/features/ai/page" },
   StarredPage: { path: "@/frontend/features/starred/page" },
   ArchivedPage: { path: "@/frontend/features/archived/page" },
   CallsPage: { path: "@/frontend/features/calls/page" },
   DocumentsPage: { path: "@/frontend/features/documents/page" },
-  OverviewPage: { path: "@/frontend/shared/pages/dynamic/overview/page" },
-  MembersPage: { path: "@/frontend/shared/pages/static/member/page" },
-  FriendsPage: { path: "@/frontend/shared/pages/static/friends/page" },
-  PagesPage: { path: "@/frontend/shared/pages/static/pages/page" },
-  DatabasesPage: { path: "@/frontend/shared/pages/static/databases/page" },
-  MenusPage: { path: "@/frontend/shared/pages/static/menus/page" },
-  InvitationsPage: { path: "@/frontend/shared/pages/static/invitations/page" },
-  ProfilePage: { path: "@/frontend/shared/pages/static/profile/page" },
-  WorkspacesPage: { path: "@/frontend/shared/pages/static/workspaces/page" },
+  OverviewPage: { path: "@/frontend/views/dynamic/overview/page" },
+  MembersPage: { path: "@/frontend/views/static/member/page" },
+  FriendsPage: { path: "@/frontend/views/static/friends/page" },
+  PagesPage: { path: "@/frontend/views/static/pages/page" },
+  DatabasesPage: { path: "@/frontend/views/static/databases/page" },
+  MenusPage: { path: "@/frontend/views/static/menus/page" },
+  InvitationsPage: { path: "@/frontend/views/static/invitations/page" },
+  ProfilePage: { path: "@/frontend/views/static/profile/page" },
+  WorkspacesPage: { path: "@/frontend/views/static/workspaces/page" },
   CalendarPage: { path: "@/frontend/features/calendar/views/CalendarPage" },
   TasksPage: { path: "@/frontend/features/tasks/views/TasksPage" },
   WikiPage: { path: "@/frontend/features/wiki/views/WikiPage" },
@@ -59,12 +59,12 @@ function resolveComponentImport(feature: FeatureMetadata): ComponentImportConfig
     return { path: "@/frontend/features/chat/shared/pages", namedExport: feature.component }
   }
 
-  if (fileExists("frontend", "shared", "pages", "static", feature.slug, "page.tsx")) {
-    return { path: `@/frontend/shared/pages/static/${feature.slug}/page` }
+  if (fileExists("frontend", "views", "static", feature.slug, "page.tsx")) {
+    return { path: `@/frontend/views/static/${feature.slug}/page` }
   }
 
-  if (fileExists("frontend", "shared", "pages", "dynamic", feature.slug, "page.tsx")) {
-    return { path: `@/frontend/shared/pages/dynamic/${feature.slug}/page` }
+  if (fileExists("frontend", "views", "dynamic", feature.slug, "page.tsx")) {
+    return { path: `@/frontend/views/dynamic/${feature.slug}/page` }
   }
 
   if (fileExists("frontend", "features", feature.slug, "page.tsx")) {
@@ -259,11 +259,11 @@ function main() {
 
   try {
     const manifestContent = generateManifest()
-    const outputPath = path.join(process.cwd(), "frontend/shared/pages/manifest.tsx")
+    const outputPath = path.join(process.cwd(), "frontend/views/manifest.tsx")
 
     // Backup old manifest
     if (fs.existsSync(outputPath)) {
-      const backupPath = path.join(process.cwd(), "frontend/shared/pages/manifest.tsx.backup")
+      const backupPath = path.join(process.cwd(), "frontend/views/manifest.tsx.backup")
       fs.copyFileSync(outputPath, backupPath)
       console.log("📦 Backed up old manifest to manifest.tsx.backup")
     }

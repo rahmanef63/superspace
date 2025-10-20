@@ -28,7 +28,7 @@ This guide shows you **step-by-step** how to migrate existing settings to the ne
 
 ### Old Implementation
 ```tsx
-// frontend/shared/pages/static/workspaces/components/WorkspaceSettings.tsx
+// frontend/views/static/workspaces/components/WorkspaceSettings.tsx
 export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
   // Hardcoded workspace settings only
   return <div>...</div>
@@ -37,7 +37,7 @@ export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
 
 ### New Implementation
 ```tsx
-// frontend/shared/pages/static/workspaces/page.tsx
+// frontend/views/static/workspaces/page.tsx
 "use client"
 
 import { SettingsRegistryProvider, DynamicSettingsView } from '@/frontend/shared/settings'
@@ -105,7 +105,7 @@ export default function WorkspaceSettingsPage({ workspaceId }) {
 Break the monolithic `WorkspaceSettings.tsx` into smaller components:
 
 ```
-frontend/shared/pages/static/workspaces/components/settings/
+frontend/views/static/workspaces/components/settings/
 ├── WorkspaceGeneralSettings.tsx      # Basic info
 ├── WorkspaceMembersSettings.tsx      # Member management
 ├── WorkspaceSecuritySettings.tsx     # Security settings

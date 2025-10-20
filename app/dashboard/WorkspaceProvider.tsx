@@ -41,6 +41,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [userWorkspaces]);
 
+  // Clear selection when user loses all workspaces (e.g. deleted the last one)
+  useEffect(() => {
+    if (Array.isArray(userWorkspaces) && userWorkspaces.length === 0 && workspaceId !== null) {
+      setWorkspaceId(null);
+    }
+  }, [userWorkspaces, workspaceId, setWorkspaceId]);
+
   // Restore the last selected workspace from localStorage
   useEffect(() => {
     if (workspaceId !== null) return;

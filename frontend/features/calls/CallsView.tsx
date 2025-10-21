@@ -7,7 +7,7 @@ import { TopBar } from "../chat/components/navigation/TopBar";
 import { CallListView } from "./CallListView";
 import { CallDetailView } from "./CallDetailView";
 import { CALL_SUMMARIES, getCallDetail } from "./mockData";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
 
 export function CallsView() {
   const [selectedCallId, setSelectedCallId] = useState<string>();

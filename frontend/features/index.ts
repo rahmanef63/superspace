@@ -48,8 +48,8 @@ export { NotificationFeed } from "./notifications/components/NotificationFeed";
 export type { NotificationFeedProps } from "./notifications/components/NotificationFeed";
 
 // Workflow (new)
-export { WorkflowAssistantChat } from "./workflow/components/WorkflowAssistantChat";
-export type { WorkflowAssistantChatProps } from "./workflow/components/WorkflowAssistantChat";
+export { WorkflowAssistantChat } from "./workflow/WorkflowAssistantChat";
+export type { WorkflowAssistantChatProps } from "./workflow/WorkflowAssistantChat";
 
 /**
  * Usage Examples:

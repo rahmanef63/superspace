@@ -1,6 +1,33 @@
 export type WorkspaceType = "organization" | "institution" | "group" | "family" | "personal";
 
-export type ViewType = "overview" | "dashboard" | "chat" | "chats" | "message" | "menus" | "documents" | "settings" | "workspace-settings" | "members" | "invitations" | "friends" | "user-settings";
+export type ViewType =
+  | "overview"
+  | "dashboard"
+  | "chats"
+  | "message"
+  | "menus"
+  | "documents"
+  | "settings"
+  | "workspace-settings"
+  | "members"
+  | "invitations"
+  | "friends"
+  | "user-settings"
+  | "reports"
+  | "support"
+  | "projects"
+  | "crm"
+  | "notifications"
+  | "workflows"
+  | "status"
+  | "calls"
+  | "ai"
+  | "starred"
+  | "archived"
+  | "calendar"
+  | "tasks"
+  | "wiki"
+  | "profile";
 
 export interface WorkspaceNavigationItem {
   key: ViewType;

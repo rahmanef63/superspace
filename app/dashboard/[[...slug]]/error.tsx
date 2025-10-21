@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { ErrorState } from "@/app/dashboard/_components/state-pages"
+import { ErrorState } from "@/frontend/shared/layout/sidebar/components/state-pages"
 import { Button } from "@/components/ui/button"
 import { IconRefresh } from "@tabler/icons-react"
 

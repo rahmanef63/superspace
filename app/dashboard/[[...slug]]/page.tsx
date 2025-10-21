@@ -1,18 +1,19 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { SetBreadcrumbs } from "./SetBreadcrumbs"
-import type { BreadcrumbItem } from "@/app/dashboard/_components/breadcrumbs-context"
+import type { BreadcrumbItem } from "@/frontend/shared/layout/sidebar/components/breadcrumbs-context"
 import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/views/static/workspaces/constants/navigation"
 import { useAuthed } from "@/frontend/shared/auth/hooks/useAuthed"
 import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
 import { getPageById } from "@/frontend/views/manifest"
 import { AppContentWrapper } from "@/frontend/views/AppContentWrapper"
 import FeatureNotReady from "@/frontend/shared/components/FeatureNotReady"
+import { useToast } from "@/hooks/use-toast"
 
 function toTitleCase(segment: string) {
   return decodeURIComponent(segment)
@@ -24,35 +25,31 @@ function toTitleCase(segment: string) {
 
 export default function CatchAllPage() {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+  const navigationSlugSet = useMemo<Set<string>>(
+    () => new Set(WORKSPACE_NAVIGATION_ITEMS.map((item) => item.key)),
+    [],
+  )
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Read dynamic route params in a Client Component via useParams
   const params = useParams<{ slug?: string[] }>()
   const parts = (params?.slug as unknown as string[] | undefined) ?? []
   const activeSlug = parts[0] || "overview"
-  const isKnownSlug = WORKSPACE_NAVIGATION_ITEMS.some(i => i.key === activeSlug)
+  const navigationHasSlug = navigationSlugSet.has(activeSlug)
 
   const { isAuthed, isLoading, isAuthenticated, isSignedIn } = useAuthed()
   const { workspaceId, setWorkspaceId, workspaces: userWorkspaces } = useWorkspaceContext();
+  const { toast } = useToast()
+  const lastUnknownSlugRef = useRef<string | null>(null)
   const workspacesLoaded = userWorkspaces !== undefined
   const workspaces = useMemo(
     () => (Array.isArray(userWorkspaces) ? userWorkspaces : []),
     [userWorkspaces]
   )
-
-  const debugBasePayload = {
-    isLoading,
-    isAuthenticated,
-    isSignedIn,
-    workspacesLoaded,
-    workspacesCount: workspaces?.length ?? "n/a",
-    activeSlug,
-    parts,
-    componentId: `CatchAllPage-${activeSlug}`,
-    currentPath: `/dashboard/${parts.join("/")}`,
-  }
-
-  if (process.env.NODE_ENV !== "production") {
-    console.debug("[[...slug]]/page:init", debugBasePayload)
-  }
 
   // WorkspaceProvider handles default selection
 
@@ -91,10 +88,57 @@ export default function CatchAllPage() {
   )
   const manifestEntry = getPageById(activeSlug)
   const manifestHas = Boolean(manifestEntry)
+  const menuHasSlug = accessibleSlugs.has(activeSlug)
+  const isKnownSlug = navigationHasSlug || menuHasSlug || manifestHas
+  const activeSlugTitle = useMemo(() => toTitleCase(activeSlug), [activeSlug])
   const activeMenuItem = useMemo(() => {
     if (!Array.isArray(menuItems)) return undefined
     return menuItems.find((mi: any) => mi?.slug === activeSlug)
   }, [menuItems, activeSlug])
+  const debugBasePayload = useMemo(
+    () => ({
+      isLoading,
+      isAuthenticated,
+      isSignedIn,
+      workspacesLoaded,
+      workspacesCount: workspaces?.length ?? "n/a",
+      activeSlug,
+      activeSlugTitle,
+      parts,
+      componentId: `CatchAllPage-${activeSlug}`,
+      currentPath: `/dashboard/${parts.join("/")}`,
+      navigationHasSlug,
+      menuHasSlug,
+      manifestHas,
+      isKnownSlug,
+    }),
+    [
+      activeSlug,
+      activeSlugTitle,
+      isAuthenticated,
+      isKnownSlug,
+      isLoading,
+      isSignedIn,
+      manifestHas,
+      menuHasSlug,
+      navigationHasSlug,
+      parts,
+      workspaces,
+      workspacesLoaded,
+    ],
+  )
+
+  const logFrog = useCallback(
+    (label: string, extra: Record<string, unknown> = {}) => {
+      if (process.env.NODE_ENV === "production") return
+      console.info("[frog]", label, { ...debugBasePayload, ...extra })
+    },
+    [debugBasePayload],
+  )
+
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[[...slug]]/page:init", debugBasePayload)
+  }
 
   const deriveFallbackStatus = (status?: string) => {
     switch ((status || "").toLowerCase()) {
@@ -111,20 +155,70 @@ export default function CatchAllPage() {
     }
   }
 
-  const logDecision = (type: string, extra: Record<string, unknown> = {}) => {
-    if (process.env.NODE_ENV === "production") return
-    console.debug("[[...slug]]/page:content-decision", {
-      ...debugBasePayload,
-      decision: type,
+  const logDecision = useCallback(
+    (type: string, extra: Record<string, unknown> = {}) => {
+      if (process.env.NODE_ENV === "production") return
+      console.debug("[[...slug]]/page:content-decision", {
+        ...debugBasePayload,
+        decision: type,
+        manifestComponentId: manifestEntry?.componentId ?? null,
+        menuItemResolved: Boolean(activeMenuItem),
+        menuItemMetadata: activeMenuItem?.metadata ?? null,
+        ...extra,
+      })
+    },
+    [activeMenuItem, debugBasePayload, manifestEntry],
+  )
+
+  useEffect(() => {
+    if (!isMounted) return
+    if (parts.length === 0) return
+
+    if (isKnownSlug) {
+      if (lastUnknownSlugRef.current !== null) {
+        lastUnknownSlugRef.current = null
+      }
+      return
+    }
+
+    if (lastUnknownSlugRef.current === activeSlug) return
+
+    logFrog("unknown-slug", {
+      slug: activeSlug,
+      navigationHasSlug,
+      menuHasSlug,
       manifestHas,
-      manifestComponentId: manifestEntry?.componentId ?? null,
-      menuItemResolved: Boolean(activeMenuItem),
-      menuItemMetadata: activeMenuItem?.metadata ?? null,
-      ...extra,
     })
-  }
+    logDecision("unknown-slug", {
+      reason: "Slug missing from navigation, menu, and manifest fallback",
+      slug: activeSlug,
+    })
+    toast({
+      title: `${activeSlugTitle} is not configured`,
+      description: "Enable this feature in your workspace navigation or update the manifest.",
+      variant: "warning",
+    })
+    lastUnknownSlugRef.current = activeSlug
+  }, [
+    activeSlug,
+    activeSlugTitle,
+    isKnownSlug,
+    isMounted,
+    logDecision,
+    logFrog,
+    manifestHas,
+    menuHasSlug,
+    navigationHasSlug,
+    parts.length,
+    toast,
+  ])
 
   const renderContent = () => {
+    if (!isMounted) {
+      logDecision("pre-hydration", { reason: "Waiting for client hydration" })
+      return <div className="min-h-dvh" />
+    }
+
     // If unauthenticated in dev, avoid rendering components that assume a user
     if (!isAuthed) {
       logDecision("unauthenticated", { reason: "No auth context" })
@@ -168,10 +262,11 @@ export default function CatchAllPage() {
 
     // If menu is loaded and slug is not accessible, show fallback error
     // If menus exist but slug is not accessible AND not a built-in manifest page, show error.
-    if (Array.isArray(menuItems) && menuItems.length > 0 && !accessibleSlugs.has(activeSlug) && !manifestHas) {
+    if (Array.isArray(menuItems) && menuItems.length > 0 && !menuHasSlug && !manifestHas) {
       logDecision("no-access", {
         reason: "Slug not accessible in workspace menu and not backed by manifest",
         menuCount: menuItems.length,
+        slug: activeSlug,
       })
       return (
         <div className="justify-center items-center mx-auto  lg:px-6 space-y-2">
@@ -241,13 +336,18 @@ export default function CatchAllPage() {
       <SetBreadcrumbs items={breadcrumbs} />
       {/* Unknown slug fallback (rendered after hooks to keep them stable) */}
       {parts.length > 0 && !isKnownSlug ? (
-        <div className="min-h-dvh flex flex-col justify-center items-center text-center px-4 space-y-2">
-          <h2 className="text-lg font-semibold">Page Not Found</h2>
-          <p className="text-sm text-muted-foreground">
-            The page you are looking for doesn&apos;t exist.
-          </p>
-          <div>
-            <Link href="/dashboard" className="text-sm text-primary underline">Go back to Dashboard</Link>
+        <div className="min-h-dvh flex flex-col justify-center items-center text-center px-4 space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">Feature Not Available</h2>
+            <p className="text-sm text-muted-foreground">
+              We couldn&apos;t find any content registered for{" "}
+              <span className="font-medium">{activeSlugTitle}</span>. Enable this feature in your workspace navigation or
+              ask an administrator for access.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Link href="/dashboard/overview" className="text-sm text-primary underline">Go to Overview</Link>
+            <Link href="/dashboard/settings" className="text-sm text-primary underline">Manage Workspace Settings</Link>
           </div>
         </div>
       ) : (

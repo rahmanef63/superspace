@@ -1,14 +1,24 @@
 import {
-  Home,
-  MessageSquare,
-  Menu,
+  Archive,
+  BarChart,
+  Bell,
+  Bot,
+  Camera,
   FileText,
-  Settings,
-  Users,
-  Mail,
+  FolderKanban,
+  Headphones,
   Heart,
+  Home,
+  Mail,
+  Menu,
+  MessageSquare,
+  Phone,
+  Settings,
+  Star,
   User,
-  MessageCircle
+  UserCog,
+  Users,
+  Workflow
 } from "lucide-react";
 import { WorkspaceNavigationItem } from "../types";
 
@@ -18,71 +28,141 @@ export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
     label: "Overview",
     icon: Home,
     description: "Overview and analytics",
-    path: "/overview"
-  },
-  {
-    key: "chat",
-    label: "Chat",
-    icon: MessageSquare,
-    description: "Messages and AI assistant",
-    path: "/chat"
+    path: "/overview",
   },
   {
     key: "chats",
-    label: " Chats",
-    icon: MessageCircle,
-    description: "Chats chat conversations",
-    path: "/chats"
+    label: "Chats",
+    icon: MessageSquare,
+    description: "Messages and collaboration with AI assistants",
+    path: "/chats",
+  },
+  {
+    key: "ai",
+    label: "AI Studio",
+    icon: Bot,
+    description: "Dedicated AI assistants and automations",
+    path: "/ai",
+  },
+  {
+    key: "calls",
+    label: "Calls",
+    icon: Phone,
+    description: "Voice and video call management",
+    path: "/calls",
+  },
+  {
+    key: "status",
+    label: "Status",
+    icon: Camera,
+    description: "Share workspace status updates",
+    path: "/status",
+  },
+  {
+    key: "starred",
+    label: "Starred",
+    icon: Star,
+    description: "Quick access to starred conversations",
+    path: "/starred",
+  },
+  {
+    key: "archived",
+    label: "Archived",
+    icon: Archive,
+    description: "Review archived chat history",
+    path: "/archived",
+  },
+  {
+    key: "documents",
+    label: "Documents",
+    icon: FileText,
+    description: "Collaborative documents and notes",
+    path: "/documents",
+  },
+  {
+    key: "projects",
+    label: "Projects",
+    icon: FolderKanban,
+    description: "Kanban projects and team planning",
+    path: "/projects",
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    icon: BarChart,
+    description: "Analytics, insights, and dashboards",
+    path: "/reports",
+  },
+  {
+    key: "support",
+    label: "Support",
+    icon: Headphones,
+    description: "Manage helpdesk tickets and requests",
+    path: "/support",
+  },
+  {
+    key: "crm",
+    label: "CRM",
+    icon: UserCog,
+    description: "Customer relationship management",
+    path: "/crm",
+  },
+  {
+    key: "notifications",
+    label: "Notifications",
+    icon: Bell,
+    description: "Activity feed and alerts",
+    path: "/notifications",
+  },
+  {
+    key: "workflows",
+    label: "Workflows",
+    icon: Workflow,
+    description: "Automation recipes and bots",
+    path: "/workflows",
   },
   {
     key: "members",
     label: "Members",
     icon: Users,
     description: "Manage workspace members",
-    path: "/members"
+    path: "/members",
   },
   {
     key: "friends",
     label: "Friends",
     icon: Heart,
-    description: "Manage your friends",
-    path: "/friends"
-  },
-  {
-    key: "documents",
-    label: "Documents",
-    icon: FileText,
-    description: "Collaborative documents",
-    path: "/documents"
+    description: "Personal contacts and social graph",
+    path: "/friends",
   },
   {
     key: "menus",
     label: "Menu Store",
     icon: Menu,
-    description: "Manage navigation menus",
-    path: "/menus"
+    description: "Configure workspace navigation",
+    path: "/menus",
   },
   {
     key: "invitations",
     label: "Invitations",
     icon: Mail,
-    description: "Manage invitations",
-    path: "/invitations"
+    description: "Pending and historical invitations",
+    path: "/invitations",
   },
   {
     key: "user-settings",
     label: "Profile",
     icon: User,
-    description: "Manage your profile",
-    path: "/user-settings"
+    description: "Manage your personal profile",
+    path: "/user-settings",
   },
   {
     key: "workspace-settings",
-    label: "Settings",
+    label: "Workspace Settings",
     icon: Settings,
-    description: "Workspace configuration",
-    path: "/settings"
-  }
+    description: "Workspace configuration and preferences",
+    path: "/settings",
+  },
 ];
 
 export const WORKSPACE_TYPES = [
@@ -90,6 +170,5 @@ export const WORKSPACE_TYPES = [
   { value: "family", label: "Family", desc: "For family members" },
   { value: "group", label: "Group", desc: "For small groups" },
   { value: "organization", label: "Organization", desc: "For companies" },
-  { value: "institution", label: "Institution", desc: "For schools, hospitals, etc." }
+  { value: "institution", label: "Institution", desc: "For schools, hospitals, etc." },
 ] as const;
-

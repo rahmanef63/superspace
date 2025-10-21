@@ -3,7 +3,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { TopBar } from "../../chat/components/navigation/TopBar";
 import { ChatListView } from "../../chat/components/chat/ChatListView";
 import { ChatDetailView } from "../../chat/components/chat/ChatDetailView";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
 
 export function ArchivedView() {
   const { selectedChatId, setActiveTab } = useWhatsAppStore();

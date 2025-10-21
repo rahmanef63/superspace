@@ -671,6 +671,25 @@ await ctx.runMutation(api.workspace.workspaces.resetWorkspace, {
 
 ---
 
+## Shared Chat Module Cheat Sheet
+
+- Core entry points live in `frontend/shared/chat/components`, with container wrappers exposed per feature under `frontend/features/{domain}/components`.
+- The Convex adapter (`frontend/features/chat/adapters/convexChatAdapter.ts`) is the single place to extend realtime behaviour; reuse it when adding reactions, thread support, or audit metadata.
+- Common containers:
+  - `WorkspaceChatContainer` for room-based collaboration.
+  - `AIChatContainer` for assistant conversations (supports `assistant`, `workflow`, `gpt`, `custom` modes).
+  - `SupportChatContainer`, `ProjectDiscussionChat`, `CRMChatContainer`, `DocumentCollaboration`, and `CommentsPanel` wrap the shared primitives for domain-specific layouts.
+- Schema expectations:
+  - `chatRooms`: supply `contextMode`, `linkedEntities`, `participantIds`, and optional `settings` or `roles`.
+  - `chatMessages`: enable threading via `threadOf`, moderation via `isSystem`, and analytics via `readBy`.
+- Migration playbook:
+  1. Keep the legacy view running while importing the shared container alongside it.
+  2. Redirect event handlers (send/edit/delete/pin) to the shared adapter mutations.
+  3. Remove bespoke components once QA signs off; update navigation tests (`tests/features/navigation-registry.test.ts`) if new slugs are introduced.
+- Usage snippets are available under `frontend/shared/chat/examples/`; copy the preset closest to your use case and adjust props instead of duplicating logic.
+
+---
+
 ## Links to Other Docs
 
 - [Developer Guide](./2_DEVELOPER_GUIDE.md) - How to create features

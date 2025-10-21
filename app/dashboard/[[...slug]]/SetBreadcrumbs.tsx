@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { BreadcrumbItem, useBreadcrumbs } from "@/app/dashboard/_components/breadcrumbs-context"
+import { BreadcrumbItem, useBreadcrumbs } from "@/frontend/shared/layout/sidebar/components/breadcrumbs-context"
 
 export function SetBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   const { setBreadcrumbs } = useBreadcrumbs()

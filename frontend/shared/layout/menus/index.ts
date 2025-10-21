@@ -3,12 +3,15 @@ export * from "./components/BreadcrumbNavigation";
 export * from "./components/DragDropMenuTree";
 export * from "./components/MenuDisplay";
 export * from "./components/MenuItemForm";
+export * from "./components/MenuPreview";
 export * from "./components/MenuTree";
 export * from "./components/SecondaryMenuWrappers";
-export * from "./components/SecondarySidebarLayout";
 
 // context / hooks / types / utils
 export * from "./context";
 export * from "./hooks";
 export * from "./types";
 export * from "./utils";
+
+// Re-export secondary sidebar layout (legacy compat)
+export * from "@/frontend/shared/layout/secondary-sidebar";

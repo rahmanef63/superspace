@@ -36,7 +36,7 @@ pnpm test
 
 # 5. Start development
 pnpm dev
-npx convex dev  # In separate terminal
+npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace  # In separate terminal
 ```
 
 **What gets created:**
@@ -519,9 +519,9 @@ import { convexTest } from "convex-test"
 import schema from "@/convex/schema"
 import { api } from "@/convex/_generated/api"
 
-describe("Tasks Integration", () => {
-  let t: any
-  let workspaceId: any
+  describe("Tasks Integration", () => {
+    let t: any
+    let workspaceId: any
   let userId: any
 
   beforeEach(async () => {
@@ -567,8 +567,75 @@ describe("Tasks Integration", () => {
       })
     ).rejects.toThrow()
   })
-})
+  })
+  ```
+
+### Dashboard Navigation Regression
+
+- `tests/features/navigation-registry.test.ts` guards the required dashboard slugs (Reports, Support, Projects, CRM, Notifications, Workflows, etc.) so that future refactors cannot accidentally hide them from end users.
+- Update `frontend/views/static/workspaces/constants/navigation.ts` and rerun `pnpm test` whenever you add or rename a dashboard view slug to keep the manifest, navigation, and toast UX in sync.
+- The catch-all route (`app/dashboard/[[...slug]]/page.tsx`) now emits a developer-facing `[frog]` log and a workspace toast if a slug is missing. Treat failing tests or unexpected toasts as blockers before shipping.
+
+### Menu Version Tracking Workflow
+
+- `frontend/shared/layout/menus/components/DragDropMenuTree.tsx` now queries `api.menu.store.menuItems.getMenuUpdates` so every menu item can surface a version badge and an "Update Available" pill when a newer catalog entry exists.
+
+### Layout System (Secondary Sidebar)
+
+The app uses a modular **Secondary Sidebar Layout System** located in `frontend/shared/layout/secondary-sidebar/`:
+
+**Components:**
+- `SecondarySidebarLayout` - Main container component
+- `SecondarySidebarHeader` - Header with title, actions, breadcrumbs, toolbar
+- `SecondarySidebarTools` - Toolbar with search, sort, filter, view toggle
+- `SecondarySidebar` - Sidebar navigation with sections and items
+- `MenuPreview` - Preview panel for menu items (in `frontend/shared/layout/menus/`)
+
+**Usage:**
+```typescript
+import {
+  SecondarySidebarLayout,
+  SecondarySidebarHeader,
+  SecondarySidebarTools,
+} from "@/frontend/shared/layout/secondary-sidebar";
+
+<SecondarySidebarLayout
+  headerProps={{
+    title: "My Feature",
+    description: "Feature description",
+    primaryAction: {
+      label: "New Item",
+      icon: Plus,
+      onClick: () => setShowForm(true),
+    },
+    toolbar: (
+      <SecondarySidebarTools
+        search={{ value: search, onChange: setSearch }}
+        sortOptions={[...]}
+        filterOptions={[...]}
+        viewOptions={[...]}
+      />
+    ),
+  }}
+  sidebarProps={{
+    sections: [...],
+  }}
+>
+  <MainContent />
+</SecondarySidebarLayout>
 ```
+
+See `frontend/shared/layout/secondary-sidebar/README.md` for full documentation.
+- Extend `frontend/views/static/menus/hooks/useMenuMutations.ts` with the optional `forceUpdate` flag and call `installFeatureMenus({ workspaceId, featureSlugs, forceUpdate: true })` to upgrade an item without reinstalling the entire workspace.
+- Keep semantic versions in sync by editing the catalog entry (`menu_manifest_data.ts` or `optional_features_catalog.ts`) and include `metadata.version`, `previousVersion`, and `lastUpdated` fields for audit logging.
+- All version jumps emit `action: "version_updated"` events in `activityEvents`. Add regression coverage any time you touch the versioning flow.
+
+### Shared Chat Migration Playbook
+
+- New chat surfaces should import the appropriate container from `frontend/features/{domain}/components/*ChatContainer.tsx` or use the generic `shared/chat` presets; never reimplement message loops.
+- Each feature adapter wires Convex through `frontend/features/chat/adapters/convexChatAdapter.ts`; reuse or extend the adapter instead of calling Convex APIs directly.
+- When migrating a legacy screen, follow the three-phase plan: run the shared module in parallel, swap imports feature-by-feature, then delete the bespoke implementation once analytics and QA are green.
+- Convex schema requirements live in `convex/schema.ts` under `chatRooms` and `chatMessages`. Ensure new contexts populate `contextMode`, `linkedEntities`, and `participantIds` so shared analytics (presence, audit trails) remain accurate.
 
 ### Test Coverage Requirements
 
@@ -688,7 +755,7 @@ pnpm test:ui                   # Run with UI (Vitest UI)
 
 # Development
 pnpm dev                       # Start Next.js dev server
-npx convex dev                 # Start Convex dev server
+npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace  # Start Convex dev server
 pnpm run typecheck             # Run TypeScript compiler
 pnpm run lint                  # Run ESLint
 

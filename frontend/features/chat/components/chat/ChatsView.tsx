@@ -2,7 +2,7 @@ import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ChatListView } from "./ChatListView";
 import { ChatDetailView } from "./ChatDetailView";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
 
 export function ChatsView() {
   const { selectedChatId } = useWhatsAppStore();

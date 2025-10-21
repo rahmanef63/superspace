@@ -134,6 +134,28 @@ Features punya status development:
 }
 ```
 
+### 5. Layout Architecture
+
+SuperSpace menggunakan **Secondary Sidebar Layout System** untuk UI yang konsisten:
+
+**Location:** `frontend/shared/layout/secondary-sidebar/`
+
+**Komponen Utama:**
+- `SecondarySidebarLayout` - Container utama untuk halaman feature
+- `SecondarySidebarHeader` - Header dengan title, actions, breadcrumbs, toolbar
+- `SecondarySidebarTools` - Toolbar dengan search, sort, filter, view toggle
+- `SecondarySidebar` - Navigation sidebar dengan sections dan items
+- `MenuPreview` - Preview panel untuk menu items (di `frontend/shared/layout/menus/`)
+
+**Menu Management:**
+- Menu Store adalah **feature** di `frontend/features/menu-store/`
+- Hanya accessible untuk users dengan `MANAGE_MENUS` permission (Owner & Admin)
+- Wrapped dengan `MenuStoreMenuWrapper` untuk access control
+- Supports 3 tabs: Installed, Available, Import
+- Supports 2 view modes: Tree (dengan preview), Grid
+
+See `frontend/shared/layout/secondary-sidebar/README.md` untuk dokumentasi lengkap.
+
 ---
 
 ## 🔄 Feature Lifecycle
@@ -346,6 +368,23 @@ convex/
 - **[Developer Guide](./2_DEVELOPER_GUIDE.md)** - How to build features
 - **[AI Knowledge Base](./3_AI_KNOWLEDGE_BASE.md)** - Technical details
 - **[Troubleshooting](./4_TROUBLESHOOTING.md)** - Common issues
+
+---
+
+## Chat Platform Modernization Highlights
+
+- All product chat surfaces now share the `frontend/shared/chat` platform, replacing eight bespoke implementations with one configurable module.
+- Nine experiences (workspace, AI, support, projects, documents, CRM, notifications, workflows, comments) ship with the new stack and expose consistent UX patterns.
+- Feature visibility is guaranteed through the updated workspace navigation registry and the guarded catch-all route in `app/dashboard/[[...slug]]/page.tsx`.
+
+| Indicator | Previous | Current | Notes |
+|-----------|----------|---------|-------|
+| Chat-related LOC | ~12,000 | ~3,600 | 70% reduction through consolidation |
+| Distinct chat implementations | 8 | 1 shared module | Shared adapters provide Convex integration hooks |
+| Feature coverage | Workspace + AI | 9 feature-ready surfaces | Includes Support, Projects, CRM, Notifications, Workflows |
+| Time-to-add new chat view | 2-3 weeks | 1-2 hours | Configure presets and reuse shared containers |
+
+See the Developer Guide for migration instructions and the Feature Reference for per-feature usage notes.
 
 ---
 

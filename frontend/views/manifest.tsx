@@ -173,7 +173,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Menu Store",
     description: "Install and manage navigation menus",
     icon: Menu,
-    component: lazy(() => import("@/frontend/views/static/menus/page")),
+    component: lazy(() => import("@/frontend/features/menu-store/page")),
   },
   {
     id: "invitations",
@@ -269,7 +269,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Workflows",
     description: "Workflow automation with bot assistant",
     icon: Workflow,
-    component: lazy(() => import("@/frontend/features/workflows/page")),
+    component: lazy(() => import("@/frontend/features/workflow/page")),
   }
 ]
 

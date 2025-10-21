@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
 import { AIListView } from "./AIListView";
 import { AIChatContainer } from "./components/AIChatContainer";
 

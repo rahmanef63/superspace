@@ -13,7 +13,8 @@ import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
-} from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+  SecondarySidebarTools,
+} from "@/frontend/shared/layout/sidebar/secondary";
 import { DocumentMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
 import type { DocumentRecord } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
@@ -105,27 +106,31 @@ export function DocumentsBrowser({
           onClick: onCreate,
         }
       : undefined,
-    search: {
-      value: search,
-      onChange: onSearch,
-      placeholder: "Search documents...",
-    },
     toolbar: (
-      <div className="flex flex-wrap items-center gap-2">
-        {visibilityOptions.map((option) => (
-          <Button
-            key={option}
-            variant={option === visibility ? "default" : "outline"}
-            className={cn(
-              option === visibility
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : ""
-            )}
-            onClick={() => onVisibilityChange(option)}
-          >
-            {option.charAt(0).toUpperCase() + option.slice(1)}
-          </Button>
-        ))}
+      <div className="space-y-3">
+        <SecondarySidebarTools
+          search={{
+            value: search,
+            onChange: onSearch,
+            placeholder: "Search documents...",
+          }}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          {visibilityOptions.map((option) => (
+            <Button
+              key={option}
+              variant={option === visibility ? "default" : "outline"}
+              className={cn(
+                option === visibility
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : ""
+              )}
+              onClick={() => onVisibilityChange(option)}
+            >
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </Button>
+          ))}
+        </div>
       </div>
     ),
   };

@@ -118,6 +118,22 @@ console.log(result)
 
 ## 2. Feature Not Showing in Menu Store
 
+**Note:** Menu Store is now a feature located at `frontend/features/menu-store/` and requires `MANAGE_MENUS` permission. Only workspace owners and admins can access it.
+
+**Access Check:**
+- Ensure your user has Owner or Admin role
+- Menu Store uses `MenuStoreMenuWrapper` for access control
+- Check `convex/workspace/permissions.ts` for MANAGE_MENUS permission
+
+**Import Path:**
+```typescript
+// ✅ Correct
+import MenuStorePage from "@/frontend/features/menu-store/page";
+
+// ❌ Old (deprecated)
+import { MenuStore } from "@/frontend/shared/layout/menus";
+```
+
 ### Symptoms
 - Created optional feature
 - Ran `pnpm run sync:features`
@@ -219,7 +235,7 @@ console.log("Installed features:", items.map(i => i.slug))
 4. **Restart Convex dev:**
    ```bash
    # Stop Convex dev (Ctrl+C)
-   npx convex dev
+   npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace
    ```
 
 5. **Hard refresh browser:**
@@ -418,9 +434,9 @@ internal.audit.logEvent
 
 1. **Regenerate Convex types:**
    ```bash
-   npx convex dev --once
+   npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace --once
    # Or keep Convex dev running:
-   npx convex dev
+   npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace
    ```
 
 2. **Clear test cache:**
@@ -519,7 +535,7 @@ Type 'undefined' is not assignable to type 'XyzType'
 
 3. **Restart Convex dev:**
    ```bash
-   npx convex dev
+   npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace
    ```
 
 4. **Hard refresh browser:**
@@ -574,6 +590,49 @@ Type 'undefined' is not assignable to type 'XyzType'
 5. **Check Convex logs:**
    - Verify `createDefaultMenuItems` succeeded
    - Look for any schema validation errors
+
+---
+
+## 9. Feature Missing from Dashboard Navigation
+
+### Symptoms
+- Sidebar toast: `Feature Not Available` after navigating to `/dashboard/{slug}`.
+- Console shows `[frog] unknown-slug` output from `app/dashboard/[[...slug]]/page.tsx`.
+- Required sections (Reports, Support, Projects, CRM, Notifications, Workflows, etc.) disappear after a refactor.
+
+### Fix Steps
+
+1. **Verify navigation registry:**
+   ```bash
+   code frontend/views/static/workspaces/constants/navigation.ts
+   ```
+   - Ensure the slug exists in `WORKSPACE_NAVIGATION_ITEMS`.
+   - Confirm the path is `/slug` (or `/settings` for workspace settings).
+
+2. **Check manifest entry:**
+   ```bash
+   code frontend/views/manifest.tsx
+   ```
+   - Search for `id: "{slug}"`.
+   - Confirm `componentId` and `component` are populated.
+
+3. **Run regression test:**
+   ```bash
+   pnpm test tests/features/navigation-registry.test.ts
+   ```
+   - Test fails if a required slug is missing from navigation or manifest.
+
+4. **Update menu metadata (if versioned):**
+   - Increment the feature version in `menu_manifest_data.ts` or `optional_features_catalog.ts`.
+   - Use the Menu Store “Update Available” action (force update flag) to refresh workspace menus.
+
+5. **Confirm toast is cleared:**
+   - Navigate again; the toast should not appear once navigation and manifest are in sync.
+
+6. **Still broken?**
+   - Run `pnpm run sync:all`.
+   - Reset workspace menus with `resetWorkspace(..., { mode: "replaceMenus" })`.
+   - Inspect Convex logs for schema or permission errors.
 
 ---
 

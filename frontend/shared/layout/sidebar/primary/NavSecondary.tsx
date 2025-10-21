@@ -1,0 +1,76 @@
+"use client"
+
+import * as React from "react"
+import { IconBrightness } from "@tabler/icons-react"
+
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+} from "@/components/ui/sidebar"
+import { ModeToggle } from "@/components/mode-toggle"
+import Link from "next/link"
+import {
+  SecondarySidebarLayout,
+} from "../secondary"
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+
+type SecondaryItem = {
+  title: string
+  url: string
+  icon?: React.ElementType
+}
+
+export function NavSecondary({
+  items = [],
+  ...props
+}: {
+  items?: SecondaryItem[]
+} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const secondaryMenu = (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild>
+            <Link href={item.url}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild>
+          <label className="flex w-full items-center gap-2">
+            <IconBrightness className="h-4 w-4" />
+            <span>Dark Mode</span>
+            <span className="ml-auto">
+              <ModeToggle />
+            </span>
+          </label>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+
+  return (
+    <SidebarGroup {...props}>
+      <SidebarGroupContent className="p-0">
+        <SecondarySidebarLayout.Sidebar
+          variant="minimal"
+          sections={[
+            {
+              id: "secondary-nav",
+              content: secondaryMenu,
+            },
+          ]}
+          className="bg-transparent"
+          contentClassName="space-y-2 overflow-visible px-0 py-0"
+        />
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}

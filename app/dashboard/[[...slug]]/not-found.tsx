@@ -1,4 +1,4 @@
-import { NotFoundState } from "@/app/dashboard/_components/state-pages"
+import { NotFoundState } from "@/frontend/shared/layout/sidebar/components/state-pages"
 
 /**
  * Not Found page for dashboard catch-all routes

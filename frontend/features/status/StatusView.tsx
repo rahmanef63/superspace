@@ -4,7 +4,7 @@ import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
 import { StatusListView } from "./StatusListView";
 import { StatusDetailView } from "./StatusDetailView";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/menus/components/SecondarySidebarLayout";
+import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
 
 export function StatusView() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>();

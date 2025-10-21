@@ -96,7 +96,7 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
 4. Initialize Convex:
 
 \`\`\`bash
-npx convex dev
+npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace
 \`\`\`
 
 5. Set up Clerk JWT Template:

@@ -10,18 +10,37 @@ import { requireActiveMembership } from "../../auth/helpers"
 export const list = query({
   args: {
     workspaceId: v.id("workspaces"),
+    category: v.optional(v.string()),
+    search: v.optional(v.string()),
+    publishedOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Require active membership
     await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
     const items = await ctx.db
       .query("wiki")
-      .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect()
 
-    return items
+    const search = args.search?.trim().toLowerCase()
+    const category = args.category?.trim().toLowerCase()
+    const publishedOnly = args.publishedOnly ?? false
+
+    const filtered = items.filter((item) => {
+      if (publishedOnly && item.isPublished === false) return false
+      if (category && (item.category ?? "").toLowerCase() !== category) return false
+      if (search) {
+        const matchesTitle = item.title.toLowerCase().includes(search)
+        const matchesSummary = (item.summary ?? "").toLowerCase().includes(search)
+        if (!matchesTitle && !matchesSummary) return false
+      }
+      return true
+    })
+
+    filtered.sort((a, b) => b.updatedAt - a.updatedAt)
+
+    return filtered
   },
 })
 

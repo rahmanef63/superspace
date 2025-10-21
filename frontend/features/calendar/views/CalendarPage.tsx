@@ -1,193 +1,390 @@
 "use client"
 
-import React, { useState } from "react"
-import { useCalendar } from "../hooks/useCalendar"
+import React, { useMemo, useState } from "react"
+import type { Id } from "@convex/_generated/dataModel"
+import { toast } from "sonner"
+import {
+  Calendar as CalendarIcon,
+  CalendarDays,
+  Clock,
+  MapPin,
+  Plus,
+  Trash2,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, ChevronLeft, ChevronRight, Clock, MapPin, Users, Plus } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import FeatureBadge from "@/frontend/shared/components/FeatureBadge"
-import FeatureNotReady from "@/frontend/shared/components/FeatureNotReady"
+import { useCalendar } from "../hooks/useCalendar"
+import type { CalendarEvent } from "../types"
 
-/**
- * Calendar Page Component
- * Team calendar with event management
- */
-export default function CalendarPage() {
-  const { isLoading, error } = useCalendar()
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month')
+interface CalendarPageProps {
+  workspaceId?: Id<"workspaces"> | null
+}
+
+const rangeFilters = ["upcoming", "today", "past", "all"] as const
+type RangeFilter = (typeof rangeFilters)[number]
+
+const formatRange = (event: CalendarEvent) => {
+  const start = new Date(event.startsAt)
+  const end = event.endsAt != null ? new Date(event.endsAt) : null
+  const dateFormatter = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" })
+  const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" })
+
+  if (event.allDay) {
+    if (!end || start.toDateString() === end.toDateString()) {
+      return `${dateFormatter.format(start)} - All day`
+    }
+    return `${dateFormatter.format(start)} -> ${dateFormatter.format(end)} (All day)`
+  }
+
+  if (!end) {
+    return `${dateFormatter.format(start)} ${timeFormatter.format(start)}`
+  }
+
+  const sameDay = start.toDateString() === end.toDateString()
+  if (sameDay) {
+    return `${dateFormatter.format(start)} ${timeFormatter.format(start)} - ${timeFormatter.format(end)}`
+  }
+
+  return `${dateFormatter.format(start)} ${timeFormatter.format(start)} -> ${dateFormatter.format(end)} ${timeFormatter.format(end)}`
+}
+
+const NEW_EVENT_DEFAULT = {
+  title: "",
+  description: "",
+  location: "",
+  startsAt: "",
+  endsAt: "",
+  allDay: false,
+}
+
+export default function CalendarPage({ workspaceId }: CalendarPageProps) {
+  const [filter, setFilter] = useState<RangeFilter>("upcoming")
+  const [form, setForm] = useState(NEW_EVENT_DEFAULT)
+
+  const {
+    events,
+    stats,
+    isLoading,
+    error,
+    isCreating,
+    isRemoving,
+    createEvent,
+    deleteEvent,
+  } = useCalendar(workspaceId)
+
+  const now = Date.now()
+  const startOfDay = new Date()
+  startOfDay.setHours(0, 0, 0, 0)
+  const endOfDay = startOfDay.getTime() + 86_400_000 - 1
+  const start = startOfDay.getTime()
+
+  const filteredEvents = useMemo(() => {
+    return events
+      .filter((event) => {
+        const eventStart = event.startsAt
+        const eventEnd = event.endsAt ?? eventStart
+
+        switch (filter) {
+          case "today":
+            return eventEnd >= start && eventStart <= endOfDay
+          case "past":
+            return eventEnd < start
+          case "upcoming":
+            return eventStart > endOfDay
+          default:
+            return true
+        }
+      })
+      .sort((a, b) => a.startsAt - b.startsAt)
+  }, [events, filter, endOfDay, start])
+
+  if (!workspaceId) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">No Workspace Selected</h2>
+          <p className="mt-2 text-muted-foreground">
+            Select a workspace to access the shared calendar.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground">Loading calendar...</div>
       </div>
     )
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-destructive">Error: {error.message}</div>
-      </div>
-    )
+  const handleCreateEvent = async () => {
+    const title = form.title.trim()
+    if (!title) {
+      toast.error("Event title is required")
+      return
+    }
+    if (!form.startsAt) {
+      toast.error("Start date and time are required")
+      return
+    }
+
+    const startTimestamp = new Date(form.startsAt).getTime()
+    const endTimestamp = form.endsAt ? new Date(form.endsAt).getTime() : null
+
+    try {
+      await createEvent({
+        title,
+        description: form.description.trim() || undefined,
+        location: form.location.trim() || undefined,
+        startsAt: startTimestamp,
+        endsAt: endTimestamp ?? undefined,
+        allDay: form.allDay,
+      })
+      toast.success("Event scheduled")
+      setForm(NEW_EVENT_DEFAULT)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create event")
+    }
   }
 
-  // Mock events for demo
-  const mockEvents = [
-    {
-      id: "1",
-      title: "Team Standup",
-      date: new Date(),
-      time: "9:00 AM",
-      duration: "30 min",
-      location: "Conference Room A",
-      attendees: 5,
-      color: "bg-blue-500"
-    },
-    {
-      id: "2",
-      title: "Product Review",
-      date: new Date(),
-      time: "2:00 PM",
-      duration: "1 hour",
-      location: "Virtual",
-      attendees: 8,
-      color: "bg-green-500"
-    },
-  ]
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    const confirmed = window.confirm(`Delete "${event.title}"?`)
+    if (!confirmed) return
+
+    try {
+      await deleteEvent(event.id)
+      toast.success("Event removed")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to delete event")
+    }
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
+    <div className="flex h-full flex-col">
       <div className="border-b bg-background p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Calendar className="h-8 w-8 text-primary" />
+            <CalendarDays className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-3xl font-bold">Calendar</h1>
               <p className="text-sm text-muted-foreground">
-                Team calendar with event management
+                Organise meetings, launches, and shared milestones for your workspace.
               </p>
             </div>
           </div>
-          <FeatureBadge status="development" />
+          <FeatureBadge status="beta" />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                const newDate = new Date(currentDate)
-                newDate.setMonth(newDate.getMonth() - 1)
-                setCurrentDate(newDate)
-              }}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-lg font-semibold min-w-[200px] text-center">
-              {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </h2>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                const newDate = new Date(currentDate)
-                newDate.setMonth(newDate.getMonth() + 1)
-                setCurrentDate(newDate)
-              }}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentDate(new Date())}
-            >
-              Today
-            </Button>
+            {rangeFilters.map((option) => (
+              <Button
+                key={option}
+                variant={filter === option ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setFilter(option)}
+              >
+                {option === "all" ? "All" : option === "past" ? "Past" : option === "today" ? "Today" : "Upcoming"}
+              </Button>
+            ))}
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1 border rounded-md p-1">
-              <Button
-                variant={viewMode === 'month' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('month')}
-              >
-                Month
-              </Button>
-              <Button
-                variant={viewMode === 'week' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('week')}
-              >
-                Week
-              </Button>
-              <Button
-                variant={viewMode === 'day' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('day')}
-              >
-                Day
-              </Button>
-            </div>
-            <Button disabled>
-              <Plus className="mr-2 h-4 w-4" />
-              New Event
-            </Button>
-          </div>
+          <Button onClick={handleCreateEvent} disabled={isCreating}>
+            <Plus className="mr-2 h-4 w-4" />
+            {isCreating ? "Scheduling..." : "Schedule Event"}
+          </Button>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <FeatureNotReady
-          featureName="Calendar"
-          featureSlug="calendar"
-          status="development"
-          message="The calendar feature is currently in development. Coming soon with event creation and management, team calendar sharing, meeting scheduling, calendar integrations, recurring events, and event reminders and notifications."
-          expectedRelease="Q1 2025"
-        />
+        {error ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Something went wrong</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
+        ) : null}
 
-        {/* Preview UI */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Preview: Upcoming Events</h3>
-          <div className="grid gap-4">
-            {mockEvents.map((event) => (
-              <Card key={event.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-1 h-full ${event.color} rounded-full`} />
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-2">{event.title}</h4>
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {event.time} ({event.duration})
+        <div className="grid gap-4 pb-6 md:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Events
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{stats.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Today
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold text-emerald-500">{stats.today}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Upcoming
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold text-blue-500">{stats.upcoming}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Schedule an event</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <Label htmlFor="event-title">Title</Label>
+              <Input
+                id="event-title"
+                value={form.title}
+                onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                placeholder="e.g. Product launch rehearsal"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="event-description">Description</Label>
+              <Textarea
+                id="event-description"
+                rows={3}
+                value={form.description}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, description: event.target.value }))
+                }
+                placeholder="Add agenda, participants, or preparation notes"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="event-starts">Starts at</Label>
+              <Input
+                id="event-starts"
+                type="datetime-local"
+                value={form.startsAt}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, startsAt: event.target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="event-ends">Ends at</Label>
+              <Input
+                id="event-ends"
+                type="datetime-local"
+                value={form.endsAt}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, endsAt: event.target.value }))
+                }
+                disabled={form.allDay}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="event-location">Location</Label>
+              <Input
+                id="event-location"
+                value={form.location}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, location: event.target.value }))
+                }
+                placeholder="Conference room, Zoom link, etc."
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="event-all-day"
+                checked={form.allDay}
+                onCheckedChange={(checked) =>
+                  setForm((prev) => ({ ...prev, allDay: checked, endsAt: checked ? "" : prev.endsAt }))
+                }
+              />
+              <Label htmlFor="event-all-day">All day event</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {filteredEvents.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+            <h3 className="text-lg font-semibold text-foreground">No events in this view</h3>
+            <p className="mt-2 text-sm">
+              Try a different filter or create a new event to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredEvents.map((event) => {
+              const eventEnd = event.endsAt ?? event.startsAt
+              const isPast = eventEnd < now
+              const isToday = eventEnd >= start && event.startsAt <= endOfDay
+
+              return (
+                <Card key={event.id} className={isPast ? "opacity-70" : undefined}>
+                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-1 gap-4">
+                      <div className="mt-1 h-10 w-1 rounded bg-primary/60" />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="text-base font-semibold">{event.title}</h4>
+                          {isToday ? <Badge className="bg-emerald-500/10 text-emerald-600">Today</Badge> : null}
+                          {isPast ? <Badge variant="outline">Past</Badge> : null}
+                          {event.allDay ? <Badge variant="secondary">All day</Badge> : null}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {event.location}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {event.attendees} attendees
+                        {event.description ? (
+                          <p className="text-sm text-muted-foreground">{event.description}</p>
+                        ) : null}
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="h-4 w-4" />
+                            {formatRange(event)}
+                          </span>
+                          {event.location ? (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              {event.location}
+                            </span>
+                          ) : null}
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            Updated {new Date(event.updatedAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="opacity-50">
-                      Preview
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteEvent(event)}
+                        disabled={isRemoving}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete event</span>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
 }
+
+

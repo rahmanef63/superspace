@@ -39,10 +39,10 @@ function getExpectedPagePath(component: string): string {
     "MembersPage": "frontend/views/static/member/page.tsx",
     "FriendsPage": "frontend/views/static/friends/page.tsx",
     "PagesPage": "frontend/views/static/pages/page.tsx",
-    "DatabasesPage": "frontend/views/static/databases/page.tsx",
+    "DatabasesPage": "frontend/features/database/page.tsx",
     "CanvasPage": "frontend/features/canvas/page.tsx",
     "DocumentsPage": "frontend/features/documents/page.tsx",
-    "MenusPage": "frontend/views/static/menus/page.tsx",
+    "MenusPage": "frontend/features/menu-store/page.tsx",
     "InvitationsPage": "frontend/views/static/invitations/page.tsx",
     "WorkspacesPage": "frontend/views/static/workspaces/page.tsx",
 

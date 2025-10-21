@@ -10,18 +10,30 @@ import { requireActiveMembership } from "../../auth/helpers"
 export const list = query({
   args: {
     workspaceId: v.id("workspaces"),
+    rangeStart: v.optional(v.number()),
+    rangeEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     // Require active membership
     await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
     const items = await ctx.db
       .query("calendar")
-      .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
+      .withIndex("by_workspace_start", (q) => q.eq("workspaceId", args.workspaceId))
       .collect()
 
-    return items
+    const { rangeStart, rangeEnd } = args
+    if (rangeStart === undefined && rangeEnd === undefined) {
+      return items
+    }
+
+    return items.filter((event) => {
+      const eventStarts = event.startsAt
+      const eventEnds = event.endsAt ?? eventStarts
+      if (rangeStart !== undefined && eventEnds < rangeStart) return false
+      if (rangeEnd !== undefined && eventStarts > rangeEnd) return false
+      return true
+    })
   },
 })
 

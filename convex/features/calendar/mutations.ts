@@ -1,7 +1,6 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
-import { requireActiveMembership, requirePermission } from "../../auth/helpers"
-import { PERMS } from "../../workspace/permissions"
+import { ensureUser, requireActiveMembership } from "../../auth/helpers"
 
 /**
  * Calendar Mutations
@@ -11,18 +10,39 @@ import { PERMS } from "../../workspace/permissions"
 export const create = mutation({
   args: {
     workspaceId: v.id("workspaces"),
-    name: v.string(),
+    title: v.string(),
+    startsAt: v.number(),
+    endsAt: v.optional(v.number()),
+    description: v.optional(v.string()),
+    location: v.optional(v.string()),
+    allDay: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Require permission
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, args.workspaceId)
+    const actorId = membership?.userId ?? (await ensureUser(ctx))
+    const now = Date.now()
 
-    const itemId = await ctx.db.insert("calendar", {
+    if (args.endsAt !== undefined && args.endsAt < args.startsAt) {
+      throw new Error("Event end time must be after start time")
+    }
+
+    const doc: any = {
       workspaceId: args.workspaceId,
-      name: args.name,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    })
+      title: args.title,
+      startsAt: args.startsAt,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: actorId,
+      updatedBy: actorId,
+    }
+
+    if (args.description !== undefined) doc.description = args.description
+    if (args.location !== undefined) doc.location = args.location
+    if (args.allDay !== undefined) doc.allDay = args.allDay
+    if (args.endsAt !== undefined) doc.endsAt = args.endsAt
+
+    const itemId = await ctx.db.insert("calendar", doc)
 
     // TODO: Add audit log
     // await logAudit(ctx, {
@@ -39,19 +59,47 @@ export const create = mutation({
 export const update = mutation({
   args: {
     id: v.id("calendar"),
-    name: v.string(),
+    patch: v.object({
+      title: v.optional(v.string()),
+      startsAt: v.optional(v.number()),
+      endsAt: v.optional(v.union(v.number(), v.null())),
+      description: v.optional(v.union(v.string(), v.null())),
+      location: v.optional(v.union(v.string(), v.null())),
+      allDay: v.optional(v.boolean()),
+    }),
   },
   handler: async (ctx, args) => {
     const item = await ctx.db.get(args.id)
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const actorId = membership?.userId ?? (await ensureUser(ctx))
+    const now = Date.now()
 
-    await ctx.db.patch(args.id, {
-      name: args.name,
-      updatedAt: Date.now(),
-    })
+    const { patch } = args
+
+    const nextStartsAt: number = patch.startsAt ?? item.startsAt
+    const nextEndsAt: number | null =
+      patch.endsAt === undefined ? item.endsAt ?? null : patch.endsAt
+
+    if (nextEndsAt !== null && nextEndsAt < nextStartsAt) {
+      throw new Error("Event end time must be after start time")
+    }
+
+    const updates: any = {
+      updatedAt: now,
+      updatedBy: actorId,
+    }
+
+    if (patch.title !== undefined) updates.title = patch.title
+    if (patch.startsAt !== undefined) updates.startsAt = patch.startsAt
+    if (patch.endsAt !== undefined) updates.endsAt = patch.endsAt === null ? undefined : patch.endsAt
+    if (patch.description !== undefined) updates.description = patch.description === null ? undefined : patch.description
+    if (patch.location !== undefined) updates.location = patch.location === null ? undefined : patch.location
+    if (patch.allDay !== undefined) updates.allDay = patch.allDay
+
+    await ctx.db.patch(args.id, updates)
 
     return args.id
   },

@@ -112,14 +112,6 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/archived/page")),
   },
   {
-    id: "profile",
-    componentId: "ProfilePage",
-    title: "Profile",
-    description: "User profile",
-    icon: User,
-    component: lazy(() => import("@/frontend/views/static/profile/page")),
-  },
-  {
     id: "members",
     componentId: "MembersPage",
     title: "Members",
@@ -149,7 +141,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Databases",
     description: "Notion-style database views and management",
     icon: Database,
-    component: lazy(() => import("@/frontend/views/static/databases/page")),
+    component: lazy(() => import("@/frontend/features/database/page")),
   },
   {
     id: "canvas",
@@ -269,7 +261,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Workflows",
     description: "Workflow automation with bot assistant",
     icon: Workflow,
-    component: lazy(() => import("@/frontend/features/workflow/page")),
+    component: lazy(() => import("@/frontend/features/workflows/page")),
   }
 ]
 

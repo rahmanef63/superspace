@@ -1,238 +1,408 @@
 "use client"
 
-import React, { useState } from "react"
-import { useTasks } from "../hooks/useTasks"
+import React, { useMemo, useState } from "react"
+import type { Id } from "@convex/_generated/dataModel"
+import { toast } from "sonner"
+import {
+  CheckSquare,
+  Plus,
+  Calendar as CalendarIcon,
+  User,
+  Flag,
+  Trash2,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CheckSquare, Plus, Filter, Calendar, User, Flag } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import FeatureBadge from "@/frontend/shared/components/FeatureBadge"
-import FeatureNotReady from "@/frontend/shared/components/FeatureNotReady"
+import { useTasks } from "../hooks/useTasks"
+import type { Task, TaskPriority } from "../types"
 
-/**
- * Tasks Page Component
- * Task management and tracking
- */
-export default function TasksPage() {
-  const { isLoading, error } = useTasks()
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all')
+interface TasksPageProps {
+  workspaceId?: Id<"workspaces"> | null
+}
+
+const PRIORITY_OPTIONS: TaskPriority[] = ["low", "medium", "high"]
+
+const priorityBadgeVariant: Record<TaskPriority, string> = {
+  low: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  medium: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  high: "bg-red-500/10 text-red-600 dark:text-red-400",
+}
+
+const statusBadgeVariant: Record<Task["status"], string> = {
+  todo: "bg-slate-500/10 text-slate-600 dark:text-slate-300",
+  in_progress: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+}
+
+const formatDate = (timestamp: number | null | undefined) => {
+  if (!timestamp) return "No due date"
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
+const isOverdue = (task: Task) => {
+  if (task.dueDate == null) return false
+  if (task.status === "completed") return false
+  return task.dueDate < Date.now()
+}
+
+const NEW_TASK_DEFAULT_STATE = {
+  title: "",
+  description: "",
+  priority: "medium" as TaskPriority,
+  dueDate: "",
+}
+
+export default function TasksPage({ workspaceId }: TasksPageProps) {
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "completed">("all")
+  const [newTask, setNewTask] = useState(NEW_TASK_DEFAULT_STATE)
+
+  const {
+    tasks,
+    stats,
+    isLoading,
+    error,
+    isCreating,
+    isUpdating,
+    isRemoving,
+    createTask,
+    updateTask,
+    deleteTask,
+  } = useTasks(workspaceId)
+
+  const filteredTasks = useMemo(() => {
+    switch (filterStatus) {
+      case "active":
+        return tasks.filter((task) => task.status !== "completed")
+      case "completed":
+        return tasks.filter((task) => task.status === "completed")
+      default:
+        return tasks
+    }
+  }, [filterStatus, tasks])
+
+  if (!workspaceId) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">No Workspace Selected</h2>
+          <p className="mt-2 text-muted-foreground">
+            Select a workspace to start managing tasks.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground">Loading tasks...</div>
       </div>
     )
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-destructive">Error: {error.message}</div>
-      </div>
-    )
-  }
+  const handleCreateTask = async () => {
+    const title = newTask.title.trim()
+    if (!title) {
+      toast.error("Task title is required")
+      return
+    }
 
-  // Mock tasks for demo
-  const mockTasks = [
-    {
-      id: "1",
-      title: "Implement user authentication",
-      description: "Add OAuth and SSO support",
-      status: "in_progress",
-      priority: "high",
-      assignee: "John Doe",
-      dueDate: "2025-01-25",
-      completed: false
-    },
-    {
-      id: "2",
-      title: "Design landing page",
-      description: "Create wireframes and mockups",
-      status: "completed",
-      priority: "medium",
-      assignee: "Jane Smith",
-      dueDate: "2025-01-20",
-      completed: true
-    },
-    {
-      id: "3",
-      title: "Write API documentation",
-      description: "Document all endpoints",
-      status: "todo",
-      priority: "low",
-      assignee: "Bob Johnson",
-      dueDate: "2025-02-01",
-      completed: false
-    },
-  ]
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-500'
-      case 'medium': return 'text-yellow-500'
-      case 'low': return 'text-blue-500'
-      default: return 'text-gray-500'
+    try {
+      const dueDate = newTask.dueDate ? new Date(`${newTask.dueDate}T00:00:00`).getTime() : null
+      await createTask({
+        title,
+        description: newTask.description.trim() || undefined,
+        priority: newTask.priority,
+        dueDate: dueDate ?? undefined,
+      })
+      toast.success("Task created")
+      setNewTask(NEW_TASK_DEFAULT_STATE)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create task")
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed': return <Badge className="bg-green-500">Completed</Badge>
-      case 'in_progress': return <Badge className="bg-blue-500">In Progress</Badge>
-      case 'todo': return <Badge variant="outline">To Do</Badge>
-      default: return <Badge variant="outline">{status}</Badge>
+  const handleToggleStatus = async (task: Task) => {
+    const nextStatus = task.status === "completed" ? "todo" : "completed"
+    try {
+      await updateTask(task.id, { status: nextStatus })
+      toast.success(nextStatus === "completed" ? "Task completed" : "Task reopened")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to update task status")
+    }
+  }
+
+  const handleDeleteTask = async (task: Task) => {
+    const confirmed = window.confirm(`Delete "${task.title}"?`)
+    if (!confirmed) return
+
+    try {
+      await deleteTask(task.id)
+      toast.success("Task deleted")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to delete task")
     }
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
+    <div className="flex h-full flex-col">
       <div className="border-b bg-background p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CheckSquare className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-3xl font-bold">Tasks</h1>
               <p className="text-sm text-muted-foreground">
-                Task management and project tracking
+                Track work, manage owners, and stay ahead of deadlines.
               </p>
             </div>
           </div>
-          <FeatureBadge status="development" />
+          <FeatureBadge status="beta" />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button
-              variant={filterStatus === 'all' ? 'secondary' : 'outline'}
+              variant={filterStatus === "all" ? "secondary" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus('all')}
+              onClick={() => setFilterStatus("all")}
             >
-              All Tasks
+              All
             </Button>
             <Button
-              variant={filterStatus === 'active' ? 'secondary' : 'outline'}
+              variant={filterStatus === "active" ? "secondary" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus('active')}
+              onClick={() => setFilterStatus("active")}
             >
               Active
             </Button>
             <Button
-              variant={filterStatus === 'completed' ? 'secondary' : 'outline'}
+              variant={filterStatus === "completed" ? "secondary" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus('completed')}
+              onClick={() => setFilterStatus("completed")}
             >
               Completed
             </Button>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" disabled>
-              <Filter className="h-4 w-4" />
-            </Button>
-            <Button disabled>
+            <Button
+              onClick={handleCreateTask}
+              disabled={isCreating}
+            >
               <Plus className="mr-2 h-4 w-4" />
-              New Task
+              {isCreating ? "Creating..." : "Create Task"}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <FeatureNotReady
-          featureName="Tasks"
-          featureSlug="tasks"
-          status="development"
-          message="The task management feature is currently in development. Coming soon with task creation and assignment, project boards and kanban views, task dependencies and subtasks, time tracking and estimates, team collaboration, and progress reports and analytics."
-          expectedRelease="Q2 2025"
-        />
+        {error ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Something went wrong</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
+        ) : null}
 
-        {/* Preview UI */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Preview: Task List</h3>
+        <div className="grid gap-4 pb-6 md:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{stats.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Completed
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold text-emerald-500">{stats.completed}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Overdue
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold text-red-500">{stats.overdue}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Create a task</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <Label htmlFor="task-title">Title</Label>
+              <Input
+                id="task-title"
+                value={newTask.title}
+                onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
+                placeholder="e.g. Follow up with new customer leads"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="task-description">Description</Label>
+              <Textarea
+                id="task-description"
+                value={newTask.description}
+                rows={3}
+                onChange={(event) =>
+                  setNewTask((prev) => ({ ...prev, description: event.target.value }))
+                }
+                placeholder="Add more context, checklist, or links"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Priority</Label>
+              <Select
+                value={newTask.priority}
+                onValueChange={(value: TaskPriority) =>
+                  setNewTask((prev) => ({ ...prev, priority: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option === "low" && "Low"}
+                      {option === "medium" && "Medium"}
+                      {option === "high" && "High"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="task-due-date">Due date</Label>
+              <Input
+                id="task-due-date"
+                type="date"
+                value={newTask.dueDate}
+                onChange={(event) =>
+                  setNewTask((prev) => ({ ...prev, dueDate: event.target.value }))
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {filteredTasks.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+            <h3 className="text-lg font-semibold text-foreground">No tasks yet</h3>
+            <p className="mt-2 text-sm">
+              Create your first task to keep the team aligned.
+            </p>
+          </div>
+        ) : (
           <div className="space-y-3">
-            {mockTasks.map((task) => (
-              <Card key={task.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <Checkbox
-                      checked={task.completed}
-                      disabled
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h4 className={`font-semibold mb-1 ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+            {filteredTasks.map((task) => {
+              const overdue = isOverdue(task)
+
+              return (
+                <Card
+                  key={task.id}
+                  className={overdue ? "border-red-500/40" : undefined}
+                >
+                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-1 gap-4">
+                      <Checkbox
+                        checked={task.status === "completed"}
+                        onCheckedChange={() => handleToggleStatus(task)}
+                        disabled={isUpdating}
+                        className="mt-1 shrink-0"
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h4
+                            className={`text-base font-semibold ${
+                              task.status === "completed"
+                                ? "text-muted-foreground line-through"
+                                : ""
+                            }`}
+                          >
                             {task.title}
                           </h4>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {task.description}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              {task.assignee}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(task.dueDate).toLocaleDateString()}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Flag className={`h-4 w-4 ${getPriorityColor(task.priority)}`} />
-                              <span className="capitalize">{task.priority}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(task.status)}
-                          <Badge variant="outline" className="opacity-50">
-                            Preview
+                          <Badge className={statusBadgeVariant[task.status]}>
+                            {task.status === "in_progress" ? "In Progress" : task.status === "todo" ? "To Do" : "Completed"}
                           </Badge>
+                          <Badge className={priorityBadgeVariant[task.priority]}>
+                            Priority: {task.priority}
+                          </Badge>
+                          {overdue ? (
+                            <Badge variant="destructive">Overdue</Badge>
+                          ) : null}
+                        </div>
+                        {task.description ? (
+                          <p className="text-sm text-muted-foreground">{task.description}</p>
+                        ) : null}
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="h-4 w-4" />
+                            {formatDate(task.dueDate ?? null)}
+                          </span>
+                          {task.assigneeId ? (
+                            <span className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
+                              Assigned
+                            </span>
+                          ) : null}
+                          <span className="flex items-center gap-1">
+                            <Flag className="h-4 w-4" />
+                            Updated {formatDate(task.updatedAt)}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteTask(task)}
+                        disabled={isRemoving}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete task</span>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
-
-          {/* Stats Preview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{mockTasks.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-500">
-                  {mockTasks.filter(t => t.completed).length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-500">
-                  {mockTasks.filter(t => t.status === 'in_progress').length}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

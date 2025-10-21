@@ -2,7 +2,7 @@ import { coreTables } from "./core/api/schema";
 import { menuTables } from "./menus/api/schema";
 import { chatTables } from "./chat/api/schema";
 import { docsTables } from "./docs/api/schema";
-import { databaseTables } from "./db/api/schema";
+import { databaseTables } from "./database/api/schema";
 import { projectTables } from "./projects/api/schema";
 import { crmTables } from "./crm/api/schema";
 import { supportTables } from "./support/api/schema";

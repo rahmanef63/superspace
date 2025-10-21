@@ -15,11 +15,17 @@ export const list = query({
     // Require active membership
     await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
     const items = await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect()
+
+    items.sort((a, b) => {
+      if (a.dueDate && b.dueDate) return a.dueDate - b.dueDate
+      if (a.dueDate) return -1
+      if (b.dueDate) return 1
+      return b.createdAt - a.createdAt
+    })
 
     return items
   },

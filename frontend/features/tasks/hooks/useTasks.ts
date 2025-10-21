@@ -1,28 +1,152 @@
-import { useState, useEffect } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import type { Id } from "@convex/_generated/dataModel"
+import type {
+  CreateTaskInput,
+  Task,
+  TaskPriority,
+  TaskStats,
+  TaskStatus,
+  UpdateTaskInput,
+} from "../types"
 
 /**
  * Tasks Hook
  *
  * Provides data and actions for the tasks feature.
  */
-export function useTasks() {
-  const [isLoading, setIsLoading] = useState(true)
+export function useTasks(workspaceId?: Id<"workspaces"> | null) {
   const [error, setError] = useState<Error | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
 
-  // TODO: Replace with actual Convex queries
-  // const data = useQuery(api.features.tasks.queries.list)
+  const tasksQuery = useQuery(
+    api.features.tasks.queries.list,
+    workspaceId ? { workspaceId } : "skip",
+  )
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 500)
-    return () => clearTimeout(timer)
-  }, [])
+  const createTaskMutation = useMutation(api.features.tasks.mutations.create as any)
+  const updateTaskMutation = useMutation(api.features.tasks.mutations.update as any)
+  const removeTaskMutation = useMutation(api.features.tasks.mutations.remove as any)
+
+  const isLoading = workspaceId ? tasksQuery === undefined : false
+
+  const tasks = useMemo<Task[]>(() => {
+    if (!tasksQuery) return []
+    return tasksQuery.map((task) => ({
+      id: task._id,
+      workspaceId: task.workspaceId,
+      title: task.title,
+      description: task.description ?? null,
+      status: task.status as TaskStatus,
+      priority: task.priority as TaskPriority,
+      dueDate: task.dueDate ?? null,
+      assigneeId: task.assigneeId ?? null,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      completedAt: task.completedAt ?? null,
+    }))
+  }, [tasksQuery])
+
+  const stats = useMemo<TaskStats>(() => {
+    const now = Date.now()
+    const total = tasks.length
+    const completed = tasks.filter((task) => task.status === "completed").length
+    const inProgress = tasks.filter((task) => task.status === "in_progress").length
+    const todo = tasks.filter((task) => task.status === "todo").length
+    const overdue = tasks.filter((task) => task.dueDate != null && task.dueDate < now && task.status !== "completed")
+      .length
+
+    return { total, completed, inProgress, todo, overdue }
+  }, [tasks])
+
+  const createTask = useCallback(
+    async (input: CreateTaskInput) => {
+      if (!workspaceId) throw new Error("Workspace is required to create a task")
+
+      setIsCreating(true)
+      setError(null)
+
+      try {
+        const payload: any = {
+          workspaceId,
+          title: input.title,
+        }
+        if (input.description !== undefined) payload.description = input.description
+        if (input.priority !== undefined) payload.priority = input.priority
+        if (input.status !== undefined) payload.status = input.status
+        if (input.dueDate !== undefined && input.dueDate !== null) payload.dueDate = input.dueDate
+        if (input.assigneeId !== undefined && input.assigneeId !== null) {
+          payload.assigneeId = input.assigneeId
+        }
+
+        await createTaskMutation(payload)
+      } catch (err) {
+        setError(err as Error)
+        throw err
+      } finally {
+        setIsCreating(false)
+      }
+    },
+    [workspaceId, createTaskMutation],
+  )
+
+  const updateTask = useCallback(
+    async (taskId: Id<"tasks">, patch: UpdateTaskInput) => {
+      setIsUpdating(true)
+      setError(null)
+
+      try {
+        const payload: any = { id: taskId, patch: {} }
+
+        if (patch.title !== undefined) payload.patch.title = patch.title
+        if (patch.description !== undefined) payload.patch.description = patch.description
+        if (patch.status !== undefined) payload.patch.status = patch.status
+        if (patch.priority !== undefined) payload.patch.priority = patch.priority
+        if (patch.dueDate !== undefined) payload.patch.dueDate = patch.dueDate
+        if (patch.assigneeId !== undefined) payload.patch.assigneeId = patch.assigneeId
+
+        await updateTaskMutation(payload)
+      } catch (err) {
+        setError(err as Error)
+        throw err
+      } finally {
+        setIsUpdating(false)
+      }
+    },
+    [updateTaskMutation],
+  )
+
+  const deleteTask = useCallback(
+    async (taskId: Id<"tasks">) => {
+      setIsRemoving(true)
+      setError(null)
+
+      try {
+        await removeTaskMutation({ id: taskId })
+      } catch (err) {
+        setError(err as Error)
+        throw err
+      } finally {
+        setIsRemoving(false)
+      }
+    },
+    [removeTaskMutation],
+  )
 
   return {
+    tasks,
+    stats,
     isLoading,
     error,
-    // Add your data and mutations here
+    isCreating,
+    isUpdating,
+    isRemoving,
+    createTask,
+    updateTask,
+    deleteTask,
+    hasWorkspace: Boolean(workspaceId),
   }
 }

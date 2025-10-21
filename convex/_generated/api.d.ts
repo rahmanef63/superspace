@@ -22,6 +22,10 @@ import type * as features_comments_queries from "../features/comments/queries.js
 import type * as features_crm_index from "../features/crm/index.js";
 import type * as features_crm_mutations from "../features/crm/mutations.js";
 import type * as features_crm_queries from "../features/crm/queries.js";
+import type * as features_database_databases from "../features/database/databases.js";
+import type * as features_database_index from "../features/database/index.js";
+import type * as features_database_mutations from "../features/database/mutations.js";
+import type * as features_database_queries from "../features/database/queries.js";
 import type * as features_db_fields from "../features/db/fields.js";
 import type * as features_db_rows from "../features/db/rows.js";
 import type * as features_db_tables from "../features/db/tables.js";
@@ -53,7 +57,6 @@ import type * as menu_chat_conversations from "../menu/chat/conversations.js";
 import type * as menu_chat_messageReactions from "../menu/chat/messageReactions.js";
 import type * as menu_chat_messages from "../menu/chat/messages.js";
 import type * as menu_cms_canvas from "../menu/cms/canvas.js";
-import type * as menu_database_databases from "../menu/database/databases.js";
 import type * as menu_page_documents from "../menu/page/documents.js";
 import type * as menu_page_presence from "../menu/page/presence.js";
 import type * as menu_page_prosemirror from "../menu/page/prosemirror.js";
@@ -110,6 +113,10 @@ declare const fullApi: ApiFromModules<{
   "features/crm/index": typeof features_crm_index;
   "features/crm/mutations": typeof features_crm_mutations;
   "features/crm/queries": typeof features_crm_queries;
+  "features/database/databases": typeof features_database_databases;
+  "features/database/index": typeof features_database_index;
+  "features/database/mutations": typeof features_database_mutations;
+  "features/database/queries": typeof features_database_queries;
   "features/db/fields": typeof features_db_fields;
   "features/db/rows": typeof features_db_rows;
   "features/db/tables": typeof features_db_tables;
@@ -141,7 +148,6 @@ declare const fullApi: ApiFromModules<{
   "menu/chat/messageReactions": typeof menu_chat_messageReactions;
   "menu/chat/messages": typeof menu_chat_messages;
   "menu/cms/canvas": typeof menu_cms_canvas;
-  "menu/database/databases": typeof menu_database_databases;
   "menu/page/documents": typeof menu_page_documents;
   "menu/page/presence": typeof menu_page_presence;
   "menu/page/prosemirror": typeof menu_page_prosemirror;

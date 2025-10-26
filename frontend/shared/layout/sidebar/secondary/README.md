@@ -15,7 +15,7 @@ frontend/shared/layout/secondary-sidebar/
 └── README.md                         # This file
 ```
 
-## 🎯 Components
+##  Components
 
 ### 1. SecondarySidebarLayout
 
@@ -377,7 +377,7 @@ export default function MenuStorePage() {
 </SecondarySidebarLayout>
 ```
 
-## 🎯 Best Practices
+##  Best Practices
 
 1. **Use headerProps/sidebarProps** when possible - easier than custom components
 2. **Consistent spacing** - Use p-6 for main content padding

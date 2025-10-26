@@ -333,7 +333,7 @@ Each feature imports and configures:
 
 ```typescript
 // features/support/SupportChat.tsx
-import { ChatContainer } from "@/shared/chat";
+import { ChatContainer } from "@/frontend/shared/chat";
 
 export function SupportChat({ ticketId }) {
   return (

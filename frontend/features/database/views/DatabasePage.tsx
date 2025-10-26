@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import {
   DatabaseShell,
@@ -78,15 +78,21 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
   const { record, viewModel, mapping, isLoading } = useDatabaseRecord(selectedTableId);
   const {
     updateRow,
+    deleteRow,
     setDefaultView,
     updateTable,
     deleteTable,
     duplicateTable,
     createField,
     createRow,
+    updateField,
+    deleteField,
+    reorderField,
+    updateView,
   } = useDatabaseMutations();
 
   const tableIdRef = useRef<string | null>(null);
+  const columnSizingUpdateRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const defaultViewType = useMemo<DatabaseViewType>(() => {
     if (!record) {
@@ -244,6 +250,224 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
   const handleImport = () => {
     toast.info("Import support is in progress.");
   };
+
+  useEffect(
+    () => () => {
+      if (columnSizingUpdateRef.current) {
+        clearTimeout(columnSizingUpdateRef.current);
+      }
+    },
+    [],
+  );
+
+  const handleColumnSizingChange = useCallback(
+    (sizes: Record<string, number>) => {
+      if (!activeDbView) {
+        return;
+      }
+
+      const nextFieldWidths = Object.entries(sizes).reduce<Record<string, number>>(
+        (accumulator, [key, value]) => {
+          if (key === "propertyActions" || key === "rowActions") {
+            return accumulator;
+          }
+
+          if (Number.isFinite(value)) {
+            accumulator[key] = Math.max(80, Math.round(value));
+          }
+          return accumulator;
+        },
+        {},
+      );
+
+      const viewId = activeDbView._id;
+      const nextSettings = {
+        ...activeDbView.settings,
+        fieldWidths: nextFieldWidths,
+      };
+
+      if (columnSizingUpdateRef.current) {
+        clearTimeout(columnSizingUpdateRef.current);
+      }
+
+      columnSizingUpdateRef.current = setTimeout(() => {
+        updateView({
+          id: viewId,
+          settings: nextSettings,
+        }).catch((error) => {
+          console.error("[DatabasePage] Failed to persist column widths", error);
+        });
+      }, 250);
+    },
+    [activeDbView, updateView],
+  );
+
+  const handleUpdateCell = useCallback(
+    async (
+      rowId: DatabaseFeature["id"],
+      updates: Record<string, unknown>,
+    ) => {
+      try {
+        await updateRow({
+          id: rowId,
+          data: updates,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to update row.";
+        toast.error(message);
+      }
+    },
+    [updateRow],
+  );
+
+  const handleDeleteRow = useCallback(
+    async (rowId: DatabaseFeature["id"]) => {
+      try {
+        await deleteRow({ id: rowId });
+        toast.success("Row deleted.");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to delete row.";
+        toast.error(message);
+      }
+    },
+    [deleteRow],
+  );
+
+  const handleRenameField = useCallback(
+    async (fieldId: string, name: string) => {
+      try {
+        await updateField({
+          id: fieldId as Id<"dbFields">,
+          name,
+        });
+        toast.success("Property renamed.");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to rename property.";
+        toast.error(message);
+      }
+    },
+    [updateField],
+  );
+
+  const handleToggleFieldRequired = useCallback(
+    async (fieldId: string, required: boolean) => {
+      try {
+        await updateField({
+          id: fieldId as Id<"dbFields">,
+          isRequired: required,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to update property.";
+        toast.error(message);
+      }
+    },
+    [updateField],
+  );
+
+  const handleDeleteField = useCallback(
+    async (fieldId: string) => {
+      try {
+        await deleteField({ id: fieldId as Id<"dbFields"> });
+        toast.success("Property deleted.");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to delete property.";
+        toast.error(message);
+      }
+    },
+    [deleteField],
+  );
+
+  const handleToggleFieldVisibility = useCallback(
+    async (fieldId: string, visible: boolean) => {
+      if (!record || !activeDbView) {
+        return;
+      }
+
+      const visibleSet = new Set(
+        (activeDbView.settings.visibleFields ?? []).map((id) => String(id)),
+      );
+
+      if (visible) {
+        visibleSet.add(fieldId);
+      } else {
+        visibleSet.delete(fieldId);
+      }
+
+      const orderedFields = [...record.fields].sort(
+        (a, b) => (a.position ?? 0) - (b.position ?? 0),
+      );
+
+      const nextVisible = orderedFields
+        .filter((field) => visibleSet.has(String(field._id)))
+        .map((field) => field._id);
+
+      try {
+        await updateView({
+          id: activeDbView._id,
+          settings: {
+            ...activeDbView.settings,
+            visibleFields: nextVisible,
+          },
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to update property visibility.";
+        toast.error(message);
+      }
+    },
+    [activeDbView, record, updateView],
+  );
+
+  const handleReorderFields = useCallback(
+    async (orderedIds: string[]) => {
+      if (!record || !activeDbView) {
+        return;
+      }
+
+      const orderedVisible = orderedIds
+        .map((id) => record.fields.find((field) => String(field._id) === id))
+        .filter((field): field is (typeof record.fields)[number] => Boolean(field));
+
+      const hidden = record.fields
+        .filter((field) => !orderedIds.includes(String(field._id)))
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+      const nextOrdering = [...orderedVisible, ...hidden];
+
+      try {
+        await Promise.all(
+          nextOrdering.map((field, index) =>
+            reorderField({
+              fieldId: field._id,
+              newPosition: index,
+            }),
+          ),
+        );
+
+        await updateView({
+          id: activeDbView._id,
+          settings: {
+            ...activeDbView.settings,
+            visibleFields: orderedVisible.map((field) => field._id),
+          },
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to reorder properties.";
+        toast.error(message);
+      }
+    },
+    [activeDbView, record, reorderField, updateView],
+  );
 
   const handleRenameTable = async (table: DatabaseTable) => {
     const currentName = table.name || "Untitled database";
@@ -491,6 +715,14 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
             activeView={activeDbView}
             onAddProperty={handleAddProperty}
             onAddRow={handleAddRow}
+            onUpdateCell={handleUpdateCell}
+            onDeleteRow={handleDeleteRow}
+            onRenameField={handleRenameField}
+            onToggleFieldRequired={handleToggleFieldRequired}
+            onDeleteField={handleDeleteField}
+            onToggleFieldVisibility={handleToggleFieldVisibility}
+            onReorderFields={handleReorderFields}
+            onColumnSizingChange={handleColumnSizingChange}
           />
         );
         break;

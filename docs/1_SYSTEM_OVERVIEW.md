@@ -6,16 +6,21 @@
 
 ## 🏗️ Arsitektur Sistem
 
-SuperSpace menggunakan **Feature Package System** dengan **Single Source of Truth** di `features.config.ts`.
+SuperSpace menggunakan **Truly Modular Feature System** dengan **Auto-Discovery** untuk zero-config feature management.
+
+### ✨ New Architecture (Auto-Discovery System)
+
+**Status:** ✅ **IMPLEMENTED** - Sistem baru sudah aktif dan production-ready!
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│              features.config.ts                      │
-│          (Single Source of Truth)                    │
+│     frontend/features/*/config.ts                    │
+│     (Per-feature config - Auto-discovered!)          │
 └─────────────────────┬────────────────────────────────┘
                       │
          ┌────────────┴─────────────┐
-         │    pnpm run sync:all     │
+         │ lib/features/registry.ts │
+         │   (Auto-discovery)       │
          └────────────┬─────────────┘
                       │
       ┌───────────────┴───────────────┐
@@ -36,22 +41,186 @@ SuperSpace menggunakan **Feature Package System** dengan **Single Source of Trut
             └────────────────────┘
 ```
 
+### 🎯 Key Benefits
+
+**✅ 100% Modular**
+- Each feature is completely self-contained in its own folder
+- Add feature = create `config.ts` in feature folder (that's it!)
+- No need to edit central files
+
+**✅ Zero Manual Registration**
+- Auto-discovery via `import.meta.glob` (browser) and `glob` (Node scripts)
+- Add 29 features discovered automatically
+- No imports, no manual config
+
+**✅ Type-Safe & Validated**
+- Single schema via `defineFeature()` helper
+- Zod validation for runtime safety
+- TypeScript for compile-time safety
+
+**✅ DRY (Don't Repeat Yourself)**
+- No duplication between files
+- Single source of truth per feature
+- Auto-generated aggregations
+
 ### Komponen Utama
 
-1. **`features.config.ts`**
-   - Definisi semua fitur (default & optional)
-   - Metadata lengkap (name, slug, icon, permissions, dll)
-   - Satu-satunya file yang perlu diedit manual
+#### 1. **Feature Config (Per Feature)**
 
-2. **Scripts Auto-Generation**
-   - `sync-features.ts` → Generate Convex manifests
-   - `generate-manifest.ts` → Generate React component registry
-   - `sync:all` → Jalankan keduanya sekaligus
+Each feature has `frontend/features/{slug}/config.ts`:
 
-3. **Feature Packages**
-   - Frontend: `frontend/features/{default|optional}/{slug}/`
-   - Backend: `convex/features/{slug}/`
-   - Tests: `tests/features/{slug}/`
+```typescript
+import { defineFeature } from '@/lib/features/defineFeature'
+
+export default defineFeature({
+  // Basic Info
+  id: 'cms',
+  name: 'CMS Builder',
+  description: 'Build and manage your content',
+
+  // UI Config
+  ui: {
+    icon: 'Layout',              // Lucide React icon
+    path: '/dashboard/cms',
+    component: 'CMSBuilderPage',
+    category: 'creativity',
+    order: 20,
+  },
+
+  // Technical Config
+  technical: {
+    featureType: 'optional',
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+
+  // Development Status
+  status: {
+    state: 'stable',
+    isReady: true,
+  },
+
+  // Optional: Permissions, tags, children
+  permissions: ['schemas.create', 'schemas.update'],
+  tags: ['cms', 'content', 'builder'],
+})
+```
+
+#### 2. **Auto-Discovery System**
+
+`lib/features/registry.ts` automatically discovers all feature configs:
+
+```typescript
+// Browser (Vite)
+const featureModules = import.meta.glob(
+  '../../frontend/features/*/config.ts',
+  { eager: true }
+)
+
+// Node Scripts (tsx)
+const configFiles = glob.sync('frontend/features/*/config.ts')
+
+export const FEATURES = Object.values(featureModules)
+  .map(m => m.default)
+  .sort((a, b) => a.ui.order - b.ui.order)
+```
+
+**✨ Result:** 29 features auto-discovered! No manual maintenance needed.
+
+#### 3. **Scripts (Reorganized)**
+
+All scripts now organized by purpose in `scripts/`:
+
+```
+scripts/
+├── build/          # Build and dev tools
+├── features/       # Feature management (scaffold, sync, generate)
+│   ├── scaffold.ts
+│   ├── sync.ts
+│   ├── generate-manifest.ts
+│   └── test-registry.ts
+├── validation/     # All validation scripts
+├── migration/      # Migration scripts
+└── health/         # Health checks
+```
+
+**Commands:**
+- `pnpm run scaffold:feature {slug}` → Create new feature
+- `pnpm run sync:all` → Sync features + generate manifest
+- `pnpm run test:registry` → Test auto-discovery system
+- `pnpm run validate:all` → Validate all schemas
+
+See [scripts/README.md](../scripts/README.md) for full documentation.
+
+#### 4. **Migration Status**
+
+| Aspect | Old System | New System | Status |
+|--------|-----------|------------|--------|
+| **Config Location** | `features.config.ts` (root) | `frontend/features/*/config.ts` | ✅ Migrated |
+| **Discovery** | Manual editing | Auto-discovery | ✅ Active |
+| **Lines of Code** | 933 lines | 230 lines | ✅ 75% reduction |
+| **Features** | 29 features | 29 features | ✅ All migrated |
+| **Maintenance** | Manual | Zero | ✅ Automated |
+
+**Backward Compatibility:** `features.config.ts` still exists but is now DEPRECATED. All new features should use the per-feature `config.ts` approach.
+
+### 📦 Adding a New Feature (1 Step!)
+
+**Old Way (DEPRECATED):**
+1. ❌ Edit `features.config.ts` (add 50+ lines)
+2. ❌ Edit `manifest.config.ts` (add import)
+3. ❌ Create `manifest.ts` in feature folder
+4. ❌ Run sync scripts
+
+**New Way (CURRENT):**
+1. ✅ Create `frontend/features/{slug}/config.ts`
+2. ✅ Run `pnpm run sync:all`
+3. ✅ **DONE!** Auto-discovered and integrated!
+
+**Example:**
+```bash
+# Create feature folder
+mkdir -p frontend/features/analytics
+
+# Create config.ts
+cat > frontend/features/analytics/config.ts << 'EOF'
+import { defineFeature } from '@/lib/features/defineFeature'
+
+export default defineFeature({
+  id: 'analytics',
+  name: 'Analytics',
+  description: 'Real-time analytics dashboard',
+
+  ui: {
+    icon: 'BarChart',
+    path: '/dashboard/analytics',
+    component: 'AnalyticsPage',
+    category: 'analytics',
+    order: 15,
+  },
+
+  technical: {
+    featureType: 'optional',
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+
+  status: {
+    state: 'stable',
+    isReady: true,
+  },
+})
+EOF
+
+# Sync - Done!
+pnpm run sync:all
+```
+
+That's it! No manual registration, no editing central files. ✨
 
 ---
 
@@ -195,7 +364,7 @@ See `frontend/shared/layout/secondary-sidebar/README.md` untuk dokumentasi lengk
 
 ---
 
-## 📊 Data Flow
+##  Data Flow
 
 ### Creating a Workspace
 
@@ -273,7 +442,7 @@ Feature appears in sidebar!
 
 ---
 
-## 🎯 Design Principles
+##  Design Principles
 
 1. **DRY (Don't Repeat Yourself)**
    - Single source of truth: `features.config.ts`
@@ -301,50 +470,79 @@ Feature appears in sidebar!
 
 ---
 
-## 📁 Folder Structure (Recommended)
+## 📁 Folder Structure (Current)
 
 ```
 frontend/
-├── features/
-│   ├── default/              # Core features (always installed)
-│   │   ├── overview/
-│   │   ├── chat/
-│   │   ├── members/
-│   │   ├── friends/
-│   │   ├── pages/
-│   │   ├── databases/
-│   │   ├── canvas/
-│   │   ├── menus/
-│   │   ├── invitations/
-│   │   ├── profile/
-│   │   └── settings/
-│   │
-│   └── optional/             # Marketplace features
-│       ├── chat/
-│       ├── documents/
-│       ├── calendar/
-│       ├── reports/
-│       ├── tasks/
-│       └── wiki/
+├── features/                 # ✨ All features (flat structure, auto-discovered)
+│   ├── overview/
+│   │   ├── config.ts        # ⭐ Feature config (SSOT)
+│   │   ├── OverviewPage.tsx
+│   │   └── ...
+│   ├── chat/
+│   │   ├── config.ts        # ⭐ Feature config (SSOT)
+│   │   └── ...
+│   ├── analytics/
+│   │   ├── config.ts        # ⭐ Feature config (SSOT)
+│   │   └── ...
+│   └── ...                   # 29 features total
 │
-└── shared/                   # Shared utilities only
-    ├── components/           # Button, Modal, etc.
-    ├── hooks/                # useAuth, useWorkspace
-    ├── utils/
-    └── pages/
-        └── manifest.tsx      # Auto-generated
+├── shared/                   # Shared utilities only
+│   ├── components/           # Button, Modal, etc.
+│   ├── hooks/                # useAuth, useWorkspace
+│   ├── layout/               # Layout components
+│   │   ├── sidebar/
+│   │   ├── secondary-sidebar/
+│   │   └── menus/
+│   ├── utils/
+│   └── manifest/             # Auto-generated manifests
+│       └── registry.tsx      # Generated from configs
+│
+├── lib/
+│   └── features/             # ✨ Feature system core
+│       ├── defineFeature.ts  # Type-safe feature helper
+│       ├── registry.ts       # Auto-discovery (browser)
+│       └── registry.server.ts # Auto-discovery (Node)
+│
+└── views/
+    └── manifest.tsx          # Auto-generated
 
 convex/
 ├── features/                 # Mirror frontend structure
 │   ├── overview/
 │   ├── chat/
-│   ├── documents/
+│   ├── analytics/
 │   └── ...
 │
 └── menu/store/
     ├── menu_manifest_data.ts         # Auto-generated
     └── optional_features_catalog.ts  # Auto-generated
+
+scripts/                      # ✨ Reorganized scripts
+├── build/                    # Build and dev tools
+├── features/                 # Feature management
+│   ├── scaffold.ts
+│   ├── sync.ts
+│   ├── generate-manifest.ts
+│   └── test-registry.ts
+├── validation/               # All validation scripts
+├── migration/                # Migration scripts
+└── health/                   # Health checks
+
+docs/                         # Documentation
+├── 1_SYSTEM_OVERVIEW.md      # This file!
+├── 2_DEVELOPER_GUIDE.md
+├── 3_AI_KNOWLEDGE_BASE.md
+├── 4_TROUBLESHOOTING.md
+├── 5_FEATURE_REFERENCE.md
+└── architecture/             # Additional architecture docs
 ```
+
+**Key Changes:**
+- ✨ **Flat feature structure** - No more `default/` and `optional/` subfolders
+- ⭐ **Per-feature config.ts** - Single source of truth for each feature
+- 🎯 **Auto-discovery** - `lib/features/registry.ts` finds all configs
+- 📦 **Organized scripts** - Categorized by purpose in subfolders
 
 ---
 

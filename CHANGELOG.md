@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Root cause: Hardcoded features list missing newly added optional features
   - See [MENU_STORE_FIX.md](./docs/MENU_STORE_FIX.md) for details
 
-### 🎉 Added (2025-01-18)
+###  Added (2025-01-18)
 - **Feature Status System** - Comprehensive development status tracking
   - `FeatureBadge` component - Visual status indicators (Dev, Beta, Stable, etc.)
   - `FeatureNotReady` component - Professional "under development" screens
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expected release dates displayed to users
   - Professional "coming soon" experience
 
-### 🎉 Added
+###  Added
 - **Health Check System** - Comprehensive workspace health monitoring
   - `convex/workspace/health.ts` - Health check queries and mutations
   - `scripts/check-workspace-health.ts` - CLI health check tool
@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed from `console.warn` to `console.error` for critical errors
   - Added recovery instructions in logs
 
-### 🚀 Improved
+###  Improved
 - **Error Recovery** - Multiple options for fixing broken workspaces
   - Via Convex Dashboard: `resetWorkspace` mutation
   - Via CLI: `pnpm run check:workspaces:fix`
@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2025-01-18
 
-### 🎉 Initial Release Features
+###  Initial Release Features
 
 #### Core Systems (83% Complete)
 - ✅ Feature Package System
@@ -107,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🚧 CI/CD Pipeline (Not tested)
 - 📋 TODO: E2E Tests
 
-### 📊 Stats
+###  Stats
 - **Total Features:** 39
 - **Completed:** 26 (67%)
 - **In Progress:** 3 (8%)
@@ -118,9 +118,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## How to Read This Changelog
 
 ### Emojis
-- 🎉 **Added** - New features
+-  **Added** - New features
 - 🔧 **Fixed** - Bug fixes
-- 🚀 **Improved** - Enhancements
+-  **Improved** - Enhancements
 - ⚠️ **Deprecated** - Soon-to-be removed features
 - 🔥 **Removed** - Removed features
 - 🔒 **Security** - Security fixes

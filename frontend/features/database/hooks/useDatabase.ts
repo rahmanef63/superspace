@@ -142,6 +142,9 @@ export function useDatabaseMutations() {
   const deleteField = useMutation(
     api.features.database.mutations.deleteField as any,
   );
+  const reorderField = useMutation(
+    api.features.database.mutations.reorderField as any,
+  );
 
   return {
     createTable,
@@ -158,5 +161,6 @@ export function useDatabaseMutations() {
     createField,
     updateField,
     deleteField,
+    reorderField,
   };
 }

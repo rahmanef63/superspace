@@ -613,35 +613,102 @@ const workspaceId = await ctx.runMutation(api.workspace.workspaces.createWorkspa
 ## Feature File Locations
 
 ```bash
-# Feature metadata (single source of truth)
-features.config.ts
+# Feature metadata (100% auto-discovered, NO MANUAL REGISTRATION!)
+frontend/features/{slug}/config.ts  # Single source of truth per feature
 
-# Auto-generated manifests
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+# Auto-generated from feature configs
+lib/features/registry.ts             # Auto-discovery system (browser)
+lib/features/registry.server.ts      # Auto-discovery system (Node.js)
+convex/menu/store/menu_manifest_data.ts  # Auto-synced from registry
+frontend/views/manifest.tsx          # Auto-generated component registry
 
 # Feature implementation
 frontend/features/{slug}/
 convex/features/{slug}/
 tests/features/{slug}/
 
-# Example: Documents feature
+# Example: Documents feature (100% self-contained)
 frontend/features/documents/
-  ├── index.ts
-  ├── views/DocumentsPage.tsx
-  ├── components/
-  ├── hooks/
-  └── api/
+  ├── config.ts                    # ⭐ Feature metadata (auto-discovered!)
+  ├── page.tsx                     # Main page component
+  ├── components/                  # Feature-specific components
+  ├── hooks/                       # Feature-specific hooks
+  └── api/                         # Frontend API adapters
 
 convex/features/documents/
   ├── index.ts
   ├── queries.ts
   ├── mutations.ts
+  ├── schema.ts                    # Feature-specific schema
 
 tests/features/documents/
   ├── documents.test.ts
   └── documents.integration.test.ts
 ```
+
+## Adding a New Feature (Zero Manual Registration!)
+
+```bash
+# Option 1: Use CRUD command (RECOMMENDED)
+pnpm run create:feature my-feature --type optional --category productivity
+
+# This auto-generates:
+# - frontend/features/my-feature/config.ts
+# - frontend/features/my-feature/page.tsx
+# - convex/features/my-feature/ (handlers)
+# - tests/features/my-feature/ (test files)
+
+# Option 2: Manual creation
+# 1. Create feature folder
+mkdir -p frontend/features/my-feature
+
+# 2. Create config.ts - THAT'S IT! Auto-discovered automatically!
+cat > frontend/features/my-feature/config.ts << 'EOF'
+import { defineFeature } from '@/lib/features/defineFeature'
+
+export default defineFeature({
+  id: 'my-feature',
+  name: 'My Feature',
+  description: 'Amazing new feature',
+
+  ui: {
+    icon: 'Sparkles',            // Lucide React icon name
+    path: '/dashboard/my-feature',
+    component: 'MyFeaturePage',
+    category: 'productivity',
+    order: 100,
+  },
+
+  technical: {
+    featureType: 'optional',
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+
+  status: {
+    state: 'stable',
+    isReady: true,
+  },
+
+  tags: ['awesome', 'new'],
+  permissions: ['MY_FEATURE_ACCESS'],  // Optional
+})
+EOF
+
+# 3. Run sync (auto-generates manifests)
+pnpm run sync:all
+
+# 4. Feature is now available! No manual imports needed!
+```
+
+## Icon Management
+
+All icons use **Lucide React** icons. You can:
+- Browse icons: https://lucide.dev/icons
+- Edit any menu icon using **IconsPicker** component at `frontend/shared/components/icons`
+- Icons are rendered dynamically - no imports needed
 
 ---
 
@@ -707,32 +774,35 @@ await installFeatureMenus({
 
 ---
 
-## Workspace Navigation Defaults
+## Workspace Navigation (100% Auto-Generated)
 
-The dashboard sidebar seeds the following slugs via `WORKSPACE_NAVIGATION_ITEMS`. Each slug must also exist in `frontend/views/manifest.tsx`.
+**WORKSPACE_NAVIGATION_ITEMS** is now 100% dynamically generated from feature configs!
 
-- `overview` → `OverviewPage`
-- `chats` → `ChatsPage`
-- `ai` → `AIPage`
-- `calls` → `CallsPage`
-- `status` → `StatusPage`
-- `starred` → `StarredPage`
-- `archived` → `ArchivedPage`
-- `documents` → `DocumentsPage`
-- `projects` → `ProjectsPage`
-- `reports` → `ReportsPage`
-- `support` → `SupportPage`
-- `crm` → `CRMPage`
-- `notifications` → `NotificationsPage`
-- `workflows` → `WorkflowsPage`
-- `members` → `MembersPage`
-- `friends` → `FriendsPage`
-- `menus` → `MenuStorePage` (feature in `frontend/features/menu-store/`, requires MANAGE_MENUS permission)
-- `invitations` → `InvitationsPage`
-- `user-settings` → `ProfilePage`
-- `workspace-settings` → `WorkspacesPage`
+### How It Works:
 
-Keep the list in sync with `tests/features/navigation-registry.test.ts` so regressions surface immediately.
+1. **Feature configs define navigation**:
+   - Each `frontend/features/{slug}/config.ts` defines UI metadata
+   - `ui.icon`, `ui.path`, `ui.order` control navigation appearance
+
+2. **Auto-generated at runtime**:
+   - `frontend/views/static/workspaces/constants/navigation.ts` reads from registry
+   - Filters features where `technical.hasUI = true` and `status.isReady = true`
+   - Sorts by `ui.order` field
+
+3. **Zero hardcoding**:
+   - No manual list of navigation items
+   - Add/remove features → navigation updates automatically
+   - Tests validate dynamically (no hardcoded expectations)
+
+### To modify navigation:
+
+```bash
+# Edit the feature's config.ts
+# Example: Change order of analytics feature
+pnpm run edit:feature analytics
+# Update ui.order field in config.ts
+# Navigation updates automatically!
+```
 
 ---
 
@@ -773,20 +843,86 @@ See the Developer Guide for migration steps and the AI Knowledge Base for adapte
 ## CLI Commands
 
 ```bash
-# List all features
-cat features.config.ts | grep "slug:"
+# ============================================================================
+# FEATURE CRUD OPERATIONS
+# ============================================================================
 
-# Sync features to manifests
+# Create new feature (auto-generates config.ts, frontend, convex, tests)
+pnpm run create:feature my-feature --type optional --category productivity
+
+# List all auto-discovered features
+pnpm run list:features
+pnpm run list:features --type optional
+pnpm run list:features --category analytics
+
+# Edit existing feature (with optional maintenance mode)
+pnpm run edit:feature my-feature
+pnpm run edit:feature my-feature --maintenance --backup
+
+# Delete feature (with optional archive)
+pnpm run delete:feature my-feature --confirm
+pnpm run delete:feature my-feature --archive --confirm
+
+# ============================================================================
+# SYNC AND VALIDATION
+# ============================================================================
+
+# Sync all feature configs to manifests
 pnpm run sync:all
+pnpm run sync:features
 
-# Validate features
+# Generate manifest.tsx from configs
+pnpm run generate:manifest
+
+# Validate all feature configs
 pnpm run validate:features
+pnpm run validate:pages
+pnpm run validate:all
 
-# Scaffold new feature
-pnpm run scaffold:feature my-feature --type optional --category productivity
+# ============================================================================
+# TESTING
+# ============================================================================
 
-# Check workspace health (includes feature installation status)
-pnpm run check:workspaces
+# Test auto-discovery system
+pnpm run test:registry
+
+# Run all tests
+pnpm test
+```
+
+## Migration from Old System
+
+If you have old features without `config.ts`:
+
+```bash
+# Old way (DEPRECATED - DO NOT USE):
+# 1. Edit features.config.ts (771 lines of hardcode!)
+# 2. Edit manifest.config.ts (162 lines of imports)
+# 3. Update validation scripts
+# 4. Update test files
+# 5. Run sync
+# Total: 5 manual steps, 933+ lines of hardcode
+
+# New way (CURRENT - RECOMMENDED):
+# 1. pnpm run create:feature {slug}
+# Total: 1 command, zero hardcode!
+
+# The system automatically:
+# - Creates frontend/features/{slug}/config.ts
+# - Auto-discovers via lib/features/registry.ts
+# - Validates with Zod schemas
+# - Generates manifests
+# - Updates navigation
+# - Zero manual registration needed!
+
+# Files REMOVED:
+# ❌ features.config.ts → DELETED (was 771 lines)
+# ❌ manifest.config.ts → DELETED (was 162 lines)
+# ❌ COMPONENT_IMPORT_OVERRIDES → REMOVED (24 hardcoded paths)
+# ❌ componentMap → REMOVED (30+ hardcoded paths)
+# ❌ REQUIRED_FEATURES → REMOVED (11 hardcoded features)
+# ❌ REQUIRED_SLUGS → REMOVED (20 hardcoded slugs)
+# Total: 933+ lines of hardcode REMOVED! ✅
 ```
 
 ---

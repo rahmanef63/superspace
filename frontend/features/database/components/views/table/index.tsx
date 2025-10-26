@@ -1,0 +1,601 @@
+"use client";
+
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { ColumnDef, ColumnSizingState } from "@/components/kibo-ui/table";
+import {
+  TableProvider,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContext,
+} from "@/components/kibo-ui/table";
+import {
+  TableHeader as TableHeaderElement,
+  TableRow as TableRowElement,
+  TableHead as TableHeadElement,
+} from "@/components/ui/table";
+import { flexRender } from "@tanstack/react-table";
+import {
+  DndContext,
+  PointerSensor,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import {
+  ChevronRightIcon,
+  FileSpreadsheet,
+  Plus,
+  Filter,
+} from "lucide-react";
+import type {
+  DatabaseFeature,
+  DatabaseField,
+  DatabaseFieldType,
+  DatabaseView,
+  FieldMapping,
+} from "../../../types";
+import { DATABASE_FIELD_DEFINITIONS } from "../../../config/fields";
+import {
+  EditableCell,
+  RowActions,
+  SortableHeader,
+} from "./components";
+import { getRowValue, isEditableField } from "./lib";
+import { cn } from "@/lib/utils";
+
+type RowData = DatabaseFeature;
+
+const MIN_COLUMN_WIDTH = 120;
+
+interface TableHeaderContentProps {
+  columnOrder: string[];
+}
+
+function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
+  const { table } = useContext(TableContext);
+
+  if (!table) {
+    return null;
+  }
+
+  return (
+    <TableHeaderElement>
+      {table.getHeaderGroups().map((headerGroup) => (
+        <TableRowElement key={headerGroup.id}>
+          <SortableContext
+            items={columnOrder}
+            strategy={horizontalListSortingStrategy}
+          >
+            {headerGroup.headers.map((header) => {
+              const width = header.getSize();
+              const minWidth =
+                header.column.columnDef.minSize ?? MIN_COLUMN_WIDTH;
+              const maxWidth =
+                header.column.columnDef.maxSize ?? Number.MAX_SAFE_INTEGER;
+              const canResize = header.column.getCanResize();
+
+              return (
+                <TableHeadElement
+                  key={header.id}
+                  className="relative group align-middle"
+                  style={{
+                    width,
+                    minWidth,
+                    maxWidth,
+                  }}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                  {canResize ? (
+                    <div
+                      className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none bg-transparent opacity-0 transition group-hover:opacity-100"
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      role="separator"
+                      aria-orientation="vertical"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </TableHeadElement>
+              );
+            })}
+          </SortableContext>
+        </TableRowElement>
+      ))}
+    </TableHeaderElement>
+  );
+}
+
+export interface DatabaseTableViewProps {
+  features: DatabaseFeature[];
+  fields: DatabaseField[];
+  mapping?: FieldMapping | null;
+  activeView?: DatabaseView | null;
+  onAddProperty?: (type: DatabaseFieldType) => void;
+  onAddRow?: () => void;
+  onUpdateCell?: (
+    rowId: DatabaseFeature["id"],
+    updates: Record<string, unknown>,
+  ) => Promise<void> | void;
+  onDeleteRow?: (rowId: DatabaseFeature["id"]) => Promise<void> | void;
+  onRenameField?: (fieldId: string, name: string) => Promise<void> | void;
+  onToggleFieldRequired?: (
+    fieldId: string,
+    required: boolean,
+  ) => Promise<void> | void;
+  onDeleteField?: (fieldId: string) => Promise<void> | void;
+  onToggleFieldVisibility?: (
+    fieldId: string,
+    visible: boolean,
+  ) => Promise<void> | void;
+  onReorderFields?: (orderedFieldIds: string[]) => Promise<void> | void;
+  onColumnSizingChange?: (sizes: Record<string, number>) => void;
+}
+
+export function DatabaseTableView({
+  features,
+  fields,
+  mapping,
+  activeView,
+  onAddProperty,
+  onAddRow,
+  onUpdateCell,
+  onDeleteRow,
+  onRenameField,
+  onToggleFieldRequired,
+  onDeleteField,
+  onToggleFieldVisibility,
+  onReorderFields,
+  onColumnSizingChange,
+}: DatabaseTableViewProps) {
+  const orderedFields = useMemo(
+    () =>
+      [...fields].sort(
+        (a, b) => (a.position ?? 0) - (b.position ?? 0),
+      ),
+    [fields],
+  );
+
+  const fieldById = useMemo(
+    () =>
+      new Map<string, DatabaseField>(
+        orderedFields.map((field) => [String(field._id), field]),
+      ),
+    [orderedFields],
+  );
+
+  const titleFieldId = useMemo(() => {
+    if (mapping?.titleField) {
+      return String(mapping.titleField);
+    }
+    const primaryField = orderedFields.find((field) => field.isPrimary);
+    return primaryField ? String(primaryField._id) : null;
+  }, [mapping?.titleField, orderedFields]);
+
+  const titleField = titleFieldId
+    ? fieldById.get(titleFieldId) ?? null
+    : null;
+
+  const visibleFieldIds = useMemo(() => {
+    if (!activeView) {
+      return orderedFields.map((field) => String(field._id));
+    }
+    const visible =
+      activeView.settings.visibleFields?.map((id) => String(id)) ?? [];
+    const normalizedVisible = visible.filter((id) => fieldById.has(id));
+    const missing = orderedFields
+      .map((field) => String(field._id))
+      .filter((id) => !normalizedVisible.includes(id));
+
+    return [...normalizedVisible, ...missing];
+  }, [activeView, orderedFields, fieldById]);
+
+  const displayFieldIds = useMemo(() => {
+    const ids = visibleFieldIds.filter((id) => id !== titleFieldId);
+    return ids;
+  }, [visibleFieldIds, titleFieldId]);
+
+  const displayFields = useMemo(
+    () =>
+      displayFieldIds
+        .map((id) => fieldById.get(id))
+        .filter((field): field is DatabaseField => Boolean(field)),
+    [displayFieldIds, fieldById],
+  );
+
+  const visibleFieldSet = useMemo(
+    () => new Set(displayFieldIds),
+    [displayFieldIds],
+  );
+
+  const hiddenFields = useMemo(
+    () =>
+      orderedFields.filter((field) => {
+        const id = String(field._id);
+        if (titleFieldId && id === titleFieldId) return false;
+        return !visibleFieldSet.has(id);
+      }),
+    [orderedFields, titleFieldId, visibleFieldSet],
+  );
+
+  const [columnOrder, setColumnOrder] = useState<string[]>(displayFieldIds);
+
+  useEffect(() => {
+    setColumnOrder((prev) => {
+      const next = displayFieldIds;
+      const prevKey = prev.join("|");
+      const nextKey = next.join("|");
+      if (prevKey === nextKey) {
+        return prev;
+      }
+      return next;
+    });
+  }, [displayFieldIds]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      setColumnOrder((prev) => {
+        const activeId = String(active.id);
+        const overId = String(over.id);
+        const oldIndex = prev.indexOf(activeId);
+        const newIndex = prev.indexOf(overId);
+        if (oldIndex === -1 || newIndex === -1) {
+          return prev;
+        }
+        const nextOrder = arrayMove(prev, oldIndex, newIndex);
+        if (onReorderFields) {
+          void onReorderFields(nextOrder);
+        }
+        return nextOrder;
+      });
+    },
+    [onReorderFields],
+  );
+
+  const initialColumnSizing = useMemo<ColumnSizingState | undefined>(() => {
+    if (!activeView?.settings.fieldWidths) {
+      return undefined;
+    }
+    const sizing: ColumnSizingState = {};
+    Object.entries(activeView.settings.fieldWidths).forEach(([key, value]) => {
+      sizing[key] = value;
+    });
+    return sizing;
+  }, [activeView?.settings.fieldWidths]);
+
+  const handleColumnSizingChange = useCallback(
+    (state: ColumnSizingState) => {
+      if (!onColumnSizingChange) return;
+      const normalized: Record<string, number> = {};
+      Object.entries(state).forEach(([key, value]) => {
+        if (typeof value === "number" && Number.isFinite(value)) {
+          normalized[key] = Math.max(MIN_COLUMN_WIDTH, Math.round(value));
+        }
+      });
+      onColumnSizingChange(normalized);
+    },
+    [onColumnSizingChange],
+  );
+
+  const handleCommitCell = useCallback(
+    (rowId: DatabaseFeature["id"], fieldId: string, nextValue: unknown) => {
+      if (!onUpdateCell) return;
+      void onUpdateCell(rowId, { [fieldId]: nextValue });
+    },
+    [onUpdateCell],
+  );
+
+  const renderAddPropertyTrigger = useCallback(() => {
+    if (!onAddProperty) return null;
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            Add property
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="bottom" className="w-60 p-2">
+          <DropdownMenuLabel className="px-2 py-1 text-xs font-semibold uppercase text-muted-foreground">
+            Select type
+          </DropdownMenuLabel>
+          {Object.values(DATABASE_FIELD_DEFINITIONS).map((definition) => (
+            <DropdownMenuItem
+              key={definition.type}
+              onClick={() => onAddProperty(definition.type)}
+              className="flex items-start gap-2"
+            >
+              <definition.icon className="mt-0.5 h-4 w-4 text-muted-foreground" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{definition.label}</span>
+                <span className="text-xs text-muted-foreground">
+                  {definition.description}
+                </span>
+              </div>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="px-2 py-1 text-xs font-semibold uppercase text-muted-foreground">
+            Hidden properties
+          </DropdownMenuLabel>
+          {hiddenFields.length === 0 ? (
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              No hidden properties
+            </DropdownMenuItem>
+          ) : (
+            hiddenFields.map((field) => (
+              <DropdownMenuItem
+                key={String(field._id)}
+                onClick={() =>
+                  onToggleFieldVisibility?.(String(field._id), true)
+                }
+                className="flex items-center justify-between gap-2"
+              >
+                <span>{field.name}</span>
+                {field.isRequired ? (
+                  <Badge variant="outline" className="text-[10px] uppercase">
+                    Required
+                  </Badge>
+                ) : null}
+              </DropdownMenuItem>
+            ))
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }, [hiddenFields, onAddProperty, onToggleFieldVisibility]);
+
+  const columns = useMemo<ColumnDef<RowData>[]>(() => {
+    const fieldWidths = activeView?.settings.fieldWidths ?? {};
+
+    const baseColumns: ColumnDef<RowData>[] = [];
+
+    baseColumns.push({
+      id: "name",
+      accessorFn: (feature) => feature.name,
+      enableResizing: true,
+      minSize: 240,
+      size: fieldWidths.name ?? 320,
+      header: () => (
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+          <span className="rounded border border-dashed px-1.5 py-0.5 font-semibold leading-none">
+            Aa
+          </span>
+          <span>Name</span>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const feature = row.original;
+        const owner = feature.owner;
+        const status = feature.status;
+        const rowId = String(feature.id);
+
+        const titleValue = titleFieldId
+          ? getRowValue(feature, titleFieldId)
+          : feature.name;
+
+        return (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="rounded-md border border-transparent p-1 text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:border-border hover:bg-muted hover:text-foreground"
+              aria-label="Open row preview"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+            </button>
+            <div className="flex flex-1 items-center gap-3">
+              <div className="flex flex-col gap-1">
+                {titleField && isEditableField(titleField) && titleFieldId ? (
+                  <EditableCell
+                    field={titleField}
+                    value={titleValue}
+                    onCommit={(next) => handleCommitCell(feature.id, titleFieldId, next)}
+                  />
+                ) : (
+                  <span className="text-sm font-medium leading-none text-foreground">
+                    {feature.name || "Untitled"}
+                  </span>
+                )}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-mono uppercase tracking-wide">
+                    {rowId.slice(-6).toUpperCase()}
+                  </span>
+                  {status ? (
+                    <>
+                      <span aria-hidden="true">{`\u2022`}</span>
+                      <span>{status.name}</span>
+                    </>
+                  ) : null}
+                  {feature.product ? (
+                    <>
+                      <span aria-hidden="true">{`\u2022`}</span>
+                      <span>{feature.product}</span>
+                    </>
+                  ) : null}
+                  {feature.group ? (
+                    <>
+                      <ChevronRightIcon className="h-3 w-3" />
+                      <span>{feature.group}</span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+              {owner ? (
+                <Avatar className="h-7 w-7">
+                  {owner.avatarUrl ? <AvatarImage src={owner.avatarUrl} /> : null}
+                  <AvatarFallback>
+                    {owner.label.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : null}
+            </div>
+          </div>
+        );
+      },
+    });
+
+    columnOrder.forEach((fieldId) => {
+      const field = fieldById.get(fieldId);
+      if (!field) return;
+
+      baseColumns.push({
+        id: fieldId,
+        accessorFn: (feature) => getRowValue(feature, fieldId),
+        enableResizing: true,
+        minSize: MIN_COLUMN_WIDTH,
+        size: fieldWidths[fieldId] ?? MIN_COLUMN_WIDTH,
+        header: ({ column }) => (
+          <SortableHeader
+            id={fieldId}
+            column={column}
+            field={field}
+            isVisible
+            onRename={onRenameField}
+            onToggleVisibility={(id, visible) =>
+              onToggleFieldVisibility?.(id, visible)
+            }
+            onToggleRequired={onToggleFieldRequired}
+            onDelete={(id) => onDeleteField?.(id)}
+          />
+        ),
+        cell: ({ row }) => (
+          <EditableCell
+            field={field}
+            value={getRowValue(row.original, fieldId)}
+            disabled={!isEditableField(field)}
+            onCommit={(next) => handleCommitCell(row.original.id, fieldId, next)}
+          />
+        ),
+      });
+    });
+
+    if (onAddProperty) {
+      baseColumns.push({
+        id: "propertyActions",
+        enableResizing: false,
+        size: 200,
+        header: () => renderAddPropertyTrigger(),
+        cell: () => null,
+      });
+    }
+
+    if (onDeleteRow) {
+      baseColumns.push({
+        id: "rowActions",
+        enableResizing: false,
+        size: 64,
+        header: () => null,
+        cell: ({ row }) => (
+          <RowActions
+            rowId={String(row.original.id)}
+            onDelete={(rowId) => onDeleteRow?.(rowId as DatabaseFeature["id"])}
+          />
+        ),
+      });
+    }
+
+    return baseColumns;
+  }, [
+    activeView?.settings.fieldWidths,
+    columnOrder,
+    fieldById,
+    handleCommitCell,
+    onDeleteField,
+    onDeleteRow,
+    onRenameField,
+    onToggleFieldRequired,
+    onToggleFieldVisibility,
+    onAddProperty,
+    renderAddPropertyTrigger,
+    titleField,
+    titleFieldId,
+  ]);
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-border px-6 py-2 text-xs text-muted-foreground">
+        <Filter className="h-3.5 w-3.5" />
+        Inline editing enabled — double-click a cell to edit.
+      </div>
+      <div className="flex-1 overflow-auto">
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <TableProvider<RowData, unknown>
+            columns={columns}
+            data={features}
+            className="table-auto min-w-full"
+            initialColumnSizing={initialColumnSizing}
+            onColumnSizingChange={handleColumnSizingChange}
+          >
+            <TableHeaderContent columnOrder={columnOrder} />
+            <TableBody
+              className={cn(features.length === 0 && "[&>tr]:hidden")}
+            >
+              {({ row }) => (
+                <TableRow
+                  key={row.id}
+                  row={row}
+                  className="group"
+                >
+                  {({ cell }) => <TableCell cell={cell} key={cell.id} />}
+                </TableRow>
+              )}
+            </TableBody>
+            {onAddRow ? (
+              <div className="border-t border-border px-6 py-3">
+                <button
+                  type="button"
+                  onClick={onAddRow}
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  <span>New page</span>
+                </button>
+              </div>
+            ) : null}
+          </TableProvider>
+        </DndContext>
+      </div>
+    </div>
+  );
+}

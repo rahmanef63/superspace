@@ -1,0 +1,39 @@
+import type { WidgetConfig } from '@/frontend/features/cms/shared/types';
+import { BadgeWidget } from './BadgeWidget';
+import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/cms/shared/inspector/standardFields';
+import { resolveWidgetIcon } from '@/frontend/features/cms/shared/utils/iconUtils';
+import React from 'react';
+
+
+
+export const badgeManifest: WidgetConfig = {
+  label: 'Badge',
+  category: 'UI',
+  description: 'Displays a small amount of information.',
+  icon: resolveWidgetIcon(undefined, 'UI', 'badge'),
+  tags: ['ui', 'status', 'label'],
+  defaults: {
+    children: 'Badge',
+    variant: 'default',
+  },
+  render: (props) => <BadgeWidget {...props} />,
+  inspector: {
+    fields: combineFields(
+      [
+        createCustomField({
+          key: 'children',
+          label: 'Text',
+          type: 'text',
+          placeholder: 'Badge text',
+        }),
+        createCustomField({
+          key: 'variant',
+          label: 'Variant',
+          type: 'select',
+          options: ['default', 'secondary', 'destructive', 'outline'],
+        }),
+      ],
+      createInspectorFieldGroups.ui()
+    )
+  },
+};

@@ -1,0 +1,107 @@
+import type { WidgetConfig } from '../shared/types';
+import { standardizeWidget, devValidateRegistry } from '../shared/utils/widgetValidation';
+
+// Slices Widgets
+import { buttonManifest } from '../slices/widgets/action/button/manifest';
+import { cardManifest } from '../slices/widgets/content/card/manifest';
+import { textManifest } from '../slices/widgets/content/text/manifest';
+import { columnManifest } from '../slices/widgets/layout/column/manifest';
+import { containerManifest } from '../slices/widgets/layout/container/manifest';
+import { rowManifest } from '../slices/widgets/layout/row/manifest';
+import { sectionManifest } from '../slices/widgets/layout/section/manifest';
+import { imageManifest } from '../slices/widgets/media/image/manifest';
+import { navGroupManifest } from '../slices/widgets/navigation/navGroup/manifest';
+import { heroManifest } from '../slices/widgets/templates/hero/manifest';
+import { heroCompositeManifest } from '../slices/widgets/templates/heroComposite/manifest';
+
+// UI Widgets
+import { accordionManifest } from './ui/accordion/manifest';
+import { alertManifest } from './ui/alert/manifest';
+import { aspectRatioManifest } from './ui/aspectRatio/manifest';
+import { avatarManifest } from './ui/avatar/manifest';
+import { badgeManifest } from './ui/badge/manifest';
+import { checkboxManifest } from './ui/checkbox/manifest';
+import { progressManifest } from './ui/progress/manifest';
+import { radioGroupManifest } from './ui/radioGroup/manifest';
+import { scrollAreaManifest } from './ui/scrollArea/manifest';
+import { skeletonManifest } from './ui/skeleton/manifest';
+import { tableManifest } from './ui/table/manifest';
+import { textareaManifest } from './ui/textarea/manifest';
+import { toggleGroupManifest } from './ui/toggleGroup/manifest';
+
+// Raw widget configurations
+const rawWidgetRegistry: Record<string, WidgetConfig> = {
+  // Layout
+  section: sectionManifest,
+  container: containerManifest,
+  row: rowManifest,
+  column: columnManifest,
+
+  // Content
+  text: textManifest,
+  card: cardManifest,
+
+  // Media
+  image: imageManifest,
+
+  // Action
+  button: buttonManifest,
+
+  // Navigation
+  navGroup: navGroupManifest,
+
+  // Templates
+  hero: heroManifest,
+  heroComposite: heroCompositeManifest,
+
+  // UI Components
+  accordion: accordionManifest,
+  alert: alertManifest,
+  aspectRatio: aspectRatioManifest,
+  avatar: avatarManifest,
+  badge: badgeManifest,
+  checkbox: checkboxManifest,
+  progress: progressManifest,
+  radioGroup: radioGroupManifest,
+  scrollArea: scrollAreaManifest,
+  skeleton: skeletonManifest,
+  table: tableManifest,
+  textarea: textareaManifest,
+  toggleGroup: toggleGroupManifest,
+};
+
+// Standardize all widgets and validate in development
+const standardizeRegistry = (registry: Record<string, WidgetConfig>): Record<string, WidgetConfig> => {
+  const standardized: Record<string, WidgetConfig> = {};
+  
+  Object.entries(registry).forEach(([key, config]) => {
+    standardized[key] = standardizeWidget(key, config);
+  });
+  
+  // Validate in development
+  devValidateRegistry(standardized);
+  
+  return standardized;
+};
+
+// Export standardized and validated widget registry
+export const cmsWidgetRegistry = standardizeRegistry(rawWidgetRegistry);
+
+// Export widget categories for reference
+export const widgetCategories = {
+  Layout: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Layout').map(([key]) => key),
+  Content: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Content').map(([key]) => key),
+  Media: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Media').map(([key]) => key),
+  Navigation: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Navigation').map(([key]) => key),
+  Action: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Action').map(([key]) => key),
+  UI: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'UI').map(([key]) => key),
+  Templates: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Templates').map(([key]) => key),
+};
+
+// Export widget count by category
+export const widgetStats = {
+  total: Object.keys(cmsWidgetRegistry).length,
+  byCategory: Object.fromEntries(
+    Object.entries(widgetCategories).map(([category, widgets]) => [category, widgets.length])
+  ),
+};

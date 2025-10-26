@@ -8,6 +8,7 @@ import type {
   SortingState,
   Table,
   ColumnSizingState,
+  Updater,
 } from "@tanstack/react-table";
 import {
   flexRender,
@@ -18,7 +19,7 @@ import {
 import { atom, useAtom } from "jotai";
 import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import type { HTMLAttributes, ReactNode } from "react";
-import { createContext, memo, useCallback, useContext, useState } from "react";
+import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-export type { ColumnDef } from "@tanstack/react-table";
+export type { ColumnDef, ColumnSizingState } from "@tanstack/react-table";
 
 const sortingAtom = atom<SortingState>([]);
 
@@ -55,6 +56,8 @@ export type TableProviderProps<TData, TValue> = {
   data: TData[];
   children: ReactNode;
   className?: string;
+  initialColumnSizing?: ColumnSizingState;
+  onColumnSizingChange?: (state: ColumnSizingState) => void;
 };
 
 export function TableProvider<TData, TValue>({
@@ -62,9 +65,33 @@ export function TableProvider<TData, TValue>({
   data,
   children,
   className,
+  initialColumnSizing,
+  onColumnSizingChange,
 }: TableProviderProps<TData, TValue>) {
   const [sorting, setSorting] = useAtom(sortingAtom);
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(
+    initialColumnSizing ?? {},
+  );
+
+  useEffect(() => {
+    setColumnSizing(initialColumnSizing ?? {});
+  }, [initialColumnSizing]);
+
+  const handleColumnSizingChange = useCallback(
+    (updater: Updater<ColumnSizingState>) => {
+      setColumnSizing((previous) => {
+        const next =
+          typeof updater === "function"
+            ? (updater as (old: ColumnSizingState) => ColumnSizingState)(previous)
+            : updater;
+
+        onColumnSizingChange?.(next);
+        return next;
+      });
+    },
+    [onColumnSizingChange],
+  );
+
   const table = useReactTable({
     data,
     columns,
@@ -78,7 +105,7 @@ export function TableProvider<TData, TValue>({
 
       setSorting(newSorting);
     },
-    onColumnSizingChange: setColumnSizing,
+    onColumnSizingChange: handleColumnSizingChange,
     state: {
       sorting,
       columnSizing,

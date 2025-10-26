@@ -3,20 +3,6 @@
 import { cn } from "@/lib/utils"
 import { LucideIcon } from "lucide-react"
 
-/**
- * EmptyState - Reusable component for "no data" states
- *
- * Displays a centered message with an icon when a list/view is empty
- *
- * @example
- * ```tsx
- * <EmptyState
- *   icon={Star}
- *   title="No starred messages"
- *   description="Star messages to find them easily later"
- * />
- * ```
- */
 interface EmptyStateProps {
   /** Lucide icon component to display */
   icon: LucideIcon

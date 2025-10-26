@@ -34,7 +34,7 @@ export function CreateDatabaseDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [emoji, setEmoji] = useState("📊");
+  const [emoji, setEmoji] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { createTable } = useDatabaseMutations();
@@ -52,7 +52,7 @@ export function CreateDatabaseDialog({
   const resetForm = () => {
     setName("");
     setDescription("");
-    setEmoji("📊");
+    setEmoji("");
     setError(null);
   };
 

@@ -41,7 +41,12 @@
       "Bash(\"frontend/features/documents/shared/components/DocumentsBrowser.tsx\" )",
       "Bash(\"app/dashboard/_components/NavSecondary.tsx\")",
       "Bash(do )",
-      "Bash(echo \"Updated: $file\")"
+      "Bash(echo \"Updated: $file\")",
+      "Bash(del fix-user.ps1)",
+      "Bash(git checkout:*)",
+      "Bash(npx convex dev:*)",
+      "Bash(npx tsx:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

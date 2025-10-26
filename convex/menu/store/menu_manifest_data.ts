@@ -1,9 +1,9 @@
 // This is the single source of truth for default menu items.
 // It is safe to import in Convex server functions.
 //
-// ⚠️  AUTO-GENERATED - DO NOT EDIT MANUALLY
-// This file is generated from features.config.ts
-// Run 'pnpm run sync:features' to update
+// AUTO-GENERATED - DO NOT EDIT MANUALLY.
+// Source: frontend/features/*/config.ts (auto-discovered)
+// Update via: pnpm run sync:features
 
 export const DEFAULT_MENU_ITEMS = [
   {
@@ -23,11 +23,11 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "Chats" as const,
-    slug: "chats" as const,
+    name: "Chat" as const,
+    slug: "chat" as const,
     type: "route" as const,
     icon: "MessageCircle" as const,
-    path: "/dashboard/chats",
+    path: "/dashboard/chat",
     component: "ChatsPage" as const,
     order: 1,
     metadata: {
@@ -71,6 +71,25 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
+    name: "Members" as const,
+    slug: "members" as const,
+    type: "route" as const,
+    icon: "Users" as const,
+    path: "/dashboard/members",
+    component: "MembersPage" as const,
+    order: 4,
+    metadata: {
+      description: "Manage workspace members and permissions",
+      version: "1.1.0",
+      category: "administration" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const,
+      requiresPermission: "MANAGE_MEMBERS",
+      originalRequiresPermission: "MANAGE_MEMBERS"
+    },
+    requiresPermission: "MANAGE_MEMBERS"
+  },
+  {
     name: "AI" as const,
     slug: "ai" as const,
     type: "route" as const,
@@ -103,41 +122,6 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "Archived" as const,
-    slug: "archived" as const,
-    type: "route" as const,
-    icon: "Archive" as const,
-    path: "/dashboard/archived",
-    component: "ArchivedPage" as const,
-    order: 6,
-    metadata: {
-      description: "Archived chats",
-      version: "2.0.0",
-      category: "communication" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
-    name: "Members" as const,
-    slug: "members" as const,
-    type: "route" as const,
-    icon: "Users" as const,
-    path: "/dashboard/members",
-    component: "MembersPage" as const,
-    order: 4,
-    metadata: {
-      description: "Manage workspace members and permissions",
-      version: "1.1.0",
-      category: "administration" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const,
-      requiresPermission: "MANAGE_MEMBERS",
-      originalRequiresPermission: "MANAGE_MEMBERS"
-    },
-    requiresPermission: "MANAGE_MEMBERS"
-  },
-  {
     name: "Friends" as const,
     slug: "friends" as const,
     type: "route" as const,
@@ -165,6 +149,22 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Notion-like pages for documentation",
       version: "1.0.0",
       category: "productivity" as const,
+      featureType: "default" as const,
+      originalFeatureType: "default" as const
+    }
+  },
+  {
+    name: "Archived" as const,
+    slug: "archived" as const,
+    type: "route" as const,
+    icon: "Archive" as const,
+    path: "/dashboard/archived",
+    component: "ArchivedPage" as const,
+    order: 6,
+    metadata: {
+      description: "Archived chats",
+      version: "2.0.0",
+      category: "communication" as const,
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }

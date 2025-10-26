@@ -2,7 +2,7 @@
 
 A powerful, extensible settings registry system that allows features to **dynamically register their own settings** that automatically appear in the workspace settings UI.
 
-## 🎯 Key Features
+##  Key Features
 
 - ✅ **Dynamic Registration** - Features auto-register settings when installed
 - ✅ **Auto-Cleanup** - Settings auto-unregister when features uninstalled
@@ -33,7 +33,7 @@ frontend/shared/settings/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Wrap Your App with SettingsRegistryProvider
 
@@ -420,7 +420,7 @@ User uninstalls "Calls" feature
 
 ---
 
-## 🎯 Best Practices
+##  Best Practices
 
 ### 1. **Use Consistent Ordering**
 

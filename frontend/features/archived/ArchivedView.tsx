@@ -52,7 +52,7 @@ export function ArchivedView({ workspaceId }: ArchivedViewProps) {
       type: "direct",
       name: "Client Project",
       lastMessage: "Project delivered successfully",
-      avatar: "🎯",
+      avatar: "",
       archivedAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), // 120 days ago
       messageCount: 423,
     },

@@ -5,13 +5,13 @@
 ### 1. Import the Module
 
 ```typescript
-import { ChatContainer } from "@/shared/chat";
+import { ChatContainer } from "@/frontend/shared/chat";
 ```
 
 ### 2. Create Data Source
 
 ```typescript
-import { createConvexChatDataSource } from "@/shared/chat";
+import { createConvexChatDataSource } from "@/frontend/shared/chat";
 import { useConvex } from "convex/react";
 
 const convex = useConvex();
@@ -38,7 +38,7 @@ export function MyChat() {
 }
 ```
 
-### 4. Done! 🎉
+### 4. Done! 
 
 That's it! You now have a fully functional chat with:
 - Message sending/editing/deleting

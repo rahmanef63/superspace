@@ -232,8 +232,8 @@ Create `frontend/features/chat/hooks/useConvexChat.ts`:
 ```typescript
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { createConvexChatDataSource } from "@/shared/chat";
-import type { ChatDataSource } from "@/shared/chat";
+import { createConvexChatDataSource } from "@/frontend/shared/chat";
+import type { ChatDataSource } from "@/frontend/shared/chat";
 
 export function useConvexChatDataSource(): ChatDataSource {
   const listMessages = useQuery(api.chat.listMessages);
@@ -285,7 +285,7 @@ Create `frontend/features/support/components/SupportChat.tsx`:
 
 ```typescript
 import React from "react";
-import { ChatContainer } from "@/shared/chat";
+import { ChatContainer } from "@/frontend/shared/chat";
 import { useConvexChatDataSource } from "@/features/chat/hooks/useConvexChat";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -322,7 +322,7 @@ Create `frontend/features/documents/components/DocComments.tsx`:
 
 ```typescript
 import React from "react";
-import { ChatContainer } from "@/shared/chat";
+import { ChatContainer } from "@/frontend/shared/chat";
 import { useConvexChatDataSource } from "@/features/chat/hooks/useConvexChat";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -455,7 +455,7 @@ Create `frontend/shared/chat/styles.css`:
 Import in your app:
 
 ```typescript
-import "@/shared/chat/styles.css";
+import "@/frontend/shared/chat/styles.css";
 ```
 
 ## Step 5: Testing
@@ -464,7 +464,7 @@ import "@/shared/chat/styles.css";
 
 ```typescript
 import { describe, it, expect } from "vitest";
-import { formatTimestamp, canEdit } from "@/shared/chat";
+import { formatTimestamp, canEdit } from "@/frontend/shared/chat";
 
 describe("Chat Utils", () => {
   it("formats timestamps correctly", () => {
@@ -484,8 +484,8 @@ describe("Chat Utils", () => {
 
 ```typescript
 import { render, screen, waitFor } from "@testing-library/react";
-import { ChatContainer } from "@/shared/chat";
-import { createMockChatDataSource } from "@/shared/chat";
+import { ChatContainer } from "@/frontend/shared/chat";
+import { createMockChatDataSource } from "@/frontend/shared/chat";
 
 it("sends a message", async () => {
   const dataSource = createMockChatDataSource();

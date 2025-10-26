@@ -33,7 +33,7 @@ frontend/shared/layout/sidebar/
 └── README.md                   # This file
 ```
 
-## 🎯 Purpose & Organization
+##  Purpose & Organization
 
 ### Primary Sidebar (`primary/`)
 **Purpose**: Main application navigation for the dashboard
@@ -101,7 +101,7 @@ import { useBreadcrumbs, SiteHeader } from "@/frontend/shared/layout/sidebar/com
 import { useBreadcrumbs } from "@/frontend/shared/layout/sidebar";
 ```
 
-## 🚀 Usage Examples
+##  Usage Examples
 
 ### Example 1: Main Dashboard Layout
 

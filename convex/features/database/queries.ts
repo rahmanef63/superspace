@@ -2,10 +2,7 @@ import { query } from "../../_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import type { Doc, Id } from "../../_generated/dataModel";
-import {
-  assertWorkspaceAccess,
-  hasWorkspaceAccess,
-} from "../db/utils";
+import { assertWorkspaceAccess, hasWorkspaceAccess } from "./utils";
 
 const sortByPosition = <T extends { position?: number }>(a: T, b: T) =>
   (a.position ?? 0) - (b.position ?? 0);

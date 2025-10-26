@@ -13,6 +13,18 @@ export const PERMS = {
   DOCUMENTS_EDIT: "documents.edit",
   DOCUMENTS_DELETE: "documents.delete",
   DOCUMENTS_MANAGE: "documents.manage",
+  DOCUMENTS_UPDATE: "documents.update",
+  DOCUMENTS_PUBLISH: "documents.publish",
+
+  // CMS Permissions
+  SCHEMAS_CREATE: "schemas.create",
+  SCHEMAS_UPDATE: "schemas.update",
+  SCHEMAS_DELETE: "schemas.delete",
+  SCHEMAS_MANAGE: "schemas.manage",
+
+  ASSETS_UPLOAD: "assets.upload",
+  ASSETS_DELETE: "assets.delete",
+  ASSETS_MANAGE: "assets.manage",
 
   CREATE_CONVERSATIONS: "create_conversations",
   MANAGE_CONVERSATIONS: "manage_conversations",
@@ -21,3 +33,6 @@ export const PERMS = {
 } as const;
 
 export type Permission = (typeof PERMS)[keyof typeof PERMS];
+
+// Legacy alias for compatibility
+export const PERMISSIONS = PERMS;

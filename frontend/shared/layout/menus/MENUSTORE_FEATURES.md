@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 MenuStore adalah komponen lengkap untuk manage menu items di workspace dengan full CRUD operations, drag & drop, dan advanced features.
 
@@ -384,7 +384,7 @@ const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenu
 
 ---
 
-## 📊 State Management
+##  State Management
 
 ```typescript
 // View state
@@ -410,7 +410,7 @@ const [shareDialog, setShareDialog] = useState<{
 
 ---
 
-## 🎯 TypeScript Types
+##  TypeScript Types
 
 ```typescript
 interface MenuItem {
@@ -481,7 +481,7 @@ interface AvailableFeature {
 
 ---
 
-## 🚀 Usage Example
+##  Usage Example
 
 ```typescript
 import { MenuStore } from '@/frontend/shared/layout/menus/components/MenuStore';
@@ -497,7 +497,7 @@ function MyWorkspacePage({ workspaceId }: { workspaceId: Id<"workspaces"> }) {
 
 ---
 
-## 🎉 Summary
+##  Summary
 
 **Status:** ✅ **PRODUCTION READY**
 
@@ -516,4 +516,4 @@ MenuStore component sekarang memiliki:
 **Dialogs:** 2 modal dialogs
 **Views:** 2 view modes (tree/grid)
 
-**Ready to use!** 🚀
+**Ready to use!** 

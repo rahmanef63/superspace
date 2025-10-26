@@ -43,7 +43,7 @@ function MyComponent() {
 }
 ```
 
-## 🎯 What Changed
+##  What Changed
 
 ### 1. **Location**
 - **Old**: `frontend/shared/pages/icons.ts`
@@ -313,7 +313,7 @@ import { IconPicker } from "@/frontend/shared/components/icons";
 - [Lucide Icons](https://lucide.dev) - Icon library reference
 - [Color Presets](./icon-data.ts) - Available color options
 
-## 🚀 Future Enhancements
+##  Future Enhancements
 
 Planned features:
 - [ ] Custom icon upload support

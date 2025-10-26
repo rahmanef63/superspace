@@ -14,6 +14,7 @@ import { activityTables } from "./activity/api/schema";
 import { contentTables } from "./content/api/schema";
 import { callTables } from "./calls/api/schema";
 import { statusTables } from "./status/api/schema";
+import { cmsTables } from "./cms/api/schema";
 
 export const featureTables = {
   ...coreTables,
@@ -32,4 +33,5 @@ export const featureTables = {
   ...contentTables,
   ...callTables,
   ...statusTables,
+  ...cmsTables,
 };

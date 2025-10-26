@@ -7,7 +7,7 @@ A modern, production-ready SaaS starter template for building full-stack applica
 
 ## Features
 
-- 🚀 **Next.js 15 with App Router** - Latest React framework with server components
+-  **Next.js 15 with App Router** - Latest React framework with server components
 - ⚡️ **Turbopack** - Ultra-fast development with hot module replacement
 - 🎨 **TailwindCSS v4** - Modern utility-first CSS with custom design system
 - 🔐 **Clerk Authentication** - Complete user management with social logins
@@ -20,7 +20,7 @@ A modern, production-ready SaaS starter template for building full-stack applica
 - 📱 **Responsive Design** - Mobile-first approach with modern layouts
 - ✨ **Custom Animations** - React Bits and Framer Motion effects
 - 🧩 **shadcn/ui Components** - Modern component library with Radix UI
-- 📊 **Interactive Dashboard** - Complete admin interface with charts
+-  **Interactive Dashboard** - Complete admin interface with charts
 - 🔔 **Webhook Integration** - Automated user and payment sync
 - 🚢 **Vercel Ready** - One-click deployment
 

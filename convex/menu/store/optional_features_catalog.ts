@@ -1,13 +1,10 @@
-/**
- * Optional Features Catalog
- *
- * Available features that can be installed from the Menu Store.
- *
- * ⚠️  AUTO-GENERATED - DO NOT EDIT MANUALLY
- * This file is generated from features.config.ts
- * Run 'pnpm run sync:features' to update
- */
-
+// Optional Features Catalog
+//
+// Available features that can be installed from the Menu Store.
+//
+// AUTO-GENERATED - DO NOT EDIT MANUALLY.
+// Source: frontend/features/<feature>/config.ts (auto-discovered)
+// Update via: pnpm run sync:features
 export const OPTIONAL_FEATURES_CATALOG = [
   {
     "slug": "calendar",
@@ -135,8 +132,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
-    "slug": "workflows",
-    "name": "Workflows",
+    "slug": "workflow",
+    "name": "Workflow",
     "description": "Workflow automation with bot assistant",
     "icon": "Workflow",
     "version": "1.0.0",
@@ -146,6 +143,63 @@ export const OPTIONAL_FEATURES_CATALOG = [
       "workflows",
       "bot"
     ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "cms",
+    "name": "CMS Builder",
+    "description": "Build and manage your content management system with visual builder",
+    "icon": "Layout",
+    "version": "1.0.0",
+    "category": "creativity",
+    "tags": [
+      "cms",
+      "content",
+      "builder",
+      "visual"
+    ],
+    "requiresPermission": "schemas.create",
+    "originalRequiresPermission": "schemas.create",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "analytics",
+    "name": "Analytics",
+    "description": "Monitor your business performance with real-time analytics",
+    "icon": "BarChart3",
+    "version": "1.0.0",
+    "category": "analytics",
+    "tags": [
+      "analytics",
+      "insights",
+      "metrics",
+      "dashboard"
+    ],
+    "requiresPermission": "analytics.view",
+    "originalRequiresPermission": "analytics.view",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "automation",
+    "name": "Automation",
+    "description": "Automate workflows and processes with visual builders",
+    "icon": "Workflow",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "automation",
+      "workflows",
+      "visual-builder",
+      "no-code"
+    ],
+    "requiresPermission": "automation.create",
+    "originalRequiresPermission": "automation.create",
     "status": "stable",
     "isReady": true,
     "featureType": "optional"

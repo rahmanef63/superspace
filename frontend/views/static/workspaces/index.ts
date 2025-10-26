@@ -1,6 +1,6 @@
 export { OnboardingFlow } from './components/OnboardingFlow';
 export { WorkspaceSettings } from '@/frontend/shared/settings/workspace/WorkspaceSettings';
-export { MemberManagementPanel as MemberManagement } from '../member/components/MemberManagementPanel';
+export { MemberManagementPanel as MemberManagement } from '../../../features/members/components/MemberManagementPanel';
 export type {
   MemberManagementProps,
   WorkspaceSettingsProps,

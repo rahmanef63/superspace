@@ -1,27 +1,28 @@
 import { mutation, type MutationCtx } from "../../_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import type { Id } from "../../_generated/dataModel";
-import { assertWorkspaceAccess, nextOrderValue } from "../db/utils";
+import { assertWorkspaceAccess, nextOrderValue } from "./utils";
+import { ensureUser } from "../../auth/helpers";
 
 export {
   create as createTable,
   update as updateTable,
   deleteTable,
   duplicate as duplicateTable,
-} from "../db/tables";
+} from "./tables";
 
 export {
   create as createField,
   update as updateField,
   deleteField,
-} from "../db/fields";
+  reorder as reorderField,
+} from "./fields";
 
 export {
   create as createRow,
   update as updateRow,
   deleteRow,
-} from "../db/rows";
+} from "./rows";
 
 const filterValidator = v.object({
   fieldId: v.string(),
@@ -76,10 +77,7 @@ export const createView = mutation({
     isDefault: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const userId = await ensureUser(ctx);
 
     const table = await ctx.db.get(args.tableId);
     if (!table) {
@@ -135,10 +133,7 @@ export const updateView = mutation({
     isDefault: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const userId = await ensureUser(ctx);
 
     const view = await ctx.db.get(args.id);
     if (!view) {
@@ -170,10 +165,7 @@ export const updateView = mutation({
 export const deleteView = mutation({
   args: { id: v.id("dbViews") },
   handler: async (ctx, { id }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const userId = await ensureUser(ctx);
 
     const view = await ctx.db.get(id);
     if (!view) {
@@ -206,10 +198,7 @@ export const deleteView = mutation({
 export const setDefaultView = mutation({
   args: { id: v.id("dbViews") },
   handler: async (ctx, { id }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const userId = await ensureUser(ctx);
 
     const view = await ctx.db.get(id);
     if (!view) {

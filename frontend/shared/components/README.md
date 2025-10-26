@@ -56,7 +56,7 @@ import { MasterDetailLayout } from '@/frontend/shared/components/layouts'
 
 **Usage:**
 ```tsx
-import { EmptyState } from '@/frontend/shared/components/ui'
+import { EmptyState } from '@/components/ui'
 import { Phone } from 'lucide-react'
 
 <EmptyState
@@ -83,7 +83,7 @@ import { Phone } from 'lucide-react'
 
 **Usage:**
 ```tsx
-import { FeatureListHeader } from '@/frontend/shared/components/ui'
+import { FeatureListHeader } from '@/components/ui'
 
 <FeatureListHeader
   title="AI Chats"
@@ -191,7 +191,7 @@ const { query, setQuery, filteredItems, resultCount } = useSearchFilter(
 
 ---
 
-## 🎯 Design Principles
+##  Design Principles
 
 1. **DRY (Don't Repeat Yourself)**
    - Each component/hook solves ONE common pattern
@@ -238,7 +238,7 @@ When adding a new shared component:
 
 ```tsx
 import { MasterDetailLayout } from '@/frontend/shared/components/layouts'
-import { EmptyState, FeatureListHeader } from '@/frontend/shared/components/ui'
+import { EmptyState, FeatureListHeader } from '@/components/ui'
 import { useFeatureNavigation, useSearchFilter } from '@/frontend/shared/hooks'
 import { Phone } from 'lucide-react'
 

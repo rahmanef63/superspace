@@ -26,12 +26,12 @@ interface OverviewViewProps {
 export function OverviewView({ workspaceId }: OverviewViewProps) {
   // Query workspace data
   const workspace = useQuery(
-    api.workspace.workspaces.get,
+    api.workspace.workspaces.getWorkspace,
     workspaceId ? { workspaceId } : "skip"
   )
 
   const members = useQuery(
-    api.workspace.workspaces.getMembers,
+    api.workspace.workspaces.getWorkspaceMembers,
     workspaceId ? { workspaceId } : "skip"
   )
 

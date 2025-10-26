@@ -246,7 +246,7 @@ frontend/shared/components/icons/
 └── README.md             # Documentation
 ```
 
-## 🎯 Integration Examples
+##  Integration Examples
 
 ### MenuTree Integration
 Sudah terintegrasi di `MenuTree.tsx`:
@@ -290,7 +290,7 @@ const IconComponent = getIconComponent(iconName);
 />
 ```
 
-## 🚀 Performance
+##  Performance
 
 - **Lazy loading** - Icons dimuat on-demand
 - **Memoization** - Search results di-memoize

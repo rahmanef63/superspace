@@ -21,7 +21,7 @@ A comprehensive, param-driven chat module for SuperSpace that supports multiple 
 ## Quick Start
 
 ```tsx
-import { ChatContainer, createConvexChatDataSource } from "@/shared/chat";
+import { ChatContainer, createConvexChatDataSource } from "@/frontend/shared/chat";
 
 function MyChat() {
   const convex = useConvex();
@@ -177,7 +177,7 @@ type ChatConfig = {
 ### Convex
 
 ```typescript
-import { createConvexChatDataSource } from "@/shared/chat";
+import { createConvexChatDataSource } from "@/frontend/shared/chat";
 
 const dataSource = createConvexChatDataSource(convex, "chat");
 ```
@@ -220,7 +220,7 @@ const customDataSource: ChatDataSource = {
 ## Custom Commands
 
 ```typescript
-import { commandRegistry } from "@/shared/chat";
+import { commandRegistry } from "@/frontend/shared/chat";
 
 commandRegistry.register({
   name: "/task",

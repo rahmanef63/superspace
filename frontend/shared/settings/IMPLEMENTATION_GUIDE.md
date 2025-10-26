@@ -4,7 +4,7 @@ This guide shows you **step-by-step** how to migrate existing settings to the ne
 
 ---
 
-## 🎯 Migration Overview
+##  Migration Overview
 
 ### Before (Static Settings)
 ```
@@ -374,7 +374,7 @@ export const FEATURES: Feature[] = [
 
 ---
 
-## 🎯 Result
+##  Result
 
 After migration, you'll have:
 
@@ -411,7 +411,7 @@ Settings
 
 ---
 
-## 🚀 Next Steps
+##  Next Steps
 
 1. ✅ Migrate WorkspaceSettings to modular components
 2. ✅ Add settings to each RAIL_ITEM feature

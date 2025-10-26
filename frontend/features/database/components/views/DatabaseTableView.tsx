@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import type { ColumnDef } from "@/components/kibo-ui/table";
+import { useCallback, useMemo } from "react";
+import type { ColumnDef, ColumnSizingState } from "@/components/kibo-ui/table";
 import {
   TableProvider,
   TableHeader,
@@ -52,6 +52,7 @@ export interface DatabaseTableViewProps {
   activeView?: DatabaseView | null;
   onAddProperty?: (type: DatabaseFieldType) => void;
   onAddRow?: () => void;
+  onColumnSizingChange?: (sizes: Record<string, number>) => void;
 }
 
 const formatRowId = (id: DatabaseFeature["id"]) => {
@@ -67,6 +68,7 @@ export function DatabaseTableView({
   activeView,
   onAddProperty,
   onAddRow,
+  onColumnSizingChange,
 }: DatabaseTableViewProps) {
   const titleFieldId = mapping?.titleField ? String(mapping.titleField) : null;
 
@@ -227,9 +229,47 @@ export function DatabaseTableView({
     });
   }
 
+  const initialColumnSizing = useMemo<ColumnSizingState | undefined>(() => {
+    if (!activeView?.settings.fieldWidths) {
+      return undefined;
+    }
+
+    return Object.entries(activeView.settings.fieldWidths).reduce<ColumnSizingState>(
+      (accumulator, [key, value]) => {
+        accumulator[key] = value;
+        return accumulator;
+      },
+      {},
+    );
+  }, [activeView]);
+
+  const handleColumnSizingChange = useCallback(
+    (state: ColumnSizingState) => {
+      if (!onColumnSizingChange) {
+        return;
+      }
+
+      const normalized: Record<string, number> = {};
+      Object.entries(state).forEach(([key, value]) => {
+        if (typeof value === "number" && Number.isFinite(value)) {
+          normalized[key] = value;
+        }
+      });
+
+      onColumnSizingChange(normalized);
+    },
+    [onColumnSizingChange],
+  );
+
   return (
     <div className="size-full overflow-auto">
-      <TableProvider columns={columns} data={features} className="table-fixed">
+      <TableProvider
+        columns={columns}
+        data={features}
+        className="table-auto min-w-full"
+        initialColumnSizing={initialColumnSizing}
+        onColumnSizingChange={handleColumnSizingChange}
+      >
         <TableHeader>
           {({ headerGroup }) => (
             <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>

@@ -14,7 +14,7 @@ frontend/shared/components/icons/
 └── SUMMARY.md            # This file
 ```
 
-## 🎯 Purpose
+##  Purpose
 
 Centralized icon system untuk seluruh aplikasi dengan fitur:
 - **Icon Selection**: 200+ Lucide icons dengan search dan kategori
@@ -22,7 +22,7 @@ Centralized icon system untuk seluruh aplikasi dengan fitur:
 - **Background Colors**: Light backgrounds untuk Notion-style icons
 - **Reusable Components**: Dapat digunakan di menu, documents, dll
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Basic Icon Usage
 ```tsx
@@ -127,7 +127,7 @@ searchIcons("heart", "all") // ["Heart", "HeartHandshake", ...]
 searchIcons("", "common")   // All common icons
 ```
 
-## 📊 Constants
+##  Constants
 
 ### ICON_CATEGORIES
 ```tsx
@@ -323,7 +323,7 @@ expect(results).toContain("Heart");
 
 1. ✅ None currently
 
-## 🚀 Future Enhancements
+##  Future Enhancements
 
 ### Planned
 - [ ] Custom icon upload (SVG)

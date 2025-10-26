@@ -1,2 +1,2 @@
-export { WorkflowAssistantChat } from "./WorkflowAssistantChat";
-export type { WorkflowAssistantChatProps } from "./WorkflowAssistantChat";
+export { default as WorkflowAssistantChat } from "./page";
+export type { WorkflowAssistantChatProps } from "./page";

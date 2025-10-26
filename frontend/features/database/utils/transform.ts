@@ -106,13 +106,21 @@ const resolveOwner = (raw: unknown) => {
   if (typeof raw === "object" && raw !== null) {
     const record = raw as Record<string, unknown>;
     const id =
-      (typeof record.id === "string" && record.id) ||
-      (typeof record._id === "string" && record._id) ||
-      (typeof record.userId === "string" && record.userId);
+      typeof record.id === "string"
+        ? record.id
+        : typeof record._id === "string"
+        ? record._id
+        : typeof record.userId === "string"
+        ? record.userId
+        : undefined;
     const label =
-      (typeof record.name === "string" && record.name) ||
-      (typeof record.label === "string" && record.label) ||
-      (typeof record.email === "string" && record.email);
+      typeof record.name === "string"
+        ? record.name
+        : typeof record.label === "string"
+        ? record.label
+        : typeof record.email === "string"
+        ? record.email
+        : undefined;
 
     if (id || label) {
       return {

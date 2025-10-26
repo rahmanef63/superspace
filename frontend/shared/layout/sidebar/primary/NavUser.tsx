@@ -15,7 +15,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SafeSignOutButton } from "@/frontend/shared/auth/components/SafeSignOutButton"
-import { UserSettings } from "@/frontend/views/static/profile/components/UserSettings"
+import { UserSettings } from "@/frontend/features/user-settings/components/UserSettings"
 
 function SignedInNavUserContent({ isMobile }: { isMobile: boolean }) {
   const { user: clerkUser } = useUser()

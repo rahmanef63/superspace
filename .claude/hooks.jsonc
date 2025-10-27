@@ -3,7 +3,9 @@
     { "pattern": "convex/workspace/**", "run": "/validate:workspace" },
     { "pattern": "convex/workspace/settings.ts", "run": "/validate:settings" },
     { "pattern": "convex/menu/**", "run": "/test" },
-    { "pattern": "convex/components/**", "run": "/test" }
+    { "pattern": "convex/components/**", "run": "/test" },
+    { "pattern": "frontend/features/*/config.ts", "run": "/validate:features" },
+    { "pattern": "convex/features/**", "run": "/test" }
   ],
   "postCommand": [
     { "command": "/install", "run": "/test" }

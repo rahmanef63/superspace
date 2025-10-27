@@ -44,3 +44,6 @@ tsc-output.txt
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# claude code local settings (machine-specific)
+.claude/settings.local.json

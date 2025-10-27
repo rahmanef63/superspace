@@ -33,6 +33,7 @@
         "check:features": "pnpm run validate:features && pnpm run sync:features --dry-run",
         "check:workspaces": "tsx scripts/health/check-workspaces.ts",
         "check:workspaces:fix": "tsx scripts/health/check-workspaces.ts --fix",
+        "analyze:feature": "tsx scripts/features/analyze-feature.ts",
         "precommit": "pnpm run lint && pnpm run validate:all && pnpm test"
     },
     "dependencies": {
@@ -137,6 +138,7 @@
         "@types/color": "^4.2.0",
         "@types/lodash.throttle": "^4.1.9",
         "@types/node": "^22",
+        "@types/prompts": "^2.4.9",
         "@types/react": "18.2.47",
         "@types/react-dom": "18.2.18",
         "@vitest/ui": "^2.1.8",
@@ -145,6 +147,7 @@
         "eslint-config-next": "14.2.7",
         "glob": "^11.0.3",
         "postcss": "^8.5",
+        "prompts": "^2.4.2",
         "tailwindcss": "^4.1.9",
         "tsx": "^4.19.2",
         "tw-animate-css": "1.3.3",

@@ -30,6 +30,13 @@ export const PERMS = {
   MANAGE_CONVERSATIONS: "manage_conversations",
 
   VIEW_WORKSPACE: "view_workspace",
+
+  // Database Permissions
+  DATABASE_READ: "database.read",
+  DATABASE_CREATE: "database.create",
+  DATABASE_UPDATE: "database.update",
+  DATABASE_DELETE: "database.delete",
+  DATABASE_MANAGE: "database.manage",
 } as const;
 
 export type Permission = (typeof PERMS)[keyof typeof PERMS];

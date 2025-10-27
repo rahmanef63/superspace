@@ -2,8 +2,23 @@ import { query, mutation } from "../../_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertWorkspaceAccess, hasWorkspaceAccess, nextOrderValue } from "./utils";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requirePermission } from "../../auth/helpers";
 import type { Id } from "../../_generated/dataModel";
+import { PERMISSIONS } from "../../workspace/permissions";
+
+// TODO: Implement audit logging system
+// Helper function to create audit logs (placeholder)
+async function createAuditLog(ctx: any, params: {
+  workspaceId: any,
+  userId: any,
+  action: string,
+  resourceType: string,
+  resourceId: any,
+  metadata?: any
+}) {
+  // Placeholder - implement when audit_logs table is added to schema
+  console.log('[Database Audit]', params);
+}
 
 const sortByPosition = <T extends { position?: number }>(a: T, b: T) =>
   (a.position ?? 0) - (b.position ?? 0);
@@ -80,6 +95,9 @@ export const create = mutation({
     if (!table) {
       throw new Error("Table not found");
     }
+
+    // RBAC: Check permission before creating
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_CREATE);
 
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
@@ -161,6 +179,9 @@ export const update = mutation({
       throw new Error("Table not found");
     }
 
+    // RBAC: Check permission before updating
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
     const updates: Record<string, unknown> = {};
@@ -191,6 +212,9 @@ export const reorder = mutation({
     if (!table) {
       throw new Error("Table not found");
     }
+
+    // RBAC: Check permission before reordering
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_UPDATE);
 
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
@@ -271,6 +295,9 @@ export const deleteField = mutation({
       throw new Error("Table not found");
     }
 
+    // RBAC: Check permission before deleting
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_DELETE);
+
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
     const rows = await ctx.db
@@ -337,5 +364,20 @@ export const deleteField = mutation({
     );
 
     await ctx.db.delete(args.id);
+
+    // CRITICAL: Audit log for deletion
+    await createAuditLog(ctx, {
+      workspaceId: table.workspaceId,
+      userId,
+      action: "database.field.deleted",
+      resourceType: "dbField",
+      resourceId: args.id,
+      metadata: {
+        fieldName: field.name,
+        fieldType: field.type,
+        tableId: field.tableId,
+        rowsAffected: rows.length,
+      },
+    });
   },
 });

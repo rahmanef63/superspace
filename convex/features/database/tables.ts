@@ -1,9 +1,24 @@
 import { query, mutation } from "../../_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requirePermission } from "../../auth/helpers";
 import type { Id } from "../../_generated/dataModel";
 import { assertWorkspaceAccess, hasWorkspaceAccess } from "./utils";
+import { PERMISSIONS } from "../../workspace/permissions";
+
+// TODO: Implement audit logging system
+// Helper function to create audit logs (placeholder)
+async function createAuditLog(ctx: any, params: {
+  workspaceId: any,
+  userId: any,
+  action: string,
+  resourceType: string,
+  resourceId: any,
+  metadata?: any
+}) {
+  // Placeholder - implement when audit_logs table is added to schema
+  console.log('[Database Audit]', params);
+}
 
 export const list = query({
   args: { workspaceId: v.id("workspaces") },
@@ -58,6 +73,9 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
 
+    // RBAC: Check permission before creating
+    await requirePermission(ctx, args.workspaceId, PERMISSIONS.DATABASE_CREATE);
+
     await assertWorkspaceAccess(ctx, args.workspaceId, userId);
 
     const tableId = await ctx.db.insert("dbTables", {
@@ -102,6 +120,15 @@ export const create = mutation({
       },
     });
 
+    await createAuditLog(ctx, {
+      workspaceId: args.workspaceId,
+      userId,
+      action: "database.table.created",
+      resourceType: "dbTable",
+      resourceId: tableId,
+      metadata: { name: args.name, icon: args.icon },
+    });
+
     return tableId;
   },
 });
@@ -128,6 +155,9 @@ export const update = mutation({
       throw new Error("Table not found");
     }
 
+    // RBAC: Check permission before updating
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
     const updates: Record<string, unknown> = {};
@@ -138,6 +168,15 @@ export const update = mutation({
     updates.updatedById = userId;
 
     await ctx.db.patch(args.id, updates);
+
+    await createAuditLog(ctx, {
+      workspaceId: table.workspaceId,
+      userId,
+      action: "database.table.updated",
+      resourceType: "dbTable",
+      resourceId: args.id,
+      metadata: { changes: Object.keys(updates) },
+    });
   },
 });
 
@@ -150,6 +189,9 @@ export const deleteTable = mutation({
     if (!table) {
       throw new Error("Table not found");
     }
+
+    // RBAC: Check permission before deleting
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_DELETE);
 
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
@@ -175,6 +217,21 @@ export const deleteTable = mutation({
     ]);
 
     await ctx.db.delete(args.id);
+
+    // CRITICAL: Audit log for deletion
+    await createAuditLog(ctx, {
+      workspaceId: table.workspaceId,
+      userId,
+      action: "database.table.deleted",
+      resourceType: "dbTable",
+      resourceId: args.id,
+      metadata: {
+        name: table.name,
+        fieldsDeleted: fields.length,
+        rowsDeleted: rows.length,
+        viewsDeleted: views.length,
+      },
+    });
   },
 });
 
@@ -187,6 +244,9 @@ export const duplicate = mutation({
     if (!table) {
       throw new Error("Table not found");
     }
+
+    // RBAC: Check permission before duplicating (requires manage permission)
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_MANAGE);
 
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
@@ -358,6 +418,21 @@ export const duplicate = mutation({
         await ctx.db.patch(firstView._id, { isDefault: true });
       }
     }
+
+    await createAuditLog(ctx, {
+      workspaceId: table.workspaceId,
+      userId,
+      action: "database.table.duplicated",
+      resourceType: "dbTable",
+      resourceId: newTableId,
+      metadata: {
+        originalId: args.id,
+        originalName: table.name,
+        newName: args.name ?? `${table.name} Copy`,
+        fieldsCopied: fields.length,
+        rowsCopied: rows.length,
+      },
+    });
 
     return newTableId;
   },

@@ -25,4 +25,12 @@ export default defineFeature({
     state: 'stable',
     isReady: true,
   },
+
+  permissions: [
+    'database.read',      // Read database tables, rows, fields, and views
+    'database.create',    // Create new tables, rows, fields, and views
+    'database.update',    // Update existing tables, rows, fields, and views
+    'database.delete',    // Delete tables, rows, fields, and views
+    'database.manage',    // Admin access: duplicate tables, manage settings
+  ],
 })

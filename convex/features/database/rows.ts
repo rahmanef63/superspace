@@ -1,8 +1,23 @@
 import { query, mutation } from "../../_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requirePermission } from "../../auth/helpers";
 import { assertWorkspaceAccess, hasWorkspaceAccess, nextOrderValue } from "./utils";
+import { PERMISSIONS } from "../../workspace/permissions";
+
+// TODO: Implement audit logging system
+// Helper function to create audit logs (placeholder)
+async function createAuditLog(ctx: any, params: {
+  workspaceId: any,
+  userId: any,
+  action: string,
+  resourceType: string,
+  resourceId: any,
+  metadata?: any
+}) {
+  // Placeholder - implement when audit_logs table is added to schema
+  console.log('[Database Audit]', params);
+}
 
 interface ViewSettings {
   filters?: Array<{
@@ -134,6 +149,9 @@ export const create = mutation({
       throw new Error("Table not found");
     }
 
+    // RBAC: Check permission before creating
+    await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_CREATE);
+
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
     const existingRows = await ctx.db
@@ -168,6 +186,9 @@ export const update = mutation({
       throw new Error("Row not found");
     }
 
+    // RBAC: Check permission before updating
+    await requirePermission(ctx, row.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
     await assertWorkspaceAccess(ctx, row.workspaceId, userId);
 
     await ctx.db.patch(args.id, {
@@ -187,6 +208,9 @@ export const deleteRow = mutation({
       throw new Error("Row not found");
     }
 
+    // RBAC: Check permission before deleting
+    await requirePermission(ctx, row.workspaceId, PERMISSIONS.DATABASE_DELETE);
+
     await assertWorkspaceAccess(ctx, row.workspaceId, userId);
 
     if (row.docId) {
@@ -198,5 +222,15 @@ export const deleteRow = mutation({
     }
 
     await ctx.db.delete(args.id);
+
+    // CRITICAL: Audit log for deletion
+    await createAuditLog(ctx, {
+      workspaceId: row.workspaceId,
+      userId,
+      action: "database.row.deleted",
+      resourceType: "dbRow",
+      resourceId: args.id,
+      metadata: { tableId: row.tableId, linkedDocDeleted: !!row.docId },
+    });
   },
 });

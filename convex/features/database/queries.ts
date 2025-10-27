@@ -30,8 +30,11 @@ export type DatabaseWithRelations = {
 };
 
 export const list = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, { workspaceId }) => {
+  args: {
+    workspaceId: v.id("workspaces"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { workspaceId, limit = 100 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return [];
@@ -42,10 +45,11 @@ export const list = query({
       return [];
     }
 
+    // Performance: Add reasonable limit to prevent large scans
     const tables = await ctx.db
       .query("dbTables")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
-      .collect();
+      .take(Math.min(limit, 500)); // Max 500 tables per workspace
 
     return tables.sort(sortByUpdated);
   },
@@ -55,8 +59,9 @@ export const search = query({
   args: {
     workspaceId: v.id("workspaces"),
     term: v.string(),
+    limit: v.optional(v.number()),
   },
-  handler: async (ctx, { workspaceId, term }) => {
+  handler: async (ctx, { workspaceId, term, limit = 12 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return [];
@@ -72,15 +77,16 @@ export const search = query({
       return [];
     }
 
+    // Performance: Limit query results to prevent large scans
     const tables = await ctx.db
       .query("dbTables")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
-      .collect();
+      .take(500); // Prevent unbounded table scans
 
     return tables
       .filter((table) => table.name.toLowerCase().includes(value))
       .sort(sortByUpdated)
-      .slice(0, 12);
+      .slice(0, Math.min(limit, 50)); // Max 50 search results
   },
 });
 
@@ -160,8 +166,11 @@ export const getRow = query({
 });
 
 export const listRows = query({
-  args: { tableId: v.id("dbTables") },
-  handler: async (ctx, { tableId }) => {
+  args: {
+    tableId: v.id("dbTables"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { tableId, limit = 1000 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return [];
@@ -174,10 +183,11 @@ export const listRows = query({
 
     await assertWorkspaceAccess(ctx, table.workspaceId, userId);
 
+    // Performance: Add reasonable limit to prevent large scans
     const rows = await ctx.db
       .query("dbRows")
       .withIndex("by_table", (q) => q.eq("tableId", tableId))
-      .collect();
+      .take(Math.min(limit, 10000)); // Max 10k rows per query
 
     return rows.sort(sortByPosition);
   },

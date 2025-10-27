@@ -1,11 +1,17 @@
 {
   "/install": "pnpm install",
   "/test": "pnpm test",
-  "/validate:workspace": "node scripts/validate-workspace.ts fixtures/workspace.json",
-  "/validate:settings": "node scripts/validate-workspace-settings.ts fixtures/workspace-settings.json",
-  "/validate:document": "node scripts/validate-document.ts fixtures/document.json",
-  "/validate:role": "node scripts/validate-role.ts fixtures/role.json",
-  "/validate:conversation": "node scripts/validate-conversation.ts fixtures/conversation.json",
-  "/migrate:settings:dry": "node scripts/migrate-workspace-settings.ts --dry-run",
-  "/migrate:component:dry": "node scripts/migrate-component-schema.ts --dry-run"
+  "/validate:workspace": "tsx scripts/validation/workspace.ts fixtures/workspace.json",
+  "/validate:settings": "tsx scripts/validation/settings.ts fixtures/workspace-settings.json",
+  "/validate:document": "tsx scripts/validation/document.ts fixtures/document.json",
+  "/validate:role": "tsx scripts/validation/role.ts fixtures/role.json",
+  "/validate:conversation": "tsx scripts/validation/conversation.ts fixtures/conversation.json",
+  "/validate:component": "tsx scripts/validation/component.ts fixtures/component.json",
+  "/validate:features": "tsx scripts/validation/features.ts",
+  "/validate:pages": "tsx scripts/validation/pages.ts",
+  "/validate:all": "pnpm run validate:all",
+  "/migrate:settings:dry": "tsx scripts/migration/settings.ts --dry-run",
+  "/migrate:component:dry": "tsx scripts/migration/components.ts --dry-run",
+  "/list:features": "tsx scripts/features/list.ts",
+  "/analyze:feature": "tsx scripts/features/analyze-feature.ts"
 }

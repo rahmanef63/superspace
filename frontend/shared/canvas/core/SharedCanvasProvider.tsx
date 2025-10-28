@@ -1,3 +1,49 @@
+/**
+ * ⚠️ TECHNICAL DEBT NOTICE ⚠️
+ *
+ * This file currently has CMS feature coupling that needs to be addressed.
+ * Despite being in `frontend/shared/`, it imports from `frontend/features/cms/`.
+ *
+ * CURRENT COUPLING (lines 13-16):
+ * - INITIAL_CMS_SCHEMA from cms/mockdata
+ * - getWidgetConfig from cms/shared/registry
+ * - CMSNode, CMSEdge, etc. types from cms/shared/types
+ *
+ * WHY THIS EXISTS:
+ * SharedCanvasProvider was designed specifically for CMS use case and later
+ * moved to shared folder to enable reuse. However, the core logic is still
+ * tightly coupled to CMS data structures and widget registry.
+ *
+ * MIGRATION PLAN:
+ * 1. Extract generic canvas types (Node, Edge, Schema) from CMS types
+ * 2. Create CanvasConfigProvider interface for dependency injection
+ * 3. Make INITIAL_SCHEMA and widgetConfigGetter optional props
+ * 4. Move CMS-specific logic to CMSCanvasProvider wrapper
+ *
+ * FUTURE USAGE (after migration):
+ * ```tsx
+ * // Generic canvas
+ * <SharedCanvasProvider
+ *   initialSchema={mySchema}
+ *   widgetConfigGetter={myConfigGetter}
+ * >
+ *   {children}
+ * </SharedCanvasProvider>
+ *
+ * // CMS canvas (wrapper)
+ * <CMSCanvasProvider>
+ *   {children}
+ * </CMSCanvasProvider>
+ * ```
+ *
+ * ESTIMATED EFFORT: 1-2 days for full decoupling
+ * PRIORITY: Medium (works fine for now, but limits reusability)
+ *
+ * See also:
+ * - docs/architecture/shared-system-decoupling.md
+ * - GitHub Issue #XXX: Decouple SharedCanvasProvider from CMS
+ */
+
 import React, {
   createContext,
   useContext,
@@ -10,6 +56,7 @@ import React, {
 import { addEdge, useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge, OnConnect, ReactFlowInstance } from 'reactflow';
 
+// TODO: Remove these CMS imports - see technical debt notice above
 import { INITIAL_CMS_SCHEMA } from '@/frontend/features/cms/mockdata/initialSchema';
 import { getWidgetConfig } from '@/frontend/features/cms/shared/registry';
 import { uid, clamp } from '@/lib/utils';

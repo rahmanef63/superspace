@@ -15,9 +15,38 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SafeSignOutButton } from "@/frontend/shared/auth/components/SafeSignOutButton"
-import { UserSettings } from "@/frontend/features/user-settings/components/UserSettings"
 
-function SignedInNavUserContent({ isMobile }: { isMobile: boolean }) {
+// ============================================================================
+// Props Injection Pattern - No Feature Coupling!
+// ============================================================================
+// Features can inject their own settings components via props
+// This makes NavUser truly shared and reusable across features
+
+interface NavUserProps {
+  /**
+   * Optional profile settings component to show in dialog
+   * If not provided, Profile menu item will be hidden
+   */
+  profileSettingsComponent?: React.ComponentType
+
+  /**
+   * Optional callback when Settings menu is clicked
+   * If not provided, Settings menu item will be hidden
+   */
+  onSettingsClick?: () => void
+}
+
+interface SignedInNavUserContentProps {
+  isMobile: boolean
+  profileSettingsComponent?: React.ComponentType
+  onSettingsClick?: () => void
+}
+
+function SignedInNavUserContent({
+  isMobile,
+  profileSettingsComponent: ProfileSettings,
+  onSettingsClick
+}: SignedInNavUserContentProps) {
   const { user: clerkUser } = useUser()
   const [showProfileDialog, setShowProfileDialog] = React.useState(false)
 
@@ -47,14 +76,20 @@ function SignedInNavUserContent({ isMobile }: { isMobile: boolean }) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="min-w-56 rounded-lg" align="end" side={isMobile ? "bottom" : "top"}>
-            <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
+            {/* Only show Profile if component is provided */}
+            {ProfileSettings && (
+              <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+            )}
+            {/* Only show Settings if callback is provided */}
+            {onSettingsClick && (
+              <DropdownMenuItem onClick={onSettingsClick}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            )}
             <SafeSignOutButton>
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -65,16 +100,19 @@ function SignedInNavUserContent({ isMobile }: { isMobile: boolean }) {
         </DropdownMenu>
       </SidebarMenuItem>
 
-      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Profile Settings</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
-            <UserSettings />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Only render dialog if ProfileSettings component is provided */}
+      {ProfileSettings && (
+        <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Profile Settings</DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[70vh] overflow-y-auto">
+              <ProfileSettings />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }
@@ -99,7 +137,29 @@ function SignedOutNavUserContent() {
   )
 }
 
-export function NavUser() {
+/**
+ * NavUser Component - Truly Shared, No Feature Coupling
+ *
+ * @example
+ * // Without any settings (minimal)
+ * <NavUser />
+ *
+ * @example
+ * // With profile settings from user-settings feature
+ * import { UserSettings } from "@/frontend/features/user-settings/components/UserSettings"
+ * <NavUser profileSettingsComponent={UserSettings} />
+ *
+ * @example
+ * // With both profile and settings
+ * <NavUser
+ *   profileSettingsComponent={UserSettings}
+ *   onSettingsClick={() => router.push('/settings')}
+ * />
+ */
+export function NavUser({
+  profileSettingsComponent,
+  onSettingsClick
+}: NavUserProps = {}) {
   const { isMobile } = useSidebar()
 
   return (
@@ -117,7 +177,11 @@ export function NavUser() {
       </ClerkLoading>
       <ClerkLoaded>
         <SignedIn>
-          <SignedInNavUserContent isMobile={isMobile} />
+          <SignedInNavUserContent
+            isMobile={isMobile}
+            profileSettingsComponent={profileSettingsComponent}
+            onSettingsClick={onSettingsClick}
+          />
         </SignedIn>
         <SignedOut>
           <SignedOutNavUserContent />

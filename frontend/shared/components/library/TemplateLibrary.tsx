@@ -1,38 +1,125 @@
+/**
+ * Template Library Component
+ * Generic template browser with no feature coupling
+ * Uses props injection pattern for template storage
+ */
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Input } from '@/components/ui';
 import { useDnD } from '@/frontend/shared/canvas/core/DnDProvider';
-import { getDefaultTemplates, listAssetTemplates, saveAssetTemplate, deleteAssetTemplate } from '@/frontend/features/cms/state/templateStore';
 
-interface TemplateLibraryProps {
-  onOpen: (key: string) => void;
+// ============================================================================
+// Props Injection Pattern - No Feature Coupling!
+// ============================================================================
+
+export interface TemplateProvider {
+  /**
+   * Get default/built-in templates
+   * @returns Record of template name to template data
+   */
+  getDefaultTemplates: () => Record<string, any>
+
+  /**
+   * List saved/asset templates
+   * @returns Record of template name to template data
+   */
+  listAssetTemplates: () => Record<string, any>
+
+  /**
+   * Save a new template
+   * @param name Template name/key
+   * @param schema Template schema/data
+   */
+  saveAssetTemplate: (name: string, schema: any) => void
+
+  /**
+   * Delete a saved template
+   * @param name Template name/key to delete
+   */
+  deleteAssetTemplate: (name: string) => void
 }
 
-export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({ onOpen }) => {
-  const [query, setQuery] = useState("");
-  const [assets, setAssets] = useState<Record<string, any>>({});
-  const [, setType] = useDnD();
+interface TemplateLibraryProps {
+  /**
+   * Callback when user wants to open a template
+   * @param key Template key in format "source:name" (e.g. "builtin:hero", "asset:mytemplate")
+   */
+  onOpen: (key: string) => void
 
+  /**
+   * Template provider for storage operations
+   * If not provided, library will show empty state
+   */
+  templateProvider?: TemplateProvider
+}
+
+/**
+ * Template Library - Truly Shared, No Feature Coupling
+ *
+ * @example
+ * // Without provider (empty library)
+ * <TemplateLibrary onOpen={handleOpen} />
+ *
+ * @example
+ * // With CMS template provider
+ * import { cmsTemplateProvider } from "@/frontend/features/cms/state/templateProvider"
+ * <TemplateLibrary onOpen={handleOpen} templateProvider={cmsTemplateProvider} />
+ *
+ * @example
+ * // With custom provider
+ * const myProvider = {
+ *   getDefaultTemplates: () => ({ "starter": {...} }),
+ *   listAssetTemplates: () => myAssets,
+ *   saveAssetTemplate: (name, data) => saveToStorage(name, data),
+ *   deleteAssetTemplate: (name) => removeFromStorage(name)
+ * }
+ * <TemplateLibrary onOpen={handleOpen} templateProvider={myProvider} />
+ */
+export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
+  onOpen,
+  templateProvider
+}) => {
+  const [query, setQuery] = useState("")
+  const [assets, setAssets] = useState<Record<string, any>>({})
+  const [, setType] = useDnD()
+
+  // Load assets when provider changes
   useEffect(() => {
-    setAssets(listAssetTemplates());
-  }, []);
+    if (templateProvider) {
+      setAssets(templateProvider.listAssetTemplates())
+    } else {
+      setAssets({})
+    }
+  }, [templateProvider])
 
-  const builtin = useMemo(() => getDefaultTemplates(), []);
-  const builtinKeys = Object.keys(builtin);
-  const assetKeys = Object.keys(assets);
+  // Get built-in templates
+  const builtin = useMemo(() => {
+    if (!templateProvider) return {}
+    return templateProvider.getDefaultTemplates()
+  }, [templateProvider])
 
-  const filteredBuiltins = builtinKeys.filter(k => k.toLowerCase().includes(query.toLowerCase()));
-  const filteredAssets = assetKeys.filter(k => k.toLowerCase().includes(query.toLowerCase()));
+  const builtinKeys = Object.keys(builtin)
+  const assetKeys = Object.keys(assets)
+
+  const filteredBuiltins = builtinKeys.filter(k =>
+    k.toLowerCase().includes(query.toLowerCase())
+  )
+  const filteredAssets = assetKeys.filter(k =>
+    k.toLowerCase().includes(query.toLowerCase())
+  )
 
   const onDragStart = (e: React.DragEvent, key: string, source: 'builtin' | 'asset') => {
-    setType(null); // prevent SharedCanvas default add-node behavior
-    e.dataTransfer.setData('cms/template', JSON.stringify({ key, source }));
-    e.dataTransfer.effectAllowed = 'copyMove';
-  };
+    setType(null) // prevent SharedCanvas default add-node behavior
+    e.dataTransfer.setData('cms/template', JSON.stringify({ key, source }))
+    e.dataTransfer.effectAllowed = 'copyMove'
+  }
 
   const removeAsset = (key: string) => {
-    deleteAssetTemplate(key);
-    setAssets(listAssetTemplates());
-  };
+    if (!templateProvider) return
+
+    templateProvider.deleteAssetTemplate(key)
+    setAssets(templateProvider.listAssetTemplates())
+  }
 
   const renderItem = (key: string, source: 'builtin' | 'asset') => (
     <div
@@ -62,7 +149,21 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({ onOpen }) => {
         )}
       </div>
     </div>
-  );
+  )
+
+  // Empty state if no provider
+  if (!templateProvider) {
+    return (
+      <div className="h-full flex items-center justify-center p-6 text-center">
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700">No Template Provider</div>
+          <div className="text-xs text-gray-500">
+            Connect a template provider to browse and manage templates
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -94,10 +195,23 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({ onOpen }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-// Helper to save a new asset template from external callers
-export function addSelectionAsTemplate(name: string, schema: any) {
-  saveAssetTemplate(name, schema);
+/**
+ * Helper to save a new asset template from external callers
+ * Now requires provider to be passed
+ *
+ * @example
+ * ```ts
+ * import { cmsTemplateProvider } from "@/frontend/features/cms/state/templateProvider"
+ * addSelectionAsTemplate(cmsTemplateProvider, "my-template", schema)
+ * ```
+ */
+export function addSelectionAsTemplate(
+  provider: TemplateProvider,
+  name: string,
+  schema: any
+): void {
+  provider.saveAssetTemplate(name, schema)
 }

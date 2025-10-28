@@ -40,14 +40,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
-  ChatGeneralSettings,
-  ChatNotificationsSettings,
-  ChatAISettings,
-} from "@/frontend/features/chat/settings"
-import {
-  CallsQualitySettings,
-  CallsDeviceSettings,
-} from "@/frontend/features/calls/settings"
+  getFeatureSettingsBuilder,
+  hasFeatureSettings,
+} from "@/frontend/shared/settings/featureSettingsRegistry"
 
 type MenuItemRecord = {
   _id: Id<"menuItems">
@@ -105,45 +100,9 @@ const FEATURE_SETTINGS_BUILDERS: Record<string, FeatureSettingsBuilder> = {
       "Manage chat behaviors, message retention, and inbox defaults."
     ),
   ],
-  chat: () => [
-    {
-      id: "chat-general",
-      label: "Chat",
-      icon: MessageSquare,
-      order: 100,
-      component: ChatGeneralSettings,
-    },
-    {
-      id: "chat-notifications",
-      label: "Notifications",
-      icon: Bell,
-      order: 110,
-      component: ChatNotificationsSettings,
-    },
-    {
-      id: "chat-ai",
-      label: "AI Features",
-      icon: Bot,
-      order: 120,
-      component: ChatAISettings,
-    },
-  ],
-  calls: () => [
-    {
-      id: "calls-quality",
-      label: "Call Quality",
-      icon: Phone,
-      order: 200,
-      component: CallsQualitySettings,
-    },
-    {
-      id: "calls-devices",
-      label: "Devices",
-      icon: Mic,
-      order: 210,
-      component: CallsDeviceSettings,
-    },
-  ],
+  // NOTE: chat and calls settings now registered dynamically via featureSettingsRegistry
+  // Features register their settings at app initialization
+  // See: frontend/shared/settings/featureSettingsRegistry.ts
   ai: ({ menuItem }) => [
     buildPlaceholderCategory(
       FEATURE_SETTINGS_DEFAULT_CATEGORY.ai,
@@ -241,7 +200,10 @@ function WorkspaceFeatureSettingsSync({ workspaceId }: { workspaceId: Id<"worksp
     const registeredThisRun = new Set<string>()
 
     featureMenuItems.forEach((menuItem) => {
-      const builder = FEATURE_SETTINGS_BUILDERS[menuItem.slug]
+      // Try registry first (new dynamic registration)
+      const registryBuilder = getFeatureSettingsBuilder(menuItem.slug)
+      // Fallback to static builders (placeholders)
+      const builder = registryBuilder || FEATURE_SETTINGS_BUILDERS[menuItem.slug]
       const categories = builder ? builder({ menuItem }) : []
 
       if (categories.length > 0) {

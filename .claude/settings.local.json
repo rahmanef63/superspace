@@ -34,7 +34,9 @@
       "Bash(Select-Object:*)",
       "Bash(Get-ChildItem:*)",
       "Bash(taskkill:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(tree:*)",
+      "Bash(exit)"
     ],
     "deny": [],
     "ask": []

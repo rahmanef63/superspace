@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { useInitializeChat } from "../hooks"
+import { useInitializeChat } from "@/frontend/features/chat/shared/hooks"
 import { SettingsView } from "./SettingsView"
 
 interface WASettingsPageProps {

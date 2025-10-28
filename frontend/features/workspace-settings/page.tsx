@@ -1,5 +1,6 @@
 "use client";
 
+import { SettingsView } from "@/frontend/shared/settings/SettingsView";
 import type { Id } from "@convex/_generated/dataModel";
 
 export interface WorkspaceSettingsPageProps {
@@ -11,10 +12,7 @@ export default function WorkspaceSettingsPage({ workspaceId }: WorkspaceSettings
 
   return (
     <div className="flex flex-1 items-center justify-center p-8">
-      <div className="space-y-2 text-center">
-        <h2 className="text-xl font-semibold">Workspace Settings</h2>
-        <p className="text-sm text-muted-foreground">Configuration options will be built out here soon.</p>
-      </div>
+      <SettingsView />
     </div>
   );
 }

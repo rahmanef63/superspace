@@ -27,47 +27,40 @@ export { CompositeInspector, useCompositeInspector } from './inspector/Composite
 export { SmartInspector } from './inspector/SmartInspector'
 export { ChildrenManager } from './inspector/ChildrenManager'
 export { InspectorTabs } from './inspector/InspectorTabs'
-export { PropertyEditor } from './inspector/PropertyEditor'
-export { StyleEditor } from './inspector/StyleEditor'
+export { UnifiedInspector } from './inspector/UnifiedInspector'
 export { ChatAI } from './inspector/ChatAI'
 
 // ============================================================
 // Component Library
 // ============================================================
-export { ComponentLibrary } from './library/ComponentLibrary'
-export { LibraryPanel } from './library/LibraryPanel'
-export { LibrarySearch } from './library/LibrarySearch'
-export { ComponentCard } from './library/ComponentCard'
+export { UnifiedLibrary } from './library/UnifiedLibrary'
+export { TemplateLibrary } from './library/TemplateLibrary'
+export { DraggableLibraryItem } from './library/DraggableLibraryItem'
 
 // ============================================================
 // Blocks (Composite Components)
 // ============================================================
 export * from './blocks'
-export type { BlockDefinition, BlockProps, BlockConfig } from './blocks/types'
 
 // ============================================================
 // Elements (Atomic Components)
 // ============================================================
 export * from './elements'
-export type { ElementDefinition, ElementProps, ElementConfig } from './elements/types'
 
 // ============================================================
 // Sections (Page Sections)
 // ============================================================
 export * from './sections'
-export type { SectionDefinition, SectionProps, SectionConfig } from './sections/types'
 
 // ============================================================
 // Templates (Full Pages)
 // ============================================================
 export * from './templates'
-export type { TemplateDefinition, TemplateProps, TemplateConfig } from './templates/types'
 
 // ============================================================
 // Flows (Visual Programming)
 // ============================================================
 export * from './flows'
-export type { FlowDefinition, FlowNodeType, FlowEdgeType } from './flows/types'
 
 // ============================================================
 // Types

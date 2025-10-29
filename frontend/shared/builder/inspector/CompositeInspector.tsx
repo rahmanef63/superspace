@@ -10,8 +10,8 @@ import React, { useState, useMemo } from 'react'
 import { ChevronDown, ChevronRight, Box, Layers } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useCrossFeatureRegistry } from '@/frontend/shared/registry/CrossFeatureRegistry'
-import { useSharedCanvas } from '@/frontend/shared/canvas/core/SharedCanvasProvider'
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry'
+import { useSharedCanvas } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider'
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl'
 import { useInspectorControls, setNestedValue, getNestedValue } from './hooks/useInspectorControls'
 
@@ -46,7 +46,7 @@ interface ComponentTreeNode {
  * @example
  * ```tsx
  * // In your editor/canvas
- * import { CompositeInspector } from "@/frontend/shared/components/inspector/CompositeInspector"
+ * import { CompositeInspector } from "@/frontend/shared/builder/inspector/CompositeInspector"
  *
  * <CompositeInspector
  *   selectedNode={selectedNode}

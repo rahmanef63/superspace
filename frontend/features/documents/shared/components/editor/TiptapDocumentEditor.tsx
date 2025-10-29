@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { CommentsPanel } from "@/frontend/shared/components/comments/components/CommentsPanel";
+import { CommentsPanel } from "@/frontend/shared/communications/comments/components/CommentsPanel";
 import {
   useDocumentById,
   useMenuPresenceUserId,

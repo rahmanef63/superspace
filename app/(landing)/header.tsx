@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils'
 
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { UserButton } from "@clerk/nextjs";
-import { SafeSignInButton } from "@/frontend/shared/auth/components/SafeSignInButton";
-import { SafeSignUpButton } from "@/frontend/shared/auth/components/SafeSignUpButton";
+import { SafeSignInButton } from "@/frontend/shared/foundation/auth/components/SafeSignInButton";
+import { SafeSignUpButton } from "@/frontend/shared/foundation/auth/components/SafeSignUpButton";
 
 import { dark } from '@clerk/themes'
 import { useTheme } from "next-themes"

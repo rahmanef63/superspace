@@ -3,7 +3,7 @@
  * Auto-loads all template wrappers from subdirectories
  */
 
-import type { TemplateWrapper } from "../types"
+import type { TemplateWrapper } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

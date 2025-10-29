@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui';
-import type { CMSNode, CMSEdge } from '../../../shared/types';
-import { getWidgetConfig } from '../../../shared/registry';
+import type { CMSNode, CMSEdge } from '@/frontend/shared/foundation/types';
+import { getWidgetConfig } from '@/frontend/shared/foundation/registry';
 import { uid } from '@/lib/utils';
 
 interface AutoConnectButtonProps {

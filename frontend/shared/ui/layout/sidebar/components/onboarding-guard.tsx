@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useMutation, useQuery } from "convex/react"
-import { useAuthed } from "@/frontend/shared/auth/hooks/useAuthed"
+import { useAuthed } from "@/frontend/shared/foundation/auth/hooks/useAuthed"
 import { api } from "@/convex/_generated/api"
 
 export function OnboardingGuard() {

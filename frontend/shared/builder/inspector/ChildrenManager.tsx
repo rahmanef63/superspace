@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui';
-import { useSharedCanvas } from '@/frontend/shared/canvas/core/SharedCanvasProvider';
+import { useSharedCanvas } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider';
 
 export const ChildrenManager: React.FC = () => {
   const { childrenOrdered, reorderChild, removeChildEdge } = useSharedCanvas();

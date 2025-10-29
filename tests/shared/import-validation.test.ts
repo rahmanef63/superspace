@@ -20,24 +20,24 @@ describe('Shared Import Validation - Baseline', () => {
     it('should import canvas core functionality', async () => {
       // Critical for CMS, Database, Workflow features
       const { SharedCanvasProvider } = await import(
-        '@/frontend/shared/canvas/core/SharedCanvasProvider'
+        '@/frontend/shared/builder/canvas/core/SharedCanvasProvider'
       )
       expect(SharedCanvasProvider).toBeDefined()
       expect(typeof SharedCanvasProvider).toBe('function')
     })
 
     it('should import canvas hooks', async () => {
-      const { useSharedCanvas } = await import('@/frontend/shared/canvas/core/hooks')
+      const { useSharedCanvas } = await import('@/frontend/shared/builder/canvas/core/hooks')
       expect(useSharedCanvas).toBeDefined()
       expect(typeof useSharedCanvas).toBe('function')
     })
 
     it('should import inspector components', async () => {
       const { CompositeInspector } = await import(
-        '@/frontend/shared/components/inspector/CompositeInspector'
+        '@/frontend/shared/builder/inspector/CompositeInspector'
       )
       const { SmartInspector } = await import(
-        '@/frontend/shared/components/inspector/SmartInspector'
+        '@/frontend/shared/builder/inspector/SmartInspector'
       )
 
       expect(CompositeInspector).toBeDefined()
@@ -46,14 +46,14 @@ describe('Shared Import Validation - Baseline', () => {
 
     it('should import template library', async () => {
       const { TemplateLibrary } = await import(
-        '@/frontend/shared/components/library/TemplateLibrary'
+        '@/frontend/shared/builder/library/TemplateLibrary'
       )
       expect(TemplateLibrary).toBeDefined()
     })
 
     it('should import component utils', async () => {
       const { createComponent } = await import(
-        '@/frontend/shared/components/utils/componentFactory'
+        '@/frontend/shared/ui/components/utils/componentFactory'
       )
       expect(createComponent).toBeDefined()
       expect(typeof createComponent).toBe('function')
@@ -83,7 +83,7 @@ describe('Shared Import Validation - Baseline', () => {
     it('should import menu components', async () => {
       // Check if menu components exist
       try {
-        await import('@/frontend/shared/layout/menus/components')
+        await import('@/frontend/shared/ui/layout/menus/components')
       } catch (e) {
         // May not have index, that's ok for baseline
         console.log('Menu components may need index.ts')
@@ -94,13 +94,13 @@ describe('Shared Import Validation - Baseline', () => {
   describe('Communications Domain Imports', () => {
     it('should import chat components', async () => {
       const { ChatContainer } = await import(
-        '@/frontend/shared/chat/components/ChatContainer'
+        '@/frontend/shared/communications/chat/components/ChatContainer'
       )
       const { ChatComposer } = await import(
-        '@/frontend/shared/chat/components/ChatComposer'
+        '@/frontend/shared/communications/chat/components/ChatComposer'
       )
       const { ChatMessage } = await import(
-        '@/frontend/shared/chat/components/ChatMessage'
+        '@/frontend/shared/communications/chat/components/ChatMessage'
       )
 
       expect(ChatContainer).toBeDefined()
@@ -111,7 +111,7 @@ describe('Shared Import Validation - Baseline', () => {
     it('should import chat hooks', async () => {
       // Check if chat hooks exist
       try {
-        const hooks = await import('@/frontend/shared/chat/hooks')
+        const hooks = await import('@/frontend/shared/communications/chat/hooks')
         expect(hooks).toBeDefined()
       } catch (e) {
         console.log('Chat hooks import:', e)
@@ -122,13 +122,13 @@ describe('Shared Import Validation - Baseline', () => {
   describe('UI Domain Imports', () => {
     it('should import basic UI components', async () => {
       const { TextComponent } = await import(
-        '@/frontend/shared/components/Text/Text.component'
+        '@/frontend/shared/ui/components/Text/Text.component'
       )
       const { ContainerComponent } = await import(
-        '@/frontend/shared/components/Container/Container.component'
+        '@/frontend/shared/ui/components/Container/Container.component'
       )
       const { ImageComponent } = await import(
-        '@/frontend/shared/components/Image/Image.component'
+        '@/frontend/shared/ui/components/Image/Image.component'
       )
 
       expect(TextComponent).toBeDefined()
@@ -138,13 +138,13 @@ describe('Shared Import Validation - Baseline', () => {
 
     it('should import form components', async () => {
       const { InputComponent } = await import(
-        '@/frontend/shared/components/Input/Input.component'
+        '@/frontend/shared/ui/components/Input/Input.component'
       )
       const { LabelComponent } = await import(
-        '@/frontend/shared/components/Label/Label.component'
+        '@/frontend/shared/ui/components/Label/Label.component'
       )
       const { TextareaComponent } = await import(
-        '@/frontend/shared/components/Textarea/Textarea.component'
+        '@/frontend/shared/ui/components/Textarea/Textarea.component'
       )
 
       expect(InputComponent).toBeDefined()
@@ -154,7 +154,7 @@ describe('Shared Import Validation - Baseline', () => {
 
     it('should import loading components', async () => {
       const { LoadingSpinner } = await import(
-        '@/frontend/shared/components/loading/LoadingSpinner'
+        '@/frontend/shared/ui/components/loading/LoadingSpinner'
       )
       expect(LoadingSpinner).toBeDefined()
     })
@@ -162,9 +162,9 @@ describe('Shared Import Validation - Baseline', () => {
 
   describe('Foundation Domain Imports', () => {
     it('should import auth components', async () => {
-      const { AuthModal } = await import('@/frontend/shared/auth/components/AuthModal')
+      const { AuthModal } = await import('@/frontend/shared/foundation/auth/components/AuthModal')
       const { SignInForm } = await import(
-        '@/frontend/shared/auth/components/SignInForm'
+        '@/frontend/shared/foundation/auth/components/SignInForm'
       )
 
       expect(AuthModal).toBeDefined()
@@ -172,14 +172,14 @@ describe('Shared Import Validation - Baseline', () => {
     })
 
     it('should import auth hooks', async () => {
-      const { useAuthed } = await import('@/frontend/shared/auth/hooks/useAuthed')
+      const { useAuthed } = await import('@/frontend/shared/foundation/auth/hooks/useAuthed')
       expect(useAuthed).toBeDefined()
       expect(typeof useAuthed).toBe('function')
     })
 
     it('should import utility functions', async () => {
       const { createComponent } = await import(
-        '@/frontend/shared/components/utils/componentFactory'
+        '@/frontend/shared/ui/components/utils/componentFactory'
       )
       expect(createComponent).toBeDefined()
     })
@@ -187,7 +187,7 @@ describe('Shared Import Validation - Baseline', () => {
     it('should import shared types', async () => {
       // Types may not have runtime representation, but import should not fail
       try {
-        await import('@/frontend/shared/types')
+        await import('@/frontend/shared/foundation/types')
       } catch (e) {
         console.log('Types import:', e)
       }
@@ -199,21 +199,21 @@ describe('Feature Import Validation - Critical Paths', () => {
   describe('CMS Feature Dependencies', () => {
     it('should import canvas provider', async () => {
       const { SharedCanvasProvider } = await import(
-        '@/frontend/shared/canvas/core/SharedCanvasProvider'
+        '@/frontend/shared/builder/canvas/core/SharedCanvasProvider'
       )
       expect(SharedCanvasProvider).toBeDefined()
     })
 
     it('should import inspector components', async () => {
       const { CompositeInspector } = await import(
-        '@/frontend/shared/components/inspector/CompositeInspector'
+        '@/frontend/shared/builder/inspector/CompositeInspector'
       )
       expect(CompositeInspector).toBeDefined()
     })
 
     it('should import template library', async () => {
       const { TemplateLibrary } = await import(
-        '@/frontend/shared/components/library/TemplateLibrary'
+        '@/frontend/shared/builder/library/TemplateLibrary'
       )
       expect(TemplateLibrary).toBeDefined()
     })
@@ -222,10 +222,10 @@ describe('Feature Import Validation - Critical Paths', () => {
   describe('Chat Feature Dependencies', () => {
     it('should import chat components from shared', async () => {
       const { ChatContainer } = await import(
-        '@/frontend/shared/chat/components/ChatContainer'
+        '@/frontend/shared/communications/chat/components/ChatContainer'
       )
       const { ChatMessage } = await import(
-        '@/frontend/shared/chat/components/ChatMessage'
+        '@/frontend/shared/communications/chat/components/ChatMessage'
       )
 
       expect(ChatContainer).toBeDefined()
@@ -252,21 +252,21 @@ describe('Feature Import Validation - Critical Paths', () => {
   describe('All Features - Common UI Dependencies', () => {
     it('should import text component', async () => {
       const { TextComponent } = await import(
-        '@/frontend/shared/components/Text/Text.component'
+        '@/frontend/shared/ui/components/Text/Text.component'
       )
       expect(TextComponent).toBeDefined()
     })
 
     it('should import container component', async () => {
       const { ContainerComponent } = await import(
-        '@/frontend/shared/components/Container/Container.component'
+        '@/frontend/shared/ui/components/Container/Container.component'
       )
       expect(ContainerComponent).toBeDefined()
     })
 
     it('should import loading spinner', async () => {
       const { LoadingSpinner } = await import(
-        '@/frontend/shared/components/loading/LoadingSpinner'
+        '@/frontend/shared/ui/components/loading/LoadingSpinner'
       )
       expect(LoadingSpinner).toBeDefined()
     })
@@ -275,32 +275,32 @@ describe('Feature Import Validation - Critical Paths', () => {
 
 describe('Registry Auto-Discovery Validation', () => {
   it('should load component registry', async () => {
-    const componentRegistry = await import('@/frontend/shared/components/registry')
+    const componentRegistry = await import('@/frontend/shared/ui/components/registry')
     expect(componentRegistry).toBeDefined()
   })
 
   it('should load element registry', async () => {
-    const elementRegistry = await import('@/frontend/shared/elements/index')
+    const elementRegistry = await import('@/frontend/shared/builder/elements/index')
     expect(elementRegistry).toBeDefined()
   })
 
   it('should load block registry', async () => {
-    const blockRegistry = await import('@/frontend/shared/blocks/index')
+    const blockRegistry = await import('@/frontend/shared/builder/blocks/index')
     expect(blockRegistry).toBeDefined()
   })
 
   it('should load section registry', async () => {
-    const sectionRegistry = await import('@/frontend/shared/sections/index')
+    const sectionRegistry = await import('@/frontend/shared/builder/sections/index')
     expect(sectionRegistry).toBeDefined()
   })
 
   it('should load template registry', async () => {
-    const templateRegistry = await import('@/frontend/shared/templates/index')
+    const templateRegistry = await import('@/frontend/shared/builder/templates/index')
     expect(templateRegistry).toBeDefined()
   })
 
   it('should load flow registry', async () => {
-    const flowRegistry = await import('@/frontend/shared/flows/index')
+    const flowRegistry = await import('@/frontend/shared/builder/flows/index')
     expect(flowRegistry).toBeDefined()
   })
 })
@@ -314,7 +314,7 @@ describe('Cross-Domain Dependencies', () => {
   it('should allow foundation imports from all domains', async () => {
     // Foundation is base layer, all domains can import from it
     const { createComponent } = await import(
-      '@/frontend/shared/components/utils/componentFactory'
+      '@/frontend/shared/ui/components/utils/componentFactory'
     )
     expect(createComponent).toBeDefined()
   })
@@ -324,8 +324,8 @@ describe('Type Safety Validation', () => {
   it('should export TypeScript types correctly', async () => {
     // Runtime check that type files exist
     try {
-      await import('@/frontend/shared/canvas/core/types')
-      await import('@/frontend/shared/types')
+      await import('@/frontend/shared/builder/canvas/core/types')
+      await import('@/frontend/shared/foundation/types')
       expect(true).toBe(true)
     } catch (e) {
       console.log('Type imports:', e)
@@ -432,10 +432,10 @@ describe('Import Performance', () => {
   it('should import quickly (baseline)', async () => {
     const start = performance.now()
 
-    await import('@/frontend/shared/canvas/core/SharedCanvasProvider')
-    await import('@/frontend/shared/components/inspector/CompositeInspector')
-    await import('@/frontend/shared/components/library/TemplateLibrary')
-    await import('@/frontend/shared/chat/components/ChatContainer')
+    await import('@/frontend/shared/builder/canvas/core/SharedCanvasProvider')
+    await import('@/frontend/shared/builder/inspector/CompositeInspector')
+    await import('@/frontend/shared/builder/library/TemplateLibrary')
+    await import('@/frontend/shared/communications/chat/components/ChatContainer')
     await import('@/frontend/shared/settings/featureSettingsRegistry')
 
     const end = performance.now()

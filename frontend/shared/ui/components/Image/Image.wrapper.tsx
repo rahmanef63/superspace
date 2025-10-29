@@ -5,7 +5,7 @@
 
 import { ImageComponent } from "./Image.component"
 import { createComponent, textProp, booleanProp, selectProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "../../types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 export interface ImageProps {
   src?: string

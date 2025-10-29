@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useConvexCMSPersistence } from '../useConvexCMSPersistence';
 
-vi.mock('@/frontend/shared/hooks/useConvexCMS', () => ({
+vi.mock('@/frontend/shared/foundation/hooks/useConvexCMS', () => ({
   useCMSCollections: vi.fn(),
   useCreateCollection: vi.fn(),
   useUpdateCollection: vi.fn(),
@@ -20,7 +20,7 @@ describe('useConvexCMSPersistence', () => {
   });
 
   it('should initialize with empty state', () => {
-    const { useCMSCollections } = require('@/frontend/shared/hooks/useConvexCMS');
+    const { useCMSCollections } = require('@/frontend/shared/foundation/hooks/useConvexCMS');
     const { useConvexWorkspaceContext } = require('@/frontend/shared/context/ConvexWorkspaceContext');
     
     useCMSCollections.mockReturnValue({ collections: [], loading: false });
@@ -39,7 +39,7 @@ describe('useConvexCMSPersistence', () => {
   });
 
   it('should save collection successfully', async () => {
-    const { useCMSCollections, useCreateCollection } = require('@/frontend/shared/hooks/useConvexCMS');
+    const { useCMSCollections, useCreateCollection } = require('@/frontend/shared/foundation/hooks/useConvexCMS');
     const { useConvexWorkspaceContext } = require('@/frontend/shared/context/ConvexWorkspaceContext');
     
     const mockCreate = vi.fn().mockResolvedValue('collection-1');
@@ -65,7 +65,7 @@ describe('useConvexCMSPersistence', () => {
   });
 
   it('should mark as dirty when nodes change', async () => {
-    const { useCMSCollections } = require('@/frontend/shared/hooks/useConvexCMS');
+    const { useCMSCollections } = require('@/frontend/shared/foundation/hooks/useConvexCMS');
     const { useConvexWorkspaceContext } = require('@/frontend/shared/context/ConvexWorkspaceContext');
     
     useCMSCollections.mockReturnValue({ collections: [], loading: false });

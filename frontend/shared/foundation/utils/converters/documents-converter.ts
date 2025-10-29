@@ -8,9 +8,9 @@ import type {
   ExportSchemaV1Type,
   ConversionOptions,
   ConversionResult,
-} from "../../types"
-import { createConversionContext } from "../../types"
-import { SCHEMA_VERSION, SCHEMA_FORMAT } from "../../types"
+} from "../types"
+import { createConversionContext } from "../types"
+import { SCHEMA_VERSION, SCHEMA_FORMAT } from "../types"
 
 // ============================================================================
 // Documents Blocks → Shared System

@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
 // Mock the RegistryLoader to avoid fast-glob dependency issues in browser environment
-vi.mock("@/frontend/shared/lib/registry/RegistryLoader", () => ({
+vi.mock("@/frontend/shared/foundation/utils/registry/RegistryLoader", () => ({
   RegistryLoader: class {
     async load() {
       return { loaded: 0, failed: 0, errors: [] }
@@ -19,32 +19,32 @@ import {
   getAllComponentWrappers,
   getComponentsByCategory,
   searchComponents,
-} from "@/frontend/shared/components/registry"
+} from "@/frontend/shared/ui/components/registry"
 import {
   elementRegistry,
   getElementWrapper,
   getAllElementWrappers,
-} from "@/frontend/shared/elements/registry"
+} from "@/frontend/shared/builder/elements/registry"
 import {
   blockRegistry,
   getBlockWrapper,
   getAllBlockWrappers,
-} from "@/frontend/shared/blocks/registry"
+} from "@/frontend/shared/builder/blocks/registry"
 import {
   sectionRegistry,
   getSectionWrapper,
   getAllSectionWrappers,
-} from "@/frontend/shared/sections/registry"
+} from "@/frontend/shared/builder/sections/registry"
 import {
   templateRegistry,
   getTemplateWrapper,
   getAllTemplateWrappers,
-} from "@/frontend/shared/templates/registry"
+} from "@/frontend/shared/builder/templates/registry"
 import {
   flowRegistry,
   getFlowWrapper,
   getAllFlowWrappers,
-} from "@/frontend/shared/flows/registry"
+} from "@/frontend/shared/builder/flows/registry"
 
 describe("Auto-Discovery Pattern", () => {
   describe("Component Registry", () => {

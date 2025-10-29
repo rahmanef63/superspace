@@ -5,7 +5,7 @@
 
 import { Button as ShadcnButton } from "@/components/ui/button"
 import { createComponent, selectProp, booleanProp, childrenProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "../../types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 // Button props type from shadcn
 export interface ButtonProps {

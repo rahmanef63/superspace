@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { SafeSignOutButton } from "@/frontend/shared/auth/components/SafeSignOutButton"
+import { SafeSignOutButton } from "@/frontend/shared/foundation/auth/components/SafeSignOutButton"
 
 // ============================================================================
 // Props Injection Pattern - No Feature Coupling!

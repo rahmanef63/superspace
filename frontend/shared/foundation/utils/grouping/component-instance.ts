@@ -3,8 +3,8 @@
  * Create reusable components with instances
  */
 
-import type { ComponentDefinition, ComponentInstance, AnyNode } from "../../types"
-import { ComponentInstanceError } from "../../types"
+import type { ComponentDefinition, ComponentInstance, AnyNode } from "../types"
+import { ComponentInstanceError } from "../types"
 
 // ============================================================================
 // Create Component Definition

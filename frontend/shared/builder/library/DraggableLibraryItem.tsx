@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDnD } from '../../canvas/core/DnDProvider';
 import type { LucideIcon } from 'lucide-react';
-import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/icons';
+import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui/icons';
 
 interface DraggableLibraryItemProps {
   componentKey: string;

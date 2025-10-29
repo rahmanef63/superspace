@@ -34,6 +34,10 @@
         "check:workspaces": "tsx scripts/health/check-workspaces.ts",
         "check:workspaces:fix": "tsx scripts/health/check-workspaces.ts --fix",
         "analyze:feature": "tsx scripts/features/analyze-feature.ts",
+        "preflight:restructure": "tsx scripts/preflight-restructure-check.ts",
+        "validate:restructure": "tsx scripts/validate-restructure.ts",
+        "validate:imports": "tsx scripts/validate-imports.ts",
+        "validate:imports:fix": "tsx scripts/validate-imports.ts --fix",
         "precommit": "pnpm run lint && pnpm run validate:all && pnpm test"
     },
     "dependencies": {

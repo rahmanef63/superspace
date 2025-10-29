@@ -1,4 +1,4 @@
-import type { FeatureManifest } from '../../shared/types/manifest';
+import type { FeatureManifest } from '@/frontend/shared/foundation/types/manifest';
 
 const automationManifest: FeatureManifest = {
   id: 'automation',

@@ -36,7 +36,9 @@
       "Bash(taskkill:*)",
       "Bash(timeout:*)",
       "Bash(tree:*)",
-      "Bash(exit)"
+      "Bash(exit)",
+      "Bash(cut:*)",
+      "Bash(xargs sed:*)"
     ],
     "deny": [],
     "ask": []

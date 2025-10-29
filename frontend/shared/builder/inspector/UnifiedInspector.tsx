@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCrossFeatureRegistry } from '../../registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
 import { useSharedCanvas } from '../../canvas/core/SharedCanvasProvider';
 import { Input, Label, Select, Switch, Button } from '@/components/ui';
 import { ChildrenManager } from './ChildrenManager';

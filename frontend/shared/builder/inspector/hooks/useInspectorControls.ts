@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { inspectorConfig } from '../config/inspectorConfig';
 import { InspectorControl } from '../types/InspectorTypes';
-import { useCrossFeatureRegistry } from '@/frontend/shared/registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
 
 export function useInspectorControls(widgetType: string) {
   const registry = useCrossFeatureRegistry();

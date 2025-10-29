@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useWorkspaceContext } from '@/frontend/shared/context/WorkspaceContext';
-import { useCMSSchemas, useCreateSchema, useUpdateSchema } from '@/frontend/shared/hooks/useCMSBackend';
+import { useCMSSchemas, useCreateSchema, useUpdateSchema } from '@/frontend/shared/foundation/hooks/useCMSBackend';
 import type { CMSNode, CMSEdge, Schema } from '../types';
 import { toSchema } from './useSchema';
 import { fromSchema } from './useSchemaParser';

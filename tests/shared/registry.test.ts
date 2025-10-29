@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
 // Mock the RegistryLoader to avoid fast-glob dependency issues in browser environment
-vi.mock("@/frontend/shared/lib/registry/RegistryLoader", () => ({
+vi.mock("@/frontend/shared/foundation/utils/registry/RegistryLoader", () => ({
   RegistryLoader: class {
     async load() {
       return { loaded: 0, failed: 0, errors: [] }
@@ -13,8 +13,8 @@ vi.mock("@/frontend/shared/lib/registry/RegistryLoader", () => ({
   }
 }))
 
-import { Registry } from "@/frontend/shared/lib/registry"
-import type { ComponentWrapper } from "@/frontend/shared/types"
+import { Registry } from "@/frontend/shared/foundation/utils/registry"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 describe("Registry", () => {
   let registry: Registry

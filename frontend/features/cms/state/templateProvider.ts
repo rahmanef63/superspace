@@ -6,7 +6,7 @@
  * without directly importing from CMS feature
  */
 
-import type { TemplateProvider } from "@/frontend/shared/components/library/TemplateLibrary"
+import type { TemplateProvider } from "@/frontend/shared/builder/library/TemplateLibrary"
 import {
   getDefaultTemplates,
   listAssetTemplates,
@@ -20,7 +20,7 @@ import {
  * @example
  * ```tsx
  * import { cmsTemplateProvider } from "@/frontend/features/cms/state/templateProvider"
- * import { TemplateLibrary } from "@/frontend/shared/components/library/TemplateLibrary"
+ * import { TemplateLibrary } from "@/frontend/shared/builder/library/TemplateLibrary"
  *
  * <TemplateLibrary
  *   onOpen={handleOpen}

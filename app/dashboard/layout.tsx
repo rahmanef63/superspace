@@ -1,8 +1,8 @@
-import { AppSidebar } from "@/frontend/shared/layout/sidebar/primary/AppSidebar"
-import { SiteHeader } from "@/frontend/shared/layout/sidebar/components/site-header"
-import { BreadcrumbsProvider } from "@/frontend/shared/layout/sidebar/components/breadcrumbs-context"
-import { LoadingBar } from "@/frontend/shared/layout/sidebar/components/loading-bar"
-import { OnboardingGuard } from "@/frontend/shared/layout/sidebar/components/onboarding-guard"
+import { AppSidebar } from "@/frontend/shared/ui/layout/sidebar/primary/AppSidebar"
+import { SiteHeader } from "@/frontend/shared/ui/layout/sidebar/components/site-header"
+import { BreadcrumbsProvider } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
+import { LoadingBar } from "@/frontend/shared/ui/layout/sidebar/components/loading-bar"
+import { OnboardingGuard } from "@/frontend/shared/ui/layout/sidebar/components/onboarding-guard"
 import { Suspense } from "react"
 import {
   SidebarInset,

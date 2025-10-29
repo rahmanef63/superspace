@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import type { Schema, Workspace } from '../../../shared/types';
-import { getWidgetConfig } from '../../../shared/registry';
+import type { Schema, Workspace } from '@/frontend/shared/foundation/types';
+import { getWidgetConfig } from '@/frontend/shared/foundation/registry';
 import { cn } from '@/lib/utils';
 import { getTemplateByKey, isBuiltinKey, instantiateDefaultTemplate } from '@/frontend/features/cms/state/templateStore';
 

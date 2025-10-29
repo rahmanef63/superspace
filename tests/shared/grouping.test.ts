@@ -10,8 +10,8 @@ import {
   removeFromGroup,
   lockGroup,
   unlockGroup,
-} from "@/frontend/shared/lib/grouping"
-import { EmptyGroupError, InvalidGroupOperationError } from "@/frontend/shared/types"
+} from "@/frontend/shared/foundation/utils/grouping"
+import { EmptyGroupError, InvalidGroupOperationError } from "@/frontend/shared/foundation/types"
 
 describe("Group Operations", () => {
   it("should create a group", () => {

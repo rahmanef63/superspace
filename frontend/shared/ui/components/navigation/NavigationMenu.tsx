@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import { getFeatureIcon } from '@/frontend/shared/icons';
+import { getFeatureIcon } from '@/frontend/shared/ui/icons';
 
 export interface NavigationItem {
   id: string;

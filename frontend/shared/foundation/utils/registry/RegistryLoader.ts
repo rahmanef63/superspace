@@ -14,8 +14,8 @@ import type {
   NodeLevel,
   AnyWrapper,
   RegistryEntry,
-} from "../../types"
-import { RegistryLoadError } from "../../types"
+} from "../types"
+import { RegistryLoadError } from "../types"
 import type { Registry } from "./Registry"
 
 export class RegistryLoader implements IRegistryLoader {

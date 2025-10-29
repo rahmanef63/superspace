@@ -3,7 +3,7 @@
  * Auto-loads all component wrappers from subdirectories
  */
 
-import type { ComponentWrapper, RegistryEntry } from "../types"
+import type { ComponentWrapper, RegistryEntry } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

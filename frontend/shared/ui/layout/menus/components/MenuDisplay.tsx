@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Folder, FileText, Hash, ExternalLink, MoreHorizontal, Pencil, Palette, Trash2, Copy } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
-import { getIconComponent, getColorValue } from "@/frontend/shared/components/icons";
+import { getIconComponent, getColorValue } from "@/frontend/shared/ui/components/icons";
 import { useMenuItems, useMenuItem } from "../hooks/useMenuItems";
 import { useMenuMutations } from "../hooks/useMenuMutations";
 import {

@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import FeatureBadge from "@/frontend/shared/components/FeatureBadge"
+import FeatureBadge from "@/frontend/shared/ui/components/FeatureBadge"
 import { useCalendar } from "../hooks/useCalendar"
 import type { CalendarEvent } from "../types"
 

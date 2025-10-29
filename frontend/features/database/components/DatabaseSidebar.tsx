@@ -13,8 +13,8 @@ import {
 import {
   SecondarySidebarLayout,
   type SecondarySidebarItem,
-} from "@/frontend/shared/layout/sidebar/secondary";
-import { SearchBox } from "@/frontend/shared/components/controls";
+} from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { SearchBox } from "@/frontend/shared/ui/components/controls";
 import {
   Copy,
   Layers,

@@ -7,8 +7,8 @@ import type {
   AnyNode,
   ConversionOptions,
   ConversionResult,
-} from "../../types"
-import { createConversionContext } from "../../types"
+} from "../types"
+import { createConversionContext } from "../types"
 
 // ============================================================================
 // Export to TypeScript

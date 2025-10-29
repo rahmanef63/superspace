@@ -4,7 +4,7 @@ import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
 import { AIListView } from "./AIListView";
 import { AIDetailView } from "./AIDetailView";
-import { SecondarySidebarLayout } from "@/frontend/shared/layout/sidebar/secondary";
+import { SecondarySidebarLayout } from "@/frontend/shared/ui/layout/sidebar/secondary";
 
 export function AIView() {
   const [selectedChatId, setSelectedChatId] = useState<string>();

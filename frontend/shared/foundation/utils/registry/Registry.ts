@@ -21,7 +21,7 @@ import {
   DuplicateRegistrationError,
   ComponentNotFoundError,
   RegistryError,
-} from "../../types"
+} from "../types"
 
 export class Registry implements IRegistry {
   private components = new Map<string, ComponentWrapper>()

@@ -3,7 +3,7 @@
  * Caches registry data for faster loading
  */
 
-import type { IRegistryCache } from "../../types"
+import type { IRegistryCache } from "../types"
 
 export class RegistryCache implements IRegistryCache {
   private cache = new Map<string, any>()

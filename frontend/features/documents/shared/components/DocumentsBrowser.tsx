@@ -6,16 +6,16 @@ import { FileText, Plus } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ViewSwitcher } from "@/frontend/shared/layout/view";
-import { ViewToolbar } from "@/frontend/shared/layout/view/ViewToolbar";
-import { useViewMode } from "@/frontend/shared/layout/view/useViewMode";
+import { ViewSwitcher } from "@/frontend/shared/ui/layout/view";
+import { ViewToolbar } from "@/frontend/shared/ui/layout/view/ViewToolbar";
+import { useViewMode } from "@/frontend/shared/ui/layout/view/useViewMode";
 import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
   SecondarySidebarTools,
-} from "@/frontend/shared/layout/sidebar/secondary";
-import { DocumentMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
+} from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { DocumentMenuWrapper } from "@/frontend/shared/ui/layout/menus/components/SecondaryMenuWrappers";
 import type { DocumentRecord } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
 import { createDocumentViewConfig } from "../config";

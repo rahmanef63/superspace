@@ -3,7 +3,7 @@
  * Auto-loads all section wrappers from subdirectories
  */
 
-import type { SectionWrapper } from "../types"
+import type { SectionWrapper } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

@@ -5,7 +5,7 @@
 
 import { Card as ShadcnCard } from "@/components/ui/card"
 import { createComponent, childrenProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "../../types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 export interface CardProps {
   children?: React.ReactNode

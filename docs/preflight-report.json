@@ -1,0 +1,42 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "name": "Existing Tests",
+      "status": "warn",
+      "message": "⚠️  Tests ran with warnings (14 passed)",
+      "details": "Non-critical warnings detected"
+    },
+    {
+      "name": "Git Status",
+      "status": "warn",
+      "message": "⚠️  12 uncommitted changes detected",
+      "details": "Consider committing or stashing changes before restructuring"
+    },
+    {
+      "name": "Backup Branch",
+      "status": "warn",
+      "message": "⚠️  Backup branch already exists",
+      "details": "Using existing backup branch"
+    },
+    {
+      "name": "Import Validation",
+      "status": "warn",
+      "message": "⚠️  Import validation completed with warnings",
+      "details": "Some paths may need attention post-migration"
+    },
+    {
+      "name": "TypeScript",
+      "status": "warn",
+      "message": "⚠️  728 TypeScript errors detected",
+      "details": "Non-blocking (Next.js ignoreBuildErrors: true)"
+    },
+    {
+      "name": "Baseline Metrics",
+      "status": "warn",
+      "message": "⚠️  Could not record all metrics",
+      "details": "Command failed: find frontend/shared -type f \\( -name \"*.ts\" -o -name \"*.tsx\" \\) | wc -l\n'wc' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
+    }
+  ],
+  "timestamp": "2025-10-28T23:10:23.430Z"
+}

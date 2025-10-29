@@ -7,10 +7,10 @@
 
 import React from "react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { ChatContainer } from "@/frontend/shared/chat";
+import { ChatContainer } from "@/frontend/shared/communications/chat";
 import { useConvexChatDataSource } from "@/frontend/features/chat/adapters/convexChatAdapter";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import type { UserMeta, MessageDraft } from "@/frontend/shared/chat";
+import type { UserMeta, MessageDraft } from "@/frontend/shared/communications/chat";
 
 export type AIChatContainerProps = {
   workspaceId: Id<"workspaces"> | null;

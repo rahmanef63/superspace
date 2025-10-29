@@ -1,4 +1,4 @@
-import type { ComponentConfig } from '@/frontend/shared/registry/CrossFeatureRegistry';
+import type { ComponentConfig } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
 import { cmsWidgetRegistry } from '../widgets/registry';
 import { resolveWidgetIcon } from '../shared/utils/iconUtils';
 

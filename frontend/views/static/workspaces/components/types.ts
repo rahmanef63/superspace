@@ -6,7 +6,7 @@ export interface MemberManagementProps {
   onInviteClick?: () => void;
 }
 
-// WorkspaceSettingsProps is defined in @/frontend/shared/components/settings/components/WorkspaceSettings
+// WorkspaceSettingsProps is defined in @/frontend/shared/ui/components/settings/components/WorkspaceSettings
 // Re-export it from there to maintain single source of truth
 export type { WorkspaceSettingsProps } from "@/frontend/shared/settings/workspace/WorkspaceSettings";
 

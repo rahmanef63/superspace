@@ -6,8 +6,8 @@ import { describe, it, expect } from "vitest"
 import {
   convertCMSSchemaToV1,
   convertV1ToCMSSchema,
-} from "@/frontend/shared/lib/converters"
-import type { CMSLegacySchemaV04Type, ExportSchemaV1Type } from "@/frontend/shared/types"
+} from "@/frontend/shared/foundation/utils/converters"
+import type { CMSLegacySchemaV04Type, ExportSchemaV1Type } from "@/frontend/shared/foundation/types"
 
 describe("CMS Converter", () => {
   it("should convert CMS v0.4 schema to v1.0", () => {

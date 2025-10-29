@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import type { Message as UiMessage } from '../../shared/types';
+import type { Message as UiMessage } from '@/frontend/shared/foundation/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 

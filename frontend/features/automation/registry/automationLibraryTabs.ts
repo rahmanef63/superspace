@@ -1,4 +1,4 @@
-import type { FeatureTab } from '../../../shared/registry/CrossFeatureRegistry';
+import type { FeatureTab } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
 
 export const registerAutomationLibraryTabs = (registerFeatureTabs: (feature: string, tabs: FeatureTab[]) => void) => {
   const automationLibraryTabs: FeatureTab[] = [

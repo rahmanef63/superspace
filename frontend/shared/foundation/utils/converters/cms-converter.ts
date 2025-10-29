@@ -9,9 +9,9 @@ import type {
   ConversionOptions,
   ConversionResult,
   CMSLegacySchemaV04Type,
-} from "../../types"
-import { createConversionContext } from "../../types"
-import { SCHEMA_VERSION, SCHEMA_FORMAT } from "../../types"
+} from "../types"
+import { createConversionContext } from "../types"
+import { SCHEMA_VERSION, SCHEMA_FORMAT } from "../types"
 
 // ============================================================================
 // CMS v0.4 → Shared System v1.0

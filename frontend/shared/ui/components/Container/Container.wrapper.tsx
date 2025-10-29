@@ -5,7 +5,7 @@
 
 import { ContainerComponent } from "./Container.component"
 import { createComponent, selectProp, textProp, childrenProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "../../types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 export interface ContainerProps {
   display?: string

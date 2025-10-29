@@ -3,7 +3,7 @@
  * Auto-loads all flow wrappers from subdirectories
  */
 
-import type { FlowWrapper } from "../types"
+import type { FlowWrapper } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

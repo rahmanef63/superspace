@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { cn } from '../../../shared/lib/utils';
+import { cn } from '@/frontend/shared/foundation/utils/utils';
 import type { CanvasNode, NodeConfig } from '../core/types';
 import type { LucideIcon } from 'lucide-react';
 import { Boxes, Database as DatabaseIcon, FileCode, GitBranch } from 'lucide-react';

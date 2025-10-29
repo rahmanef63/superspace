@@ -3,7 +3,7 @@
  * Auto-loads all block wrappers from subdirectories
  */
 
-import type { BlockWrapper } from "../types"
+import type { BlockWrapper } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

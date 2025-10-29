@@ -75,20 +75,20 @@ export function SmartInspector({
  * Example: Custom Editor Integration
  *
  * ```tsx
- * import { SmartInspector } from "@/frontend/shared/components/inspector/SmartInspector"
- * import { useSharedCanvas } from "@/frontend/shared/canvas/core/SharedCanvasProvider"
+ * import { SmartInspector } from "@/frontend/shared/builder/inspector/SmartInspector"
+ * import { useSharedCanvas } from "@/frontend/shared/builder/canvas/core/SharedCanvasProvider"
  *
  * function MyEditor() {
  *   const { selectedNode } = useSharedCanvas()
  *
  *   return (
  *     <div className="flex h-screen">
- *       {/* Canvas */}
+ *       { Canvas }
  *       <div className="flex-1">
  *         <ReactFlow ... />
  *       </div>
  *
- *       {/* Inspector Sidebar */}
+ *       { Inspector Sidebar }
  *       <div className="w-80 border-l">
  *         <SmartInspector selectedNode={selectedNode} />
  *       </div>

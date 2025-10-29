@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import FeatureBadge from "@/frontend/shared/components/FeatureBadge"
+import FeatureBadge from "@/frontend/shared/ui/components/FeatureBadge"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
 

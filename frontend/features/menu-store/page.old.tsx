@@ -26,11 +26,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { MenuItemForm } from "@/frontend/shared/layout/menus/components/MenuItemForm";
-import { DragDropMenuTree } from "@/frontend/shared/layout/menus/components/DragDropMenuTree";
-import { MenuDisplay } from "@/frontend/shared/layout/menus/components/MenuDisplay";
-import { BreadcrumbNavigation } from "@/frontend/shared/layout/menus/components/BreadcrumbNavigation";
-import { MenuPreview } from "@/frontend/shared/layout/menus/components/MenuPreview";
+import { MenuItemForm } from "@/frontend/shared/ui/layout/menus/components/MenuItemForm";
+import { DragDropMenuTree } from "@/frontend/shared/ui/layout/menus/components/DragDropMenuTree";
+import { MenuDisplay } from "@/frontend/shared/ui/layout/menus/components/MenuDisplay";
+import { BreadcrumbNavigation } from "@/frontend/shared/ui/layout/menus/components/BreadcrumbNavigation";
+import { MenuPreview } from "@/frontend/shared/ui/layout/menus/components/MenuPreview";
 import {
   Plus,
   Trash2,
@@ -46,16 +46,16 @@ import {
   LayoutGrid,
   LayoutList,
 } from "lucide-react";
-import { getIconComponent } from "@/frontend/shared/components/icons";
+import { getIconComponent } from "@/frontend/shared/ui/components/icons";
 import { cn } from "@/lib/utils";
 import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
-} from "@/frontend/shared/layout/sidebar/secondary";
-import { SecondarySidebarTools } from "@/frontend/shared/layout/sidebar/secondary";
-import { MenuStoreMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
-import type { MenuItemMetadata } from "@/frontend/shared/layout/menus/types";
+} from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { SecondarySidebarTools } from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { MenuStoreMenuWrapper } from "@/frontend/shared/ui/layout/menus/components/SecondaryMenuWrappers";
+import type { MenuItemMetadata } from "@/frontend/shared/ui/layout/menus/types";
 
 export interface MenuStorePageProps {
   workspaceId: Id<"workspaces"> | null;

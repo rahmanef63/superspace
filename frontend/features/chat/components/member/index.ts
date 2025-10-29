@@ -15,8 +15,8 @@ export {
   EncryptionSection,
   GroupsSection,
   MemberDetailView,
-} from "@/frontend/shared/chat/components/member";
+} from "@/frontend/shared/communications/chat/components/member";
 export type {
   MemberInfoContact,
   MemberInfoSection,
-} from "@/frontend/shared/chat/components/member";
+} from "@/frontend/shared/communications/chat/components/member";

@@ -5,7 +5,7 @@ import {
   useCreateCollection,
   useUpdateCollection,
   useDeleteCollection
-} from '@/frontend/shared/hooks/useConvexCMS';
+} from '@/frontend/shared/foundation/hooks/useConvexCMS';
 import { useConvexWorkspaceContext } from '@/frontend/shared/context/ConvexWorkspaceContext';
 import { toSchema, fromSchema } from './useSchemaParser';
 

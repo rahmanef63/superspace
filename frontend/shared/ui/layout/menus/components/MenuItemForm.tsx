@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, X } from "lucide-react";
-import { IconPicker } from "@/frontend/shared/components/icons";
+import { IconPicker } from "@/frontend/shared/ui/components/icons";
 
 interface MenuItemFormProps {
   workspaceId: Id<"workspaces">;

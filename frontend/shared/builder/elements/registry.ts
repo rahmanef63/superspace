@@ -4,7 +4,7 @@
  * Auto-loads all element wrappers from subdirectories
  */
 
-import type { ElementWrapper } from "../types"
+import type { ElementWrapper } from "@/frontend/shared/foundation/types"
 
 // ============================================================================
 // Auto-Discovery using import.meta.glob()

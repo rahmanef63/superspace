@@ -8,11 +8,11 @@ import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
-} from "@/frontend/shared/layout/sidebar/secondary";
-import { SecondarySidebarTools } from "@/frontend/shared/layout/sidebar/secondary";
-import { DragDropMenuTree } from "@/frontend/shared/layout/menus/components/DragDropMenuTree";
-import { BreadcrumbNavigation } from "@/frontend/shared/layout/menus/components/BreadcrumbNavigation";
-import { MenuStoreMenuWrapper } from "@/frontend/shared/layout/menus/components/SecondaryMenuWrappers";
+} from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { SecondarySidebarTools } from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { DragDropMenuTree } from "@/frontend/shared/ui/layout/menus/components/DragDropMenuTree";
+import { BreadcrumbNavigation } from "@/frontend/shared/ui/layout/menus/components/BreadcrumbNavigation";
+import { MenuStoreMenuWrapper } from "@/frontend/shared/ui/layout/menus/components/SecondaryMenuWrappers";
 
 import { useMenuStoreData, useMenuStoreMutations, useMenuStoreState } from "./hooks";
 import { InstalledSection, AvailableSection, ImportSection } from "./sections";

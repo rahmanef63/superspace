@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/layout/view";
+import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/ui/layout/view";
 import { Button } from "@/components/ui/button";
 import { Mail, Check, X, Users, UserPlus } from "lucide-react";
 

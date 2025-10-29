@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { useCrossFeatureRegistry } from '../../registry/CrossFeatureRegistry';
 import { DraggableLibraryItem } from './DraggableLibraryItem';
-import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/icons';
+import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui/icons';
 import type { LucideIcon } from 'lucide-react';
 
 interface UnifiedLibraryProps {

@@ -5,7 +5,7 @@
 
 import { Input as ShadcnInput } from "@/components/ui/input"
 import { createComponent, textProp, selectProp, booleanProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "../../types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
 
 export interface InputProps {
   type?: "text" | "email" | "password" | "number" | "tel" | "url" | "search" | "date" | "time" | "datetime-local" | "month" | "week"

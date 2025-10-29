@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect } from "vitest"
-import { exportToJSON, exportToJSONString } from "@/frontend/shared/lib/export"
-import { importFromJSON, importFromJSONString } from "@/frontend/shared/lib/import"
-import type { ComponentNode } from "@/frontend/shared/types"
+import { exportToJSON, exportToJSONString } from "@/frontend/shared/foundation/utils/export"
+import { importFromJSON, importFromJSONString } from "@/frontend/shared/foundation/utils/import"
+import type { ComponentNode } from "@/frontend/shared/foundation/types"
 
 describe("Export/Import", () => {
   it("should export nodes to JSON", () => {

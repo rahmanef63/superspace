@@ -7,7 +7,7 @@ import { SettingsSidebar } from "./SettingsSidebar";
 import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
-} from "@/frontend/shared/layout/sidebar/secondary";
+} from "@/frontend/shared/ui/layout/sidebar/secondary";
 import {
   GeneralSettings,
   AccountSettings,

@@ -27,21 +27,21 @@ import {
   Plus,
 } from 'lucide-react';
 
-import { SharedCanvasProvider, useSharedCanvas } from "@/frontend/shared/canvas/core/SharedCanvasProvider";
-import { UnifiedLibrary } from '@/frontend/shared/components/library/UnifiedLibrary';
-import { TemplateLibrary, addSelectionAsTemplate } from '@/frontend/shared/components/library/TemplateLibrary';
-import { UnifiedInspector } from '@/frontend/shared/components/inspector/UnifiedInspector';
-import { SharedCanvas } from '@/frontend/shared/components/canvas/SharedCanvas';
-import { CMSPreview } from '@/frontend/shared/components/preview/CMSPreview';
+import { SharedCanvasProvider, useSharedCanvas } from "@/frontend/shared/builder/canvas/core/SharedCanvasProvider";
+import { UnifiedLibrary } from '@/frontend/shared/builder/library/UnifiedLibrary';
+import { TemplateLibrary, addSelectionAsTemplate } from '@/frontend/shared/builder/library/TemplateLibrary';
+import { UnifiedInspector } from '@/frontend/shared/builder/inspector/UnifiedInspector';
+import { SharedCanvas } from '@/frontend/shared/ui/components/canvas/SharedCanvas';
+import { CMSPreview } from '@/frontend/shared/ui/components/preview/CMSPreview';
 import { ShadcnNode } from '../slices/canvas/components/ShadcnNode';
 import { Renderer } from '../slices/renderer/components/Renderer';
 import { toSchema } from '../shared/hooks/useSchema';
 import { CMSInspectorRenderer } from '../components/CMSInspectorRenderer';
 
-import { useCrossFeatureRegistry } from '@/frontend/shared/registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
 import { registerCMSComponents } from '../registry/cmsRegistry';
 import { registerCMSLibraryTabs } from '../registry/cmsLibraryTabs';
-import { DnDProvider } from "@/frontend/shared/canvas/core/DnDProvider";
+import { DnDProvider } from "@/frontend/shared/builder/canvas/core/DnDProvider";
 import { fromSchema as parseSchema } from '../shared/hooks/useSchemaParser';
 import { getDefaultTemplates, getTemplateByKey, isBuiltinKey } from '@/frontend/features/cms/state/templateStore';
 

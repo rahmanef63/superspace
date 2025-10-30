@@ -38,6 +38,7 @@ export {
 // ============================================================
 export * from './general'
 export * from './account'
+export * from './chats'
 export * from './video-voice'
 export * from './notifications'
 export * from './personalization'

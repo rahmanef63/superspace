@@ -11,7 +11,7 @@ import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/views/static/workspaces/c
 import { useAuthed } from "@/frontend/shared/foundation"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { getPageById } from "@/frontend/views/manifest"
-import { AppContentWrapper } from "@/frontend/views/AppContentWrapper"
+import { AppContentWrapper } from "@/frontend/shared/context/AppContentWrapper"
 import { FeatureNotReady } from "@/frontend/shared/ui"
 import { useToast } from "@/hooks/use-toast"
 

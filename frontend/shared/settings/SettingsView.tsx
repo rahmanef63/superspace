@@ -10,6 +10,7 @@ import {
 } from "@/frontend/shared/ui";
 import { GeneralSettings } from "./general";
 import { AccountSettings } from "./account";
+import { ChatsSettings } from "./chats";
 import { VideoVoiceSettings } from "./video-voice";
 import { NotificationSettings } from "./notifications";
 import { PersonalizationSettings } from "./personalization";
@@ -20,6 +21,7 @@ import { HelpSettings } from "./help";
 const SETTINGS_COMPONENTS = {
   general: GeneralSettings,
   account: AccountSettings,
+  chats: ChatsSettings,
   'video-voice': VideoVoiceSettings,
   notifications: NotificationSettings,
   personalization: PersonalizationSettings,

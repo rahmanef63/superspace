@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "vitest"
 
-import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/views/static/workspaces/constants/navigation"
+import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/foundation/workspaces/constants/navigation"
 import { DEFAULT_PAGE_MANIFEST } from "@/frontend/views/manifest"
 
 describe("WORKSPACE_NAVIGATION_ITEMS registry", () => {

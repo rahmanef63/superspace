@@ -68,10 +68,34 @@ export function DynamicSettingsView({
   }
 
   // Set default category on mount
+  const lastAppliedDefault = React.useRef<string | undefined>()
+
   React.useEffect(() => {
-    if (defaultCategory && allCategories.some((cat) => cat.id === defaultCategory)) {
-      setActiveCategory(defaultCategory)
-    } else if (allCategories.length > 0 && !activeCategory) {
+    if (allCategories.length === 0) {
+      return
+    }
+
+    if (defaultCategory) {
+      const hasDefault = allCategories.some((cat) => cat.id === defaultCategory)
+      if (hasDefault && lastAppliedDefault.current !== defaultCategory) {
+        setActiveCategory(defaultCategory)
+        lastAppliedDefault.current = defaultCategory
+      }
+
+      if (!hasDefault) {
+        lastAppliedDefault.current = undefined
+      }
+
+      return
+    }
+
+    lastAppliedDefault.current = undefined
+
+    const activeStillValid = activeCategory
+      ? allCategories.some((cat) => cat.id === activeCategory)
+      : false
+
+    if (!activeStillValid) {
       setActiveCategory(allCategories[0].id)
     }
   }, [defaultCategory, allCategories, activeCategory, setActiveCategory])
@@ -82,7 +106,7 @@ export function DynamicSettingsView({
   }, [isMobile])
 
   return (
-    <div className={cn("flex flex-col h-full bg-background", className)}>
+    <div className={cn("flex flex-col w-full h-full bg-background", className)}>
       {/* Header */}
       {(title || description) && (
         <div className="border-b border-border px-4 sm:px-6 lg:px-8 py-6">

@@ -1,116 +1,126 @@
-import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { SettingsSidebar } from "./SettingsSidebar";
+"use client"
+
+/**
+ * User Settings View
+ *
+ * Unified settings view for user-level settings using the dynamic registry system.
+ * Now DRY and consistent with WorkspaceSettings.
+ */
+
+import { useMemo } from "react"
 import {
-  SecondarySidebarLayout,
-  type SecondarySidebarHeaderProps,
-} from "@/frontend/shared/ui";
-import { GeneralSettings } from "./general";
-import { AccountSettings } from "./account";
-import { ChatsSettings } from "./chats";
-import { VideoVoiceSettings } from "./video-voice";
-import { NotificationSettings } from "./notifications";
-import { PersonalizationSettings } from "./personalization";
-import { StorageSettings } from "./storage";
-import { ShortcutsSettings } from "./shortcuts";
-import { HelpSettings } from "./help";
+  Settings,
+  User,
+  MessageSquare,
+  Video,
+  Bell,
+  Palette,
+  HardDrive,
+  Keyboard,
+  HelpCircle,
+} from "lucide-react"
+import { SettingsRegistryProvider } from "./SettingsRegistry"
+import { DynamicSettingsView } from "./components/DynamicSettingsView"
+import type { SettingsCategory } from "./types"
+import { GeneralSettings } from "./general"
+import { AccountSettings } from "./account"
+import { ChatsSettings } from "./chats"
+import { VideoVoiceSettings } from "./video-voice"
+import { NotificationSettings } from "./notifications"
+import { PersonalizationSettings } from "./personalization"
+import { StorageSettings } from "./storage"
+import { ShortcutsSettings } from "./shortcuts"
+import { HelpSettings } from "./help"
 
-const SETTINGS_COMPONENTS = {
-  general: GeneralSettings,
-  account: AccountSettings,
-  chats: ChatsSettings,
-  'video-voice': VideoVoiceSettings,
-  notifications: NotificationSettings,
-  personalization: PersonalizationSettings,
-  storage: StorageSettings,
-  shortcuts: ShortcutsSettings,
-  help: HelpSettings,
-} as const;
+/**
+ * User-level settings (account, preferences, etc.)
+ * These are always available regardless of workspace
+ */
+export interface SettingsViewProps {
+  defaultCategory?: string
+}
 
-export function SettingsView() {
-  const [activeCategory, setActiveCategory] = useState<string>('general');
-  const [showSidebar, setShowSidebar] = useState(true);
-  const isMobile = useIsMobile();
-
-  const ActiveComponent = SETTINGS_COMPONENTS[activeCategory as keyof typeof SETTINGS_COMPONENTS];
-
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
-    if (isMobile) {
-      setShowSidebar(false);
-    }
-  };
-
-  const handleBackToSidebar = () => {
-    setShowSidebar(true);
-  };
-
-  if (isMobile) {
-    return (
-      <div className="flex h-full flex-1 overflow-hidden bg-background">
-        <SettingsSidebar
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
-          className={cn(
-            "transition-all duration-300",
-            showSidebar ? "w-full" : "hidden",
-          )}
-        />
-
-        <div
-          className={cn(
-            "flex-1 overflow-y-auto bg-background",
-            showSidebar && "hidden",
-          )}
-        >
-          {!showSidebar && (
-            <div className="sticky top-0 z-10 border-b border-border bg-background p-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToSidebar}
-                className="text-foreground hover:bg-accent"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Settings
-              </Button>
-            </div>
-          )}
-          <ActiveComponent />
-        </div>
-      </div>
-    );
-  }
-
-  const headerProps: SecondarySidebarHeaderProps = {
-    title: "Settings",
-    description: "Manage your account, preferences, and workspace defaults.",
-    breadcrumbs: (
-      <span className="capitalize text-foreground">
-        {activeCategory.replace("-", " ")}
-      </span>
-    ),
-  };
+export function SettingsView({ defaultCategory = "general" }: SettingsViewProps = {}) {
+  const userSettings: SettingsCategory[] = useMemo(
+    () => [
+      {
+        id: "general",
+        label: "General",
+        icon: Settings,
+        order: 0,
+        component: GeneralSettings,
+      },
+      {
+        id: "account",
+        label: "Account",
+        icon: User,
+        order: 10,
+        component: AccountSettings,
+      },
+      {
+        id: "chats",
+        label: "Chats",
+        icon: MessageSquare,
+        order: 20,
+        component: ChatsSettings,
+      },
+      {
+        id: "video-voice",
+        label: "Video & Voice",
+        icon: Video,
+        order: 30,
+        component: VideoVoiceSettings,
+      },
+      {
+        id: "notifications",
+        label: "Notifications",
+        icon: Bell,
+        order: 40,
+        component: NotificationSettings,
+      },
+      {
+        id: "personalization",
+        label: "Personalization",
+        icon: Palette,
+        order: 50,
+        component: PersonalizationSettings,
+      },
+      {
+        id: "storage",
+        label: "Storage and data",
+        icon: HardDrive,
+        order: 60,
+        component: StorageSettings,
+      },
+      {
+        id: "shortcuts",
+        label: "Keyboard shortcuts",
+        icon: Keyboard,
+        order: 70,
+        component: ShortcutsSettings,
+      },
+      {
+        id: "help",
+        label: "Help",
+        icon: HelpCircle,
+        order: 80,
+        component: HelpSettings,
+      },
+    ],
+    []
+  )
 
   return (
-    <SecondarySidebarLayout
-      className="h-full bg-background"
-      headerProps={headerProps}
-      sidebar={
-        <SettingsSidebar
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
-          variant="layout"
-        />
-      }
-      contentClassName="h-full overflow-y-auto bg-background"
+    <SettingsRegistryProvider
+      coreSettings={userSettings}
+      defaultCategory={defaultCategory}
     >
-      <div className="h-full">
-        <ActiveComponent />
-      </div>
-    </SecondarySidebarLayout>
-  );
+      <DynamicSettingsView
+        title="Settings"
+        description="Manage your account, preferences, and workspace defaults."
+        groupByFeature={false}
+        defaultCategory={defaultCategory}
+      />
+    </SettingsRegistryProvider>
+  )
 }

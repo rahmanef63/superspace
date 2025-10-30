@@ -16,7 +16,7 @@ import { NavSystem } from "./NavSystem"
 import { NavSecondary } from "./NavSecondary"
 import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/views/manifest"
 import { iconFromName } from "@/frontend/views/icons"
-import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
 const REQUIRED_MENU_SLUGS = [
   "overview",
@@ -36,7 +36,6 @@ const REQUIRED_MENU_SLUGS = [
   "menus",
   "invitations",
   "user-settings",
-  "settings",
 ]
 
 interface AppSidebarProps {
@@ -136,7 +135,7 @@ export function AppSidebar({
               systemMenuItems.push({
                 id: navItem.id,
                 name: navItem.title,
-                url: `/dashboard/${navItem.id}`,
+                url: mi.path || `/dashboard/${navItem.id}`,
                 icon: navItem.icon || Building,
                 description: navItem.description,
                 metadata: mi.metadata,
@@ -273,7 +272,7 @@ export function AppSidebar({
         <NavSecondary />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        <NavUser onSettingsClick={() => handleViewChange('settings')} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

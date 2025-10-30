@@ -1,7 +1,7 @@
 import { defineFeature } from '@/lib/features/defineFeature'
 
 export default defineFeature({
-  id: 'workspace-settings',
+  id: 'settings',
   name: 'Settings',
   description: 'Workspace configuration and settings',
 

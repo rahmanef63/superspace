@@ -1,6 +1,7 @@
 "use client"
 
-import { SettingsToggle, SettingsDropdown } from "../components/index"
+import { SettingsToggle } from "../components/SettingsToggle"
+import { SettingsDropdown } from "../components/SettingsDropdown"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { AlertCircle, Play } from "lucide-react"

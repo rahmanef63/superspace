@@ -1,6 +1,6 @@
 import React from 'react';
-import { Alert } from '../ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 interface ErrorAlertProps {

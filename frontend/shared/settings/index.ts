@@ -18,16 +18,19 @@
 export { SettingsView } from './SettingsView'
 export { SettingsSidebar } from './SettingsSidebar'
 export { SettingsPopup } from './SettingsPopup'
-export { SettingsRegistry } from './SettingsRegistry'
+export { SettingsRegistryProvider, useSettingsRegistry, useRegisterFeatureSettings } from './SettingsRegistry'
 export { default as SettingsPage } from './page'
 
 // ============================================================
 // Feature Settings Registry
 // ============================================================
 export {
-  featureSettingsRegistry,
   registerFeatureSettings,
-  getFeatureSettings
+  unregisterFeatureSettings,
+  getFeatureSettingsBuilder,
+  getAllRegisteredFeatures,
+  hasFeatureSettings,
+  clearFeatureSettingsRegistry
 } from './featureSettingsRegistry'
 
 // ============================================================

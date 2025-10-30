@@ -1,23 +1,23 @@
 import React, { useEffect } from 'react';
-import { SharedCanvasProvider } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider';
+import { SharedCanvasProvider } from '@/frontend/shared/builder';
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
   Card,
   CardTitle,
-} from '@/frontend/shared/ui/components/ui';
+} from '@/frontend/shared/ui';
 
-import { SharedCanvas } from '@/frontend/shared/ui/components/canvas/SharedCanvas';
-import { UnifiedLibrary } from '@/frontend/shared/builder/library/UnifiedLibrary';
-import { UnifiedInspector } from '@/frontend/shared/builder/inspector/UnifiedInspector';
-import { AutomationPreview } from '@/frontend/shared/ui/components/preview/AutomationPreview';
+import { SharedCanvas } from '@/frontend/shared/ui';
+import { UnifiedLibrary } from '@/frontend/shared/builder';
+import { UnifiedInspector } from '@/frontend/shared/builder';
+import { AutomationPreview } from '@/frontend/shared/ui';
 import { AutomationNode } from '../components/AutomationNode';
 
-import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { registerAutomationComponents } from '../registry/automationComponents';
 import { registerAutomationLibraryTabs } from '../registry/automationLibraryTabs';
-import { DnDProvider } from '@/frontend/shared/builder/canvas/core/DnDProvider';
+import { DnDProvider } from '@/frontend/shared/builder';
 
 const nodeTypes = {
   automationNode: AutomationNode,

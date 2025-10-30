@@ -7,7 +7,7 @@ import {
   convertCMSSchemaToV1,
   convertV1ToCMSSchema,
 } from "@/frontend/shared/foundation/utils/converters"
-import type { CMSLegacySchemaV04Type, ExportSchemaV1Type } from "@/frontend/shared/foundation/types"
+import type { CMSLegacySchemaV04Type, ExportSchemaV1Type } from "@/frontend/shared/foundation"
 
 describe("CMS Converter", () => {
   it("should convert CMS v0.4 schema to v1.0", () => {

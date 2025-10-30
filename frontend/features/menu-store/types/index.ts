@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { MenuItemMetadata } from "@/frontend/shared/ui/layout/menus/types";
+import type { MenuItemMetadata } from "@/frontend/shared/ui";
 
 export interface MenuItem {
   _id: Id<"menuItems">;

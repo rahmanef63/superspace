@@ -34,7 +34,7 @@ export { ChatAI } from './inspector/ChatAI'
 // Component Library
 // ============================================================
 export { UnifiedLibrary } from './library/UnifiedLibrary'
-export { TemplateLibrary } from './library/TemplateLibrary'
+export { TemplateLibrary, addSelectionAsTemplate } from './library/TemplateLibrary'
 export { DraggableLibraryItem } from './library/DraggableLibraryItem'
 
 // ============================================================
@@ -71,10 +71,4 @@ export type {
   CanvasEdge,
   CanvasState,
   CanvasConfig,
-
-  // Common builder types
-  BuilderComponent,
-  BuilderProperty,
-  BuilderStyle,
-  BuilderEvent,
 } from './canvas/core/types'

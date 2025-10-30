@@ -1,7 +1,7 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { cn } from '@/frontend/shared/foundation/utils/utils';
-import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
+import { cn } from '@/frontend/shared/foundation';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { Globe2, Webhook, Puzzle, Binary, Table2, Zap } from 'lucide-react';
 
 interface AutomationNodeProps {

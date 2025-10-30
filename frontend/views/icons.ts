@@ -1,7 +1,7 @@
 // ⚠️ DEPRECATED: This file has been moved to frontend/shared/components/icons
 // Please use the new icon system instead:
 //
-// import { iconFromName, getIconComponent, IconPicker } from "@/frontend/shared/ui/components/icons";
+// import { iconFromName, getIconComponent, IconPicker } from "@/frontend/shared/ui";
 //
 // Migration guide:
 // - iconFromName() is still available for backward compatibility
@@ -10,6 +10,6 @@
 //
 // This file is kept temporarily for backward compatibility and will be removed in a future update.
 
-import { iconFromName } from "@/frontend/shared/ui/components/icons";
+import { iconFromName } from "@/frontend/shared/ui";
 
 export { iconFromName };

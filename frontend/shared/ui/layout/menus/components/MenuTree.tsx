@@ -59,7 +59,7 @@ import {
 import { Label } from "@/components/ui/label";
 
 // Import shared icon components
-import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons";
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui";
 
 interface MenuTreeProps {
   workspaceId: Id<"workspaces">;

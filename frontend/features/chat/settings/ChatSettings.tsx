@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, MessageSquare, Bot } from "lucide-react";
-import { useFeatureSettings } from "@/frontend/shared/settings/hooks";
+import { useFeatureSettings } from "@/frontend/shared/settings";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -334,3 +334,9 @@ export function useChatSettings() {
     },
   ]);
 }
+
+/**
+ * Default Chat Settings Component
+ * Wrapper for ChatGeneralSettings for backward compatibility
+ */
+export const ChatSettings = ChatGeneralSettings;

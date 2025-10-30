@@ -8,9 +8,9 @@
  * - @/frontend/shared/foundation/auth → @/frontend/shared/foundation/auth
  * - @/frontend/shared/foundation/hooks → @/frontend/shared/foundation/hooks
  * - @/frontend/shared/foundation/utils → @/frontend/shared/foundation/utils
- * - @/frontend/shared/foundation/types → @/frontend/shared/foundation/types
+ * - @/frontend/shared/foundation → @/frontend/shared/foundation
  * - @/frontend/shared/foundation/manifest → @/frontend/shared/foundation/manifest
- * - @/frontend/shared/foundation/registry → @/frontend/shared/foundation/registry
+ * - @/frontend/shared/foundation → @/frontend/shared/foundation
  * - @/frontend/shared/builder/canvas → @/frontend/shared/builder/canvas
  * - @/frontend/shared/builder/blocks → @/frontend/shared/builder/blocks
  * - @/frontend/shared/builder/elements → @/frontend/shared/builder/elements
@@ -19,11 +19,11 @@
  * - @/frontend/shared/builder/flows → @/frontend/shared/builder/flows
  * - @/frontend/shared/builder/inspector → @/frontend/shared/builder/inspector
  * - @/frontend/shared/builder/library → @/frontend/shared/builder/library
- * - @/frontend/shared/communications/chat → @/frontend/shared/communications/chat
+ * - @/frontend/shared/communications → @/frontend/shared/communications
  * - @/frontend/shared/communications/comments → @/frontend/shared/communications/comments
  * - @/frontend/shared/communications/collaboration → @/frontend/shared/communications/collaboration
  * - @/frontend/shared/ui/components → @/frontend/shared/ui/components
- * - @/frontend/shared/ui/icons → @/frontend/shared/ui/icons
+ * - @/frontend/shared/ui → @/frontend/shared/ui
  * - @/frontend/shared/ui/layout → @/frontend/shared/ui/layout
  */
 
@@ -51,35 +51,35 @@ const importMappings: ImportMapping[] = [
   { old: '@/frontend/shared/foundation/auth', new: '@/frontend/shared/foundation/auth', priority: 5 },
   { old: '@/frontend/shared/foundation/hooks', new: '@/frontend/shared/foundation/hooks', priority: 5 },
   { old: '@/frontend/shared/foundation/utils', new: '@/frontend/shared/foundation/utils', priority: 5 },
-  { old: '@/frontend/shared/foundation/types', new: '@/frontend/shared/foundation/types', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
   { old: '@/frontend/shared/foundation/manifest', new: '@/frontend/shared/foundation/manifest', priority: 5 },
-  { old: '@/frontend/shared/foundation/registry', new: '@/frontend/shared/foundation/registry', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
 
   // Communications domain
   { old: '@/frontend/shared/communications/collaboration', new: '@/frontend/shared/communications/collaboration', priority: 10 },
   { old: '@/frontend/shared/communications/comments', new: '@/frontend/shared/communications/comments', priority: 10 },
-  { old: '@/frontend/shared/communications/chat', new: '@/frontend/shared/communications/chat', priority: 5 },
+  { old: '@/frontend/shared/communications', new: '@/frontend/shared/communications', priority: 5 },
 
   // UI domain (must be last - most generic)
   { old: '@/frontend/shared/ui/layout', new: '@/frontend/shared/ui/layout', priority: 5 },
-  { old: '@/frontend/shared/ui/icons', new: '@/frontend/shared/ui/icons', priority: 5 },
+  { old: '@/frontend/shared/ui', new: '@/frontend/shared/ui', priority: 5 },
   { old: '@/frontend/shared/ui/components', new: '@/frontend/shared/ui/components', priority: 1 }, // Lowest priority (catch-all)
 
   // Relative path patterns (for features)
   { old: '@/frontend/shared/foundation/utils', new: '@/frontend/shared/foundation/utils', priority: 5 },
   { old: '@/frontend/shared/foundation/utils', new: '@/frontend/shared/foundation/utils', priority: 5 },
-  { old: '@/frontend/shared/foundation/types', new: '@/frontend/shared/foundation/types', priority: 5 },
-  { old: '@/frontend/shared/foundation/types', new: '@/frontend/shared/foundation/types', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
   { old: '@/frontend/shared/foundation/hooks', new: '@/frontend/shared/foundation/hooks', priority: 5 },
   { old: '@/frontend/shared/builder/canvas', new: '@/frontend/shared/builder/canvas', priority: 5 },
   { old: '@/frontend/shared/builder/inspector', new: '@/frontend/shared/builder/inspector', priority: 10 },
   { old: '@/frontend/shared/builder/library', new: '@/frontend/shared/builder/library', priority: 10 },
-  { old: '@/frontend/shared/ui/components/ui', new: '@/frontend/shared/ui/components/ui', priority: 10 },
+  { old: '@/frontend/shared/ui', new: '@/frontend/shared/ui', priority: 10 },
   { old: '@/frontend/shared/ui/components', new: '@/frontend/shared/ui/components', priority: 5 },
-  { old: '@/frontend/shared/communications/chat', new: '@/frontend/shared/communications/chat', priority: 5 },
-  { old: '@/frontend/shared/communications/chat', new: '@/frontend/shared/communications/chat', priority: 5 },
-  { old: '@/frontend/shared/foundation/registry', new: '@/frontend/shared/foundation/registry', priority: 5 },
-  { old: '@/frontend/shared/foundation/registry', new: '@/frontend/shared/foundation/registry', priority: 5 },
+  { old: '@/frontend/shared/communications', new: '@/frontend/shared/communications', priority: 5 },
+  { old: '@/frontend/shared/communications', new: '@/frontend/shared/communications', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
+  { old: '@/frontend/shared/foundation', new: '@/frontend/shared/foundation', priority: 5 },
 ]
 
 async function fixImports() {

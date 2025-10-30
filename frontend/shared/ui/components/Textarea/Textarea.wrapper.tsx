@@ -4,7 +4,7 @@
 
 import { Textarea as ShadcnTextarea } from "@/components/ui/textarea"
 import { createComponent, textProp, numberProp, booleanProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation"
 
 export interface TextareaProps {
   placeholder?: string

@@ -38,7 +38,7 @@ const featureSettingsBuilders = new Map<string, FeatureSettingsBuilder>()
  * @example
  * ```ts
  * // In frontend/features/chat/init.ts
- * import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+ * import { registerFeatureSettings } from "@/frontend/shared/settings"
  *
  * registerFeatureSettings("chat", () => [
  *   { id: "chat-general", label: "Chat", component: ChatGeneralSettings },

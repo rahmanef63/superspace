@@ -12,7 +12,7 @@ import { ChatListItem } from "./ChatListItem";
 import { SearchBar } from "../ui/SearchBar";
 import { useWhatsAppStore } from "../../shared/hooks";
 import { PLACEHOLDERS } from "../../shared/constants";
-import type { Chat } from "@/frontend/shared/foundation/types";
+import type { Chat } from "@/frontend/shared/foundation";
 
 interface ChatListSidebarProps {
   showArchived?: boolean;

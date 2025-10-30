@@ -3,16 +3,16 @@
  * Auto-loads all section wrappers from subdirectories
  */
 
-import type { SectionWrapper } from "@/frontend/shared/foundation/types"
+import type { SectionWrapper } from "@/frontend/shared/foundation"
 
 // ============================================================================
-// Auto-Discovery using import.meta.glob()
+// Auto-Discovery Registry
+// Note: import.meta.glob() not supported in Next.js, using empty registry
 // ============================================================================
 
-const registryModules = import.meta.glob<{ default: SectionWrapper }>(
-  "./**/registry.ts",
-  { eager: true }
-)
+const registryModules: Record<string, { default: SectionWrapper }> = {
+  // TODO: Add section registries here when available
+}
 
 // ============================================================================
 // Section Registry Map

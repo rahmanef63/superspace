@@ -14,4 +14,5 @@ export * from "./types";
 export * from "./utils";
 
 // Re-export secondary sidebar layout (legacy compat)
-export * from "@/frontend/shared/ui/layout/secondary-sidebar";
+// TODO: Add secondary-sidebar if needed
+// export * from "@/frontend/shared/ui/layout/secondary-sidebar";

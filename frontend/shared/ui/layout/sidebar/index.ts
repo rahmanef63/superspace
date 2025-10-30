@@ -30,6 +30,7 @@ export { SecondarySidebar } from "./secondary/components/SecondarySidebar";
 export { SecondarySidebarTools } from "./secondary/components/SecondarySidebarTools";
 
 export { useBreadcrumbs, BreadcrumbsProvider } from "./components/breadcrumbs-context";
+export type { SidebarBreadcrumbItem } from "./components/breadcrumbs-context";
 export { OnboardingGuard } from "./components/onboarding-guard";
 export { SiteHeader } from "./components/site-header";
 export { LoadingBar } from "./components/loading-bar";

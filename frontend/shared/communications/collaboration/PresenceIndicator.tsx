@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useRealtimeCollaboration } from '../../hooks/useConvexCollaboration';
+// TODO: Create useRealtimeCollaboration hook
+// import { useRealtimeCollaboration } from '../../hooks/useConvexCollaboration';
 import { Id } from '../../../../convex/_generated/dataModel';
 
 interface PresenceIndicatorProps {
@@ -18,13 +19,17 @@ export function PresenceIndicator({
   currentUserName,
   currentUserAvatar
 }: PresenceIndicatorProps) {
-  const { sessions, activeUsers } = useRealtimeCollaboration(
-    workspaceId,
-    resourceType,
-    resourceId,
-    currentUserName,
-    currentUserAvatar
-  );
+  // TODO: Implement useRealtimeCollaboration hook
+  const sessions: any[] = [];
+  const activeUsers = 0;
+
+  // const { sessions, activeUsers } = useRealtimeCollaboration(
+  //   workspaceId,
+  //   resourceType,
+  //   resourceId,
+  //   currentUserName,
+  //   currentUserAvatar
+  // );
 
   if (!sessions || sessions.length === 0) {
     return null;

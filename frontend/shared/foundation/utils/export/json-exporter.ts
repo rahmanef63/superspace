@@ -10,9 +10,9 @@ import type {
   ConversionResult,
   GroupNode,
   ComponentDefinition,
-} from "../types"
-import { SCHEMA_VERSION, SCHEMA_FORMAT, validateExportSchema } from "../types"
-import { createConversionContext } from "../types"
+} from "../../types"
+import { SCHEMA_VERSION, SCHEMA_FORMAT, validateExportSchema } from "../../types"
+import { createConversionContext } from "../../types"
 
 // ============================================================================
 // Export to JSON

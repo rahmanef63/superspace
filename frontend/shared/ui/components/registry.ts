@@ -3,16 +3,34 @@
  * Auto-loads all component wrappers from subdirectories
  */
 
-import type { ComponentWrapper, RegistryEntry } from "@/frontend/shared/foundation/types"
+import type { ComponentWrapper, RegistryEntry } from "@/frontend/shared/foundation"
+
+// Import all wrapper components
+import { BadgeWrapper } from "./Badge/Badge.wrapper"
+import { ButtonWrapper } from "./Button/Button.wrapper"
+import { CardWrapper } from "./Card/Card.wrapper"
+import { ContainerWrapper } from "./Container/Container.wrapper"
+import { ImageWrapper } from "./Image/Image.wrapper"
+import { InputWrapper } from "./Input/Input.wrapper"
+import { LabelWrapper } from "./Label/Label.wrapper"
+import { TextWrapper } from "./Text/Text.wrapper"
+import { TextareaWrapper } from "./Textarea/Textarea.wrapper"
 
 // ============================================================================
-// Auto-Discovery using import.meta.glob()
+// Component Registry
 // ============================================================================
 
-const registryModules = import.meta.glob<{ default: ComponentWrapper }>(
-  "./**/registry.ts",
-  { eager: true }
-)
+const registryModules: Record<string, { default: ComponentWrapper }> = {
+  badge: { default: BadgeWrapper },
+  button: { default: ButtonWrapper },
+  card: { default: CardWrapper },
+  container: { default: ContainerWrapper },
+  image: { default: ImageWrapper },
+  input: { default: InputWrapper },
+  label: { default: LabelWrapper },
+  text: { default: TextWrapper },
+  textarea: { default: TextareaWrapper },
+}
 
 // ============================================================================
 // Component Registry Map
@@ -41,6 +59,9 @@ export function getComponentWrapper(id: string): ComponentWrapper | undefined {
 export function getAllComponentWrappers(): ComponentWrapper[] {
   return Array.from(componentRegistry.values())
 }
+
+// Alias for consistency
+export const getAllComponents = getAllComponentWrappers
 
 export function getComponentsByCategory(category: string): ComponentWrapper[] {
   return getAllComponentWrappers().filter((wrapper) => wrapper.category === category)

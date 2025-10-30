@@ -13,8 +13,8 @@ export {
   EventsSection,
   EncryptionSection,
   GroupsSection,
-} from "@/frontend/shared/communications/chat/components/member";
+} from "@/frontend/shared/communications";
 export type {
   MemberInfoSection,
   MemberInfoContact,
-} from "@/frontend/shared/communications/chat/components/member";
+} from "@/frontend/shared/communications";

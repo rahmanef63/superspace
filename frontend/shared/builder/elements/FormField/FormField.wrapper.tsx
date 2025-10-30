@@ -4,8 +4,8 @@
  */
 
 import { createElement } from "../utils/elementFactory"
-import { textProp, booleanProp, selectProp } from "@/frontend/shared/ui/components/utils"
-import type { ElementWrapper } from "@/frontend/shared/foundation/types"
+import { textProp, booleanProp, selectProp } from "@/frontend/shared/ui"
+import type { ElementWrapper } from "@/frontend/shared/foundation"
 
 export interface FormFieldProps {
   label?: string

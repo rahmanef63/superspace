@@ -1,7 +1,7 @@
 import React from 'react';
-import type { CMSNode } from '@/frontend/shared/foundation/types';
+import type { CMSNode } from '@/frontend/shared/foundation';
 import { Select } from '@/components/ui';
-import { getWidgetConfig } from '@/frontend/shared/foundation/registry';
+import { getWidgetConfig } from '@/frontend/features/cms/shared/registry';
 
 interface NodeSelectorFieldProps {
   value: string;

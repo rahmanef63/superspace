@@ -1,6 +1,6 @@
 "use client"
 
-import { SettingsToggle } from "../components/index"
+import { SettingsToggle } from "../components/SettingsToggle"
 import { ImageIcon, Music, Video, FileText } from "lucide-react"
 import { useState } from "react"
 

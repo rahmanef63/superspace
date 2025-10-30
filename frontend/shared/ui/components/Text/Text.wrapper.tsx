@@ -5,7 +5,7 @@
 
 import { TextComponent } from "./Text.component"
 import { createComponent, selectProp, textProp, booleanProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation"
 
 export interface TextProps {
   tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div' | 'strong' | 'em' | 'small'

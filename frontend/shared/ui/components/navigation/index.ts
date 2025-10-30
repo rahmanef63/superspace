@@ -1,4 +1,6 @@
 export { NavigationMenu } from './NavigationMenu';
 export type { NavigationItem } from './NavigationMenu';
-export { Breadcrumb } from './Breadcrumb';
-export type { BreadcrumbItem } from './Breadcrumb';
+// Note: Breadcrumb not exported to avoid conflict with shadcn breadcrumb
+// Import directly from './navigation/Breadcrumb' if needed
+// export { Breadcrumb } from './Breadcrumb';
+// export type { BreadcrumbItem } from './Breadcrumb';

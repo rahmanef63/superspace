@@ -1,7 +1,7 @@
 "use client";
 
 import { Phone, Video, Mic, Speaker } from "lucide-react";
-import { useFeatureSettings } from "@/frontend/shared/settings/hooks";
+import { useFeatureSettings } from "@/frontend/shared/settings";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";

@@ -1,4 +1,4 @@
-import type { ComponentConfig } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
+import type { ComponentConfig } from '@/frontend/shared/foundation';
 
 // Modular automation widget registry placeholder.
 // Populate this by exporting ComponentConfig objects keyed by unique keys.

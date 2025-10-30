@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsView } from "@/frontend/shared/settings/SettingsView";
+import { SettingsView } from "@/frontend/shared/settings";
 import type { Id } from "@convex/_generated/dataModel";
 
 export interface WorkspaceSettingsPageProps {

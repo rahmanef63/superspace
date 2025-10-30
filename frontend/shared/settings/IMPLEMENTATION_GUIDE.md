@@ -245,7 +245,7 @@ frontend/features/chat/settings/
 // frontend/features/chat/page.tsx or main chat component
 "use client"
 
-import { useFeatureSettings } from '@/frontend/shared/settings/hooks'
+import { useFeatureSettings } from '@/frontend/shared/settings'
 import { MessageSquare, Bell, Lock } from 'lucide-react'
 import {
   ChatGeneralSettings,

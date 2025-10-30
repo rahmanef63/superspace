@@ -4,16 +4,16 @@
  * Auto-loads all element wrappers from subdirectories
  */
 
-import type { ElementWrapper } from "@/frontend/shared/foundation/types"
+import type { ElementWrapper } from "@/frontend/shared/foundation"
 
 // ============================================================================
-// Auto-Discovery using import.meta.glob()
+// Auto-Discovery Registry
+// Note: import.meta.glob() not supported in Next.js, using empty registry
 // ============================================================================
 
-const registryModules = import.meta.glob<{ default: ElementWrapper }>(
-  "./**/registry.ts",
-  { eager: true }
-)
+const registryModules: Record<string, { default: ElementWrapper }> = {
+  // TODO: Add element registries here when available
+}
 
 // ============================================================================
 // Element Registry Map

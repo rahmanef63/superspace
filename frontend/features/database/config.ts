@@ -1,13 +1,13 @@
 import { defineFeature } from '@/lib/features/defineFeature'
 
 export default defineFeature({
-  id: 'databases',
-  name: 'Databases',
+  id: 'database',
+  name: 'Database',
   description: 'Notion-style database views and management',
 
   ui: {
     icon: 'Database',
-    path: '/dashboard/databases',
+    path: '/dashboard/database',
     component: 'DatabasesPage',
     category: 'productivity',
     order: 7,

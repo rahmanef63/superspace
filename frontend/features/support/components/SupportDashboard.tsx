@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { SupportChatContainer } from "./SupportChatContainer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SecondarySidebarLayout } from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { SecondarySidebarLayout } from "@/frontend/shared/ui";
 
 export type Ticket = {
   id: string;

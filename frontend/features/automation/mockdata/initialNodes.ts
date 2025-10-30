@@ -1,5 +1,5 @@
 import type { Node, Edge } from 'reactflow';
-import { generateId } from '@/frontend/shared/builder/canvas/core/utils';
+import { generateId } from '@/frontend/shared/builder';
 
 export const INITIAL_AUTOMATION_NODES: Node[] = [
   {

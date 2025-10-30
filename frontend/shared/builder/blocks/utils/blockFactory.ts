@@ -9,7 +9,7 @@ import type {
   BlockJSON,
   PropDefinitions,
   NodeMetadata,
-} from "@/frontend/shared/foundation/types"
+} from "@/frontend/shared/foundation"
 import { ComponentType } from "react"
 
 export interface CreateBlockOptions<TProps = any> {

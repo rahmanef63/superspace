@@ -16,80 +16,69 @@
 // ============================================================
 // Authentication & Authorization
 // ============================================================
-export * from './auth'
-export type { User, AuthState, AuthConfig } from './auth/types'
+export { useAuthed } from './auth/hooks/useAuthed'
+export { SafeSignOutButton } from './auth/components/SafeSignOutButton'
+export { AuthModal } from './auth/components/AuthModal'
+export { SignInForm } from './auth/components/SignInForm'
+export { SafeSignInButton } from './auth/components/SafeSignInButton'
+export { SafeSignUpButton } from './auth/components/SafeSignUpButton'
+export { SignOutButton } from './auth/components/SignOutButton'
 
 // ============================================================
 // Common Hooks
 // ============================================================
-export { useDebounce } from './hooks/useDebounce'
-export { useLocalStorage } from './hooks/useLocalStorage'
-export { useMediaQuery } from './hooks/useMediaQuery'
-export { useMounted } from './hooks/useMounted'
-export { useClickOutside } from './hooks/useClickOutside'
-export { useKeyPress } from './hooks/useKeyPress'
-export { useInterval } from './hooks/useInterval'
-export { useTimeout } from './hooks/useTimeout'
-export { usePrevious } from './hooks/usePrevious'
-export { useToggle } from './hooks/useToggle'
+export * from './hooks'
+export { useFeatureNavigation } from './hooks/useFeatureNavigation'
+export { useMobileResponsive } from './hooks/useMobileResponsive'
+export { useSearchFilter } from './hooks/useSearchFilter'
+export { useResponsive } from './hooks/useResponsive'
+export { usePerformanceCache } from './hooks/usePerformanceCache'
 
 // ============================================================
 // Utility Functions
 // ============================================================
-export { cn } from './utils/cn'
-export * from './utils/string'
-export * from './utils/array'
-export * from './utils/object'
-export * from './utils/date'
-export * from './utils/validation'
-export * from './utils/format'
+// Re-export cn utility from lib
+export { cn } from '@/lib/utils'
+
+// TODO: Fix relative imports in utils files before exporting
+// export * from './utils'
+// export * from './utils/validation'
+// export * from './utils/format'
 
 // ============================================================
 // Component Manifest System
 // ============================================================
-export * from './manifest'
-export type {
-  ComponentManifest,
-  ManifestEntry,
-  ManifestConfig,
-} from './manifest/types'
+// TODO: Add manifest exports when available
+// export * from './manifest'
 
 // ============================================================
 // Registry Patterns
 // ============================================================
-export { Registry } from './registry/Registry'
-export { createRegistry } from './registry/factory'
+// Cross-Feature Registry
+export {
+  useCrossFeatureRegistry,
+  crossFeatureRegistry
+} from './registry/CrossFeatureRegistry'
 export type {
-  RegistryItem,
-  RegistryConfig,
-  RegistryOptions,
-} from './registry/types'
+  ComponentConfig,
+  InspectorField,
+  FeatureTab,
+} from './registry/CrossFeatureRegistry'
 
 // ============================================================
 // Core Types
 // ============================================================
-export type {
-  // Common types
-  ID,
-  Timestamp,
-  Status,
-  ErrorType,
-  SuccessType,
+export * from './types'
 
-  // Component types
-  ComponentType,
-  ComponentProps,
+// ============================================================
+// CMS Utilities
+// ============================================================
+export {
+  useCMSCollections,
+  useCreateCollection,
+  useUpdateCollection,
+  useDeleteCollection,
+  type CMSCollectionDoc,
+} from './cms'
 
-  // Event types
-  EventHandler,
-  EventType,
-
-  // State types
-  StateUpdate,
-  StateAction,
-
-  // API types
-  ApiResponse,
-  ApiError,
-  ApiSuccess,
-} from './types'
+export { WorkspaceProvider, useWorkspaceContext } from './provider/WorkspaceProvider'

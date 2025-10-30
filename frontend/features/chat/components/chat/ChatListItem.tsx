@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Pin } from "lucide-react";
 import { getInitials, truncateText, waClasses } from "../../utils";
-import type { Chat } from "@/frontend/shared/foundation/types";
+import type { Chat } from "@/frontend/shared/foundation";
 
 interface ChatListItemProps extends Chat {
   isActive?: boolean;

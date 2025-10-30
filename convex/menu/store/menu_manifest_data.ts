@@ -170,11 +170,11 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "Databases" as const,
-    slug: "databases" as const,
+    name: "Database" as const,
+    slug: "database" as const,
     type: "route" as const,
     icon: "Database" as const,
-    path: "/dashboard/databases",
+    path: "/dashboard/database",
     component: "DatabasesPage" as const,
     order: 7,
     metadata: {
@@ -182,8 +182,11 @@ export const DEFAULT_MENU_ITEMS = [
       version: "1.0.0",
       category: "productivity" as const,
       featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
+      originalFeatureType: "default" as const,
+      requiresPermission: "database.read",
+      originalRequiresPermission: "database.read"
+    },
+    requiresPermission: "database.read"
   },
   {
     name: "Canvas" as const,
@@ -277,7 +280,7 @@ export const DEFAULT_MENU_ITEMS = [
   },
   {
     name: "Settings" as const,
-    slug: "workspace-settings",
+    slug: "settings" as const,
     type: "route" as const,
     icon: "Settings" as const,
     path: "/dashboard/settings",

@@ -3,16 +3,16 @@
  * Auto-loads all flow wrappers from subdirectories
  */
 
-import type { FlowWrapper } from "@/frontend/shared/foundation/types"
+import type { FlowWrapper } from "@/frontend/shared/foundation"
 
 // ============================================================================
-// Auto-Discovery using import.meta.glob()
+// Auto-Discovery Registry
+// Note: import.meta.glob() not supported in Next.js, using empty registry
 // ============================================================================
 
-const registryModules = import.meta.glob<{ default: FlowWrapper }>(
-  "./**/registry.ts",
-  { eager: true }
-)
+const registryModules: Record<string, { default: FlowWrapper }> = {
+  // TODO: Add flow registries here when available
+}
 
 // ============================================================================
 // Flow Registry Map

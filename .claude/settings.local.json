@@ -38,7 +38,10 @@
       "Bash(tree:*)",
       "Bash(exit)",
       "Bash(cut:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(tee:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

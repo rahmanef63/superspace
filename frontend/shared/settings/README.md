@@ -75,7 +75,7 @@ export default function RootLayout({ children }) {
 
 ```tsx
 // features/chat/ChatFeature.tsx
-import { useFeatureSettings } from '@/frontend/shared/settings/hooks'
+import { useFeatureSettings } from '@/frontend/shared/settings'
 import { MessageSquare, Bell, Palette } from 'lucide-react'
 import {
   ChatGeneralSettings,
@@ -277,7 +277,7 @@ interface DynamicSettingsSidebarProps {
 
 ```tsx
 // features/calls/CallsFeature.tsx
-import { useFeatureSettings } from '@/frontend/shared/settings/hooks'
+import { useFeatureSettings } from '@/frontend/shared/settings'
 import { Phone, Bell, Video } from 'lucide-react'
 
 function CallsFeature() {

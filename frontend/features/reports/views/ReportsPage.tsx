@@ -5,8 +5,7 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileBarChart } from "lucide-react"
-import FeatureNotReady from "@/frontend/shared/ui/components/FeatureNotReady"
-import FeatureBadge from "@/frontend/shared/ui/components/FeatureBadge"
+import { FeatureNotReady, FeatureBadge } from "@/frontend/shared/ui"
 
 interface ReportsPageProps {
   workspaceId: Id<"workspaces">

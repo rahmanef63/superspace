@@ -22,16 +22,16 @@ import type { Id } from "@convex/_generated/dataModel"
 import { api } from "@/convex/_generated/api"
 import {
   DynamicSettingsView
-} from "@/frontend/shared/settings/components/DynamicSettingsView"
+} from "@/frontend/shared/settings"
 import {
   SettingsRegistryProvider
-} from "@/frontend/shared/settings/SettingsRegistry"
+} from "@/frontend/shared/settings"
 import {
   useSettingsRegistry
-} from "@/frontend/shared/settings/SettingsRegistry"
+} from "@/frontend/shared/settings"
 import { GeneralSettings } from "./GeneralSettings"
 import { DangerZoneSettings } from "./DangerZoneSettings"
-import type { SettingsCategory } from "@/frontend/shared/settings/types"
+import type { SettingsCategory } from "@/frontend/shared/settings"
 import {
   Card,
   CardContent,
@@ -42,7 +42,7 @@ import {
 import {
   getFeatureSettingsBuilder,
   hasFeatureSettings,
-} from "@/frontend/shared/settings/featureSettingsRegistry"
+} from "@/frontend/shared/settings"
 
 type MenuItemRecord = {
   _id: Id<"menuItems">

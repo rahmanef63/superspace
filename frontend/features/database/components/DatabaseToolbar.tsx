@@ -38,7 +38,7 @@ import { DATABASE_VIEW_ORDER, DB_VIEW_TYPE_TO_APP } from "../constants";
 import {
   ExportControl,
   ImportControl,
-} from "@/frontend/shared/ui/components/controls";
+} from "@/frontend/shared/ui";
 
 const VIEW_ICONS: Record<
   DatabaseViewType,

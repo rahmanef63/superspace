@@ -11,7 +11,7 @@ import {
   lockGroup,
   unlockGroup,
 } from "@/frontend/shared/foundation/utils/grouping"
-import { EmptyGroupError, InvalidGroupOperationError } from "@/frontend/shared/foundation/types"
+import { EmptyGroupError, InvalidGroupOperationError } from "@/frontend/shared/foundation"
 
 describe("Group Operations", () => {
   it("should create a group", () => {

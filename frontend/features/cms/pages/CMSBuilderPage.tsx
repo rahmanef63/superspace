@@ -27,21 +27,22 @@ import {
   Plus,
 } from 'lucide-react';
 
-import { SharedCanvasProvider, useSharedCanvas } from "@/frontend/shared/builder/canvas/core/SharedCanvasProvider";
-import { UnifiedLibrary } from '@/frontend/shared/builder/library/UnifiedLibrary';
-import { TemplateLibrary, addSelectionAsTemplate } from '@/frontend/shared/builder/library/TemplateLibrary';
-import { UnifiedInspector } from '@/frontend/shared/builder/inspector/UnifiedInspector';
-import { SharedCanvas } from '@/frontend/shared/ui/components/canvas/SharedCanvas';
-import { CMSPreview } from '@/frontend/shared/ui/components/preview/CMSPreview';
+import { SharedCanvasProvider, useSharedCanvas } from "@/frontend/shared/builder";
+import { UnifiedLibrary } from '@/frontend/shared/builder';
+import { TemplateLibrary, addSelectionAsTemplate } from '@/frontend/shared/builder';
+import { cmsTemplateProvider } from '@/frontend/features/cms/state/templateProvider';
+import { UnifiedInspector } from '@/frontend/shared/builder';
+import { SharedCanvas } from '@/frontend/shared/ui';
+import { CMSPreview } from '@/frontend/shared/ui';
 import { ShadcnNode } from '../slices/canvas/components/ShadcnNode';
 import { Renderer } from '../slices/renderer/components/Renderer';
 import { toSchema } from '../shared/hooks/useSchema';
 import { CMSInspectorRenderer } from '../components/CMSInspectorRenderer';
 
-import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { registerCMSComponents } from '../registry/cmsRegistry';
 import { registerCMSLibraryTabs } from '../registry/cmsLibraryTabs';
-import { DnDProvider } from "@/frontend/shared/builder/canvas/core/DnDProvider";
+import { DnDProvider } from "@/frontend/shared/builder";
 import { fromSchema as parseSchema } from '../shared/hooks/useSchemaParser';
 import { getDefaultTemplates, getTemplateByKey, isBuiltinKey } from '@/frontend/features/cms/state/templateStore';
 
@@ -101,7 +102,7 @@ const LeftTabs = ({
           </div>
         )}
         {active === 'templates' && (
-          <TemplateLibrary onOpen={onOpenTemplate} />
+          <TemplateLibrary onOpen={onOpenTemplate} templateProvider={cmsTemplateProvider} />
         )}
         {active === 'settings' && (
           <div className="h-full p-3 space-y-3 overflow-auto">
@@ -314,7 +315,7 @@ const CMSBuilderPageInner: React.FC = () => {
     const selectionSchema = toSchema(subNodes as any, subEdges as any);
     const name = prompt('Asset template name:');
     if (!name) return;
-    addSelectionAsTemplate(name, selectionSchema);
+    addSelectionAsTemplate(cmsTemplateProvider, name, selectionSchema);
     alert('Added to Asset Templates');
   };
 
@@ -325,7 +326,7 @@ const CMSBuilderPageInner: React.FC = () => {
     const subEdges = edges.filter((e: any) => ids.has(e.source) && ids.has(e.target));
     const selectionSchema = toSchema(subNodes as any, subEdges as any);
     const key = `asset:${'Selection-' + Date.now()}`;
-    addSelectionAsTemplate(key.replace('asset:', ''), selectionSchema);
+    addSelectionAsTemplate(cmsTemplateProvider, key.replace('asset:', ''), selectionSchema);
     handleOpenTemplate(key);
   };
 

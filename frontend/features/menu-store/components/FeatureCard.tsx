@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { getIconComponent } from "@/frontend/shared/ui/components/icons";
+import { getIconComponent } from "@/frontend/shared/ui";
 import type { AvailableFeatureMenu } from "../types";
 import { STATUS_BADGE_VARIANTS } from "../constants";
 

@@ -3,4 +3,5 @@ export {
   ChatNotificationsSettings,
   ChatAISettings,
   useChatSettings,
+  ChatSettings,
 } from './ChatSettings';

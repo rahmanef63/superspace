@@ -222,7 +222,7 @@ export * from './flows'
 import { SharedCanvasProvider, SmartInspector, TemplateLibrary } from '@/frontend/shared/builder'
 
 // ❌ Blocked by lint
-import { SharedCanvasProvider } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider'
+import { SharedCanvasProvider } from '@/frontend/shared/builder'
 ```
 
 ---
@@ -305,7 +305,7 @@ export { NotificationFeed } from './notifications/components/NotificationFeed'
 import { ChatContainer, ChatSidebar, useChatState } from '@/frontend/shared/communications'
 
 // ❌ Blocked
-import { ChatContainer } from '@/frontend/shared/communications/chat/components/ChatContainer'
+import { ChatContainer } from '@/frontend/shared/communications/components/ChatContainer'
 ```
 
 ---

@@ -11,13 +11,13 @@ import type {
   BlockNode,
   PropDefinitions,
   AnyJSON,
-} from "../types"
+} from "../../types"
 import {
   ValidationError,
   PropValidationError,
   InvalidNodeStructureError,
   CircularReferenceError,
-} from "../types"
+} from "../../types"
 import {
   ComponentJSONSchema,
   ElementJSONSchema,
@@ -26,7 +26,7 @@ import {
   TemplateJSONSchema,
   FlowJSONSchema,
   ExportSchemaV1,
-} from "../types"
+} from "../../types"
 
 // ============================================================================
 // Node Validators

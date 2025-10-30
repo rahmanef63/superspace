@@ -1,6 +1,6 @@
 import React from 'react';
-import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
-import { useSharedCanvas } from '../../canvas/core/SharedCanvasProvider';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
+import { useSharedCanvas } from '../canvas/core/SharedCanvasProvider';
 import { Input, Label, Select, Switch, Button } from '@/components/ui';
 import { ChildrenManager } from './ChildrenManager';
 import { DynamicInspector } from './DynamicInspector';

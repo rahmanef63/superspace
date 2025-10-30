@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import type { Schema, Workspace } from '@/frontend/shared/foundation/types';
-import { getWidgetConfig } from '@/frontend/shared/foundation/registry';
+import type { Schema, Workspace } from '@/frontend/features/cms/shared/types';
+import { getWidgetConfig } from '@/frontend/features/cms/shared/registry';
 import { cn } from '@/lib/utils';
 import { getTemplateByKey, isBuiltinKey, instantiateDefaultTemplate } from '@/frontend/features/cms/state/templateStore';
 
@@ -40,9 +40,12 @@ export const Renderer: React.FC<RendererProps> = ({
   rootId = null,
 }) => {
   const byId = schema.nodes;
-  const getChildren = (id: string) => (byId[id]?.children || []).slice();
-  const nodeType = (id: string) => byId[id]?.type;
-  const nodeProps = (id: string) => ({ ...getWidgetConfig(byId[id]?.type)?.defaults, ...(byId[id]?.props || {}) });
+  const getChildren = (id: string): string[] => (byId[id]?.children || []).slice();
+  const nodeType = (id: string): string | undefined => byId[id]?.type;
+  const nodeProps = (id: string): Record<string, any> => ({
+    ...getWidgetConfig(byId[id]?.type)?.defaults,
+    ...(byId[id]?.props || {}),
+  });
 
   const helpers = {
     getText: (id: string) => (id && byId[id] && byId[id].type === "text" ? nodeProps(id).content : null),
@@ -78,7 +81,9 @@ export const Renderer: React.FC<RendererProps> = ({
     });
     if (attached) return attached;
     for (const ng of navGroupsByPlacement(placement)) {
-      const m = getChildren(ng).find((cid) => (nodeType(cid) === "navNode" && nodeProps(cid).kind === "menu"));
+      const m = getChildren(ng).find(
+        (cid: string) => nodeType(cid) === "navNode" && nodeProps(cid).kind === "menu"
+      );
       if (m) return m;
     }
     return menus[0] || null;
@@ -100,18 +105,29 @@ export const Renderer: React.FC<RendererProps> = ({
 
   const collectMenuItems = useCallback((menuId: string | null) => {
     if (!menuId) return [];
-    const topChildren = getChildren(menuId).filter((cid) => (nodeType(cid) === "navNode" && nodeProps(cid).kind === "item"));
-    const extraFromWs = Object.keys(byId).filter((id) =>
-      (byId[id].type === "navNode" && byId[id].props?.kind === "item" && byId[id].props?.parentKind === "workspace" && activeWsIds.includes(byId[id].props?.parentRef))
+    const topChildren = getChildren(menuId).filter(
+      (cid: string) => nodeType(cid) === "navNode" && nodeProps(cid).kind === "item"
+    );
+    const extraFromWs = Object.keys(byId).filter((id: string) =>
+      byId[id].type === "navNode" &&
+      byId[id].props?.kind === "item" &&
+      byId[id].props?.parentKind === "workspace" &&
+      activeWsIds.includes(byId[id].props?.parentRef)
     );
     const initial = [...topChildren, ...extraFromWs];
     const seen = new Set<string>();
-    return initial.filter((id) => { const ok = !seen.has(id); seen.add(id); return ok; }).filter((id) => matchesVisibility(nodeProps(id)));
+    return initial
+      .filter((id: string) => {
+        const ok = !seen.has(id);
+        seen.add(id);
+        return ok;
+      })
+      .filter((id: string) => matchesVisibility(nodeProps(id)));
   }, [byId, activeWsIds, matchesVisibility]);
 
   // Updated to look for both container and section widgets with path property
   const pageCandidates = useMemo(() => {
-    const fromMenu = menuForSidebar ? getChildren(menuForSidebar).filter((cid) => {
+    const fromMenu = menuForSidebar ? getChildren(menuForSidebar).filter((cid: string) => {
       const type = nodeType(cid);
       return type === "container" || type === "section";
     }) : [];
@@ -119,7 +135,7 @@ export const Renderer: React.FC<RendererProps> = ({
     if (fromMenu.length > 0) return fromMenu;
     
     // Look for any container or section widgets with path property
-    return Object.keys(byId).filter((id) => {
+    return Object.keys(byId).filter((id: string) => {
       const type = byId[id].type;
       const props = nodeProps(id);
       return (type === "container" || type === "section") && props.path;
@@ -159,7 +175,7 @@ export const Renderer: React.FC<RendererProps> = ({
       );
     }
 
-    const children = (n.children || []).map((cid) => renderContentNode(cid));
+    const children = (n.children || []).map((cid: string) => renderContentNode(cid));
     const config = getWidgetConfig(t);
     const renderer = config?.render;
     if (!renderer) return null;
@@ -186,7 +202,9 @@ export const Renderer: React.FC<RendererProps> = ({
     if (!n) return null;
     const cfg = getWidgetConfig(n.type);
     const p = { ...(cfg?.defaults || {}), ...(n.props || {}) };
-    const children = (n.children || []).map((cid) => renderTemplateNode(templateSchema, cid));
+    const children = (n.children || []).map((cid: string) =>
+      renderTemplateNode(templateSchema, cid)
+    );
     const renderer = cfg?.render;
     if (!renderer) return null;
     return renderer(p, children, helpers);

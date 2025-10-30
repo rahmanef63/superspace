@@ -16,8 +16,8 @@ interface ButtonWidgetProps {
   animation?: 'none' | 'bounce' | 'pulse' | 'ping' | 'spin';
   gradient?: boolean;
   borderWidth?: '0' | '1' | '2' | '4' | '8';
-  padding?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  margin?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  margin?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   textAlign?: 'left' | 'center' | 'right';
   fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';

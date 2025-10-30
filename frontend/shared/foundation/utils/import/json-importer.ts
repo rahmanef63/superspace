@@ -8,9 +8,9 @@ import type {
   ExportSchemaV1Type,
   ConversionOptions,
   ConversionResult,
-} from "../types"
-import { validateImportSchema, migrateSchema } from "../types"
-import { createConversionContext } from "../types"
+} from "../../types"
+import { validateImportSchema, migrateSchema } from "../../types"
+import { createConversionContext } from "../../types"
 
 // ============================================================================
 // Import from JSON

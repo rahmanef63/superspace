@@ -1,6 +1,7 @@
 "use client"
 
-import { SettingsDropdown, SettingsToggle } from "../components/index"
+import { SettingsDropdown } from "../components/SettingsDropdown"
+import { SettingsToggle } from "../components/SettingsToggle"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { cn } from "@/lib/utils"

@@ -1,5 +1,5 @@
 import { FileText, Trash2, Edit } from "lucide-react";
-import type { ViewConfig, RowAction } from "@/frontend/shared/ui/layout/view";
+import type { ViewConfig, RowAction } from "@/frontend/shared/ui";
 import type { DocumentRecord } from "../types";
 import { formatRelativeTime } from "../utils";
 

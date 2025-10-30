@@ -4,7 +4,7 @@
 
 import { Label as ShadcnLabel } from "@/components/ui/label"
 import { createComponent, textProp, childrenProp } from "../utils/componentFactory"
-import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation"
 
 export interface LabelProps {
   htmlFor?: string

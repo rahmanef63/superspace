@@ -1,6 +1,6 @@
 import { Check, CheckCheck, Loader2 } from "lucide-react";
 import { formatTimestamp, waClasses } from "../../utils";
-import type { Message } from "@/frontend/shared/foundation/types";
+import type { Message } from "@/frontend/shared/foundation";
 
 interface MessageBubbleProps extends Message {}
 

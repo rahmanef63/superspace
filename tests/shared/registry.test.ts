@@ -14,7 +14,7 @@ vi.mock("@/frontend/shared/foundation/utils/registry/RegistryLoader", () => ({
 }))
 
 import { Registry } from "@/frontend/shared/foundation/utils/registry"
-import type { ComponentWrapper } from "@/frontend/shared/foundation/types"
+import type { ComponentWrapper } from "@/frontend/shared/foundation"
 
 describe("Registry", () => {
   let registry: Registry

@@ -8,7 +8,7 @@ import type {
   RegistryEvent,
   RegistryEventType,
   RegistryEventListener,
-} from "../types"
+} from "../../types"
 
 export class RegistryEventEmitter implements IRegistryEventEmitter {
   private listeners = new Map<RegistryEventType, Set<RegistryEventListener>>()

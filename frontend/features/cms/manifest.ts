@@ -1,6 +1,6 @@
 // frontend/features/cms/manifest.ts (Konten yang Diperbaiki)
 
-import type { FeatureManifest } from '@/frontend/shared/foundation/types/manifest';
+import type { FeatureManifest } from '@/frontend/shared/foundation';
 
 const cmsManifest: FeatureManifest = {
   id: 'cms',

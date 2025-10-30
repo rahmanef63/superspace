@@ -11,7 +11,7 @@ import type {
   ComponentJSON,
   PropDefinitions,
   NodeMetadata,
-} from "@/frontend/shared/foundation/types"
+} from "@/frontend/shared/foundation"
 import { ComponentType } from "react"
 
 // ============================================================================

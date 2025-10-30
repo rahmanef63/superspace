@@ -24,7 +24,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import FeatureBadge from "@/frontend/shared/ui/components/FeatureBadge"
+import { FeatureBadge } from "@/frontend/shared/ui"
 import { useWiki } from "../hooks/useWiki"
 import type { WikiCategory, WikiPageRecord } from "../types"
 

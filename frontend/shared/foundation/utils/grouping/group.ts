@@ -3,8 +3,8 @@
  * Create and manage groups of nodes
  */
 
-import type { GroupNode, AnyNode } from "../types"
-import { EmptyGroupError, InvalidGroupOperationError } from "../types"
+import type { GroupNode, AnyNode } from "../../types"
+import { EmptyGroupError, InvalidGroupOperationError } from "../../types"
 
 // ============================================================================
 // Create Group

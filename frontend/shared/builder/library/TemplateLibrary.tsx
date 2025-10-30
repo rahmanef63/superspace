@@ -6,7 +6,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Input } from '@/components/ui';
-import { useDnD } from '@/frontend/shared/builder/canvas/core/DnDProvider';
+import { useDnD } from '@/frontend/shared/builder';
 
 // ============================================================================
 // Props Injection Pattern - No Feature Coupling!

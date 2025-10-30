@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import { Trash2, Pin, PinOff } from 'lucide-react';
-import { useCrossFeatureRegistry } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
-import { useSharedCanvas } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
+import { useSharedCanvas } from '@/frontend/shared/builder';
 import { useInspectorControls, getNestedValue, setNestedValue } from './hooks/useInspectorControls';
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl';
 

@@ -13,7 +13,8 @@ import type {
   ComponentJSON,
   NodeMetadata,
 } from "../../types"
-import { validateProps } from "../../lib"
+// TODO: validateProps causes issues with client components importing server-side code
+// import { validateProps } from '@/frontend/shared/foundation/utils'
 
 // ============================================================================
 // Factory Options
@@ -90,7 +91,8 @@ export function createComponent<TProps = any>(
 
   // Default validate
   const validate = options.validate || ((props: any) => {
-    validateProps(props, propDefinitions, id)
+    // TODO: validateProps causes issues - commented out temporarily
+    // validateProps(props, propDefinitions, id)
     return zodSchema.parse(props)
   })
 

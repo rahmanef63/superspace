@@ -8,12 +8,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { useResponsive } from "../../hooks/useResponsive"
 
 interface AuthModalProps {
@@ -52,22 +52,22 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: AuthModal
 
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="px-4 pb-4">
-          <DrawerHeader className="text-center">
-            <DrawerTitle>
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="bottom" className="px-4 pb-4">
+          <SheetHeader className="text-center">
+            <SheetTitle>
               {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
-            </DrawerTitle>
-            <DrawerDescription>
+            </SheetTitle>
+            <SheetDescription>
               {mode === 'signup' 
                 ? 'Join WorkspaceHub to collaborate with your workspace'
                 : 'Sign in to your WorkspaceHub account'
               }
-            </DrawerDescription>
-          </DrawerHeader>
+            </SheetDescription>
+          </SheetHeader>
           <AuthForm />
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     );
   }
 

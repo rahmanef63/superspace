@@ -3,16 +3,16 @@
  * Auto-loads all block wrappers from subdirectories
  */
 
-import type { BlockWrapper } from "@/frontend/shared/foundation/types"
+import type { BlockWrapper } from "@/frontend/shared/foundation"
 
 // ============================================================================
-// Auto-Discovery using import.meta.glob()
+// Auto-Discovery Registry
+// Note: import.meta.glob() not supported in Next.js, using empty registry
 // ============================================================================
 
-const registryModules = import.meta.glob<{ default: BlockWrapper }>(
-  "./**/registry.ts",
-  { eager: true }
-)
+const registryModules: Record<string, { default: BlockWrapper }> = {
+  // TODO: Add block registries here when available
+}
 
 // ============================================================================
 // Block Registry Map

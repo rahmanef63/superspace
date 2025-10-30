@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from './LoadingSpinner';
 
 interface AsyncButtonProps extends React.ComponentProps<typeof Button> {

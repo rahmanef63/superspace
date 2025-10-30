@@ -8,10 +8,8 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { useSharedCanvas } from '../../canvas/core/SharedCanvasProvider';
+import { useSharedCanvas, useDnD, getLayoutedElements } from '@/frontend/shared/builder';
 import { CanvasToolbar } from './CanvasToolbar';
-import { useDnD } from '../../canvas/core/DnDProvider';
-import { getLayoutedElements } from '../../canvas/core/layoutUtils';
 
 interface SharedCanvasProps {
   nodeTypes: Record<string, React.ComponentType<any>>;

@@ -17,26 +17,26 @@ interface TypeImportFix {
 
 // Patterns to fix relative type imports crossing domain boundaries
 const typeImportFixes: TypeImportFix[] = [
-  // Builder domain: ../types or ../../types → @/frontend/shared/foundation/types
+  // Builder domain: ../types or ../../types → @/frontend/shared/foundation
   {
     pattern: /from\s+["']\.\.\/types["']/g,
-    replacement: 'from "@/frontend/shared/foundation/types"',
+    replacement: 'from "@/frontend/shared/foundation"',
     domains: ['builder/elements', 'builder/flows', 'builder/sections', 'builder/templates']
   },
   {
     pattern: /from\s+["']\.\.\/\.\.\/types["']/g,
-    replacement: 'from "@/frontend/shared/foundation/types"',
+    replacement: 'from "@/frontend/shared/foundation"',
     domains: ['builder/elements', 'builder/sections', 'builder/blocks']
   },
 
-  // UI domain: ../../types → @/frontend/shared/foundation/types
+  // UI domain: ../../types → @/frontend/shared/foundation
   {
     pattern: /from\s+["']\.\.\/\.\.\/\.\.\/types["']/g,
-    replacement: 'from "@/frontend/shared/foundation/types"',
+    replacement: 'from "@/frontend/shared/foundation"',
     domains: ['ui/components']
   },
 
-  // Settings domain: ../types → @/frontend/shared/settings/types (within settings)
+  // Settings domain: ../types → @/frontend/shared/settings (within settings)
   // This is OK, no fix needed for intra-domain imports
 
   // Foundation domain: ../types → relative within foundation is OK
@@ -52,15 +52,15 @@ const typeImportFixes: TypeImportFix[] = [
     domains: ['foundation/utils']
   },
 
-  // Registry imports: ../registry → @/frontend/shared/foundation/registry
+  // Registry imports: ../registry → @/frontend/shared/foundation
   {
     pattern: /from\s+["']\.\.\/registry["']/g,
-    replacement: 'from "@/frontend/shared/foundation/registry"',
+    replacement: 'from "@/frontend/shared/foundation"',
     domains: ['builder', 'ui']
   },
   {
     pattern: /from\s+["']\.\.\/\.\.\/registry["']/g,
-    replacement: 'from "@/frontend/shared/foundation/registry"',
+    replacement: 'from "@/frontend/shared/foundation"',
     domains: ['builder', 'ui']
   },
 ]

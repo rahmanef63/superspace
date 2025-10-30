@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { SettingsToggle, SettingsDropdown } from "../components/index"
+import { SettingsToggle } from "../components/SettingsToggle"
+import { SettingsDropdown } from "../components/SettingsDropdown"
 import { useState } from "react"
 
 export function GeneralSettings() {

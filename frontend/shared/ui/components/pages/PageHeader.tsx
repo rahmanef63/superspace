@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 import { Breadcrumb, type BreadcrumbItem } from '../navigation/Breadcrumb';
 
 interface PageHeaderProps {

@@ -1,4 +1,4 @@
-import type { ComponentConfig } from '@/frontend/shared/foundation/registry/CrossFeatureRegistry';
+import type { ComponentConfig } from '@/frontend/shared/foundation';
 import { automationWidgetRegistry } from '../widgets/registry';
 
 // LLM Components

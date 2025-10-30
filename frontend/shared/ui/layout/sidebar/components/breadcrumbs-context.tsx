@@ -3,14 +3,14 @@
 import React from "react"
 import { usePathname } from "next/navigation"
 
-export type BreadcrumbItem = {
+export type SidebarBreadcrumbItem = {
   label: string
   href: string
 }
 
 type BreadcrumbsContextValue = {
-  breadcrumbs: BreadcrumbItem[]
-  setBreadcrumbs: (items: BreadcrumbItem[]) => void
+  breadcrumbs: SidebarBreadcrumbItem[]
+  setBreadcrumbs: (items: SidebarBreadcrumbItem[]) => void
 }
 
 const BreadcrumbsContext = React.createContext<BreadcrumbsContextValue | null>(
@@ -32,7 +32,7 @@ export function BreadcrumbsProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [breadcrumbs, setBreadcrumbs] = React.useState<BreadcrumbItem[]>([])
+  const [breadcrumbs, setBreadcrumbs] = React.useState<SidebarBreadcrumbItem[]>([])
   const pathname = usePathname()
 
   // Clear breadcrumbs on route change to avoid stale values

@@ -16,7 +16,7 @@ import {
   IntegrationError,
   type ErrorHandler,
   DefaultErrorHandler,
-} from "../types"
+} from "../../types"
 
 export class ErrorHandlerManager {
   private handlers: ErrorHandler[] = []

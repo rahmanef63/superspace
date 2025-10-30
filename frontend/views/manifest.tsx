@@ -125,6 +125,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/friends/page")),
   },
   {
+    id: "pages",
+    componentId: "PagesPage",
+    title: "Pages",
+    description: "Notion-like pages for documentation",
+    icon: FileText,
+    component: lazy(() => import("@/frontend/features/pages/page")),
+  },
+  {
     id: "archived",
     componentId: "ArchivedPage",
     title: "Archived",
@@ -133,9 +141,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/archived/page")),
   },
   {
-    id: "databases",
+    id: "database",
     componentId: "DatabasesPage",
-    title: "Databases",
+    title: "Database",
     description: "Notion-style database views and management",
     icon: Database,
     component: lazy(() => import("@/frontend/features/database/page")),
@@ -309,7 +317,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/automation/page")),
   },
   {
-    id: "workspace-settings",
+    id: "settings",
     componentId: "WorkspacesPage",
     title: "Settings",
     description: "Workspace configuration and settings",

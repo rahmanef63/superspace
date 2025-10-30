@@ -2,7 +2,7 @@
  * Section Factory (Level 4)
  */
 
-import type { SectionWrapper, SectionStructure, SectionNode, SectionJSON, PropDefinitions, NodeMetadata } from "@/frontend/shared/foundation/types"
+import type { SectionWrapper, SectionStructure, SectionNode, SectionJSON, PropDefinitions, NodeMetadata } from "@/frontend/shared/foundation"
 import { ComponentType } from "react"
 
 export interface CreateSectionOptions<TProps = any> {

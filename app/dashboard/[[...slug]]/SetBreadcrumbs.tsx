@@ -1,9 +1,9 @@
 "use client"
 
 import React from "react"
-import { BreadcrumbItem, useBreadcrumbs } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
+import { type SidebarBreadcrumbItem, useBreadcrumbs } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
 
-export function SetBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+export function SetBreadcrumbs({ items }: { items: SidebarBreadcrumbItem[] }) {
   const { setBreadcrumbs } = useBreadcrumbs()
 
   React.useEffect(() => {

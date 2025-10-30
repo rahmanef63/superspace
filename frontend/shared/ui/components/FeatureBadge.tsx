@@ -59,7 +59,7 @@ const statusConfig: Record<
   },
 }
 
-export default function FeatureBadge({ status, className = "", showTooltip = true }: FeatureBadgeProps) {
+export function FeatureBadge({ status, className = "", showTooltip = true }: FeatureBadgeProps) {
   const config = statusConfig[status]
   const Icon = config.icon
 

@@ -4,9 +4,9 @@ import { Id } from "@convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getIconComponent } from "@/frontend/shared/ui/components/icons";
+import { getIconComponent } from "@/frontend/shared/ui";
 import { cn } from "@/lib/utils";
-import type { MenuItemMetadata } from "@/frontend/shared/ui/layout/menus/types";
+import type { MenuItemMetadata } from "@/frontend/shared/ui";
 import {
   Calendar,
   User,

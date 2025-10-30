@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { MenuItemForm } from "@/frontend/shared/ui/layout/menus/components/MenuItemForm";
-import { MenuDisplay } from "@/frontend/shared/ui/layout/menus/components/MenuDisplay";
-import { MenuPreview } from "@/frontend/shared/ui/layout/menus/components/MenuPreview";
+import { MenuItemForm } from "@/frontend/shared/ui";
+import { MenuDisplay } from "@/frontend/shared/ui";
+import { MenuPreview } from "@/frontend/shared/ui";
 import { MenuItemCard } from "../components";
 import type { MenuItem, ViewMode } from "../types";
 import { MENU_STORE_CONFIG } from "../constants";

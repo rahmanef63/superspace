@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 import { UserProfile } from './UserProfile';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';

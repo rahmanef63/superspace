@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Id } from '../../../../../convex/_generated/dataModel';
+import type { Id } from '@/convex/_generated/dataModel';
 import {
   useCMSCollections,
   useCreateCollection,
   useUpdateCollection,
   useDeleteCollection
-} from '@/frontend/shared/foundation/hooks/useConvexCMS';
+} from '@/frontend/shared/foundation';
 import { useConvexWorkspaceContext } from '@/frontend/shared/context/ConvexWorkspaceContext';
-import { toSchema, fromSchema } from './useSchemaParser';
+import { toSchema } from './useSchema';
+import { fromSchema } from './useSchemaParser';
+import type { CMSNode, CMSEdge } from '../types';
 
-interface CMSPersistenceOptions {
+export interface CMSPersistenceOptions {
   autoSave?: boolean;
   autoSaveDelay?: number;
   onSaveSuccess?: (collectionId: Id<'cms_collections'>) => void;
@@ -19,10 +21,10 @@ interface CMSPersistenceOptions {
 }
 
 export function useConvexCMSPersistence(
-  nodes: any[],
-  edges: any[],
-  setNodes: (nodes: any[]) => void,
-  setEdges: (edges: any[]) => void,
+  nodes: CMSNode[],
+  edges: CMSEdge[],
+  setNodes: (nodes: CMSNode[]) => void,
+  setEdges: (edges: CMSEdge[]) => void,
   options: CMSPersistenceOptions = {}
 ) {
   const {
@@ -34,7 +36,7 @@ export function useConvexCMSPersistence(
     onLoadError
   } = options;
 
-  const { currentWorkspace, currentUser } = useConvexWorkspaceContext();
+  const { currentWorkspace } = useConvexWorkspaceContext();
   const workspaceId = currentWorkspace?._id || null;
 
   const { collections, loading: collectionsLoading } = useCMSCollections(workspaceId);
@@ -52,10 +54,12 @@ export function useConvexCMSPersistence(
   const [isSaving, setIsSaving] = useState(false);
   
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const previousNodesRef = useRef(nodes);
-  const previousEdgesRef = useRef(edges);
+  const previousNodesRef = useRef<CMSNode[]>(nodes);
+  const previousEdgesRef = useRef<CMSEdge[]>(edges);
 
-  const currentCollection = collections?.find(c => c._id === currentCollectionId);
+  const currentCollection = collections?.find(
+    (collection) => collection._id === currentCollectionId
+  );
 
   const saveCollection = useCallback(async (name: string, slug?: string) => {
     if (!workspaceId) {
@@ -118,7 +122,9 @@ export function useConvexCMSPersistence(
   ]);
 
   const loadCollection = useCallback(async (collectionId: Id<'cms_collections'>) => {
-    const collection = collections?.find(c => c._id === collectionId);
+    const collection = collections?.find(
+      (candidate) => candidate._id === collectionId
+    );
     
     if (!collection) {
       const error = new Error('Collection not found');
@@ -178,7 +184,9 @@ export function useConvexCMSPersistence(
     if (collections && collections.length > 0 && !currentCollectionId) {
       const lastUsed = localStorage.getItem('current-cms-collection-id');
       const collection = lastUsed 
-        ? collections.find(c => c._id === lastUsed as Id<'cms_collections'>)
+        ? collections.find(
+            (candidate) => candidate._id === (lastUsed as Id<'cms_collections'>)
+          )
         : collections[0];
       
       if (collection) {

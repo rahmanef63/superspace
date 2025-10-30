@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/ui/layout/view";
+import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/ui";
 import type { Member } from "../types";
 import { RoleSelect } from "./RoleSelect";
 import { useMemberCrud } from "../hooks/useMemberCrud";

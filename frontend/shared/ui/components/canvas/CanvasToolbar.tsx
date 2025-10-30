@@ -1,7 +1,7 @@
 import React from 'react';
 import { Panel, useReactFlow } from 'reactflow';
 import { Button } from '@/components/ui';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ZoomIn, ZoomOut, Maximize, Sparkles } from 'lucide-react';
 
 interface CanvasToolbarProps {

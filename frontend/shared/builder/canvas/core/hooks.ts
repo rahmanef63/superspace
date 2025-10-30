@@ -1,5 +1,13 @@
-import { useState, useCallback, useMemo } from 'react';
-import type { CanvasNode, CanvasEdge, CanvasState, FlowDirection, CanvasConfig } from './types';
+import { useState, useCallback } from 'react';
+import type {
+  CanvasNode,
+  CanvasEdge,
+  CanvasState,
+  FlowDirection,
+  CanvasConfig,
+  NodeData,
+  NodeConfig,
+} from './types';
 
 export const useCanvasState = (initialNodes: CanvasNode[] = [], initialEdges: CanvasEdge[] = []) => {
   const [state, setState] = useState<CanvasState>({

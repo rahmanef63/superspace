@@ -114,7 +114,7 @@ export interface DialogState {
 }
 
 // Breadcrumb item type
-export interface BreadcrumbItem {
+export interface MenuBreadcrumbItem {
   _id: Id<"menuItems">;
   name: string;
   parentId?: Id<"menuItems">;

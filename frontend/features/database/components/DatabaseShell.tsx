@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { SecondarySidebarLayout } from "@/frontend/shared/ui/layout/sidebar/secondary";
+import { SecondarySidebarLayout } from "@/frontend/shared/ui";
 
 export interface DatabaseShellProps {
   header: ReactNode;

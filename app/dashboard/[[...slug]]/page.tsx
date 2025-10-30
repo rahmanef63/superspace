@@ -6,13 +6,13 @@ import Link from "next/link"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { SetBreadcrumbs } from "./SetBreadcrumbs"
-import type { BreadcrumbItem } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
+import type { SidebarBreadcrumbItem } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
 import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/views/static/workspaces/constants/navigation"
-import { useAuthed } from "@/frontend/shared/foundation/auth/hooks/useAuthed"
-import { useWorkspaceContext } from "@/app/dashboard/WorkspaceProvider"
+import { useAuthed } from "@/frontend/shared/foundation"
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { getPageById } from "@/frontend/views/manifest"
 import { AppContentWrapper } from "@/frontend/views/AppContentWrapper"
-import FeatureNotReady from "@/frontend/shared/ui/components/FeatureNotReady"
+import { FeatureNotReady } from "@/frontend/shared/ui"
 import { useToast } from "@/hooks/use-toast"
 
 function toTitleCase(segment: string) {
@@ -69,8 +69,8 @@ export default function CatchAllPage() {
     }
   }, [isLoading, isAuthenticated, workspacesLoaded, workspaces, router])
 
-  const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
-    const base: BreadcrumbItem[] = [{ label: "Dashboard", href: "/dashboard" }]
+  const breadcrumbs: SidebarBreadcrumbItem[] = useMemo(() => {
+    const base: SidebarBreadcrumbItem[] = [{ label: "Dashboard", href: "/dashboard" }]
     if (!activeSlug) return base
     const item = WORKSPACE_NAVIGATION_ITEMS.find(i => i.key === activeSlug)
     if (!item) return base

@@ -18,6 +18,9 @@ export * from "./conversion"
 // Error types
 export * from "./errors"
 
+// Manifest types
+export * from "./manifest"
+
 // Re-export commonly used types for convenience
 export type {
   // Core

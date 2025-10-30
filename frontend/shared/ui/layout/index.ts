@@ -1,8 +1,12 @@
 // Public API for shared/layout
 export { default as MasterDetailLayout } from "./MasterDetailLayout";
 
+// Secondary Sidebar
+export * from "./sidebar/secondary";
+
 // Menus
 export * as Menus from "./menus";
+export * from "./menus";
 
 // View layer (table/card/switchers)
 export * from "./view";

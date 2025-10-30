@@ -1,6 +1,6 @@
 "use client"
 
-import { SettingsDropdown } from "../components/index"
+import { SettingsDropdown } from "../components/SettingsDropdown"
 import { Button } from "@/components/ui/button"
 import { Play, Video, Mic, Volume2 } from "lucide-react"
 import { useState } from "react"

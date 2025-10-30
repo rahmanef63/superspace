@@ -8,7 +8,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { WorkspaceProvider } from "@/app/dashboard/WorkspaceProvider"
+import { WorkspaceProvider } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
 export default function DashboardLayout({
   children,

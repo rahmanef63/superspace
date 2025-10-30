@@ -252,7 +252,7 @@ export default DatePickerWrapper
 **File**: `frontend/features/your-feature/init.ts`
 
 ```typescript
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Settings, Bell, Users } from "lucide-react"
 import {
   GeneralSettings,
@@ -541,14 +541,14 @@ const FEATURE_SETTINGS = {
 **✅ After**:
 ```typescript
 // frontend/features/chat/init.ts
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 
 registerFeatureSettings("chat", () => [
   { id: "chat-general", component: ChatGeneralSettings },
 ])
 
 // WorkspaceSettings.tsx
-import { getFeatureSettingsBuilder } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { getFeatureSettingsBuilder } from "@/frontend/shared/settings"
 
 const builder = getFeatureSettingsBuilder("chat")  // Dynamic!
 ```

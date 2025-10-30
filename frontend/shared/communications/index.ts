@@ -15,31 +15,37 @@
 // Chat System
 // ============================================================
 export * from './chat'
-export { ChatView } from './chat/ChatView'
-export { ChatInput } from './chat/ChatInput'
-export { MessageList } from './chat/MessageList'
-export { ChannelList } from './chat/ChannelList'
+// Chat components are in ./chat/components/
+export { ChatInput } from './chat/components/ChatInput'
+export { ChatContainer } from './chat/components/ChatContainer'
+export { ChatHeader } from './chat/components/ChatHeader'
+export { ChatMessage } from './chat/components/ChatMessage'
+export { ChatSidebar } from './chat/components/ChatSidebar'
+export { ChatThread } from './chat/components/ChatThread'
+export { ChatComposer } from './chat/components/ChatComposer'
+export { ActivityFeed as ChatActivityFeed } from './chat/components/ActivityFeed'
+// Chat hooks
 export { useChat } from './chat/hooks/useChat'
-export { useChatState } from './chat/hooks/useChatState'
+export { useChatPresence } from './chat/hooks/useChatPresence'
+export { useChatScroll } from './chat/hooks/useChatScroll'
+export { useMessageActions } from './chat/hooks/useMessageActions'
 
 // ============================================================
 // Comments System
 // ============================================================
-export * from './comments'
-export { CommentThread } from './comments/CommentThread'
-export { CommentInput } from './comments/CommentInput'
-export { InlineComment } from './comments/InlineComment'
-export { useComments } from './comments/hooks/useComments'
+export { CommentsPanel } from './comments/components/CommentsPanel'
+// TODO: Add more comment components when available
+// export * from './comments'
 
 // ============================================================
 // Collaboration Features
 // ============================================================
-export * from './collaboration'
 export { PresenceIndicator } from './collaboration/PresenceIndicator'
-export { CollaboratorCursor } from './collaboration/CollaboratorCursor'
-export { ActivityFeed } from './collaboration/ActivityFeed'
-export { usePresence } from './collaboration/hooks/usePresence'
-export { useCollaboration } from './collaboration/hooks/useCollaboration'
+export { CollaborativeCursor } from './collaboration/CollaborativeCursor'
+// TODO: Add more collaboration exports when available
+// export { ActivityFeed } from './collaboration/ActivityFeed'
+// export { usePresence } from './collaboration/hooks/usePresence'
+// export { useCollaboration } from './collaboration/hooks/useCollaboration'
 
 // ============================================================
 // Types

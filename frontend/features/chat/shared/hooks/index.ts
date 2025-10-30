@@ -4,7 +4,7 @@ import type { Id } from '@/convex/_generated/dataModel';
 import { useWhatsAppStore } from '../stores';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConvex } from 'convex/react';
-import { useWorkspaceContext } from '@/app/dashboard/WorkspaceProvider';
+import { useWorkspaceContext } from '@/frontend/shared/foundation/provider/WorkspaceProvider';
 import { ConvexChatRepository } from '../data/adapters/convex.adapter';
 
 // Hook to initialize Chats data

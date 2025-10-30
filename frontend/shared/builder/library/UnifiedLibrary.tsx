@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Input, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
-import { useCrossFeatureRegistry } from '../../registry/CrossFeatureRegistry';
+import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
+import type { FeatureTab, ComponentConfig } from '@/frontend/shared/foundation';
 import { DraggableLibraryItem } from './DraggableLibraryItem';
-import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui/icons';
+import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui';
 import type { LucideIcon } from 'lucide-react';
 
 interface UnifiedLibraryProps {
@@ -16,24 +17,24 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
 
   const currentTabs = getFeatureTabs(currentFeature);
 
-  const getFilteredComponents = (tabId: string) => {
-    const tab = currentTabs.find((t) => t.id === tabId);
+  const getFilteredComponents = (tabId: string): ComponentConfig[] => {
+    const tab = currentTabs.find((t: FeatureTab) => t.id === tabId);
     if (!tab) return [];
 
     const components = getComponentsForTab(tab.feature, tabId);
     return components.filter(
-      (comp) =>
+      (comp: ComponentConfig) =>
         comp.label.toLowerCase().includes(query.toLowerCase()) ||
         comp.category.toLowerCase().includes(query.toLowerCase())
     );
   };
 
-  const renderComponentGrid = (components: ReturnType<typeof getFilteredComponents>) => {
-    const groupedByCategory = components.reduce((acc, comp) => {
+  const renderComponentGrid = (components: ComponentConfig[]) => {
+    const groupedByCategory = components.reduce((acc: Record<string, ComponentConfig[]>, comp: ComponentConfig) => {
       if (!acc[comp.category]) acc[comp.category] = [];
       acc[comp.category].push(comp);
       return acc;
-    }, {} as Record<string, typeof components>);
+    }, {} as Record<string, ComponentConfig[]>);
 
     return (
       <div className="space-y-4">
@@ -46,7 +47,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
                 <span>{category}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {categoryComponents.map((component) => {
+                {categoryComponents.map((component: ComponentConfig) => {
                   const FeatureIcon = getFeatureIcon(component.feature);
                   const CatIconI = (component.icon as LucideIcon) || getCategoryIcon(component.category);
                   return (
@@ -95,7 +96,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
 
       <Tabs defaultValue={currentTabs[0]?.id || 'layout'} className="flex-1 flex flex-col">
         <TabsList className="px-3 pt-2 overflow-x-auto">
-          {currentTabs.map((tab) => {
+          {currentTabs.map((tab: FeatureTab) => {
             const Icon = getFeatureIcon(tab.feature);
             return (
               <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1">
@@ -106,7 +107,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
         </TabsList>
 
         <div className="flex-1 overflow-y-auto">
-          {currentTabs.map((tab) => (
+          {currentTabs.map((tab: FeatureTab) => (
             <TabsContent key={tab.id} value={tab.id} className="p-3">
               {renderComponentGrid(getFilteredComponents(tab.id))}
             </TabsContent>

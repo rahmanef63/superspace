@@ -1,8 +1,8 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import { cn } from '@/lib/utils';
-import { getWidgetConfig } from '@/frontend/shared/foundation/registry';
-import { useOptionalSharedCanvas } from '@/frontend/shared/builder/canvas/core/SharedCanvasProvider';
+import { getWidgetConfig } from '@/frontend/features/cms/shared/registry';
+import { useOptionalSharedCanvas } from '@/frontend/shared/builder';
 
 type ShadcnNodeData = {
   comp: string;

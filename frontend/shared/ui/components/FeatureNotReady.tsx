@@ -47,7 +47,7 @@ const statusConfig = {
   },
 }
 
-export default function FeatureNotReady({
+export function FeatureNotReady({
   featureName,
   featureSlug,
   status,

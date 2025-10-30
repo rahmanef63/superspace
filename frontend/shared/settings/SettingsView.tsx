@@ -7,17 +7,15 @@ import { SettingsSidebar } from "./SettingsSidebar";
 import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,
-} from "@/frontend/shared/ui/layout/sidebar/secondary";
-import {
-  GeneralSettings,
-  AccountSettings,
-  VideoVoiceSettings,
-  NotificationSettings,
-  PersonalizationSettings,
-  StorageSettings,
-  ShortcutsSettings,
-  HelpSettings,
-} from "@/frontend/shared/settings";
+} from "@/frontend/shared/ui";
+import { GeneralSettings } from "./general";
+import { AccountSettings } from "./account";
+import { VideoVoiceSettings } from "./video-voice";
+import { NotificationSettings } from "./notifications";
+import { PersonalizationSettings } from "./personalization";
+import { StorageSettings } from "./storage";
+import { ShortcutsSettings } from "./shortcuts";
+import { HelpSettings } from "./help";
 
 const SETTINGS_COMPONENTS = {
   general: GeneralSettings,

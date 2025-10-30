@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, generateContainerClasses } from '@/lib/utils';
+import { cn, generateContainerClasses } from '@/frontend/features/cms/shared/lib/utils';
 
 interface ContainerProps {
   display?: string;

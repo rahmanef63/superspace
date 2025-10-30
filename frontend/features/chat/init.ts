@@ -5,7 +5,7 @@
  * Import this file at app initialization to enable chat settings
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { MessageSquare, Bell, Bot } from "lucide-react"
 import {
   ChatGeneralSettings,

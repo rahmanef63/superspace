@@ -1,5 +1,5 @@
 import * as LucideIcons from 'lucide-react';
-import { getCategoryIcon } from '@/frontend/shared/ui/icons';
+import { getCategoryIcon } from '@/frontend/shared/ui';
 
 /**
  * Standard icon mapping for CMS widgets

@@ -7,14 +7,14 @@ on:
       - 'features.config.ts'
       - 'frontend/features/**'
       - 'convex/features/**'
-      - 'convex/menu/store/**'
+      - 'convex/features/menus/**'
   pull_request:
     branches: [main, develop]
     paths:
       - 'features.config.ts'
       - 'frontend/features/**'
       - 'convex/features/**'
-      - 'convex/menu/store/**'
+      - 'convex/features/menus/**'
 
 jobs:
   validate:
@@ -60,12 +60,12 @@ jobs:
 
       - name: Verify manifest is up to date
         run: |
-          if git diff --quiet convex/menu/store/menu_manifest_data.ts convex/menu/store/optional_features_catalog.ts; then
+          if git diff --quiet convex/features/menus/menu_manifest_data.ts convex/features/menus/optional_features_catalog.ts; then
             echo "✅ Manifest is up to date"
           else
             echo "❌ Manifest is out of sync with features.config.ts"
             echo "Please run 'pnpm run sync:features' and commit the changes"
-            git diff convex/menu/store/menu_manifest_data.ts convex/menu/store/optional_features_catalog.ts
+            git diff convex/features/menus/menu_manifest_data.ts convex/features/menus/optional_features_catalog.ts
             exit 1
           fi
 

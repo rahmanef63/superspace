@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 import { FunctionReference } from "convex/server";
 
-const menuStoreMenuItems = (api as any)["menu/store/menuItems"];
+const menuStoreMenuItems = (api as any)["features/menus/menuItems"];
 
 /**
  * Convex API references for menu operations

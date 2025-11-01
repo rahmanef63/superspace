@@ -1,0 +1,8 @@
+const roleLevel = role.level !== undefined ? role.level : 0; // Default value if undefined
+// ... other code
+roleLevel: roleLevel, // Update line 53
+
+// In convex/shared/auth.ts
+const roleLevel = role.level !== undefined ? role.level : 0; // Default value if undefined
+// ... other code
+roleLevel, // Update line 91

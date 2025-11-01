@@ -44,7 +44,7 @@ interface MenuItem {
 
 export function MenuPreview({ menuItemId, workspaceId, className }: MenuPreviewProps) {
   const menuItem = useQuery(
-    api.menu.store.menuItems.getMenuItem,
+    (api as any)["features/menus/menuItems"].getMenuItem,
     menuItemId ? { menuItemId } : "skip"
   ) as MenuItem | undefined;
 

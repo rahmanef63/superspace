@@ -65,4 +65,4 @@ export type {
   Presence,
   Collaborator,
   Activity,
-} from './chat/types'
+} from './chat/types/'

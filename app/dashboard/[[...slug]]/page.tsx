@@ -10,7 +10,7 @@ import type { SidebarBreadcrumbItem } from "@/frontend/shared/ui/layout/sidebar/
 import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/foundation/workspaces/constants/navigation"
 import { useAuthed } from "@/frontend/shared/foundation"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
-import { getPageById } from "@/frontend/views/manifest"
+import { getPageById } from "@/frontend/shared/foundation/manifest"
 import { AppContentWrapper } from "@/frontend/shared/context/AppContentWrapper"
 import { FeatureNotReady } from "@/frontend/shared/ui"
 import { useToast } from "@/hooks/use-toast"
@@ -79,7 +79,7 @@ export default function CatchAllPage() {
 
   // Access-controlled menu items (use "skip" until ready per Convex types)
   const menuItems = useQuery(
-    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
+    (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     workspaceId && isAuthed ? { workspaceId } : "skip"
   )
   const accessibleSlugs = useMemo(
@@ -196,7 +196,7 @@ export default function CatchAllPage() {
     toast({
       title: `${activeSlugTitle} is not configured`,
       description: "Enable this feature in your workspace navigation or update the manifest.",
-      variant: "warning",
+      variant: "destructive",
     })
     lastUnknownSlugRef.current = activeSlug
   }, [

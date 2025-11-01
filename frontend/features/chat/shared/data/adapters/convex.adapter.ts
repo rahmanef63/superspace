@@ -41,9 +41,9 @@ export class ConvexChatRepository extends AbstractChatRepository {
     await this.ensureUser();
     let items: any[] = [];
     if (opts?.global) {
-      items = await this.client.query(api.menu.chat.conversations.getGlobalConversations as any, {});
+      items = await this.client.query((api as any)["features/chat/conversations"].getGlobalConversations, {});
     } else {
-      items = await this.client.query(api.menu.chat.conversations.getWorkspaceConversations as any, {
+      items = await this.client.query((api as any)["features/chat/conversations"].getWorkspaceConversations, {
         workspaceId: this.workspaceId,
       });
     }
@@ -84,7 +84,7 @@ export class ConvexChatRepository extends AbstractChatRepository {
 
   async getMessages(chatId: string): Promise<Message[]> {
     try {
-      const messages = await this.client.query(api.menu.chat.messages.getConversationMessages as any, {
+      const messages = await this.client.query((api as any)["features/chat/messages"].getConversationMessages, {
         conversationId: chatId as unknown as Id<'conversations'>,
       });
 
@@ -110,7 +110,7 @@ export class ConvexChatRepository extends AbstractChatRepository {
 
   async sendMessage(chatId: string, text: string): Promise<Message> {
     const me = await this.ensureUser();
-    const id = await this.client.mutation(api.menu.chat.messages.sendMessage as any, {
+    const id = await this.client.mutation((api as any)["features/chat/messages"].sendMessage, {
       conversationId: chatId as unknown as Id<'conversations'>,
       content: text,
       type: 'text',
@@ -131,7 +131,7 @@ export class ConvexChatRepository extends AbstractChatRepository {
   async markAsRead(chatId: string, messageId: string): Promise<void> {
     // Best-effort; ignore failures
     try {
-      await this.client.mutation(api.menu.chat.messages.markReadTo as any, {
+      await this.client.mutation((api as any)["features/chat/messages"].markReadTo, {
         conversationId: chatId as unknown as Id<'conversations'>,
         messageId: messageId as unknown as Id<'messages'>,
       });

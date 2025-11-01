@@ -163,7 +163,7 @@ export const getSettingsHistory = query({
           actor: actor ? {
             name: actor.name,
             email: actor.email,
-            image: actor.image,
+            image: actor.avatarUrl,
           } : null,
         };
       })

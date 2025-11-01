@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 
-import { DEFAULT_PAGE_MANIFEST, getDefaultPages } from "@/frontend/views/manifest"
+import { DEFAULT_PAGE_MANIFEST, getDefaultPages } from "@/frontend/shared/foundation/manifest"
 
 /**
  * ✅ 100% DYNAMIC Manifest content regression tests

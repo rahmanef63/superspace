@@ -113,13 +113,13 @@ export function MenuTree({
   selectedItemId,
   showActions = false
 }: MenuTreeProps) {
-  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
+  const menuItems = useQuery((api as any)["features/menus/menuItems"].getWorkspaceMenuItems, { workspaceId });
 
-  const createMutation = useMutation((api as any)["menu/store/menuItems"].createMenuItem);
-  const updateMutation = useMutation((api as any)["menu/store/menuItems"].updateMenuItem);
-  const deleteMutation = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
-  const updateOrderMutation = useMutation((api as any)["menu/store/menuItems"].updateMenuOrder);
-  const duplicateMutation = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
+  const createMutation = useMutation((api as any)["features/menus/menuItems"].createMenuItem);
+  const updateMutation = useMutation((api as any)["features/menus/menuItems"].updateMenuItem);
+  const deleteMutation = useMutation((api as any)["features/menus/menuItems"].deleteMenuItem);
+  const updateOrderMutation = useMutation((api as any)["features/menus/menuItems"].updateMenuOrder);
+  const duplicateMutation = useMutation((api as any)["features/menus/menuItems"].duplicateMenuItem);
 
   const [dialog, setDialog] = useState<DialogState>({
     mode: null,

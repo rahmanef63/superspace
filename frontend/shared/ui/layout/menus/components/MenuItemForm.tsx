@@ -47,10 +47,10 @@ export function MenuItemForm({
     color: ''
   });
 
-  const createMenuItem = useMutation((api as any)["menu/store/menuItems"].createMenuItem);
-  const updateMenuItem = useMutation((api as any)["menu/store/menuItems"].updateMenuItem);
+  const createMenuItem = useMutation((api as any)["features/menus/menuItems"].createMenuItem);
+  const updateMenuItem = useMutation((api as any)["features/menus/menuItems"].updateMenuItem);
   const existingItem = useQuery(
-    (api as any)["menu/store/menuItems"].getMenuItem,
+    (api as any)["features/menus/menuItems"].getMenuItem,
     editingItemId ? { menuItemId: editingItemId } : "skip"
   );
 

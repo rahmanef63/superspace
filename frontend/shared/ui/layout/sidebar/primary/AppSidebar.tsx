@@ -14,8 +14,8 @@ import { NavUser } from "./NavUser"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
 import { NavSystem } from "./NavSystem"
 import { NavSecondary } from "./NavSecondary"
-import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/views/manifest"
-import { iconFromName } from "@/frontend/views/icons"
+import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/foundation/manifest"
+import { iconFromName } from "@/frontend/shared/ui/components/icons"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
 const REQUIRED_MENU_SLUGS = [
@@ -72,11 +72,11 @@ export function AppSidebar({
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
   const menuItems = useQuery(
-    api.menu.store.menuItems.getWorkspaceMenuItems,
+    (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
   ) as any[] | undefined
 
-  const createDefaults = useMutation(api.menu.store.menuItems.syncWorkspaceDefaultMenus)
+  const createDefaults = useMutation((api as any)["features/menus/menuItems"].syncWorkspaceDefaultMenus)
   const seededRef = useRef<string | null>(null)
   useEffect(() => {
     if (!effectiveWorkspaceId) return

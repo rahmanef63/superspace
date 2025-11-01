@@ -296,7 +296,7 @@ export const getWorkspaceDatabases = query({
           author: author
             ? {
                 name: author.name ?? undefined,
-                image: author.image ?? undefined,
+                image: author.avatarUrl ?? undefined,
               }
             : undefined,
         };
@@ -339,7 +339,7 @@ export const searchDatabases = query({
           author: author
             ? {
                 name: author.name ?? undefined,
-                image: author.image ?? undefined,
+                image: author.avatarUrl ?? undefined,
               }
             : undefined,
         };

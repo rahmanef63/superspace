@@ -308,7 +308,7 @@ Follow all steps from "Default Feature" above, plus:
 - [ ] **Verify catalog generation**
   ```bash
   # After sync:all, check this file exists
-  cat convex/menu/store/optional_features_catalog.ts
+  cat convex/features/menus/optional_features_catalog.ts
 
   # Should contain your feature:
   export const OPTIONAL_FEATURES_CATALOG = [

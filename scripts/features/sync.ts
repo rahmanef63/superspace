@@ -3,7 +3,7 @@
  * Feature Sync Script
  *
  * Synchronizes feature configs with:
- * - convex/menu/store/menu_manifest_data.ts (DEFAULT_MENU_ITEMS)
+ * - convex/features/menus/menu_manifest_data.ts (DEFAULT_MENU_ITEMS)
  * - Menu Store catalog (optional features)
  *
  * Usage: pnpm run sync:features
@@ -79,7 +79,7 @@ const FEATURES_REGISTRY = getAllFeatures()
 function syncDefaultMenuItems() {
   console.log("\n📝 Syncing DEFAULT_MENU_ITEMS...")
 
-  const manifestPath = join(rootDir, "convex", "menu", "store", "menu_manifest_data.ts")
+  const manifestPath = join(rootDir, "convex", "features", "menus", "menu_manifest_data.ts")
   const menuItems = getAllDefaultMenuItems()
 
   const content = `// This is the single source of truth for default menu items.
@@ -105,7 +105,7 @@ export const DEFAULT_MENU_ITEMS = ${JSON.stringify(menuItems, null, 2)
 function syncOptionalFeaturesCatalog() {
   console.log("\n📝 Syncing optional features catalog...")
 
-  const catalogPath = join(rootDir, "convex", "menu", "store", "optional_features_catalog.ts")
+  const catalogPath = join(rootDir, "convex", "features", "menus", "optional_features_catalog.ts")
   const catalog = getOptionalFeaturesCatalog()
 
   const header = [
@@ -373,8 +373,8 @@ function main() {
     console.log("\n✨ Feature sync completed successfully!\n")
     console.log("Next steps:")
     console.log("  1. Review generated files:")
-    console.log("     - convex/menu/store/menu_manifest_data.ts")
-    console.log("     - convex/menu/store/optional_features_catalog.ts")
+    console.log("     - convex/features/menus/menu_manifest_data.ts")
+    console.log("     - convex/features/menus/optional_features_catalog.ts")
     console.log("  2. Run 'pnpm run validate:all' to ensure schemas are valid")
     console.log("  3. Commit the changes\n")
   } catch (error) {

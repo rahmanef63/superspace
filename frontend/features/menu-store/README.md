@@ -570,7 +570,7 @@ setSearchQuery("new value");
 
 - [Secondary Sidebar Layout](../../shared/layout/secondary-sidebar/README.md)
 - [Menu Components](../../shared/layout/menus/index.ts)
-- [Convex Menu API](../../../convex/menu/store/menuItems.ts)
+- [Convex Menu API](../../../convex/features/menus/menuItems.ts)
 - [Features Config](../../../features.config.ts)
 
 ---

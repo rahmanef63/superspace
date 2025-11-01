@@ -1,6 +1,40 @@
 import { internalMutation, mutation, query, QueryCtx } from "../_generated/server";
 import { UserJSON } from "@clerk/backend";
 import { v, Validator } from "convex/values";
+import type { Doc } from "../_generated/dataModel";
+
+const deriveStatus = (user: UserJSON): "active" | "inactive" | "blocked" => {
+  if ((user as any).banned === true) return "blocked";
+  if ((user as any).locked === true) return "inactive";
+  return "active";
+};
+
+const resolvePrimaryEmail = (user: UserJSON): string => {
+  const primaryId = user.primary_email_address_id;
+  const primary = primaryId
+    ? user.email_addresses?.find((email) => email.id === primaryId)
+    : undefined;
+  const email = primary?.email_address ?? user.email_addresses?.[0]?.email_address;
+  return email ?? `${user.id}@generated.invalid`;
+};
+
+const buildUserAttributes = (user: UserJSON) => {
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ").trim();
+  const metadata =
+    user.public_metadata && Object.keys(user.public_metadata).length > 0
+      ? (user.public_metadata as Record<string, any>)
+      : undefined;
+
+  return {
+    name: fullName.length > 0 ? fullName : user.username ?? undefined,
+    email: resolvePrimaryEmail(user),
+    status: deriveStatus(user),
+    clerkId: user.id,
+    avatarUrl:
+      (user as any).image_url ?? (user as any).profile_image_url ?? undefined,
+    metadata,
+  };
+};
 
 export const current = query({
   args: {},
@@ -12,12 +46,9 @@ export const current = query({
 export const upsertFromClerk = internalMutation({
   args: { data: v.any() as Validator<UserJSON> }, // no runtime validation, trust Clerk
   async handler(ctx, { data }) {
-    const userAttributes = {
-      name: `${data.first_name} ${data.last_name}`,
-      externalId: data.id,
-    };
+    const userAttributes = buildUserAttributes(data);
 
-    const user = await userByExternalId(ctx, data.id);
+    const user = await userByClerkId(ctx, data.id);
     if (user === null) {
       await ctx.db.insert("users", userAttributes);
     } else {
@@ -29,7 +60,7 @@ export const upsertFromClerk = internalMutation({
 export const deleteFromClerk = internalMutation({
   args: { clerkUserId: v.string() },
   async handler(ctx, { clerkUserId }) {
-    const user = await userByExternalId(ctx, clerkUserId);
+    const user = await userByClerkId(ctx, clerkUserId);
 
     if (user !== null) {
       await ctx.db.delete(user._id);
@@ -54,13 +85,14 @@ export async function getCurrentUser(ctx: QueryCtx) {
   if (identity === null) {
     return null;
   }
-  return await userByExternalId(ctx, identity.subject);
+  return await userByClerkId(ctx, identity.subject);
 }
 
-async function userByExternalId(ctx: QueryCtx, externalId: string) {
-  return await ctx.db
+async function userByClerkId(ctx: QueryCtx, clerkId: string): Promise<Doc<"users"> | null> {
+  if (!clerkId) return null;
+  return ctx.db
     .query("users")
-    .withIndex("byExternalId", (q) => q.eq("externalId", externalId))
+    .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
     .unique();
 }
 
@@ -75,7 +107,7 @@ export const updateUserProfile = mutation({
     const patch: any = {};
     if (typeof args.name !== "undefined") patch.name = args.name;
     if (typeof args.bio !== "undefined") patch.bio = args.bio;
-    if (typeof args.image !== "undefined") patch.image = args.image;
+    if (typeof args.image !== "undefined") patch.avatarUrl = args.image;
     if (Object.keys(patch).length === 0) return;
     await ctx.db.patch(user._id as any, patch);
   },

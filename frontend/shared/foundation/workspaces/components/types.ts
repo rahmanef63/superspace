@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { OnboardingData, OnboardingStepMeta } from "@/frontend/views/static/workspaces/types";
+import type { OnboardingData, OnboardingStepMeta } from "../types";
 
 export interface MemberManagementProps {
   workspaceId: Id<"workspaces">;

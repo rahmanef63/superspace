@@ -39,6 +39,7 @@ import cmsConfig from '@/frontend/features/cms/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
+import cmsLiteConfig from '@/frontend/features/cms-lite/config'
 
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
@@ -70,6 +71,7 @@ const featureConfigs: FeatureConfig[] = [
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
+  cmsLiteConfig,
 ]
 /**
  * Extract and validate all discovered features

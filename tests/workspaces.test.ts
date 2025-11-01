@@ -43,7 +43,8 @@ describe("Workspace CRUD", () => {
       return await ctx.db.insert("users", {
         name: "Test User",
         email: "test@example.com",
-        externalId: "test-external-id",
+        clerkId: "test-clerk-id",
+        status: "active"
       });
     });
 
@@ -246,7 +247,8 @@ describe("Workspace CRUD", () => {
       user2Id = await ctx.db.insert("users", {
         name: "User 2",
         email: "user2@example.com",
-        externalId: "user2-external-id",
+        clerkId: "test-clerk-id-2",
+        status: "active",
       });
 
       // Get client role
@@ -297,6 +299,8 @@ describe("Workspace CRUD", () => {
       user2Id = await ctx.db.insert("users", {
         name: "User 2",
         email: "user2@example.com",
+        clerkId: "test-clerk-id-2",
+        status: "active",
       });
 
       const clientRole = await ctx.db

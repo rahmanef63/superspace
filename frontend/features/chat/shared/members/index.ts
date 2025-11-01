@@ -1,2 +1,2 @@
 // Members feature
-export * from './MembersManager';
+export * from '../members';

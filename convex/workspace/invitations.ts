@@ -288,6 +288,7 @@ export const acceptInvitation = mutation({
           status: "active",
           joinedAt: Date.now(),
           invitedBy: invitation.inviterId,
+          additionalPermissions: [],
         });
       } else if (existingMembership.status !== "active") {
         await ctx.db.patch(existingMembership._id, {
@@ -450,6 +451,7 @@ export const acceptInvitationByToken = mutation({
           status: "active",
           joinedAt: Date.now(),
           invitedBy: invitation.inviterId,
+          additionalPermissions: [],
         });
       } else if (existingMembership.status !== "active") {
         await ctx.db.patch(existingMembership._id, {

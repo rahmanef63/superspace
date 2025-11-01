@@ -1,8 +1,111 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
-import { ensureUser, requirePermission, requireActiveMembership } from "../auth/helpers";
+import type { MutationCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
+import {
+  ensureUser,
+  requirePermission,
+  requireActiveMembership,
+} from "../auth/helpers";
 import { normalizeSlug } from "../lib/utils";
 import { PERMS } from "./permissions";
+import { ROLE_TEMPLATES, type RoleTemplate } from "./roles.config";
+
+type RoleDoc = Doc<"roles">;
+type RoleSlug = RoleTemplate["slug"];
+
+const hasWildcard = (
+  permissions: readonly (typeof PERMS[keyof typeof PERMS] | "*")[],
+) => permissions.some((perm) => perm === "*");
+
+const normalizePermissions = (
+  permissions: readonly (typeof PERMS[keyof typeof PERMS] | "*")[],
+): string[] => (hasWildcard(permissions) ? ["*"] : [...permissions]);
+
+const arraysMatch = (a: readonly string[] | undefined, b: readonly string[]) => {
+  if (!a) return false;
+  if (a.length !== b.length) return false;
+  return a.every((value, index) => value === b[index]);
+};
+
+const fetchRole = async (ctx: MutationCtx, roleId: Id<"roles">) =>
+  (await ctx.db.get(roleId)) as RoleDoc;
+
+export async function ensureSystemRoles(
+  ctx: MutationCtx,
+  workspaceId: Id<"workspaces">,
+  createdBy: Id<"users">,
+): Promise<{ ordered: RoleDoc[]; map: Map<RoleSlug, RoleDoc> }> {
+  const existingRoles = (await ctx.db
+    .query("roles")
+    .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+    .collect()) as RoleDoc[];
+
+  const bySlug = new Map<string, RoleDoc>();
+  const byName = new Map<string, RoleDoc>();
+  for (const role of existingRoles) {
+    const slugKey = String(role.slug ?? role.name).toLowerCase();
+    bySlug.set(slugKey, role);
+    byName.set(String(role.name).toLowerCase(), role);
+  }
+
+  const ordered: RoleDoc[] = [];
+  const roleMap = new Map<RoleSlug, RoleDoc>();
+
+  for (const template of ROLE_TEMPLATES) {
+    const slugKey = template.slug.toLowerCase();
+    let role =
+      bySlug.get(slugKey) ??
+      bySlug.get(template.name.toLowerCase()) ??
+      byName.get(template.name.toLowerCase());
+
+    const expectedPermissions = normalizePermissions(
+      template.workspacePermissions,
+    );
+
+    if (!role) {
+      const roleId = await ctx.db.insert("roles", {
+        name: template.name,
+        slug: template.slug,
+        description: template.description,
+        workspaceId,
+        permissions: expectedPermissions,
+        color: template.color,
+        isDefault: template.isDefault,
+        isSystemRole: true,
+        level: template.level,
+        createdBy,
+      } as any);
+      role = await fetchRole(ctx, roleId);
+    } else {
+      const updates: Partial<RoleDoc> & Record<string, unknown> = {};
+
+      if (role.slug !== template.slug) updates.slug = template.slug;
+      if (role.description !== template.description) {
+        updates.description = template.description;
+      }
+      if (role.color !== template.color) updates.color = template.color;
+      if (role.level !== template.level) updates.level = template.level;
+      if (role.isDefault !== template.isDefault) {
+        updates.isDefault = template.isDefault;
+      }
+      if (role.isSystemRole !== true) updates.isSystemRole = true;
+      if (!arraysMatch(role.permissions as string[] | undefined, expectedPermissions)) {
+        updates.permissions = expectedPermissions;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(role._id, updates as any);
+        role = { ...role, ...updates };
+      }
+    }
+
+    roleMap.set(template.slug, role);
+    ordered.push(role);
+  }
+
+  return { ordered, map: roleMap };
+}
 
 // Get all roles for a workspace
 export const getAllRoles = query({
@@ -22,121 +125,12 @@ export const setupBasicRoles = mutation({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
-
-    // Load existing roles and create any missing system roles
-    const existingRoles = await ctx.db
-      .query("roles")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
-      .collect();
-    const byName = new Map(existingRoles.map((r: any) => [String(r.name).toLowerCase(), r]));
-
-    // Seed hierarchical roles (owner -> guest)
-    const owner = byName.get("owner") ?? await ctx.db.insert("roles", {
-      name: "Owner",
-      slug: "owner",
-      description: "Workspace owner (super admin)",
-      workspaceId: args.workspaceId,
-      permissions: ["*"],
-      color: "#111827",
-      isDefault: false,
-      isSystemRole: true,
-      level: 0,
-      createdBy: userId,
-    });
-
-    const admin = byName.get("admin") ?? await ctx.db.insert("roles", {
-      name: "Admin",
-      slug: "admin",
-      description: "Full access except system-level actions",
-      workspaceId: args.workspaceId,
-      permissions: [
-        PERMS.MANAGE_WORKSPACE,
-        PERMS.MANAGE_MEMBERS,
-        PERMS.INVITE_MEMBERS,
-        PERMS.MANAGE_ROLES,
-        PERMS.MANAGE_MENUS,
-        PERMS.DOCUMENTS_CREATE,
-        PERMS.DOCUMENTS_EDIT,
-        PERMS.DOCUMENTS_DELETE,
-        PERMS.DOCUMENTS_MANAGE,
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.MANAGE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#dc2626",
-      isDefault: false,
-      isSystemRole: true,
-      level: 10,
-      createdBy: userId,
-    });
-
-    const manager = byName.get("manager") ?? await ctx.db.insert("roles", {
-      name: "Manager",
-      slug: "manager",
-      description: "Manage content and conversations",
-      workspaceId: args.workspaceId,
-      permissions: [
-        PERMS.DOCUMENTS_CREATE,
-        PERMS.DOCUMENTS_EDIT,
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.MANAGE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#2563eb",
-      isDefault: false,
-      isSystemRole: true,
-      level: 30,
-      createdBy: userId,
-    });
-
-    const staff = byName.get("staff") ?? await ctx.db.insert("roles", {
-      name: "Staff",
-      slug: "staff",
-      description: "Contribute content and chat",
-      workspaceId: args.workspaceId,
-      permissions: [
-        PERMS.DOCUMENTS_CREATE,
-        PERMS.DOCUMENTS_EDIT,
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#10b981",
-      isDefault: false,
-      isSystemRole: true,
-      level: 50,
-      createdBy: userId,
-    });
-
-    const client = byName.get("client") ?? await ctx.db.insert("roles", {
-      name: "Client",
-      slug: "client",
-      description: "Limited access; cannot view member list",
-      workspaceId: args.workspaceId,
-      permissions: [
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#6b7280",
-      isDefault: true,
-      isSystemRole: true,
-      level: 70,
-      createdBy: userId,
-    });
-
-    const guest = byName.get("guest") ?? await ctx.db.insert("roles", {
-      name: "Guest",
-      slug: "guest",
-      description: "Read-only viewer",
-      workspaceId: args.workspaceId,
-      permissions: [PERMS.VIEW_WORKSPACE],
-      color: "#9ca3af",
-      isDefault: false,
-      isSystemRole: true,
-      level: 90,
-      createdBy: userId,
-    });
-
-    return [owner, admin, manager, staff, client, guest];
+    const { ordered } = await ensureSystemRoles(
+      ctx,
+      args.workspaceId,
+      userId as Id<"users">,
+    );
+    return ordered;
   },
 });
 
@@ -185,15 +179,22 @@ export const createRole = mutation({
       .query("roles")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect();
-    const exists = existing.some((r: any) => String(r.name).toLowerCase() === args.name.toLowerCase());
+    const exists = existing.some(
+      (r: any) => String(r.name).toLowerCase() === args.name.toLowerCase(),
+    );
     if (exists) throw new Error("A role with this name already exists");
+
+    const defaultPermissions =
+      args.permissions && args.permissions.length > 0
+        ? args.permissions
+        : [PERMS.VIEW_WORKSPACE];
 
     const roleId = await ctx.db.insert("roles", {
       name: args.name,
       slug,
       description: undefined,
       workspaceId: args.workspaceId,
-      permissions: args.permissions && args.permissions.length > 0 ? args.permissions : [PERMS.VIEW_WORKSPACE],
+      permissions: defaultPermissions,
       color: args.color,
       isDefault: args.isDefault ?? false,
       isSystemRole: false,
@@ -212,7 +213,9 @@ export const createRole = mutation({
             defaultRoleId: roleId,
           },
         } as any);
-      } catch {}
+      } catch {
+        // best effort
+      }
     }
 
     return roleId;

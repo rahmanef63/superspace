@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 /**
- * Auto-generate frontend/views/manifest.tsx
+ * Auto-generate frontend/shared/foundation/manifest/registry.tsx
  *
  * This script reads auto-discovered feature configs and generates the component registry
- * to ensure DRY principle - only edit feature config.ts files, not manifest.tsx
+ * to ensure DRY principle - only edit feature config.ts files, not registry.tsx
  *
  * Usage:
  *   pnpm run generate:manifest
@@ -244,30 +244,35 @@ export function AppContent({ workspaceId, activeView }: AppContentProps) {
 
 // Main execution
 function main() {
-  console.log(" Generating manifest.tsx from auto-discovered features...")
+  console.log("Generating manifest registry from auto-discovered features...")
 
   try {
     const manifestContent = generateManifest()
-    const outputPath = path.join(process.cwd(), "frontend/views/manifest.tsx")
+    const outputPath = path.join(
+      process.cwd(),
+      "frontend/shared/foundation/manifest/registry.tsx",
+    )
 
     // Backup old manifest
     if (fs.existsSync(outputPath)) {
-      const backupPath = path.join(process.cwd(), "frontend/views/manifest.tsx.backup")
+      const backupPath = path.join(
+        process.cwd(),
+        "frontend/shared/foundation/manifest/registry.tsx.backup",
+      )
       fs.copyFileSync(outputPath, backupPath)
-      console.log("📦 Backed up old manifest to manifest.tsx.backup")
+      console.log("Backed up previous manifest registry to registry.tsx.backup")
     }
 
     // Write new manifest
     fs.writeFileSync(outputPath, manifestContent, "utf-8")
-    console.log("✅ Successfully generated manifest.tsx")
-    console.log(`📝 Location: ${outputPath}`)
+    console.log("Successfully generated manifest registry")
+    console.log(`Location: ${outputPath}`)
 
     // Count features
     const allFeatures = flattenFeatures(FEATURES_REGISTRY)
-    console.log(` Generated ${allFeatures.length} component entries`)
-
+    console.log(`Generated ${allFeatures.length} component entries`)
   } catch (error) {
-    console.error("❌ Error generating manifest:", error)
+    console.error("Error generating manifest:", error)
     process.exit(1)
   }
 }

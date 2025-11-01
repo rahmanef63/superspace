@@ -47,7 +47,7 @@ export const RouteConfigSchema = z.object({
   templateId: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
-  meta: z.record(z.any()).optional(),
+  meta: z.record(z.string(), z.any()).optional(),
 })
 
 // ============================================================================
@@ -57,7 +57,7 @@ export const RouteConfigSchema = z.object({
 export const ComponentJSONSchema = z.object({
   type: z.literal("component"),
   component: z.string(),
-  props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
   children: z.any().optional(),
 })
 
@@ -71,7 +71,7 @@ export const ElementJSONSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     type: z.literal("element"),
     element: z.string(),
-    props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
     children: z.array(
       z.union([ComponentJSONSchema, ElementJSONSchema])
     ),
@@ -88,7 +88,7 @@ export const BlockJSONSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     type: z.literal("block"),
     block: z.string(),
-    props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
     children: z.array(
       z.union([ComponentJSONSchema, ElementJSONSchema, BlockJSONSchema])
     ),
@@ -105,7 +105,7 @@ export const SectionJSONSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     type: z.literal("section"),
     section: z.string(),
-    props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
     children: z.array(
       z.union([
         ComponentJSONSchema,
@@ -127,7 +127,7 @@ export const TemplateJSONSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     type: z.literal("template"),
     template: z.string(),
-    props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
     children: z.array(
       z.union([
         ComponentJSONSchema,
@@ -150,7 +150,7 @@ export const FlowJSONSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     type: z.literal("flow"),
     flow: z.string(),
-    props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
     children: z.array(
       z.union([TemplateJSONSchema, FlowJSONSchema])
     ),
@@ -208,7 +208,7 @@ export const ComponentDefinitionJSONSchema = z.object({
   id: z.string(),
   name: z.string(),
   children: z.array(z.string()),
-  props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
   metadata: z.object({
     description: z.string().optional(),
     author: z.string().optional(),
@@ -229,7 +229,7 @@ export const ComponentInstanceJSONSchema = z.object({
   id: z.string(),
   name: z.string(),
   definitionId: z.string(),
-  overrides: z.record(z.any()).optional(),
+  overrides: z.record(z.string(), z.any()).optional(),
   metadata: z.object({
     description: z.string().optional(),
     author: z.string().optional(),
@@ -323,7 +323,7 @@ export type ImportSchemaV1Type = z.infer<typeof ImportSchemaV1>
 
 export const CMSLegacyNodeSchema = z.object({
   type: z.string(),
-  props: z.record(z.any()),
+  props: z.record(z.string(), z.any()),
   children: z.array(z.string()),
 })
 

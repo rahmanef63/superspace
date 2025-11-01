@@ -1,2 +1,2 @@
 // Settings Views
-export * from './SettingsView';
+export * from '../settings';

@@ -31,10 +31,11 @@ interface ValidationResult {
  * NO hardcoding! All paths derived from feature folder structure
  */
 function getExpectedPagePath(slug: string, component: string): string {
+  // slug is the actual folder name (e.g., 'menu-store', not 'menus')
   // Check multiple possible locations (priority order)
   const possiblePaths = [
+    `frontend/features/${slug}/page.tsx`, // Next.js page component (MOST COMMON)
     `frontend/features/${slug}/views/${component}.tsx`,
-    `frontend/features/${slug}/page.tsx`,
     `frontend/features/${slug}/index.ts`,
     `frontend/views/static/${slug}/page.tsx`,
     `frontend/views/dynamic/${slug}/page.tsx`,
@@ -55,18 +56,23 @@ function validateFeaturePages(): ValidationResult[] {
   const results: ValidationResult[] = []
 
   for (const feature of FEATURES_REGISTRY) {
-    const expectedPath = getExpectedPagePath(feature.id, feature.ui.component)
+    // Access metadata attached by registry.server.ts
+    const meta = (feature as any).__meta
+    const slug = meta?.slug || feature.id // Fallback to id if no slug
+    const component = feature.ui.component
+
+    const expectedPath = getExpectedPagePath(slug, component)
     const fullPath = join(rootDir, expectedPath)
     const exists = existsSync(fullPath)
 
     results.push({
-      slug: feature.slug,
+      slug,
       name: feature.name,
-      component: feature.component,
+      component,
       expectedPath,
       exists,
-      featureType: feature.featureType,
-      isReady: feature.isReady,
+      featureType: feature.technical.featureType, // Fixed: was feature.featureType
+      isReady: feature.status.isReady, // Fixed: was feature.isReady
     })
   }
 

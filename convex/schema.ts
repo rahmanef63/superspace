@@ -10,28 +10,27 @@ const extendedAuthTables = {
   ...authTables,
   users: defineTable({
     name: v.optional(v.string()),
-    image: v.optional(v.string()),
-    email: v.optional(v.string()),
-    emailVerificationTime: v.optional(v.number()),
-    phone: v.optional(v.string()),
-    phoneVerificationTime: v.optional(v.number()),
-    isAnonymous: v.optional(v.boolean()),
-    bio: v.optional(v.string()),
-    // ID from Clerk (or other auth provider). Used to look up users.
-    // Made optional to accommodate pre-existing records without this field.
-    externalId: v.optional(v.string()),
+    metadata: v.optional(v.record(v.string(), v.any())),
+    avatarUrl: v.optional(v.string()),
+  email: v.string(),
+  // `status` may be missing on legacy users; treat as optional during
+  // configuration. Runtime code should handle defaulting (e.g. to "active").
+  status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("blocked"))),
+  // Allow legacy user documents without a Clerk ID. The application will
+  // resolve or link identities at runtime; consider migrating these records
+  // to include `clerkId` for full parity.
+  clerkId: v.optional(v.string()),
   })
-    .index("email", ["email"])
-    .index("phone", ["phone"])
-    .index("byExternalId", ["externalId"]),
+    .index("by_email", ["email"])
+    .index("by_clerk_id", ["clerkId"]),
 }
 
 export default defineSchema({
   ...extendedAuthTables,
   ...featureTables,
   paymentAttempts: defineTable(paymentAttemptSchemaValidator)
-    .index("byPaymentId", ["payment_id"])
-    .index("byUserId", ["userId"])
-    .index("byPayerUserId", ["payer.user_id"]),
+    .index("by_payment_id", ["payment_id"])
+    .index("by_user_id", ["userId"])
+    .index("by_payer_user_id", ["payer.user_id"]),
 })
 

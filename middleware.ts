@@ -1,32 +1,20 @@
-import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 // Protected app areas
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)'])
 
-// Public auth/landing routes where signed-in users should be redirected away
-const isPublicAuthOrLanding = createRouteMatcher([
-  '/',
+// Public auth routes (NOT landing page)
+const isPublicAuthRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)'
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  const url = req.nextUrl
-
-  // Redirect signed-in users away from public landing/auth pages
-  const { userId, redirectToSignIn } = await auth()
-  if (userId && isPublicAuthOrLanding(req)) {
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-
-  // Protect app routes: if not signed in, send to landing (instead of Clerk sign-in)
+  // Simply protect routes - let Clerk handle everything else
+  // Don't do complex logic that might cause race conditions
+  
   if (isProtectedRoute(req)) {
-    if (!userId) {
-      url.pathname = '/'
-      return NextResponse.redirect(url)
-    }
+    await auth.protect()
   }
 })
 

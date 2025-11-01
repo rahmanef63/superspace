@@ -1,37 +1,16 @@
 /**
- * Shared System Index
- * Main export for the entire shared component system
+ * Shared System Entry Point
+ *
+ * Expose domain-specific facades via namespaced exports to avoid symbol collisions.
+ *
+ * Usage:
+ *   import { builder, ui } from "@/frontend/shared"
+ *   builder.SharedCanvasProvider(...)
  */
 
-// Types
-export * from "./types"
-
-// Library modules
-export * from "./lib"
-
-// Re-export commonly used items for convenience
-export type {
-  ComponentWrapper,
-  ElementWrapper,
-  BlockWrapper,
-  SectionWrapper,
-  TemplateWrapper,
-  FlowWrapper,
-  AnyNode,
-  AnyWrapper,
-  AnyJSON,
-  ComponentNode,
-  PropDefinitions,
-  PropDefinition,
-  RegistryConfig,
-  ConversionOptions,
-  ExportSchema,
-} from "./types"
-
-export {
-  getGlobalRegistry,
-  loadRegistry,
-  handleError,
-  validateNode,
-  validateProps,
-} from "./lib"
+export * as builder from "./builder";
+export * as foundation from "./foundation";
+export * as communications from "./communications";
+export * as settings from "./settings";
+export * as ui from "./ui";
+export * as context from "./context";

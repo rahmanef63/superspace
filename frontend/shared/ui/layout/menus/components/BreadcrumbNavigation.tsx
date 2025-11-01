@@ -21,9 +21,9 @@ export function BreadcrumbNavigation({
   currentMenuItemId, 
   onNavigate 
 }: BreadcrumbNavigationProps) {
-  const menuItems = useQuery((api as any)["menu/store/menuItems"].getWorkspaceMenuItems, { workspaceId });
+  const menuItems = useQuery((api as any)["features/menus/menuItems"].getWorkspaceMenuItems, { workspaceId });
   const currentMenuItem = useQuery(
-    (api as any)["menu/store/menuItems"].getMenuItem, 
+    (api as any)["features/menus/menuItems"].getMenuItem, 
     currentMenuItemId ? { menuItemId: currentMenuItemId } : "skip"
   );
 

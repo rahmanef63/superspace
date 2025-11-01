@@ -41,7 +41,7 @@ export function NotificationCenter({ workspaceId }: NotificationCenterProps) {
   }) || [];
   
   // Get recent messages as notifications (simplified)
-  const recentMessages = useQuery(api.menu.chat.messages.getRecentMessages, {
+  const recentMessages = useQuery((api as any)["features/chat/messages"].getRecentMessages, {
     workspaceId,
     limit: 5
   }) || [];

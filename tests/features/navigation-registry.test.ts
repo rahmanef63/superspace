@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest"
 
 import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/foundation/workspaces/constants/navigation"
-import { DEFAULT_PAGE_MANIFEST } from "@/frontend/views/manifest"
+import { DEFAULT_PAGE_MANIFEST } from "@/frontend/shared/foundation/manifest"
 
 describe("WORKSPACE_NAVIGATION_ITEMS registry", () => {
   const navMap = new Map(

@@ -1,0 +1,5 @@
+const roleLevel = role.level !== undefined ? role.level : 0;
+
+...
+
+roleLevel,

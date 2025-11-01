@@ -47,7 +47,7 @@ frontend/features/reports/config.ts
 
 **Replaced by:**
 - ✅ Auto-discovery via `lib/features/registry.ts`
-- ✅ Generated manifests in `convex/menu/store/`
+- ✅ Generated manifests in `convex/features/menus/`
 - ✅ No manual imports needed
 
 ---
@@ -63,8 +63,8 @@ lib/features/registry.ts
   ↓ (used by)
 scripts/features/sync.ts
   ↓ (generates)
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+convex/features/menus/menu_manifest_data.ts
+convex/features/menus/optional_features_catalog.ts
 ```
 
 ### Benefits

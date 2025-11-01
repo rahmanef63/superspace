@@ -619,7 +619,7 @@ frontend/features/{slug}/config.ts  # Single source of truth per feature
 # Auto-generated from feature configs
 lib/features/registry.ts             # Auto-discovery system (browser)
 lib/features/registry.server.ts      # Auto-discovery system (Node.js)
-convex/menu/store/menu_manifest_data.ts  # Auto-synced from registry
+convex/features/menus/menu_manifest_data.ts  # Auto-synced from registry
 frontend/views/manifest.tsx          # Auto-generated component registry
 
 # Feature implementation

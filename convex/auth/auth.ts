@@ -29,14 +29,13 @@ export const loggedInUser = query({
     if (identity.email) {
       userDoc = await ctx.db
         .query("users")
-        .withIndex("email", (q) => q.eq("email", identity.email!))
+        .withIndex("by_email", (q) => q.eq("email", identity.email!))
         .first();
     }
     if (!userDoc && (identity as any).phone) {
-      userDoc = await ctx.db
-        .query("users")
-        .withIndex("phone", (q) => q.eq("phone", (identity as any).phone))
-        .first();
+      // Note: Phone queries should use an appropriate field in the users table
+      // For now, skip phone-based lookup since it's not in the schema
+      userDoc = null;
     }
 
     // If no user doc yet, return null; a mutation like createWorkspace will create it.

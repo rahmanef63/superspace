@@ -375,11 +375,11 @@ Setiap menu item di Grid View memiliki dropdown menu dengan actions:
 ## 🔧 API Mutations Used
 
 ```typescript
-const deleteMenuItem = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
-const installFeatureMenus = useMutation((api as any)["menu/store/menuItems"].installFeatureMenus);
-const renameMenuItem = useMutation((api as any)["menu/store/menuItems"].renameMenuItem);
-const duplicateMenuItem = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
-const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenuItem);
+const deleteMenuItem = useMutation((api as any)["features/menus/menuItems"].deleteMenuItem);
+const installFeatureMenus = useMutation((api as any)["features/menus/menuItems"].installFeatureMenus);
+const renameMenuItem = useMutation((api as any)["features/menus/menuItems"].renameMenuItem);
+const duplicateMenuItem = useMutation((api as any)["features/menus/menuItems"].duplicateMenuItem);
+const shareMenuItem = useMutation((api as any)["features/menus/menuItems"].shareMenuItem);
 ```
 
 ---

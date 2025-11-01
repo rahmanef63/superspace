@@ -32,7 +32,7 @@ export function DocumentPresenceIndicator({
   }> = [];
 
   try {
-    presenceState = usePresence(api.menu.page.presence, roomId, userId) ?? [];
+    presenceState = usePresence((api as any)["features/docs/presence"], roomId, userId) ?? [];
   } catch (error) {
     console.error("Error in presence hook:", error);
     presenceState = [];

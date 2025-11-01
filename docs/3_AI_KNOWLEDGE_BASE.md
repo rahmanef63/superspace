@@ -41,8 +41,8 @@ convex/schema.ts
 
 ```typescript
 // Generated from features.config.ts via sync:all
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+convex/features/menus/menu_manifest_data.ts
+convex/features/menus/optional_features_catalog.ts
 ```
 
 ### Core Systems
@@ -52,7 +52,7 @@ convex/menu/store/optional_features_catalog.ts
 convex/workspace/workspaces.ts
 
 // Menu system with RBAC
-convex/menu/store/menuItems.ts
+convex/features/menus/menuItems.ts
 
 // RBAC utilities
 convex/auth/helpers.ts
@@ -276,7 +276,7 @@ metadata: v.optional(
 ```typescript
 // convex/workspace/workspaces.ts:498-515
 try {
-  await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
+  await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
     workspaceId,
     selectedSlugs: Array.isArray(args.selectedMenuSlugs) ? args.selectedMenuSlugs : [],
     actorUserId: userId,
@@ -373,7 +373,7 @@ pnpm run scaffold:feature tasks --type optional --category productivity
 pnpm run sync:all
 
 # Verify catalog updated:
-cat convex/menu/store/optional_features_catalog.ts
+cat convex/features/menus/optional_features_catalog.ts
 ```
 
 ### Workflow 3: Fix Broken Workspace
@@ -602,12 +602,12 @@ convex/schema.ts
 .claude/CLAUDE.md
 
 # Auto-generated
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+convex/features/menus/menu_manifest_data.ts
+convex/features/menus/optional_features_catalog.ts
 
 # Core
 convex/workspace/workspaces.ts
-convex/menu/store/menuItems.ts
+convex/features/menus/menuItems.ts
 convex/auth/helpers.ts
 convex/workspace/permissions.ts
 

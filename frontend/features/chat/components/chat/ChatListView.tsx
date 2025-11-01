@@ -10,7 +10,7 @@ import { ChatListItem } from "./ChatListItem"
 import { SearchBar } from "../ui/SearchBar"
 import { useWhatsAppStore } from "../../shared/hooks"
 import { PLACEHOLDERS } from "../../shared/constants"
-import type { Chat } from "@/frontend/shared/foundation"
+import type { Chat } from "@/frontend/shared/communications/chat/types/chat"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -32,8 +32,8 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
   const { workspaceId } = useWorkspaceContext()
   const friends = useQuery(api.user.friends.getUserFriends) as any[] | undefined
   const me = useQuery(api.auth.auth.loggedInUser) as any
-  const createConv = useMutation(api.menu.chat.conversations.createConversation as any)
-  const createGlobalDirect = useMutation(api.menu.chat.conversations.createOrGetDirectGlobal as any)
+  const createConv = useMutation((api as any)["features/chat/conversations"].createConversation)
+  const createGlobalDirect = useMutation((api as any)["features/chat/conversations"].createOrGetDirectGlobal)
   const filteredChats = chats.filter((chat: Chat) => {
     const matchesSearch =
       chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

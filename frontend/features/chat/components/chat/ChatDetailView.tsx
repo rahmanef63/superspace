@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import type { Message as UiMessage } from '@/frontend/shared/foundation';
+import type { Message as UiMessage } from '@/frontend/shared/';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export function ChatDetailView() {
   // Live messages from Convex (preferred). Fallback to store when undefined/loading.
   const currentUser = useQuery(api.auth.auth.loggedInUser);
   const live = useQuery(
-    api.menu.chat.messages.getConversationMessages as any,
+    (api as any)["features/chat/messages"].getConversationMessages,
     selectedChatId ? ({ conversationId: selectedChatId as unknown as Id<'conversations'>, limit: 100 } as any) : 'skip'
   ) as any[] | undefined;
   const liveMessages: UiMessage[] | undefined = useMemo(() => {

@@ -48,8 +48,19 @@ export { cn } from '@/lib/utils'
 // ============================================================
 // Component Manifest System
 // ============================================================
-// TODO: Add manifest exports when available
-// export * from './manifest'
+export {
+  DEFAULT_PAGE_MANIFEST,
+  PAGE_MANIFEST_MAP,
+  COMPONENT_REGISTRY_MAP,
+  getDefaultPages,
+  getPageById,
+  getComponentById,
+  AppContent,
+} from './manifest'
+export type {
+  AppPageComponent,
+  PageManifestItem,
+} from './manifest'
 
 // ============================================================
 // Registry Patterns

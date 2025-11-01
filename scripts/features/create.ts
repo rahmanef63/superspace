@@ -361,7 +361,7 @@ export interface ${typeName}Config {
 }
 
 function generateConvexQueries(slug: string): string {
-  return `import { query } from "../../../_generated/server"
+  return `import { query } from "@/convex/_generated/server"
 import { v } from "convex/values"
 import { requireActiveMembership } from "../../../auth/helpers"
 
@@ -380,7 +380,7 @@ export const getData = query({
     // TODO: Implement your query logic
     return {
       message: "Query successful",
-      userId: membership.userId,
+      userId: membership.userDocId,
       role: role.name,
     }
   },
@@ -389,7 +389,7 @@ export const getData = query({
 }
 
 function generateConvexMutations(slug: string): string {
-  return `import { mutation } from "../../../_generated/server"
+  return `import { mutation } from "@/convex/_generated/server"
 import { v } from "convex/values"
 import { requirePermission } from "../../../auth/helpers"
 import { PERMS } from "../../../workspace/permissions"
@@ -415,7 +415,7 @@ export const createItem = mutation({
     const itemId = await ctx.db.insert("documents", {
       workspaceId: args.workspaceId,
       name: args.name,
-      createdBy: membership.userId,
+      createdBy: membership.userDocId,
       createdAt: Date.now(),
     })
 

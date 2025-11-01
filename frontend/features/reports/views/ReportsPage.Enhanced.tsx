@@ -13,7 +13,7 @@ interface ReportsPageProps {
 
 export default function ReportsPage({ workspaceId }: ReportsPageProps) {
   // Check if this feature is fully implemented
-  const menuItem = useQuery(api.menu.store.menuItems.getMenuItemBySlug, {
+  const menuItem = useQuery((api as any)["features/menus/menuItems"].getMenuItemBySlug, {
     workspaceId,
     slug: "reports",
   })

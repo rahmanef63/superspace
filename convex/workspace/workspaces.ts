@@ -5,6 +5,7 @@ import { api, internal } from "../_generated/api"
 import { resolveCandidateUserIds, hasPermission, ensureUser, requirePermission } from "../auth/helpers"
 import type { Id } from "../_generated/dataModel"
 import { PERMS } from "./permissions"
+import { ensureSystemRoles } from "./roles"
 import { normalizeSlug } from "../lib/utils"
 
 // Using shared helper from lib/auth
@@ -39,17 +40,9 @@ export const getUserWorkspaces = query({
       if (identity.email) {
         const byEmail = await ctx.db
           .query("users")
-          .withIndex("email", (q) => q.eq("email", identity.email!))
+          .withIndex("by_email", (q) => q.eq("email", identity.email!))
           .first()
         if (byEmail) candidateIds.push(byEmail._id as any)
-      }
-      const phone = (identity as any).phone as string | undefined
-      if (phone) {
-        const byPhone = await ctx.db
-          .query("users")
-          .withIndex("phone", (q) => q.eq("phone", phone))
-          .first()
-        if (byPhone) candidateIds.push(byPhone._id as any)
       }
     }
 
@@ -224,7 +217,7 @@ export const getWorkspaceMembers = query({
           invitedBy,
           name: user?.name || "Unknown User",
           email: user?.email,
-          image: user?.image,
+          image: user?.avatarUrl
         }
       }),
     )
@@ -291,7 +284,7 @@ export const createWorkspace = mutation({
       const identity = await ctx.auth.getUserIdentity()
       if (!identity) throw new Error("Not authenticated")
 
-      // Try to find existing user by email or phone
+      // Try to find existing user by linked account or email
       let userDoc: any = null
       // First: try linked auth account (e.g., Clerk subject -> users.userId)
       try {
@@ -310,13 +303,7 @@ export const createWorkspace = mutation({
       if (identity.email) {
         userDoc = await ctx.db
           .query("users")
-          .withIndex("email", (q) => q.eq("email", identity.email!))
-          .first()
-      }
-      if (!userDoc && (identity as any).phone) {
-        userDoc = await ctx.db
-          .query("users")
-          .withIndex("phone", (q) => q.eq("phone", (identity as any).phone))
+          .withIndex("by_email", (q) => q.eq("email", identity.email!))
           .first()
       }
 
@@ -324,13 +311,14 @@ export const createWorkspace = mutation({
         userId = userDoc._id
       } else {
         // Create a minimal users record
+        const fallbackEmail = identity.email ?? `${identity.subject}@generated.invalid`
         userId = await ctx.db.insert("users", {
           name: identity.name ?? undefined,
-          image: (identity as any).pictureUrl ?? (identity as any).imageUrl ?? undefined,
-          email: identity.email ?? undefined,
-          phone: (identity as any).phone ?? undefined,
-          isAnonymous: false,
-        } as any)
+          avatarUrl: (identity as any).pictureUrl ?? (identity as any).imageUrl ?? undefined,
+          email: fallbackEmail,
+          status: "active",
+          clerkId: identity.subject,
+        })
       }
 
       // Ensure we link this identity to the users doc for future lookups
@@ -383,110 +371,20 @@ export const createWorkspace = mutation({
       createdBy: userId,
     })
 
-    // Create default hierarchical roles (owner -> guest)
-    const ownerRoleId = await ctx.db.insert("roles", {
-      name: "Owner",
-      slug: "owner",
-      description: "Workspace owner (super admin)",
-      workspaceId,
-      permissions: ["*"],
-      color: "#111827",
-      isDefault: false,
-      isSystemRole: true,
-      level: 0,
-      createdBy: userId,
-    })
-
-    const adminRoleId = await ctx.db.insert("roles", {
-      name: "Admin",
-      slug: "admin",
-      description: "Full access except system-level actions",
-      workspaceId,
-      permissions: [
-        PERMS.MANAGE_WORKSPACE,
-        PERMS.MANAGE_MEMBERS,
-        PERMS.INVITE_MEMBERS,
-        PERMS.MANAGE_ROLES,
-        PERMS.MANAGE_MENUS,
-        PERMS.DOCUMENTS_CREATE,
-        PERMS.DOCUMENTS_EDIT,
-        PERMS.DOCUMENTS_DELETE,
-        PERMS.DOCUMENTS_MANAGE,
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.MANAGE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#dc2626",
-      isDefault: false,
-      isSystemRole: true,
-      level: 10,
-      createdBy: userId,
-    })
-
-    await ctx.db.insert("roles", {
-      name: "Manager",
-      slug: "manager",
-      description: "Manage content and conversations",
-      workspaceId,
-      permissions: [
-        PERMS.DOCUMENTS_CREATE,
-        PERMS.DOCUMENTS_EDIT,
-        PERMS.CREATE_CONVERSATIONS,
-        PERMS.MANAGE_CONVERSATIONS,
-        PERMS.VIEW_WORKSPACE,
-      ],
-      color: "#2563eb",
-      isDefault: false,
-      isSystemRole: true,
-      level: 30,
-      createdBy: userId,
-    })
-
-    await ctx.db.insert("roles", {
-      name: "Staff",
-      slug: "staff",
-      description: "Contribute content and chat",
-      workspaceId,
-      permissions: [PERMS.DOCUMENTS_CREATE, PERMS.DOCUMENTS_EDIT, PERMS.CREATE_CONVERSATIONS, PERMS.VIEW_WORKSPACE],
-      color: "#10b981",
-      isDefault: false,
-      isSystemRole: true,
-      level: 50,
-      createdBy: userId,
-    })
-
-    const clientRoleId = await ctx.db.insert("roles", {
-      name: "Client",
-      slug: "client",
-      description: "Limited access; cannot view member list",
-      workspaceId,
-      permissions: [PERMS.CREATE_CONVERSATIONS, PERMS.VIEW_WORKSPACE],
-      color: "#6b7280",
-      isDefault: true,
-      isSystemRole: true,
-      level: 70,
-      createdBy: userId,
-    })
-
-    await ctx.db.insert("roles", {
-      name: "Guest",
-      slug: "guest",
-      description: "Read-only viewer",
-      workspaceId,
-      permissions: [PERMS.VIEW_WORKSPACE],
-      color: "#9ca3af",
-      isDefault: false,
-      isSystemRole: true,
-      level: 90,
-      createdBy: userId,
-    })
+    const { map: systemRoles } = await ensureSystemRoles(ctx, workspaceId, userId)
+    const ownerRole = systemRoles.get("owner")
+    const clientRole = systemRoles.get("client")
+    if (!ownerRole || !clientRole) {
+      throw new Error("Failed to initialize system roles")
+    }
 
     // Add creator as owner
     await ctx.db.insert("workspaceMemberships", {
       workspaceId,
       userId,
-      roleId: ownerRoleId,
+      roleId: ownerRole._id,
       status: "active",
+      additionalPermissions: [],
       joinedAt: Date.now(),
     })
 
@@ -495,14 +393,14 @@ export const createWorkspace = mutation({
       settings: {
         allowInvites: true,
         requireApproval: false,
-        defaultRoleId: clientRoleId,
+        defaultRoleId: clientRole._id,
       },
     })
 
     // Create default menu items via internal mutation (server-safe, no auth needed)
     // IMPORTANT: This must succeed or workspace will have no menus
     try {
-      await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
+      await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
         workspaceId,
         selectedSlugs: Array.isArray(args.selectedMenuSlugs) ? args.selectedMenuSlugs : [],
         actorUserId: userId, // Pass owner userId to internal mutation
@@ -599,6 +497,7 @@ export const joinWorkspaceById = mutation({
       userId,
       roleId: defaultRole._id,
       status: "active",
+      additionalPermissions: [],
       joinedAt: Date.now(),
     })
 
@@ -691,6 +590,7 @@ export const addMember = mutation({
       userId: args.userId,
       roleId,
       status: "active",
+      additionalPermissions: [],
       joinedAt: Date.now(),
       invitedBy: currentUserId,
     })
@@ -842,6 +742,7 @@ export const backfillMembershipsForCurrentUser = mutation({
         userId,
         roleId,
         status: "active",
+        additionalPermissions: [],
         joinedAt: Date.now(),
       })
       added += 1
@@ -1029,7 +930,7 @@ export const resetWorkspace = mutation({
 
     // Call internal mutation to re-create default menus
     const actorUserId = await ensureUser(ctx)
-    await ctx.runMutation(internal.menu.store.menuItems.createDefaultMenuItems, {
+    await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
       workspaceId: args.workspaceId,
       actorUserId,
     })

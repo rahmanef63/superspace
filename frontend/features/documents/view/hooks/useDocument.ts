@@ -9,7 +9,7 @@ import {
   useGlobalDocumentSearch,
   useUpdateDocument,
   useWorkspaceDocuments,
-} from "../../shared";
+} from "../../shared/hooks";
 import type { DocumentRecord } from "../../shared";
 
 export function useDocument(documentId: Id<"documents">) {
@@ -34,7 +34,7 @@ export function useDocuments(options: UseDocumentsOptions = {}) {
   const { workspaceId, query } = options;
 
   const workspaceDocuments = useWorkspaceDocuments(workspaceId);
-  const globalDocuments = useQuery(api.menu.page.documents.list, {} as Record<string, never>) as
+  const globalDocuments = useQuery((api as any)["features/docs/documents"].list, {} as Record<string, never>) as
     | DocumentRecord[]
     | undefined;
 

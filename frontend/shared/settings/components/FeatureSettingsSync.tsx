@@ -55,7 +55,7 @@ export function FeatureSettingsSync({
   const previouslyRegistered = useRef<Set<string>>(new Set())
 
   const menuItems = useQuery(
-    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
+    (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     workspaceId ? { workspaceId } : "skip"
   ) as MenuItemRecord[] | undefined
 

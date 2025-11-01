@@ -167,7 +167,7 @@ import { MenuStore } from "@/frontend/shared/layout/menus";
 pnpm run sync:all
 
 # Verify optional catalog exists and contains your feature
-cat convex/menu/store/optional_features_catalog.ts
+cat convex/features/menus/optional_features_catalog.ts
 
 # Should see:
 export const OPTIONAL_FEATURES_CATALOG = [
@@ -229,7 +229,7 @@ console.log("Installed features:", items.map(i => i.slug))
 
 3. **Verify catalog:**
    ```bash
-   cat convex/menu/store/optional_features_catalog.ts | grep "reports"
+   cat convex/features/menus/optional_features_catalog.ts | grep "reports"
    ```
 
 4. **Restart Convex dev:**
@@ -378,7 +378,7 @@ await ctx.runMutation(api.workspace.workspaces.addMember, {
 
 ### Symptoms
 ```
-Error: Cannot find module 'api["menu/store/menuItems"]'
+Error: Cannot find module 'api["features/menus/menuItems"]'
 TypeError: Cannot read property 'menuItems' of undefined
 ```
 
@@ -390,7 +390,7 @@ Incorrect import path for Convex API
 ```typescript
 // ❌ WRONG: String path
 import { api } from "@/convex/_generated/api"
-const items = await ctx.runQuery(api["menu/store/menuItems"].getWorkspaceMenuItems, ...)
+const items = await ctx.runQuery(api["features/menus/menuItems"].getWorkspaceMenuItems, ...)
 
 // ✅ CORRECT: Dot notation
 import { api } from "@/convex/_generated/api"
@@ -417,7 +417,7 @@ api.features.{slug}.queries.{queryName}
 api.features.{slug}.mutations.{mutationName}
 
 // Internal (use with ctx.runMutation)
-internal.menu.store.menuItems.createDefaultMenuItems
+internal.features.menus.menuItems.createDefaultMenuItems
 internal.audit.logEvent
 ```
 
@@ -583,7 +583,7 @@ Type 'undefined' is not assignable to type 'XyzType'
 
 4. **Verify manifest updated:**
    ```bash
-   cat convex/menu/store/menu_manifest_data.ts
+   cat convex/features/menus/menu_manifest_data.ts
    # Should show updated feature data
    ```
 
@@ -839,9 +839,9 @@ await ctx.runMutation(api.workspace.workspaces.resetWorkspace, {
 ### API Errors
 
 ```
-"Cannot find module 'api["menu/store/menuItems"]'"
+"Cannot find module 'api["features/menus/menuItems"]'"
 → Use dot notation: api.menu.store.menuItems
-→ Not string paths: api["menu/store/menuItems"]
+→ Not string paths: api["features/menus/menuItems"]
 ```
 
 ---

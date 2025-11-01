@@ -14,12 +14,12 @@ import type { ChatDataSource } from "@/frontend/shared/communications";
  */
 export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): ChatDataSource {
   // Mutations
-  const sendMessageMutation = useMutation(api.menu.chat.mutations.sendMessage);
-  const editMessageMutation = useMutation(api.menu.chat.mutations.editMessage);
-  const deleteMessageMutation = useMutation(api.menu.chat.mutations.deleteMessage);
-  const pinMessageMutation = useMutation(api.menu.chat.mutations.pinMessage);
-  const updateRoomMutation = useMutation(api.menu.chat.mutations.updateRoom);
-  const manageParticipantMutation = useMutation(api.menu.chat.mutations.manageParticipant);
+  const sendMessageMutation = useMutation(api.features.chat.messages.sendMessage);
+  const editMessageMutation = useMutation(api.features.chat.messages.editMessage);
+  const deleteMessageMutation = useMutation(api.features.chat.messages.deleteMessage);
+  const updateConversationMutation = useMutation(api.features.chat.conversations.updateConversation);
+  const addParticipantMutation = useMutation(api.features.chat.conversations.addParticipant);
+  const removeParticipantMutation = useMutation(api.features.chat.conversations.removeParticipant);
 
   return {
     listMessages: async (roomId, cursor) => {
@@ -46,12 +46,10 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
 
     sendMessage: async (roomId, draft) => {
       const result = await sendMessageMutation({
-        roomId: roomId as Id<"chatRooms">,
-        workspaceId,
-        text: draft.text,
-        markdown: draft.markdown,
-        threadOf: draft.threadOf as Id<"chatMessages"> | undefined,
-        meta: draft.meta,
+        conversationId: roomId as Id<"conversations">,
+        content: draft.markdown ?? draft.text ?? "",
+        metadata: draft.meta,
+        replyToId: draft.threadOf as Id<"messages"> | undefined,
       });
 
       return result as any;
@@ -59,9 +57,9 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
 
     editMessage: async (roomId, messageId, patch) => {
       const result = await editMessageMutation({
-        roomId: roomId as Id<"chatRooms">,
-        messageId: messageId as Id<"chatMessages">,
-        patch,
+        conversationId: roomId as Id<"conversations">,
+        messageId: messageId as Id<"messages">,
+        content: patch.content?.markdown ?? patch.content?.text ?? patch.content ?? "",
       });
 
       return result as any;
@@ -69,33 +67,45 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
 
     deleteMessage: async (roomId, messageId, hard) => {
       await deleteMessageMutation({
-        roomId: roomId as Id<"chatRooms">,
-        messageId: messageId as Id<"chatMessages">,
+        conversationId: roomId as Id<"conversations">,
+        messageId: messageId as Id<"messages">,
         hard,
       });
     },
 
     pinMessage: async (roomId, messageId, pinned) => {
-      await pinMessageMutation({
-        roomId: roomId as Id<"chatRooms">,
-        messageId: messageId as Id<"chatMessages">,
-        pinned,
+      // Backend does not currently support message-level pinning; fall back to metadata toggle.
+      await updateConversationMutation({
+        conversationId: roomId as Id<"conversations">,
+        metadata: { isPinned: pinned },
       });
     },
 
     updateRoom: async (roomId, patch) => {
-      await updateRoomMutation({
-        roomId: roomId as Id<"chatRooms">,
-        patch,
+      await updateConversationMutation({
+        conversationId: roomId as Id<"conversations">,
+        name: patch.name,
       });
     },
 
     manageParticipant: async (roomId, userId, action) => {
-      await manageParticipantMutation({
-        roomId: roomId as Id<"chatRooms">,
-        userId,
-        action,
-      });
+      switch (action) {
+        case "add":
+          await addParticipantMutation({
+            conversationId: roomId as Id<"conversations">,
+            userId: userId as Id<"users">,
+          });
+          break;
+        case "remove":
+          await removeParticipantMutation({
+            conversationId: roomId as Id<"conversations">,
+            userId: userId as Id<"users">,
+          });
+          break;
+        default:
+          // Promotions/demotions not yet implemented.
+          return;
+      }
     },
   };
 }
@@ -105,8 +115,10 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
  */
 export function useChatMessages(roomId: string | undefined) {
   const messages = useQuery(
-    api.menu.chat.queries.listMessages,
-    roomId ? { roomId: roomId as Id<"chatRooms"> } : "skip"
+    api.features.chat.messages.getConversationMessages,
+    roomId
+      ? { conversationId: roomId as Id<"conversations">, limit: 50 }
+      : "skip"
   );
 
   return messages || [];
@@ -117,8 +129,8 @@ export function useChatMessages(roomId: string | undefined) {
  */
 export function useChatRoom(roomId: string | undefined) {
   const room = useQuery(
-    api.menu.chat.queries.getRoomMeta,
-    roomId ? { roomId: roomId as Id<"chatRooms"> } : "skip"
+    api.features.chat.conversations.getConversation,
+    roomId ? { conversationId: roomId as Id<"conversations"> } : "skip"
   );
 
   return room;
@@ -128,10 +140,10 @@ export function useChatRoom(roomId: string | undefined) {
  * Hook to get participants
  */
 export function useChatParticipants(roomId: string | undefined) {
-  const participants = useQuery(
-    api.menu.chat.queries.listParticipants,
-    roomId ? { roomId: roomId as Id<"chatRooms"> } : "skip"
+  const conversation = useQuery(
+    api.features.chat.conversations.getConversation,
+    roomId ? { conversationId: roomId as Id<"conversations"> } : "skip"
   );
 
-  return participants || [];
+  return (conversation?.participants as any) || [];
 }

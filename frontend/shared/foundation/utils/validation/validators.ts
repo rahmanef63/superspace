@@ -348,8 +348,8 @@ export function validateComponentJSON(json: any): void {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(
-        `Invalid component JSON: ${error.errors.map((e) => e.message).join(", ")}`,
-        { errors: error.errors }
+        `Invalid component JSON: ${error.issues.map((issue) => issue.message).join(", ")}`,
+        { errors: error.issues }
       )
     }
     throw error
@@ -362,8 +362,8 @@ export function validateElementJSON(json: any): void {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(
-        `Invalid element JSON: ${error.errors.map((e) => e.message).join(", ")}`,
-        { errors: error.errors }
+        `Invalid element JSON: ${error.issues.map((issue) => issue.message).join(", ")}`,
+        { errors: error.issues }
       )
     }
     throw error
@@ -376,8 +376,8 @@ export function validateBlockJSON(json: any): void {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(
-        `Invalid block JSON: ${error.errors.map((e) => e.message).join(", ")}`,
-        { errors: error.errors }
+        `Invalid block JSON: ${error.issues.map((issue) => issue.message).join(", ")}`,
+        { errors: error.issues }
       )
     }
     throw error
@@ -390,8 +390,8 @@ export function validateExportSchema(json: any): void {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(
-        `Invalid export schema: ${error.errors.map((e) => e.message).join(", ")}`,
-        { errors: error.errors }
+        `Invalid export schema: ${error.issues.map((issue) => issue.message).join(", ")}`,
+        { errors: error.issues }
       )
     }
     throw error

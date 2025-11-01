@@ -1,4 +1,4 @@
-import type { MemberProfile } from "../../../types/member";
+import { MemberProfile } from "../../types/member";
 
 export type MemberInfoSection =
   | "overview"

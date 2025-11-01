@@ -42,7 +42,7 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
   const blockNoteTheme = (resolvedTheme === "dark" ? "dark" : "light") as "light" | "dark";
 
   const sync = useBlockNoteSync<BlockNoteEditor>(
-    api.menu.page.prosemirror,
+    (api as any)["features/docs/prosemirror"],
     documentId,
     BlockNoteSchema.create()
   );

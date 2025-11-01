@@ -18,7 +18,7 @@ interface OverviewProps {
 export function Overview({ workspaceId }: OverviewProps) {
   const workspace = useQuery(api.workspace.workspaces.getWorkspace, { workspaceId });
   const members = useQuery(api.workspace.workspaces.getWorkspaceMembers, { workspaceId });
-  const documents = useQuery(api.menu.page.documents.getWorkspaceDocuments, { workspaceId }) || [];
+  const documents = useQuery((api as any)["features/docs/documents"].getWorkspaceDocuments, { workspaceId }) || [];
 
   const stats = [
     {

@@ -1,0 +1,280 @@
+import { api, mutation } from "../../_generated";
+import { v } from "convex/values";
+import { Doc, Id } from "../../_generated";
+
+/**
+ * Create or update a navigation item
+ */
+export const upsertItem = mutation({
+  args: {
+    workspaceId: v.string(),
+    key: v.string(),
+    type: v.string(),
+    status: v.string(),
+    displayOrder: v.optional(v.number()),
+    parentKey: v.optional(v.string()),
+    translations: v.record(v.string(), v.object({
+      label: v.string(),
+      description: v.optional(v.string()),
+      ariaLabel: v.optional(v.string()),
+    })),
+    path: v.optional(v.string()),
+    isExternal: v.optional(v.boolean()),
+    target: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    data: v.optional(v.object({
+      badge: v.optional(v.object({
+        text: v.string(),
+        variant: v.optional(v.string()),
+      })),
+      megaMenu: v.optional(v.object({
+        columns: v.number(),
+        layout: v.string(),
+        sections: v.array(v.object({
+          title: v.optional(v.string()),
+          links: v.array(v.object({
+            label: v.string(),
+            path: v.string(),
+            description: v.optional(v.string()),
+            icon: v.optional(v.string()),
+          })),
+        })),
+      })),
+      featuredItems: v.optional(v.array(v.object({
+        type: v.string(),
+        id: v.string(),
+        title: v.string(),
+        description: v.optional(v.string()),
+        image: v.optional(v.string()),
+      }))),
+    })),
+    metadata: v.optional(v.object({
+      roles: v.optional(v.array(v.string())),
+      devices: v.optional(v.array(v.string())),
+      analyticsId: v.optional(v.string()),
+      customClass: v.optional(v.string()),
+    })),
+    updatedBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("navigationItems")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.eq("key", args.key))
+      .unique();
+
+    const now = Date.now();
+
+    if (existing) {
+      return await ctx.db.patch(existing._id, {
+        type: args.type,
+        status: args.status,
+        displayOrder: args.displayOrder ?? existing.displayOrder,
+        parentKey: args.parentKey,
+        translations: args.translations,
+        path: args.path,
+        isExternal: args.isExternal ?? existing.isExternal,
+        target: args.target,
+        icon: args.icon,
+        data: args.data,
+        metadata: args.metadata,
+        updatedAt: now,
+        updatedBy: args.updatedBy,
+      });
+    }
+
+    // Find highest display order if not provided
+    let displayOrder = args.displayOrder;
+    if (displayOrder === undefined) {
+      const siblings = await ctx.db
+        .query("navigationItems")
+        .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+        .collect();
+
+      const relevantSiblings = siblings.filter((item) =>
+        args.parentKey ? item.parentKey === args.parentKey : !item.parentKey,
+      );
+      const maxOrder = relevantSiblings.reduce(
+        (currentMax, item) => Math.max(currentMax, item.displayOrder ?? 0),
+        0,
+      );
+      displayOrder = maxOrder + 1;
+    }
+
+    return await ctx.db.insert("navigationItems", {
+      workspaceId: args.workspaceId,
+      key: args.key,
+      type: args.type,
+      status: args.status,
+      displayOrder,
+      parentKey: args.parentKey,
+      translations: args.translations,
+      path: args.path,
+      isExternal: args.isExternal ?? false,
+      target: args.target,
+      icon: args.icon,
+      data: args.data,
+      metadata: args.metadata,
+      createdAt: now,
+      createdBy: args.updatedBy,
+      updatedAt: now,
+      updatedBy: args.updatedBy,
+    });
+  },
+});
+
+/**
+ * Create or update a navigation group
+ */
+export const upsertGroup = mutation({
+  args: {
+    workspaceId: v.string(),
+    name: v.string(),
+    status: v.string(),
+    displayOrder: v.optional(v.number()),
+    translations: v.record(v.string(), v.object({
+      title: v.string(),
+      description: v.optional(v.string()),
+    })),
+    items: v.array(v.string()),
+    settings: v.optional(v.object({
+      layout: v.optional(v.string()),
+      theme: v.optional(v.string()),
+      sticky: v.optional(v.boolean()),
+      maxDepth: v.optional(v.number()),
+      expandBehavior: v.optional(v.string()),
+    })),
+    metadata: v.optional(v.object({
+      roles: v.optional(v.array(v.string())),
+      devices: v.optional(v.array(v.string())),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("navigationGroups")
+      .withIndex("by_workspace_name", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("name", args.name)
+      )
+      .unique();
+
+    const now = Date.now();
+
+    if (existing) {
+      return await ctx.db.patch(existing._id, {
+        status: args.status,
+        displayOrder: args.displayOrder ?? existing.displayOrder,
+        translations: args.translations,
+        items: args.items,
+        settings: args.settings,
+        metadata: args.metadata,
+        updatedAt: now,
+      });
+    }
+
+    // Find highest display order if not provided
+    let displayOrder = args.displayOrder;
+    if (displayOrder === undefined) {
+      const lastGroup = await ctx.db
+        .query("navigationGroups")
+        .withIndex("by_order", (q) => q.eq("workspaceId", args.workspaceId))
+        .order("desc")
+        .first();
+      displayOrder = (lastGroup?.displayOrder || 0) + 1;
+    }
+
+    return await ctx.db.insert("navigationGroups", {
+      workspaceId: args.workspaceId,
+      name: args.name,
+      status: args.status,
+      displayOrder,
+      translations: args.translations,
+      items: args.items,
+      settings: args.settings,
+      metadata: args.metadata,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/**
+ * Delete a navigation item and its children
+ */
+export const deleteItem = mutation({
+  args: {
+    workspaceId: v.string(),
+    key: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Delete the item
+    const item = await ctx.db
+      .query("navigationItems")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.eq("key", args.key))
+      .unique();
+
+    if (!item) {
+      throw new Error("Navigation item not found");
+    }
+
+    // Delete children recursively
+    const children = await ctx.db
+      .query("navigationItems")
+      .withIndex("by_parent", (q) =>
+        q.eq("workspaceId", args.workspaceId)
+      )
+      .filter((q) => q.eq("parentKey", args.key))
+      .collect();
+
+    for (const child of children) {
+      await ctx.runMutation(api.navigation.mutations.deleteItem, {
+        workspaceId: args.workspaceId,
+        key: child.key,
+      });
+    }
+
+    // Remove from any groups
+    const groups = await ctx.db
+      .query("navigationGroups")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+
+    for (const group of groups) {
+      if (group.items.includes(args.key)) {
+        await ctx.db.patch(group._id, {
+          items: group.items.filter(k => k !== args.key),
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    await ctx.db.delete(item._id);
+    return true;
+  },
+});
+
+/**
+ * Delete a navigation group
+ */
+export const deleteGroup = mutation({
+  args: {
+    workspaceId: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db
+      .query("navigationGroups")
+      .withIndex("by_workspace_name", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("name", args.name)
+      )
+      .unique();
+
+    if (!group) {
+      throw new Error("Navigation group not found");
+    }
+
+    await ctx.db.delete(group._id);
+    return true;
+  },
+});
+

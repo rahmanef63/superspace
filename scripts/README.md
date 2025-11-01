@@ -119,7 +119,7 @@ Auto-discovered by: lib/features/registry.ts
   ↓
 pnpm run sync:all
   ↓
-Synced to: convex/menu/store/menu_manifest_data.ts
+Synced to: convex/features/menus/menu_manifest_data.ts
   ↓
 ✅ Feature ready! (NO manual editing!)
 

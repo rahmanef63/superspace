@@ -116,29 +116,29 @@ export default function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   }
 
   const menuItems = useQuery(
-    (api as any)["menu/store/menuItems"].getWorkspaceMenuItems,
+    (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     { workspaceId }
   );
   const availableFeatures = useQuery(
-    (api as any)["menu/store/menuItems"].getAvailableFeatureMenus,
+    (api as any)["features/menus/menuItems"].getAvailableFeatureMenus,
     { workspaceId }
   );
   const availableFeatureList = availableFeatures as AvailableFeatureMenu[] | undefined;
-  const deleteMenuItem = useMutation((api as any)["menu/store/menuItems"].deleteMenuItem);
+  const deleteMenuItem = useMutation((api as any)["features/menus/menuItems"].deleteMenuItem);
   const installFeatureMenus = useMutation(
-    (api as any)["menu/store/menuItems"].installFeatureMenus
+    (api as any)["features/menus/menuItems"].installFeatureMenus
   );
-  const renameMenuItem = useMutation((api as any)["menu/store/menuItems"].renameMenuItem);
-  const duplicateMenuItem = useMutation((api as any)["menu/store/menuItems"].duplicateMenuItem);
-  const shareMenuItem = useMutation((api as any)["menu/store/menuItems"].shareMenuItem);
+  const renameMenuItem = useMutation((api as any)["features/menus/menuItems"].renameMenuItem);
+  const duplicateMenuItem = useMutation((api as any)["features/menus/menuItems"].duplicateMenuItem);
+  const shareMenuItem = useMutation((api as any)["features/menus/menuItems"].shareMenuItem);
   const importMenuFromShareableId = useMutation(
-    (api as any)["menu/store/menuItems"].importMenuFromShareableId
+    (api as any)["features/menus/menuItems"].importMenuFromShareableId
   );
   const setMenuItemFeatureType = useMutation(
-    (api as any)["menu/store/menuItems"].setMenuItemFeatureType
+    (api as any)["features/menus/menuItems"].setMenuItemFeatureType
   );
   const syncDefaultMenus = useMutation(
-    (api as any)["menu/store/menuItems"].syncWorkspaceDefaultMenus
+    (api as any)["features/menus/menuItems"].syncWorkspaceDefaultMenus
   );
 
   const filteredItems = (menuItems as MenuItem[] | undefined)?.filter((item: MenuItem) => {

@@ -9,10 +9,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Trash2, Download, ExternalLink, Copy } from 'lucide-react';
-import { useConvexWorkspaceContext } from '../../context/ConvexWorkspaceContext';
 import { useAssets, useRemoveAsset } from '../../hooks/useConvexAssets';
 import { ConvexLoadingState } from '../loading/ConvexLoadingState';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui';
+import { useConvexWorkspaceContext } from '@/frontend/shared/context';
 
 interface AssetGalleryProps {
   onSelectAsset?: (assetId: string, url: string) => void;

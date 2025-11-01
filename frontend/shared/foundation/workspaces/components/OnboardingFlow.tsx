@@ -6,7 +6,7 @@ import { api } from "@convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { OnboardingProgress } from "./OnboardingProgress";
 import { OnboardingStep } from "./OnboardingStep";
-import type { OnboardingData } from "@/frontend/views/static/workspaces/types";
+import type { OnboardingData } from "../types";
 import type { OnboardingFlowProps } from "./types";
 
 export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowProps) {
@@ -147,4 +147,3 @@ export function OnboardingFlow({ onComplete, variant = "page" }: OnboardingFlowP
     </div>
   );
 }
-

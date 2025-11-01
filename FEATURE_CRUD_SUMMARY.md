@@ -337,7 +337,7 @@ pnpm run create:feature analytics --type optional --category analytics --icon Ba
 │   pnpm run sync:all                 │
 └──────────────┬──────────────────────┘
                │
-               ├─> convex/menu/store/menu_manifest_data.ts
+               ├─> convex/features/menus/menu_manifest_data.ts
                └─> frontend/views/manifest.tsx
                │
                ▼

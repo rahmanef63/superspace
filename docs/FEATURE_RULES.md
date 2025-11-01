@@ -172,7 +172,7 @@ lib/features/
 #### 3. Auto-Generated Files
 ```
 frontend/views/manifest.tsx                    ✅ Generated component registry
-convex/menu/store/menu_manifest_data.ts       ✅ Generated from registry
+convex/features/menus/menu_manifest_data.ts       ✅ Generated from registry
 frontend/views/static/workspaces/constants/navigation.ts  ✅ Dynamic from registry
 ```
 

@@ -1,9 +1,9 @@
-import HeroSection from "./hero-section";
-import FeaturesOne from "./features-one";
-import Testimonials from "./testimonials";
-import CallToAction from "./call-to-action";
-import FAQs from "./faqs";
-import Footer from "./footer";
+import HeroSection from "../../components/route-group/marketing/hero-section";
+import FeaturesOne from "../../components/route-group/marketing/features-one";
+import Testimonials from "../../components/route-group/marketing/testimonials";
+import CallToAction from "../../components/route-group/marketing/call-to-action";
+import FAQs from "../../components/route-group/marketing/faqs";
+import Footer from "../../components/route-group/marketing/footer";
 import CustomClerkPricing from "@/components/custom-clerk-pricing";
 
 export default function Home() {

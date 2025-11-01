@@ -84,20 +84,21 @@ export const workspaces = defineTable({
 
 export const roles = defineTable({
   name: v.string(),
-  slug: v.optional(v.string()),
+  slug: v.string(),
   description: v.optional(v.string()),
-  workspaceId: v.optional(v.id("workspaces")),
+  workspaceId: v.id("workspaces"),
   permissions: v.array(v.string()),
   color: v.optional(v.string()),
-  isDefault: v.optional(v.boolean()),
+  isDefault: v.boolean(),
   isSystemRole: v.optional(v.boolean()),
   level: v.optional(v.number()),
   icon: v.optional(v.string()),
   createdBy: v.optional(v.id("users")),
+  updatedBy: v.optional(v.id("users")),
 })
   .index("by_workspace", ["workspaceId"])
-  .index("by_slug", ["slug"])
-  .index("by_system", ["isSystemRole"]);
+  .index("by_slug", ["workspaceId", "slug"])
+  .index("by_level", ["workspaceId", "level"]);
 
 export const workspaceMemberships = defineTable({
   workspaceId: v.id("workspaces"),
@@ -108,9 +109,13 @@ export const workspaceMemberships = defineTable({
     v.literal("inactive"),
     v.literal("pending"),
   ),
+  roleLevel: v.optional(v.number()),
+  additionalPermissions: v.array(v.string()),
   joinedAt: v.number(),
   invitedBy: v.optional(v.id("users")),
   lastActiveAt: v.optional(v.number()),
+  createdBy: v.optional(v.id("users")),
+  updatedBy: v.optional(v.id("users")),
 })
   .index("by_workspace", ["workspaceId"])
   .index("by_user", ["userId"])

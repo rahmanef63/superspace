@@ -11,9 +11,9 @@ Menu items CRUD with:
 - Audit events
 
 ## Files
-- convex/menu/store/menuItems.ts
-- convex/menu/store/menus.ts
-- convex/menu/store/itemComponents.ts
+- convex/features/menus/menuItems.ts
+- convex/features/menus/menus.ts
+- convex/features/menus/itemComponents.ts
 - convex/schema.ts
 - app/api/menu-items/route.ts
 - scripts/validate-menu-item.ts
@@ -21,7 +21,7 @@ Menu items CRUD with:
 
 ## Triggers
 - HTTP POST /api/menu-items
-- convex:mutation:menu/store/menuItems.createDefaultMenuItems
+- convex:mutation:features/menus/menuItems.createDefaultMenuItems
 - convex:mutation:menu/store/menus.createMenuStructure
 
 ## Plan

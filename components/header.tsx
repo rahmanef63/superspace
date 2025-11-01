@@ -1,6 +1,7 @@
 "use client"
 
-import { SiteHeader } from "@/app/dashboard/_components/site-header"
+import { SiteHeader } from "@/frontend/shared/ui/layout/sidebar"
+
 
 export function Header() {
   return <SiteHeader />

@@ -11,7 +11,7 @@ Components & Versions:
 
 ## Files
 - convex/components/registry.ts
-- convex/menu/store/itemComponents.ts
+- convex/features/menus/itemComponents.ts
 - convex/schema.ts
 - app/api/components/route.ts
 - scripts/validate-component.ts

@@ -2,7 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode, Suspense } from "react"
 import type { Id } from "@convex/_generated/dataModel"
-import { AppContent } from "../../views/manifest"
+import { AppContent } from "../foundation";
 
 // Error Boundary for catching component load failures
 class PageErrorBoundary extends Component<

@@ -57,7 +57,7 @@ frontend/features/reports/config.ts: 55 lines ✅
 **After:**
 - ✅ Permanently deleted
 - ✅ Replaced by auto-discovery
-- ✅ Generated files in `convex/menu/store/`
+- ✅ Generated files in `convex/features/menus/`
 
 ---
 
@@ -201,8 +201,8 @@ lib/features/registry.ts
   ↓ (used by)
 All scripts (sync, validate, generate, etc.)
   ↓ (generates)
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+convex/features/menus/menu_manifest_data.ts
+convex/features/menus/optional_features_catalog.ts
   ↓
 ✅ Zero hardcoding, zero duplication!
 ```
@@ -284,8 +284,8 @@ $ pnpm run test:registry
 ```
 ✅ Generated from frontend/features/*/config.ts:
 
-convex/menu/store/menu_manifest_data.ts
-convex/menu/store/optional_features_catalog.ts
+convex/features/menus/menu_manifest_data.ts
+convex/features/menus/optional_features_catalog.ts
 frontend/views/manifest.tsx
 ```
 
@@ -308,8 +308,8 @@ All generated files now correctly reference the source:
 ```
 
 **Files updated:**
-- ✅ `convex/menu/store/menu_manifest_data.ts`
-- ✅ `convex/menu/store/optional_features_catalog.ts`
+- ✅ `convex/features/menus/menu_manifest_data.ts`
+- ✅ `convex/features/menus/optional_features_catalog.ts`
 
 ---
 
@@ -435,8 +435,8 @@ All documentation has been updated:
 - ✅ `scripts/features/sync.ts` → Updated comments
 
 ### Generated Files Updated:
-- ✅ `convex/menu/store/menu_manifest_data.ts` → Updated comment
-- ✅ `convex/menu/store/optional_features_catalog.ts` → Updated comment
+- ✅ `convex/features/menus/menu_manifest_data.ts` → Updated comment
+- ✅ `convex/features/menus/optional_features_catalog.ts` → Updated comment
 
 ### Documentation Created:
 - ✅ `DEPRECATED_FILES.md` - Migration guide

@@ -13,7 +13,7 @@ interface SearchModalProps {
 export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const searchResults = useQuery(
-    api.menu.page.documents.searchDocuments,
+    (api as any)["features/docs/documents"].searchDocuments,
     query.trim() ? { workspaceId, query } : "skip"
   );
 

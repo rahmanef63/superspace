@@ -1,7 +1,58 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
+export {
+  type ActionCtxWithDb,
+  type AnyConvexCtx,
+  type MembershipInfo,
+  getUserByExternalId,
+  getMembership,
+} from "../shared/auth";
 
 export const PROVIDER_CLERK = "clerk" as const;
+
+export const permissionValidator = v.union(
+  // System permissions
+  v.literal("system.admin"),
+  v.literal("system.manage_users"),
+
+  // Workspace permissions
+  v.literal("workspace.manage"),
+  v.literal("workspace.invite_members"),
+
+  // Content permissions
+  v.literal("content.create"),
+  v.literal("content.edit"),
+  v.literal("content.publish"),
+  v.literal("content.delete"),
+
+  // Feature management
+  v.literal("features.manage"),
+  v.literal("features.install"),
+
+  // User management
+  v.literal("users.view"),
+  v.literal("users.manage"),
+
+  // Settings
+  v.literal("settings.view"),
+  v.literal("settings.manage"),
+
+  // Navigation
+  v.literal("navigation.manage"),
+
+  // Storage
+  v.literal("storage.upload"),
+  v.literal("storage.manage"),
+  v.literal("storage.view"),
+
+  // Commerce
+  v.literal("cart.use"),
+  v.literal("cart.checkout"),
+  v.literal("currency.manage"),
+  v.literal("currency.update_rates"),
+  v.literal("wishlist:manage"),
+);
 
 export async function resolveCandidateUserIds(ctx: any): Promise<any[]> {
   const candidateIds: any[] = [];
@@ -26,7 +77,7 @@ export async function resolveCandidateUserIds(ctx: any): Promise<any[]> {
     if (identity.email) {
       const byEmailAll = await ctx.db
         .query("users")
-        .withIndex("email", (q: any) => q.eq("email", identity.email!))
+        .withIndex("by_email", (q: any) => q.eq("email", identity.email!))
         .collect();
       for (const u of byEmailAll) candidateIds.push(u._id as any);
     }
@@ -40,7 +91,7 @@ export async function resolveCandidateUserIds(ctx: any): Promise<any[]> {
     }
   }
 
-  return [...new Set(candidateIds.map(String))] as any[];
+  return Array.from(new Set(candidateIds.map(String))) as any[];
 }
 
 // Query-safe helper: resolve an existing Convex users DocId for
@@ -69,7 +120,7 @@ export async function getExistingUserId(ctx: any): Promise<Id<"users"> | null> {
   if (identity.email) {
     const byEmail = await ctx.db
       .query("users")
-      .withIndex("email", (q: any) => q.eq("email", identity.email!))
+      .withIndex("by_email", (q: any) => q.eq("email", identity.email!))
       .first();
     if (byEmail) return byEmail._id as Id<"users">;
   }
@@ -111,7 +162,7 @@ export async function ensureUser(ctx: any): Promise<Id<"users">> {
   if (identity.email) {
     const byEmail = await ctx.db
       .query("users")
-      .withIndex("email", (q: any) => q.eq("email", identity.email!))
+      .withIndex("by_email", (q: any) => q.eq("email", identity.email!))
       .first();
     if (byEmail) return byEmail._id as Id<"users">;
   }

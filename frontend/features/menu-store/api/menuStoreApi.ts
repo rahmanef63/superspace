@@ -6,16 +6,16 @@ import { api } from "@convex/_generated/api";
  */
 export const menuStoreApi = {
   // Queries
-  getWorkspaceMenuItems: api.menu.store.menuItems.getWorkspaceMenuItems,
-  getAvailableFeatureMenus: api.menu.store.menuItems.getAvailableFeatureMenus,
+  getWorkspaceMenuItems: (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
+  getAvailableFeatureMenus: (api as any)["features/menus/menuItems"].getAvailableFeatureMenus,
 
   // Mutations
-  deleteMenuItem: api.menu.store.menuItems.deleteMenuItem,
-  installFeatureMenus: api.menu.store.menuItems.installFeatureMenus,
-  renameMenuItem: api.menu.store.menuItems.renameMenuItem,
-  duplicateMenuItem: api.menu.store.menuItems.duplicateMenuItem,
-  shareMenuItem: api.menu.store.menuItems.shareMenuItem,
-  importMenuFromShareableId: api.menu.store.menuItems.importMenuFromShareableId,
-  setMenuItemFeatureType: api.menu.store.menuItems.setMenuItemFeatureType,
-  syncWorkspaceDefaultMenus: api.menu.store.menuItems.syncWorkspaceDefaultMenus,
+  deleteMenuItem: (api as any)["features/menus/menuItems"].deleteMenuItem,
+  installFeatureMenus: (api as any)["features/menus/menuItems"].installFeatureMenus,
+  renameMenuItem: (api as any)["features/menus/menuItems"].renameMenuItem,
+  duplicateMenuItem: (api as any)["features/menus/menuItems"].duplicateMenuItem,
+  shareMenuItem: (api as any)["features/menus/menuItems"].shareMenuItem,
+  importMenuFromShareableId: (api as any)["features/menus/menuItems"].importMenuFromShareableId,
+  setMenuItemFeatureType: (api as any)["features/menus/menuItems"].setMenuItemFeatureType,
+  syncWorkspaceDefaultMenus: (api as any)["features/menus/menuItems"].syncWorkspaceDefaultMenus,
 } as const;

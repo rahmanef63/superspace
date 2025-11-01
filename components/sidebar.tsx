@@ -1,7 +1,7 @@
 "use client"
 
-import { AppSidebar } from "@/app/dashboard/_components/app-sidebar"
 import type { Id } from "@/convex/_generated/dataModel"
+import { AppSidebar } from "@/frontend/shared/ui/layout/sidebar"
 
 interface SidebarProps {
   workspaceId?: Id<"workspaces"> | null

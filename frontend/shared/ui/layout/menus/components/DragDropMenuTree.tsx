@@ -127,10 +127,10 @@ export function DragDropMenuTree({
   const [renameValue, setRenameValue] = useState("")
 
   // Fetch menu updates
-  const menuUpdates = useQuery(api.menu.store.menuItems.getMenuUpdates, { workspaceId }) || []
+  const menuUpdates = useQuery((api as any)["features/menus/menuItems"].getMenuUpdates, { workspaceId }) || []
   const updatesMap = useMemo(() => {
     const map = new Map<string, { currentVersion: string; latestVersion: string }>()
-    menuUpdates.forEach((update) => {
+    menuUpdates.forEach((update: { menuItemId: Id<"menuItems">; currentVersion: string; latestVersion: string }) => {
       map.set(String(update.menuItemId), {
         currentVersion: update.currentVersion,
         latestVersion: update.latestVersion,

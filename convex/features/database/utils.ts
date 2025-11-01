@@ -88,6 +88,7 @@ export async function hasWorkspaceAccess(
             roleId: fallbackRole,
             status: "active",
             joinedAt: Date.now(),
+            additionalPermissions: [],
           });
         } else {
           console.warn(

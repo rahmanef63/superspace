@@ -5,7 +5,7 @@ import { Id } from "@convex/_generated/dataModel";
 export function useWorkspaceData(workspaceId: Id<"workspaces">) {
   const workspace = useQuery(api.workspace.workspaces.getWorkspace, { workspaceId });
   const members = useQuery(api.workspace.workspaces.getWorkspaceMembers, { workspaceId });
-  const documents = useQuery(api.menu.page.documents.getWorkspaceDocuments, { workspaceId });
+  const documents = useQuery((api as any)["features/docs/documents"].getWorkspaceDocuments, { workspaceId });
 
   return {
     workspace,

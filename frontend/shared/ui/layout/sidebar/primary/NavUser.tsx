@@ -48,7 +48,16 @@ function SignedInNavUserContent({
   onSettingsClick
 }: SignedInNavUserContentProps) {
   const { user: clerkUser } = useUser()
+  const { setOpenMobile } = useSidebar()
   const [showProfileDialog, setShowProfileDialog] = React.useState(false)
+
+  // Handler to close mobile sidebar when menu is clicked
+  const handleSettingsClick = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+    onSettingsClick?.()
+  }
 
   return (
     <>
@@ -85,7 +94,7 @@ function SignedInNavUserContent({
             )}
             {/* Only show Settings if callback is provided */}
             {onSettingsClick && (
-              <DropdownMenuItem onClick={onSettingsClick}>
+              <DropdownMenuItem onClick={handleSettingsClick}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>

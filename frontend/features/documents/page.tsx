@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import type { Id } from "@convex/_generated/dataModel";
+import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer";
 import DocumentsFeaturePage from "./view/page";
 
 export interface DocumentsPageProps {
@@ -8,5 +9,9 @@ export interface DocumentsPageProps {
 }
 
 export default function DocumentsPage({ workspaceId }: DocumentsPageProps) {
-  return <DocumentsFeaturePage workspaceId={workspaceId ?? null} />;
+  return (
+    <PageContainer maxWidth="full" padding={false} className="h-full">
+      <DocumentsFeaturePage workspaceId={workspaceId ?? null} />
+    </PageContainer>
+  );
 }

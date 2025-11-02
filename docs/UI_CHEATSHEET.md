@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 // Shared components
 import { PageContainer } from '@/frontend/shared/ui/components/pages/PageContainer'
 import { PageHeader } from '@/frontend/shared/ui/components/pages/PageHeader'
-import { SecondarySidebarLayout } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { SecondarySidebarLayout, SecondaryList, itemVariant, registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
 
 // Icons
 import { Plus, Edit, Trash, Save, X } from 'lucide-react'
@@ -390,6 +390,184 @@ import { SecondarySidebarLayout } from '@/frontend/shared/ui/layout/sidebar/seco
   </div>
 </SecondarySidebarLayout>
 ```
+
+---
+
+## Variant Registry System
+
+### Setup Registry (Once per feature)
+```tsx
+import { registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+// Call once when feature loads
+registerBuiltInVariants()
+```
+
+### Chat Items
+```tsx
+import { SecondaryList, itemVariant } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+const items = conversations.map(conv => ({
+  id: conv.id,
+  label: conv.name,
+  variantId: itemVariant.chat,
+  href: `/chat/${conv.id}`,
+  params: {
+    summary: conv.lastMessage,
+    lastAt: conv.updatedAt,
+    unread: conv.unreadCount,
+    avatarUrl: conv.avatar,
+    ai: conv.isAI,
+    online: conv.isOnline,
+  }
+}))
+
+<SecondaryList items={items} loading={loading} onAction={(id) => router.push(`/chat/${id}`)} />
+```
+
+### Call Items
+```tsx
+const items = calls.map(call => ({
+  id: call.id,
+  label: call.contactName,
+  variantId: itemVariant.call,
+  params: {
+    direction: 'in', // 'in' | 'out' | 'missed'
+    medium: 'voice', // 'voice' | 'video'
+    duration: '5:32',
+    timestamp: '2 hours ago',
+    avatarUrl: call.avatar, // Optional avatar URL
+    group: false,
+    ongoing: false,
+  }
+}))
+
+<SecondaryList items={items} />
+```
+
+### Document Items
+```tsx
+const items = documents.map(doc => ({
+  id: doc.id,
+  label: doc.name,
+  variantId: itemVariant.doc,
+  params: {
+    summary: doc.description,
+    updatedAt: doc.updatedAt,
+    fileType: 'pdf', // 'pdf' | 'doc' | 'sheet' | 'image' | 'other'
+    size: '2.5 MB',
+  }
+}))
+
+<SecondaryList items={items} />
+```
+
+### Menu Items (Hierarchical)
+```tsx
+const items = [
+  {
+    id: '1',
+    label: 'Products',
+    icon: ShoppingBag,
+    variantId: itemVariant.menu,
+    params: {
+      depth: 0,
+      hasChildren: true,
+      expanded: true,
+      count: 12,
+    }
+  },
+  {
+    id: '1-1',
+    label: 'Electronics',
+    variantId: itemVariant.menu,
+    params: {
+      depth: 1,
+      hasChildren: false,
+      count: 5,
+    }
+  },
+]
+
+<SecondaryList items={items} />
+```
+
+### Status Items
+```tsx
+const items = users.map(user => ({
+  id: user.id,
+  label: user.name,
+  variantId: itemVariant.status,
+  params: {
+    status: 'online', // 'online' | 'away' | 'busy' | 'offline'
+    lastSeen: '2 hours ago',
+    avatarUrl: user.avatar,
+  }
+}))
+
+<SecondaryList items={items} />
+```
+
+### Custom Variant
+```tsx
+import { createVariant, itemVariantRegistry } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { z } from 'zod'
+
+// 1. Define variant
+const TaskParams = z.object({
+  priority: z.enum(['low', 'medium', 'high']),
+  dueDate: z.string(),
+  completed: z.boolean(),
+})
+
+const taskVariant = createVariant({
+  id: 'task',
+  paramsSchema: TaskParams,
+  render: ({ item, params }) => (
+    <button className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-accent rounded-md">
+      <span className={params.completed ? 'line-through' : ''}>{item.label}</span>
+      <Badge>{params.priority}</Badge>
+    </button>
+  ),
+})
+
+// 2. Register variant
+itemVariantRegistry.register(taskVariant)
+
+// 3. Use variant
+const items = tasks.map(task => ({
+  id: task.id,
+  label: task.name,
+  variantId: itemVariant.custom('task'),
+  params: {
+    priority: task.priority,
+    dueDate: task.dueDate,
+    completed: task.completed,
+  }
+}))
+
+<SecondaryList items={items} />
+```
+
+### With States
+```tsx
+<SecondaryList
+  items={items}
+  loading={items === undefined}
+  error={error}
+  emptyState={
+    <div className="text-center py-8">
+      <p className="text-sm text-muted-foreground">No items found</p>
+      <Button className="mt-4">Create New</Button>
+    </div>
+  }
+  onAction={(id, action) => {
+    if (action === 'select') handleSelect(id)
+  }}
+/>
+```
+
+**Full Documentation:** [Variant Registry System](./6_DESIGN_SYSTEM.md#variant-registry-system)
 
 ---
 

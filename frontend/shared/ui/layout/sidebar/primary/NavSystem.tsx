@@ -42,11 +42,18 @@ interface NavSystemProps {
 }
 
 export function NavSystem({ system }: NavSystemProps) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   if (!system || system.length === 0) {
     return null;
   }
+
+  // Handler to close mobile sidebar when menu is clicked
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -57,7 +64,7 @@ export function NavSystem({ system }: NavSystemProps) {
           return (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton asChild>
-                <Link href={item.url}>
+                <Link href={item.url} onClick={handleMenuClick}>
                   <IconComponent />
                   <span>{item.name}</span>
                 </Link>

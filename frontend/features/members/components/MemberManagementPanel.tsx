@@ -4,6 +4,7 @@ import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/frontend/shared/ui/components/pages/PageHeader";
 import type { Id } from "@convex/_generated/dataModel";
 import { MemberList } from "./MemberList";
 import { MemberView } from "./MemberView";
@@ -21,26 +22,27 @@ export function MemberManagementPanel({
 }) {
   const { canInvite } = useMemberGuards(workspaceId);
   const [showInvite, setShowInvite] = useState(false);
+
   return (
-    <div className="container flex-col mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{LABELS.title}</h1>
-          <p className="text-muted-foreground">{LABELS.subtitle}</p>
-        </div>
-        {canInvite && (
-          <Button
-            onClick={() => {
-              if (onInviteClick) return onInviteClick();
-              setShowInvite(true);
-            }}
-            className="gap-2 self-start sm:self-auto"
-          >
-            <UserPlus className="w-4 h-4" />
-            {LABELS.invite}
-          </Button>
-        )}
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={LABELS.title}
+        subtitle={LABELS.subtitle}
+        actions={
+          canInvite ? (
+            <Button
+              onClick={() => {
+                if (onInviteClick) return onInviteClick();
+                setShowInvite(true);
+              }}
+              className="gap-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              {LABELS.invite}
+            </Button>
+          ) : undefined
+        }
+      />
 
       <Card>
         <CardHeader className="pb-3">

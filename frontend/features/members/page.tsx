@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel";
+import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer";
 import { MemberManagementPanel } from "./components/MemberManagementPanel";
 
 export interface MembersPageProps {
@@ -8,5 +9,9 @@ export interface MembersPageProps {
 }
 
 export default function MembersPage({ workspaceId }: MembersPageProps) {
-  return <MemberManagementPanel workspaceId={workspaceId as Id<"workspaces">} />;
+  return (
+    <PageContainer maxWidth="full" padding={true}>
+      <MemberManagementPanel workspaceId={workspaceId as Id<"workspaces">} />
+    </PageContainer>
+  );
 }

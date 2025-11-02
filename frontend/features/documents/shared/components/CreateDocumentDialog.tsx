@@ -77,7 +77,7 @@ export function CreateDocumentDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
+            <FileText className="w-5 h-5 text-primary" />
             Create New Document
           </DialogTitle>
           <DialogDescription>
@@ -122,7 +122,7 @@ export function CreateDocumentDialog({
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1"
               disabled={isSubmitting || !title.trim()}
             >
               {isSubmitting ? (

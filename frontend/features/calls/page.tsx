@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
+import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer"
 import { useInitializeChat } from "../chat/shared/hooks"
 import { CallsView } from "./CallsView"
 
@@ -12,8 +13,8 @@ export default function WACallsPage({ workspaceId }: WACallsPageProps) {
   useInitializeChat(workspaceId ?? null)
 
   return (
-    <div className="h-full">
+    <PageContainer padding={false} maxWidth="full">
       <CallsView />
-    </div>
+    </PageContainer>
   )
 }

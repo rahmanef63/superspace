@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel";
+import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer";
 import Message from "./Message";
 
 export interface MessagePageProps {
@@ -8,5 +9,9 @@ export interface MessagePageProps {
 }
 
 export default function MessagePage({ workspaceId }: MessagePageProps) {
-  return <Message workspaceId={workspaceId ?? null} />;
+  return (
+    <PageContainer maxWidth="full" padding={false}>
+      <Message workspaceId={workspaceId ?? null} />
+    </PageContainer>
+  );
 }

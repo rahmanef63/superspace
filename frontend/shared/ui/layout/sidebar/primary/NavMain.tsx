@@ -15,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
@@ -36,6 +37,7 @@ interface NavMainProps {
 }
 
 export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMainProps) {
+  const { isMobile, setOpenMobile } = useSidebar()
   const fallback = getDefaultPages().map((p) => ({
     id: p.id,
     title: p.title,
@@ -46,6 +48,14 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
 
   console.log("[v0] NavMain received items:", items)
   console.log("[v0] NavMain using navItems:", navItems)
+
+  // Handler to close mobile sidebar when menu is clicked
+  const handleMenuClick = (viewId: string) => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+    onViewChange?.(viewId)
+  }
 
   // Recursive function to render nested menu items
   const renderNavItem = (item: NavItem, depth: number = 0): JSX.Element => {
@@ -91,7 +101,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                               <SidebarMenuSubButton key={nestedItem.id} asChild>
                                 <Link
                                   href={nestedItem.url || `/dashboard/${item.id}/${subItem.id}/${nestedItem.id}`}
-                                  onClick={() => onViewChange?.(nestedItem.id)}
+                                  onClick={() => handleMenuClick(nestedItem.id)}
                                   className={activeView === nestedItem.id ? "bg-accent" : ""}
                                 >
                                   {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
@@ -107,7 +117,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                       <SidebarMenuSubButton asChild>
                         <Link
                           href={subItem.url || `/dashboard/${item.id}/${subItem.id}`}
-                          onClick={() => onViewChange?.(subItem.id)}
+                          onClick={() => handleMenuClick(subItem.id)}
                           className={activeView === subItem.id ? "bg-accent" : ""}
                         >
                           {subItem.icon && <subItem.icon className="w-4 h-4" />}
@@ -129,7 +139,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
         <SidebarMenuButton asChild tooltip={item.description} isActive={isActive}>
           <Link
             href={item.url || `/dashboard/${item.id}`}
-            onClick={() => onViewChange?.(item.id)}
+            onClick={() => handleMenuClick(item.id)}
           >
             {item.icon && <item.icon />}
             <span>{item.title}</span>

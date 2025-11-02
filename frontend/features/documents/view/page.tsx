@@ -1,7 +1,9 @@
 ﻿"use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import { WorkspaceDocumentsManager } from "../shared/components/WorkspaceDocumentsManager";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { DocumentsView } from "../shared/components";
 import type { DocumentEditorMode } from "../shared";
 
 interface DocumentsFeaturePageProps {
@@ -16,13 +18,20 @@ export default function DocumentsFeaturePage({
 }: DocumentsFeaturePageProps) {
   if (!workspaceId) {
     return (
-      <div className="flex h-full items-center justify-center">
-        Connect this view to a workspace to start managing documents.
+      <div className="flex h-full items-center justify-center p-6">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No workspace selected. Please select a workspace to manage documents.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   return (
-        <WorkspaceDocumentsManager workspaceId={workspaceId} editorMode={editorMode} />
+    <div className="h-full">
+      <DocumentsView workspaceId={workspaceId} editorMode={editorMode} />
+    </div>
   );
 }

@@ -1,15 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Phone, PhoneIncoming, PhoneOff, Video, Plus } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Phone, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "../chat/components/ui/SearchBar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "../chat/utils";
+import { SecondaryList, itemVariant, registerBuiltInVariants } from "@/frontend/shared/ui/layout/sidebar/secondary";
 import type { CallSummary } from "./mockData";
 
 type CallListViewVariant = "standalone" | "layout";
@@ -19,6 +15,8 @@ interface CallListViewProps {
   selectedCallId?: string;
   onCallSelect?: (callId: string) => void;
   variant?: CallListViewVariant;
+  loading?: boolean;
+  error?: string;
 }
 
 export function CallListView({
@@ -26,22 +24,51 @@ export function CallListView({
   selectedCallId,
   onCallSelect,
   variant = "standalone",
+  loading = false,
+  error,
 }: CallListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
 
-  const filteredCalls = useMemo(() => {
+  // Register built-in variants once
+  useEffect(() => {
+    registerBuiltInVariants();
+  }, []);
+
+  // Transform calls to SecondaryList items
+  const items = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
-    if (!normalized) return calls;
-    return calls.filter((call) => call.name.toLowerCase().includes(normalized));
-  }, [calls, searchQuery]);
+    const filtered = normalized
+      ? calls.filter((call) => call.name.toLowerCase().includes(normalized))
+      : calls;
 
-  const getIcon = (call: CallSummary) => {
-    if (call.status === "missed") return <PhoneOff className="h-4 w-4 text-red-500" />;
-    if (call.medium === "video") return <Video className="h-4 w-4 text-primary" />;
-    if (call.direction === "incoming") return <PhoneIncoming className="h-4 w-4 text-primary" />;
-    return <Phone className="h-4 w-4 text-primary" />;
-  };
+    return filtered.map((call) => {
+      // Map call direction to variant schema
+      let direction: "in" | "out" | "missed";
+      if (call.status === "missed") {
+        direction = "missed";
+      } else if (call.direction === "incoming") {
+        direction = "in";
+      } else {
+        direction = "out";
+      }
+
+      return {
+        id: call.id,
+        label: call.name,
+        variantId: itemVariant.call,
+        href: undefined, // Handled by onAction
+        params: {
+          direction,
+          medium: call.medium as "voice" | "video",
+          duration: call.duration,
+          timestamp: call.lastActivity,
+          avatarUrl: call.avatar,
+          group: false,
+          ongoing: false,
+        },
+      };
+    });
+  }, [calls, searchQuery]);
 
   const containerClasses = cn(
     "flex h-full flex-col",
@@ -52,21 +79,17 @@ export function CallListView({
 
   return (
     <div className={containerClasses}>
-      <div className="border-b border-border p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {isMobile && (
-              <SidebarTrigger className="text-muted-foreground transition hover:text-foreground" />
-            )}
-            <h1 className="text-xl font-semibold text-foreground">Calls</h1>
-          </div>
+      <div className="border-b border-border p-3 md:p-4">
+        <div className="mb-3 md:mb-4 flex items-center justify-between">
+          <h1 className="text-lg md:text-xl font-semibold text-foreground">Calls</h1>
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground transition hover:text-foreground"
+            className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground transition hover:text-foreground"
             type="button"
+            aria-label="Add new call"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
         </div>
         <SearchBar
@@ -76,58 +99,27 @@ export function CallListView({
         />
       </div>
 
-      <div className="border-b border-border p-4">
-        <h3 className="mb-2 text-sm font-medium text-muted-foreground">Favorites</h3>
-        <div className="text-sm text-muted-foreground">No favorite contacts</div>
+      <div className="border-b border-border p-3 md:p-4">
+        <h3 className="mb-2 text-xs md:text-sm font-medium text-muted-foreground">Favorites</h3>
+        <div className="text-xs md:text-sm text-muted-foreground">No favorite contacts</div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <ScrollArea className="h-full">
-          <div className="space-y-1 p-2">
-            {filteredCalls.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
-                {searchQuery ? "No calls found" : "No call history"}
-              </div>
-            ) : (
-              filteredCalls.map((call) => (
-                <button
-                  key={call.id}
-                  type="button"
-                  className={`flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-left transition ${
-                    call.id === selectedCallId ? "bg-accent" : "hover:bg-muted"
-                  }`}
-                  onClick={() => onCallSelect?.(call.id)}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                      {getInitials(call.name)}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="truncate font-medium text-foreground">{call.name}</h3>
-                      <span className="text-xs text-muted-foreground">{call.lastActivity}</span>
-                    </div>
-
-                    <div className="mt-1 flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        {getIcon(call)}
-                        <span className="text-sm text-muted-foreground">
-                          {call.direction === "incoming" ? "Incoming" : "Outgoing"}
-                          {call.medium === "video" ? " video" : ""} call
-                        </span>
-                      </div>
-                      {call.duration && (
-                        <span className="text-xs text-muted-foreground">{call.duration}</span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </ScrollArea>
+      <div className="flex-1 overflow-hidden">
+        <SecondaryList
+          items={items}
+          loading={loading}
+          error={error}
+          onAction={(id) => onCallSelect?.(id)}
+          emptyState={
+            <div className="flex flex-col items-center justify-center py-8 md:py-12 px-4 text-center">
+              <Phone className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-3 md:mb-4 opacity-50" />
+              <h3 className="text-base md:text-lg font-medium text-foreground">No calls yet</h3>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 max-w-[250px]">
+                {searchQuery ? "No calls found matching your search" : "Your call history will appear here"}
+              </p>
+            </div>
+          }
+        />
       </div>
     </div>
   );

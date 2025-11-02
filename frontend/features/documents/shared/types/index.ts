@@ -16,9 +16,20 @@ export interface DocumentRecord {
   _creationTime: number;
   lastModified?: number | null;
   author?: DocumentAuthor | null;
+  isPinned?: boolean;
+  isStarred?: boolean;
+  tags?: string[];
 }
 
 export type DocumentEditorMode = "block" | "tiptap";
+
+export type DocumentSortField = "created" | "modified" | "name";
+export type DocumentSortOrder = "asc" | "desc";
+
+export interface DocumentSortOptions {
+  field: DocumentSortField;
+  order: DocumentSortOrder;
+}
 
 export interface DocumentBrowserFilters {
   query?: string;

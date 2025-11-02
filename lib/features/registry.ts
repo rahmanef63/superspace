@@ -18,7 +18,6 @@ import membersConfig from '@/frontend/features/members/config'
 import aiConfig from '@/frontend/features/ai/config'
 import starredConfig from '@/frontend/features/starred/config'
 import friendsConfig from '@/frontend/features/friends/config'
-import pagesConfig from '@/frontend/features/pages/config'
 import archivedConfig from '@/frontend/features/archived/config'
 import databaseConfig from '@/frontend/features/database/config'
 import canvasConfig from '@/frontend/features/canvas/config'
@@ -50,7 +49,6 @@ const featureConfigs: FeatureConfig[] = [
   aiConfig,
   starredConfig,
   friendsConfig,
-  pagesConfig,
   archivedConfig,
   databaseConfig,
   canvasConfig,

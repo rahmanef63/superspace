@@ -14,9 +14,10 @@
 4. [Spacing & Layout](#spacing--layout)
 5. [Component Library](#component-library)
 6. [Layout Patterns](#layout-patterns)
-7. [Common Patterns](#common-patterns)
-8. [Best Practices](#best-practices)
-9. [Accessibility](#accessibility)
+7. [Variant Registry System](#variant-registry-system)
+8. [Common Patterns](#common-patterns)
+9. [Best Practices](#best-practices)
+10. [Accessibility](#accessibility)
 
 ---
 
@@ -273,6 +274,7 @@ Located in `frontend/shared/ui/components/`:
 - `SecondarySidebarLayout` - Nested sidebar layout
 - `SecondarySidebar` - Secondary navigation
 - `SecondarySidebarHeader` - Sidebar header
+- `SecondaryList` - Registry-based dynamic list renderer
 
 ---
 
@@ -363,6 +365,621 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
     </CardContent>
   </Card>
 </div>
+```
+
+---
+
+## Variant Registry System
+
+### Overview
+
+The **Variant Registry System** is an extensible pattern for rendering dynamic lists with different item types without hardcoding switch/case logic. It's particularly useful for secondary sidebar lists where items can be chats, calls, documents, menus, etc.
+
+**Key Benefits:**
+- **Type-Safe**: Zod schema validation for parameters
+- **Extensible**: Add custom variants without touching core code
+- **DRY**: Reusable across features
+- **Maintainable**: Each variant is self-contained
+
+### When to Use
+
+Use the variant registry pattern when:
+- You have lists with multiple item types (chat, call, doc, menu, etc.)
+- Each item type has different visual rendering and data requirements
+- You want to avoid long switch statements or if/else chains
+- You need runtime validation of item parameters
+- You want features to define custom item types
+
+**Don't use** for:
+- Simple homogeneous lists (use standard map)
+- Static menus (use regular components)
+- Single-type data tables
+
+### Core Concepts
+
+#### 1. Variant Definition
+
+Each variant defines its shape and rendering:
+
+```tsx
+import { createVariant, itemVariant } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { z } from 'zod'
+
+// Define parameter schema
+const MyParamsSchema = z.object({
+  summary: z.string().optional(),
+  count: z.number().optional(),
+})
+
+// Create variant
+export const myCustomVariant = createVariant({
+  id: "my-custom",
+  title: "My Custom Item Type",
+  description: "Description of what this variant renders",
+  paramsSchema: MyParamsSchema,
+  render: ({ item, params, onAction, utils, slots }) => (
+    <button className="w-full flex items-center gap-3 px-3 py-2.5">
+      <span className="text-sm font-medium">{item.label}</span>
+      {params.count && <Badge>{params.count}</Badge>}
+    </button>
+  ),
+})
+```
+
+#### 2. Registering Variants
+
+```tsx
+import { itemVariantRegistry, registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { myCustomVariant } from './variants'
+
+// Register built-in variants (chat, call, doc, menu, status, list)
+registerBuiltInVariants()
+
+// Register custom variant
+itemVariantRegistry.register(myCustomVariant)
+```
+
+#### 3. Using SecondaryList
+
+```tsx
+import { SecondaryList, itemVariant } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+const items = [
+  {
+    id: '1',
+    label: 'Team Chat',
+    variantId: itemVariant.chat,
+    params: {
+      summary: 'Last message preview',
+      lastAt: new Date().toISOString(),
+      unread: 3,
+    }
+  },
+  {
+    id: '2',
+    label: 'My Custom Item',
+    variantId: itemVariant.custom('my-custom'),
+    params: {
+      summary: 'Custom data',
+      count: 5,
+    }
+  },
+]
+
+<SecondaryList
+  items={items}
+  loading={false}
+  onAction={(id, action, extra) => {
+    console.log('Action:', action, 'on item:', id)
+  }}
+/>
+```
+
+### Built-in Variants
+
+#### 1. Chat Variant
+
+For conversation/chat items:
+
+```tsx
+{
+  variantId: itemVariant.chat,
+  params: {
+    summary: 'Message preview',
+    lastMessage: 'Alternative to summary',
+    lastAt: '2025-11-02T10:30:00Z',
+    avatarUrl: '/avatar.jpg',
+    ai: true,              // Show AI badge
+    unread: 3,             // Unread count
+    online: true,          // Online status
+  }
+}
+```
+
+**Renders:**
+- Avatar (circular)
+- Name with AI badge (if applicable)
+- Message preview
+- Timestamp
+- Unread badge (if count > 0)
+
+#### 2. Call Variant
+
+For call/meeting items:
+
+```tsx
+{
+  variantId: itemVariant.call,
+  params: {
+    direction: 'in',       // 'in' | 'out' | 'missed'
+    medium: 'voice',       // 'voice' | 'video'
+    duration: '5:32',      // Optional duration string
+    timestamp: '2 hours ago', // Or ISO date string
+    avatarUrl: '/avatar.jpg', // Optional avatar URL
+    group: false,          // Optional: is group call
+    ongoing: false,        // Optional: is call ongoing
+  }
+}
+```
+
+**Renders:**
+- Avatar with initials (or image if avatarUrl provided)
+- Name
+- Call icon (phone/video) with status
+- Call direction (Incoming/Outgoing/Missed)
+- Duration (if available)
+- Timestamp
+- Join button (if ongoing)
+
+**Schema Details:**
+- `direction`: "in" (incoming), "out" (outgoing), "missed" (missed call)
+- `medium`: "voice" or "video"
+- `duration`: Optional duration string (e.g., "5:32", "1:23:45")
+- `timestamp`: Time string or ISO date
+- `avatarUrl`: Optional URL for avatar image
+- `group`: Optional boolean for group calls
+- `ongoing`: Optional boolean, shows "Join" button if true
+
+#### 3. Doc Variant
+
+For documents/files:
+
+```tsx
+{
+  variantId: itemVariant.doc,
+  params: {
+    summary: 'Document description',
+    updatedAt: '2025-11-02T10:30:00Z',
+    fileType: 'pdf',       // 'pdf' | 'doc' | 'sheet' | 'image' | 'other'
+    size: '2.5 MB',        // Optional file size
+  }
+}
+```
+
+**Renders:**
+- File type icon
+- Document name
+- Summary/description
+- Last updated time
+- File size (if provided)
+
+#### 4. Menu Variant
+
+For hierarchical menu items:
+
+```tsx
+{
+  variantId: itemVariant.menu,
+  params: {
+    depth: 0,              // Indentation level (0, 1, 2)
+    hasChildren: true,     // Show chevron
+    expanded: false,       // Is expanded
+    count: 5,              // Optional item count
+  }
+}
+```
+
+**Renders:**
+- Indented based on depth
+- Icon
+- Label
+- Expand/collapse chevron
+- Optional count badge
+
+#### 5. Status Variant
+
+For status indicators:
+
+```tsx
+{
+  variantId: itemVariant.status,
+  params: {
+    status: 'online',      // 'online' | 'away' | 'busy' | 'offline'
+    lastSeen: '2 hours ago',
+    avatarUrl: '/avatar.jpg',
+  }
+}
+```
+
+**Renders:**
+- Avatar with status dot
+- Name
+- Status text
+- Last seen time
+
+#### 6. List Variant
+
+Generic list item:
+
+```tsx
+{
+  variantId: itemVariant.list,
+  params: {
+    description: 'Item description',
+    meta: 'Additional info',
+    showIcon: true,
+  }
+}
+```
+
+**Renders:**
+- Icon (if provided and showIcon true)
+- Label
+- Description
+- Meta info
+
+### Creating Custom Variants
+
+#### Step 1: Define Schema and Variant
+
+Create `frontend/features/{feature}/variants/myVariant.tsx`:
+
+```tsx
+import { createVariant } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { z } from 'zod'
+import { Badge } from '@/components/ui/badge'
+
+const MyVariantParams = z.object({
+  priority: z.enum(['low', 'medium', 'high']),
+  dueDate: z.string(),
+  completed: z.boolean(),
+})
+
+export const taskVariant = createVariant({
+  id: 'task',
+  title: 'Task Item',
+  description: 'Renders task items with priority and due date',
+  paramsSchema: MyVariantParams,
+  render: ({ item, params, onAction, utils }) => {
+    const priorityColors = {
+      low: 'bg-blue-100 text-blue-800',
+      medium: 'bg-yellow-100 text-yellow-800',
+      high: 'bg-red-100 text-red-800',
+    }
+
+    return (
+      <button
+        onClick={() => onAction?.(item.id, 'select')}
+        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-accent rounded-md"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-medium ${params.completed ? 'line-through text-muted-foreground' : ''}`}>
+              {item.label}
+            </span>
+            <Badge className={priorityColors[params.priority]} variant="outline">
+              {params.priority}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Due: {utils.formatTime(params.dueDate)}
+          </p>
+        </div>
+      </button>
+    )
+  },
+})
+```
+
+#### Step 2: Register Variant
+
+In your feature initialization:
+
+```tsx
+import { itemVariantRegistry } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { taskVariant } from './variants/myVariant'
+
+// Register once (e.g., in feature config or main component)
+itemVariantRegistry.register(taskVariant)
+```
+
+#### Step 3: Use in Components
+
+```tsx
+import { SecondaryList, itemVariant } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+const tasks = [
+  {
+    id: '1',
+    label: 'Complete design system docs',
+    variantId: itemVariant.custom('task'),
+    params: {
+      priority: 'high',
+      dueDate: new Date().toISOString(),
+      completed: false,
+    }
+  },
+]
+
+<SecondaryList items={tasks} />
+```
+
+### Advanced Features
+
+#### Custom Slots
+
+Inject additional content at specific positions:
+
+```tsx
+<SecondaryList
+  items={items}
+  slots={{
+    leading: <Badge>Premium</Badge>,
+    trailing: <Button size="sm">Action</Button>,
+    badge: <span className="bg-red-500 text-white px-2 py-0.5 rounded">New</span>,
+  }}
+/>
+```
+
+#### Custom Utilities
+
+Override default utility functions:
+
+```tsx
+<SecondaryList
+  items={items}
+  utils={{
+    formatTime: (iso) => new Intl.DateTimeFormat('id-ID').format(new Date(iso)),
+    truncate: (str, len) => str.length > len ? str.slice(0, len) + '...' : str,
+  }}
+/>
+```
+
+#### Empty & Error States
+
+```tsx
+<SecondaryList
+  items={items}
+  loading={isLoading}
+  error={error}
+  emptyState={
+    <div className="text-center py-8">
+      <p className="text-sm text-muted-foreground">No items found</p>
+    </div>
+  }
+/>
+```
+
+#### Custom Unknown Renderer
+
+Handle items with unregistered variants:
+
+```tsx
+<SecondaryList
+  items={items}
+  renderUnknown={(ctx) => (
+    <div className="px-3 py-2 text-sm text-destructive">
+      Unknown variant: {ctx.item.variantId}
+    </div>
+  )}
+/>
+```
+
+### Migration from Old Pattern
+
+#### Before (Hardcoded Switch)
+
+```tsx
+// ❌ Old pattern: Switch statement
+{items.map(item => {
+  switch (item.type) {
+    case 'chat':
+      return <ChatItem key={item.id} {...item} />
+    case 'call':
+      return <CallItem key={item.id} {...item} />
+    case 'doc':
+      return <DocItem key={item.id} {...item} />
+    default:
+      return null
+  }
+})}
+```
+
+#### After (Registry Pattern)
+
+```tsx
+// ✅ New pattern: Registry-based
+import { SecondaryList, itemVariant, registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+// One-time registration
+registerBuiltInVariants()
+
+// Transform data
+const items = rawItems.map(item => ({
+  id: item.id,
+  label: item.name,
+  variantId: itemVariant[item.type], // chat, call, doc, etc.
+  params: item.metadata,
+}))
+
+// Render
+<SecondaryList items={items} onAction={handleAction} />
+```
+
+### Best Practices
+
+#### 1. Type Safety
+
+Always use Zod schemas for params:
+
+```tsx
+// ✅ DO: Strong typing with Zod
+const ParamsSchema = z.object({
+  count: z.number().min(0),
+  status: z.enum(['active', 'inactive']),
+})
+
+// ❌ DON'T: Any type
+paramsSchema: z.any()
+```
+
+#### 2. Consistent Rendering
+
+Keep visual consistency across variants:
+
+```tsx
+// ✅ DO: Consistent padding, gaps, and hover states
+<button className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-accent rounded-md">
+
+// ❌ DON'T: Inconsistent spacing
+<div className="p-2">  // Different from other variants
+```
+
+#### 3. Accessible Markup
+
+Use semantic HTML and ARIA attributes:
+
+```tsx
+// ✅ DO: Proper button with aria-label
+<button
+  aria-label={`Select ${item.label}`}
+  onClick={() => onAction?.(item.id, 'select')}
+>
+```
+
+#### 4. Error Handling
+
+Validate params in render function if needed:
+
+```tsx
+render: ({ item, params }) => {
+  // Params are already validated by Zod schema
+  // But you can add runtime checks if needed
+  if (!params.count) {
+    return <div>Invalid params</div>
+  }
+
+  return <div>{/* Normal render */}</div>
+}
+```
+
+#### 5. Performance
+
+For large lists (>100 items), consider virtualization:
+
+```tsx
+import { Virtuoso } from 'react-virtuoso'
+
+<Virtuoso
+  data={items}
+  itemContent={(index, item) => {
+    const def = itemVariantRegistry.get(item.variantId)
+    return def?.render({ item, params: item.params, ... })
+  }}
+/>
+```
+
+### Examples
+
+#### Chat Feature Example
+
+```tsx
+'use client'
+
+import { useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { SecondaryList, itemVariant, registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { SecondarySidebarLayout } from '@/frontend/shared/ui/layout/sidebar/secondary'
+
+// Register variants once
+registerBuiltInVariants()
+
+export default function ChatPage() {
+  const conversations = useQuery(api.chat.listConversations)
+
+  const items = conversations?.map(conv => ({
+    id: conv._id,
+    label: conv.name,
+    variantId: itemVariant.chat,
+    href: `/chat/${conv._id}`,
+    active: conv.isActive,
+    params: {
+      summary: conv.lastMessage,
+      lastAt: conv.updatedAt,
+      avatarUrl: conv.avatar,
+      ai: conv.isAI,
+      unread: conv.unreadCount,
+      online: conv.isOnline,
+    }
+  })) ?? []
+
+  return (
+    <SecondarySidebarLayout
+      headerProps={{ title: 'Messages' }}
+      sidebar={
+        <SecondaryList
+          items={items}
+          loading={conversations === undefined}
+          onAction={(id, action) => {
+            if (action === 'select') {
+              router.push(`/chat/${id}`)
+            }
+          }}
+        />
+      }
+    >
+      {/* Chat content */}
+    </SecondarySidebarLayout>
+  )
+}
+```
+
+#### Menu Store Example
+
+```tsx
+import { SecondaryList, itemVariant, registerBuiltInVariants } from '@/frontend/shared/ui/layout/sidebar/secondary'
+import { menuVariant } from './variants/menuVariant'
+
+// Register variants
+registerBuiltInVariants()
+itemVariantRegistry.register(menuVariant)
+
+const items = [
+  {
+    id: '1',
+    label: 'Products',
+    icon: ShoppingBag,
+    variantId: itemVariant.menu,
+    params: {
+      depth: 0,
+      hasChildren: true,
+      expanded: true,
+      count: 12,
+    }
+  },
+  {
+    id: '1-1',
+    label: 'Electronics',
+    variantId: itemVariant.menu,
+    params: {
+      depth: 1,
+      hasChildren: false,
+      count: 5,
+    }
+  },
+]
+
+<SecondaryList items={items} />
 ```
 
 ---
@@ -691,18 +1308,36 @@ All text must meet WCAG AA contrast requirements:
 
 When creating a new feature UI:
 
+### Layout & Structure
 - [ ] Use `PageContainer` and `PageHeader` for consistent layout
 - [ ] Import components from `@/components/ui/` (absolute imports)
+- [ ] For secondary navigation, use `SecondarySidebarLayout`
+- [ ] For dynamic lists with multiple item types, use `SecondaryList` with variant registry
+
+### Styling & Design
 - [ ] Use design tokens (no hardcoded colors)
+- [ ] Ensure responsive design (mobile-first)
+- [ ] Consistent spacing (space-y-6, gap-4, etc.)
+
+### States & Validation
 - [ ] Implement loading states with `Skeleton`
 - [ ] Implement error states with `Alert`
 - [ ] Implement empty states
 - [ ] Add proper TypeScript types
-- [ ] Ensure responsive design (mobile-first)
+
+### Variant Registry (if using SecondaryList)
+- [ ] Register built-in variants with `registerBuiltInVariants()`
+- [ ] Create custom variants if needed (with Zod schema)
+- [ ] Use branded `variantId` types (e.g., `itemVariant.chat`)
+- [ ] Validate params with Zod schemas
+- [ ] Handle unknown variants with `renderUnknown`
+
+### Accessibility
 - [ ] Test keyboard navigation
 - [ ] Verify focus states are visible
 - [ ] Check color contrast (WCAG AA)
 - [ ] Add proper ARIA labels for icon buttons
+- [ ] Use semantic HTML (button, nav, article, etc.)
 
 ---
 

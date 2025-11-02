@@ -47,6 +47,14 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
     BlockNoteSchema.create()
   );
 
+  // Auto-initialize document if not exists
+  useEffect(() => {
+    if (!sync.isLoading && !sync.editor && document) {
+      // Document exists but prosemirror doc doesn't - auto-initialize
+      sync.create({ type: "doc", content: [] });
+    }
+  }, [sync.isLoading, sync.editor, sync, document]);
+
   useEffect(() => {
     if (document) {
       setTitleValue(document.title);
@@ -208,12 +216,10 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <button
-                onClick={() => sync.create({ type: "doc", content: [] })}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Initialize Document
-              </button>
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
+                <p className="text-gray-500">Initializing document...</p>
+              </div>
             </div>
           )}
         </div>

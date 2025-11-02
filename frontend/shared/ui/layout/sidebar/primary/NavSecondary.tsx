@@ -6,6 +6,7 @@ import { IconBrightness } from "@tabler/icons-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { ModeToggle } from "@/components/mode-toggle"
 import Link from "next/link"
@@ -30,12 +31,21 @@ export function NavSecondary({
 }: {
   items?: SecondaryItem[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Handler to close mobile sidebar when menu is clicked
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const secondaryMenu = (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild>
-            <Link href={item.url}>
+            <Link href={item.url} onClick={handleMenuClick}>
               {item.icon && <item.icon />}
               <span>{item.title}</span>
             </Link>

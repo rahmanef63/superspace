@@ -1,4 +1,5 @@
-import { FileText, Trash2, Edit } from "lucide-react";
+import { FileText, Trash2, Edit, Pin, Star, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { ViewConfig, RowAction } from "@/frontend/shared/ui";
 import type { DocumentRecord } from "../types";
 import { formatRelativeTime } from "../utils";
@@ -6,14 +7,15 @@ import { formatRelativeTime } from "../utils";
 export interface DocumentViewConfigOptions {
   onOpen?: (document: DocumentRecord) => void;
   onDelete?: (document: DocumentRecord) => Promise<void> | void;
+  onPin?: (document: DocumentRecord) => Promise<void> | void;
+  onStar?: (document: DocumentRecord) => Promise<void> | void;
+  onShowDetails?: (document: DocumentRecord) => void;
 }
 
 type Action = RowAction<DocumentRecord>;
 
-const buildActions = (
-  onOpen?: DocumentViewConfigOptions["onOpen"],
-  onDelete?: DocumentViewConfigOptions["onDelete"]
-): Action[] => {
+const buildActions = (options: DocumentViewConfigOptions): Action[] => {
+  const { onOpen, onDelete, onPin, onStar, onShowDetails } = options;
   const actions: Action[] = [];
 
   if (onOpen) {
@@ -23,6 +25,39 @@ const buildActions = (
       icon: <Edit className="w-4 h-4" />,
       onClick: (doc: DocumentRecord) => {
         onOpen(doc);
+      },
+    });
+  }
+
+  if (onPin) {
+    actions.push({
+      id: "pin",
+      label: (doc) => (doc.isPinned ? "Unpin" : "Pin"),
+      icon: <Pin className="w-4 h-4" />,
+      onClick: async (doc: DocumentRecord) => {
+        await onPin(doc);
+      },
+    });
+  }
+
+  if (onStar) {
+    actions.push({
+      id: "star",
+      label: (doc) => (doc.isStarred ? "Unstar" : "Star"),
+      icon: <Star className="w-4 h-4" />,
+      onClick: async (doc: DocumentRecord) => {
+        await onStar(doc);
+      },
+    });
+  }
+
+  if (onShowDetails) {
+    actions.push({
+      id: "details",
+      label: "See Details",
+      icon: <Info className="w-4 h-4" />,
+      onClick: (doc: DocumentRecord) => {
+        onShowDetails(doc);
       },
     });
   }
@@ -44,8 +79,7 @@ const buildActions = (
 export const createDocumentViewConfig = (
   options: DocumentViewConfigOptions = {}
 ): ViewConfig<DocumentRecord> => {
-  const { onOpen, onDelete } = options;
-  const actions = buildActions(onOpen, onDelete);
+  const actions = buildActions(options);
 
   return {
     getId: (doc) => String(doc._id),
@@ -54,6 +88,20 @@ export const createDocumentViewConfig = (
         id: "title",
         header: "Title",
         accessor: (doc) => doc.title,
+        cell: (doc) => (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{doc.title}</span>
+            {doc.isPinned && (
+              <Badge variant="secondary" className="text-xs">
+                <Pin className="w-3 h-3 mr-1" />
+                Pinned
+              </Badge>
+            )}
+            {doc.isStarred && (
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+            )}
+          </div>
+        ),
       },
       {
         id: "author",
@@ -64,6 +112,11 @@ export const createDocumentViewConfig = (
         id: "visibility",
         header: "Visibility",
         accessor: (doc) => (doc.isPublic ? "Public" : "Private"),
+        cell: (doc) => (
+          <Badge variant={doc.isPublic ? "default" : "secondary"}>
+            {doc.isPublic ? "Public" : "Private"}
+          </Badge>
+        ),
         hideOnCard: true,
       },
       {
@@ -80,14 +133,22 @@ export const createDocumentViewConfig = (
       subtitle: (doc) =>
         doc.author?.name ? `by ${doc.author.name}` : undefined,
       avatar: () => (
-        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-          <FileText className="w-4 h-4 text-blue-600" />
+        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+          <FileText className="w-4 h-4 text-primary" />
         </div>
       ),
       extra: (doc) => (
-        <span className="text-xs text-gray-500">
-          {formatRelativeTime(doc.lastModified ?? doc._creationTime)}
-        </span>
+        <div className="flex items-center gap-2">
+          {doc.isPinned && (
+            <Pin className="w-3 h-3 text-muted-foreground" />
+          )}
+          {doc.isStarred && (
+            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+          )}
+          <span className="text-xs text-muted-foreground">
+            {formatRelativeTime(doc.lastModified ?? doc._creationTime)}
+          </span>
+        </div>
       ),
     },
     details: {

@@ -14,6 +14,10 @@ export function CallsView() {
   const isMobile = useIsMobile();
   const { setActiveTab } = useWhatsAppStore();
 
+  // Simulate loading state (replace with real data fetching later)
+  const [loading] = useState(false);
+  const [error] = useState<string>();
+
   const selectedCall = useMemo(() => getCallDetail(selectedCallId), [selectedCallId]);
 
   const handleBack = () => {
@@ -28,31 +32,30 @@ export function CallsView() {
     if (selectedCall) {
       return (
         <div className="flex h-screen flex-col bg-background">
-          <TopBar
-            title={selectedCall.name}
-            subtitle={selectedCall.phoneNumber}
-            showSearch={false}
-            onMenuClick={handleBack}
-            contact={{
-              id: selectedCall.id,
-              name: selectedCall.name,
-              avatar: selectedCall.avatar,
-              phoneNumber: selectedCall.phoneNumber,
-            }}
-            settingsSlug="calls"
+          <CallDetailView 
+            call={selectedCall} 
+            onBack={handleBack}
+            showMobileHeader={true}
           />
-          <CallDetailView call={selectedCall} />
         </div>
       );
     }
 
     return (
       <div className="flex h-screen flex-col bg-background">
-        <TopBar title="Calls" showSearch onMenuClick={handleBack} showActions={false} settingsSlug="calls" />
+        {/* <TopBar 
+          title="Calls" 
+          showSearch 
+          onMenuClick={handleBack} 
+          showActions={false} 
+          settingsSlug="calls" 
+        /> */}
         <CallListView
           calls={CALL_SUMMARIES}
           selectedCallId={selectedCallId}
           onCallSelect={setSelectedCallId}
+          loading={loading}
+          error={error}
         />
       </div>
     );
@@ -67,6 +70,8 @@ export function CallsView() {
           selectedCallId={selectedCallId}
           onCallSelect={setSelectedCallId}
           variant="layout"
+          loading={loading}
+          error={error}
         />
       }
       contentClassName="flex h-full flex-col bg-background"

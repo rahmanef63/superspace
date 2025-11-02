@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { IconPicker } from "@/frontend/shared/ui";
 import { useDatabaseMutations } from "../hooks/useDatabase";
 
 export interface CreateDatabaseDialogProps {
@@ -34,7 +35,8 @@ export function CreateDatabaseDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [emoji, setEmoji] = useState("");
+  const [icon, setIcon] = useState("Database");
+  const [color, setColor] = useState("default");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { createTable } = useDatabaseMutations();
@@ -52,7 +54,8 @@ export function CreateDatabaseDialog({
   const resetForm = () => {
     setName("");
     setDescription("");
-    setEmoji("");
+    setIcon("Database");
+    setColor("default");
     setError(null);
   };
 
@@ -65,11 +68,14 @@ export function CreateDatabaseDialog({
     setError(null);
 
     try {
+      // Store icon as JSON string to preserve both icon name and color
+      const iconData = JSON.stringify({ name: icon, color });
+
       const tableId = await createTable({
         workspaceId,
         name: name.trim(),
         description: description.trim() || undefined,
-        icon: emoji.trim() || undefined,
+        icon: iconData,
       });
 
       resetForm();
@@ -109,28 +115,37 @@ export function CreateDatabaseDialog({
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Name
+              </label>
               <Input
-                className="w-20 text-center text-2xl"
-                value={emoji}
-                maxLength={2}
-                onChange={(event) => setEmoji(event.target.value)}
+                autoFocus
+                placeholder="Product roadmap"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && name.trim()) {
+                    event.preventDefault();
+                    void handleSubmit();
+                  }
+                }}
               />
-              <div className="flex-1">
-                <label className="text-sm font-medium text-muted-foreground">
-                  Name
-                </label>
-                <Input
-                  autoFocus
-                  placeholder="Product roadmap"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && name.trim()) {
-                      event.preventDefault();
-                      void handleSubmit();
-                    }
-                  }}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Icon & Color
+              </label>
+              <div className="mt-2">
+                <IconPicker
+                  icon={icon}
+                  color={color}
+                  onIconChange={setIcon}
+                  onColorChange={setColor}
+                  showColor={true}
+                  showBackground={false}
+                  className="w-full"
                 />
               </div>
             </div>

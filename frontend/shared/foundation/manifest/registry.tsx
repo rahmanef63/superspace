@@ -67,7 +67,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Overview",
     description: "Dashboard overview with analytics and insights",
     icon: Home,
-    component: lazy(() => import("@/frontend/features/overview/page")),
+    component: lazy(() => import("@/frontend/features/overview/Page")),
   },
   {
     id: "chat",
@@ -75,7 +75,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Chat",
     description: "Chat conversations",
     icon: MessageCircle,
-    component: lazy(() => import("@/frontend/features/chat/page")),
+    component: lazy(() => import("@/frontend/features/chat/Page")),
   },
   {
     id: "calls",
@@ -124,14 +124,6 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage your friends and connections",
     icon: Heart,
     component: lazy(() => import("@/frontend/features/friends/page")),
-  },
-  {
-    id: "pages",
-    componentId: "PagesPage",
-    title: "Pages",
-    description: "Notion-like pages for documentation",
-    icon: FileText,
-    component: lazy(() => import("@/frontend/features/pages/page")),
   },
   {
     id: "archived",

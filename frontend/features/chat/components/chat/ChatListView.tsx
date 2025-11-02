@@ -10,7 +10,7 @@ import { ChatListItem } from "./ChatListItem"
 import { SearchBar } from "../ui/SearchBar"
 import { useWhatsAppStore } from "../../shared/hooks"
 import { PLACEHOLDERS } from "../../shared/constants"
-import type { Chat } from "@/frontend/shared/communications/chat/types/chat"
+import type { Chat } from "@/frontend/features/chat/shared/types/core"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -56,7 +56,6 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {isMobile && <SidebarTrigger className="text-muted-foreground hover:text-foreground" />}
             <h1 className="text-xl font-semibold text-foreground">{showArchived ? "Archived" : "Chats"}</h1>
           </div>
           {!showArchived && (

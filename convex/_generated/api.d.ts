@@ -60,6 +60,9 @@ import type * as features_cms_lite_navigation_api_actions from "../features/cms_
 import type * as features_cms_lite_navigation_api_mutations from "../features/cms_lite/navigation/api/mutations.js";
 import type * as features_cms_lite_navigation_api_queries from "../features/cms_lite/navigation/api/queries.js";
 import type * as features_cms_lite_navigation_types from "../features/cms_lite/navigation/types.js";
+import type * as features_cms_lite_pages_api_internalMutations from "../features/cms_lite/pages/api/internalMutations.js";
+import type * as features_cms_lite_pages_api_mutations from "../features/cms_lite/pages/api/mutations.js";
+import type * as features_cms_lite_pages_api_queries from "../features/cms_lite/pages/api/queries.js";
 import type * as features_cms_lite_permissions_api_queries from "../features/cms_lite/permissions/api/queries.js";
 import type * as features_cms_lite_portfolio_api_actions from "../features/cms_lite/portfolio/api/actions.js";
 import type * as features_cms_lite_portfolio_api_mutations from "../features/cms_lite/portfolio/api/mutations.js";
@@ -88,6 +91,8 @@ import type * as features_cms_lite_storage_api_queries from "../features/cms_lit
 import type * as features_cms_lite_users_api_actions from "../features/cms_lite/users/api/actions.js";
 import type * as features_cms_lite_users_api_mutations from "../features/cms_lite/users/api/mutations.js";
 import type * as features_cms_lite_users_api_queries from "../features/cms_lite/users/api/queries.js";
+import type * as features_cms_lite_website_settings_api_mutations from "../features/cms_lite/website_settings/api/mutations.js";
+import type * as features_cms_lite_website_settings_api_queries from "../features/cms_lite/website_settings/api/queries.js";
 import type * as features_cms_lite_wishlist_api_actions from "../features/cms_lite/wishlist/api/actions.js";
 import type * as features_cms_lite_wishlist_api_mutations from "../features/cms_lite/wishlist/api/mutations.js";
 import type * as features_cms_lite_wishlist_api_queries from "../features/cms_lite/wishlist/api/queries.js";
@@ -227,6 +232,9 @@ declare const fullApi: ApiFromModules<{
   "features/cms_lite/navigation/api/mutations": typeof features_cms_lite_navigation_api_mutations;
   "features/cms_lite/navigation/api/queries": typeof features_cms_lite_navigation_api_queries;
   "features/cms_lite/navigation/types": typeof features_cms_lite_navigation_types;
+  "features/cms_lite/pages/api/internalMutations": typeof features_cms_lite_pages_api_internalMutations;
+  "features/cms_lite/pages/api/mutations": typeof features_cms_lite_pages_api_mutations;
+  "features/cms_lite/pages/api/queries": typeof features_cms_lite_pages_api_queries;
   "features/cms_lite/permissions/api/queries": typeof features_cms_lite_permissions_api_queries;
   "features/cms_lite/portfolio/api/actions": typeof features_cms_lite_portfolio_api_actions;
   "features/cms_lite/portfolio/api/mutations": typeof features_cms_lite_portfolio_api_mutations;
@@ -255,6 +263,8 @@ declare const fullApi: ApiFromModules<{
   "features/cms_lite/users/api/actions": typeof features_cms_lite_users_api_actions;
   "features/cms_lite/users/api/mutations": typeof features_cms_lite_users_api_mutations;
   "features/cms_lite/users/api/queries": typeof features_cms_lite_users_api_queries;
+  "features/cms_lite/website_settings/api/mutations": typeof features_cms_lite_website_settings_api_mutations;
+  "features/cms_lite/website_settings/api/queries": typeof features_cms_lite_website_settings_api_queries;
   "features/cms_lite/wishlist/api/actions": typeof features_cms_lite_wishlist_api_actions;
   "features/cms_lite/wishlist/api/mutations": typeof features_cms_lite_wishlist_api_mutations;
   "features/cms_lite/wishlist/api/queries": typeof features_cms_lite_wishlist_api_queries;

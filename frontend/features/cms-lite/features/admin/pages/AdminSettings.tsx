@@ -34,13 +34,13 @@ export default function AdminSettings() {
   useEffect(() => {
     logger.load("settings", "database");
     backend.settings.get()
-      .then((res) => {
-        if (res.settings) {
+      .then((res: any) => {
+        if (res.settings && typeof res.settings === 'object' && Object.keys(res.settings).length > 0) {
           logger.loaded("settings", "database");
-          setSettings(res.settings);
+          setSettings(res.settings as Settings);
           setForm({
-            brandName: res.settings.brandName,
-            defaultLocale: res.settings.defaultLocale,
+            brandName: res.settings.brandName || "Your Brand",
+            defaultLocale: res.settings.defaultLocale || "id",
             heroImage: res.settings.heroImage || "",
             phone: res.settings.phone || "",
             email: res.settings.email || "",

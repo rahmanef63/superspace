@@ -32,14 +32,14 @@ function SecondarySidebarLayoutBase({
   const resolvedSidebar = sidebar ?? (sidebarProps ? <SecondarySidebar {...sidebarProps} /> : null);
 
   return (
-    <div className={cn("flex min-h-0 flex-col", className)}>
+    <div className={cn("flex h-full min-h-0 flex-col", className)}>
       {resolvedHeader ? (
         <header className={cn("shrink-0", headerClassName)}>
           {resolvedHeader}
         </header>
       ) : null}
 
-      <div className={cn("flex min-h-0 flex-1 overflow-hidden", bodyClassName)}>
+      <div className={cn("flex min-h-0 flex-1", bodyClassName)}>
         {resolvedSidebar ? (
           <aside
             className={cn(
@@ -51,7 +51,7 @@ function SecondarySidebarLayoutBase({
           </aside>
         ) : null}
 
-        <main className={cn("flex-1 min-h-0", contentClassName)}>
+        <main className={cn("flex-1 min-h-0 overflow-y-auto", contentClassName)}>
           {children}
         </main>
       </div>

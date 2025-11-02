@@ -21,7 +21,7 @@ foreach ($file in $files) {
         $content = Get-Content $filePath -Raw
         
         # Replace wrong imports
-        $content = $content -replace 'import \{ toast \} from "@/components/ui/use-toast";', 'import { useToast } from "@/hooks/use-toast";'
+        $content = $content -replace 'import \{ toast \} from "@/hooks/use-toast";', 'import { useToast } from "@/hooks/use-toast";'
         $content = $content -replace "import \{ toast \} from '@/components/ui/use-toast';", "import { useToast } from '@/hooks/use-toast';"
         
         # Save the file

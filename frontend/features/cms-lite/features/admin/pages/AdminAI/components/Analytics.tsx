@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useBackend } from "../../../shared/hooks/useBackend";
-import { Loading } from "../../../shared/components/Loading";
-import { ErrorState } from "../../../shared/components/ErrorState";
-import { formatDistanceToNow } from "../../../shared/utils/format";
+import { useBackend } from "../../../../../shared/hooks/useBackend";
+import { LoadingSpinner as Loading } from "../../../../../shared/components/Loading";
+import { ErrorState } from "../../../../../shared/components/ErrorState";
+import { formatDistanceToNow } from "../../../../../shared/utils/format";
 
 export default function AdminAIAnalytics() {
   const backend = useBackend();

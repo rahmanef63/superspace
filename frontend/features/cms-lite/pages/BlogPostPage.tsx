@@ -1,22 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useBackend } from "../shared/hooks/useBackend";
+import type { Post } from "../types/cms-types";
 
 import { ArrowLeft } from "lucide-react";
 import { ShareButtons } from "../shared/components/ShareButtons";
 import { Comments } from "../shared/components/Comments";
 import ContentRecommendations from "../shared/components/ContentRecommendations";
 
-export default function BlogPostPage() {
-  const { slug } = useParams<{ slug: string }>();
+interface BlogPostPageProps {
+  slug?: string; // Can be passed as prop from dynamic route
+}
+
+export default function BlogPostPage({ slug: slugProp }: BlogPostPageProps = {}) {
+  const pathname = usePathname();
   const { locale } = useLanguage();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Extract slug from pathname if not provided as prop
+  const slug = slugProp || pathname?.split('/').pop();
 
   useEffect(() => {
     if (slug) {
@@ -46,7 +55,7 @@ export default function BlogPostPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-xl mb-4">Post not found</p>
-            <Link to="/blog" className="text-primary hover:underline">
+            <Link href="/blog" className="text-primary hover:underline">
               ← Back to blog
             </Link>
           </div>
@@ -61,7 +70,7 @@ export default function BlogPostPage() {
       <Navbar />
       
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Link to="/blog" className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground mb-8">
+        <Link href="/blog" className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground mb-8">
           <ArrowLeft className="w-4 h-4" />
           Back to blog
         </Link>
@@ -86,7 +95,7 @@ export default function BlogPostPage() {
           <ShareButtons
             url={`/blog/${post.slug}`}
             title={post.title}
-            description={post.excerpt}
+            description={post.excerpt ?? undefined}
             className="mb-8"
           />
           
@@ -94,7 +103,7 @@ export default function BlogPostPage() {
             <p className="whitespace-pre-wrap">{post.body}</p>
           </div>
 
-          <Comments postId={post.id} />
+          <Comments postId={Number(post.id)} />
 
           <ContentRecommendations 
             contentId={String(post.id)} 

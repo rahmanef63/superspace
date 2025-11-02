@@ -1,6 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
+import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer"
 import { OverviewView } from "./OverviewView"
 
 interface OverviewPageProps {
@@ -9,8 +10,8 @@ interface OverviewPageProps {
 
 export default function OverviewPage({ workspaceId }: OverviewPageProps) {
   return (
-    <div className="h-full">
+    <PageContainer maxWidth="full" padding={true}>
       <OverviewView workspaceId={workspaceId} />
-    </div>
+    </PageContainer>
   )
 }

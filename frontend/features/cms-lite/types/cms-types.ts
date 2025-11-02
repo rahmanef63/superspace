@@ -119,7 +119,9 @@ export interface Product {
   compareAtPrice?: number;
   currency?: string;
   imageUrl?: string;
+  coverImage?: string; // Added for compatibility
   images?: string[];
+  paymentLink?: string; // Added for external payment
   category?: string;
   tags?: string[];
   stock?: number;

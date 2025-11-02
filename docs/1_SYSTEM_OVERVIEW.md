@@ -2,115 +2,163 @@
 
 > **Gambaran besar arsitektur, konsep, dan alur kerja SuperSpace**
 
+**Last Updated:** 2025-11-01
+
 ---
 
 ## 🏗️ Arsitektur Sistem
 
-SuperSpace menggunakan **Truly Modular Feature System** dengan **Auto-Discovery** untuk zero-config feature management.
+SuperSpace menggunakan **Truly Modular Feature System** dengan **Nested Features & Shared Components** untuk maksimum fleksibilitas dan reusability.
 
-### ✨ New Architecture (Auto-Discovery System)
+### ✨ Modular Architecture
 
-**Status:** ✅ **IMPLEMENTED** - Sistem baru sudah aktif dan production-ready!
+**Status:** ✅ **PRODUCTION READY** - Fully implemented with nested features support!
 
 ```
-┌──────────────────────────────────────────────────────┐
-│     frontend/features/*/config.ts                    │
-│     (Per-feature config - Auto-discovered!)          │
-└─────────────────────┬────────────────────────────────┘
-                      │
-         ┌────────────┴─────────────┐
-         │ lib/features/registry.ts │
-         │   (Auto-discovery)       │
-         └────────────┬─────────────┘
-                      │
-      ┌───────────────┴───────────────┐
-      │                               │
-      ▼                               ▼
-┌─────────────────┐          ┌──────────────────┐
-│ Convex Backend  │          │    Frontend      │
-│                 │          │                  │
-│ • menu_manifest │          │ • manifest.tsx   │
-│ • catalog       │          │ • lazy imports   │
-└─────────────────┘          └──────────────────┘
-      │                               │
-      └───────────────┬───────────────┘
-                      │
-            ┌─────────┴──────────┐
-            │   Workspace UI     │
-            │   with Menus       │
-            └────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│     frontend/features/*/config.ts                        │
+│     (Per-feature config - Auto-discovered!)              │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+        ┌────────────┴─────────────┐
+        │ lib/features/registry.ts │
+        │   (Auto-discovery)       │
+        └────────────┬─────────────┘
+                     │
+     ┌───────────────┴───────────────┐
+     │                               │
+     ▼                               ▼
+┌────────────────┐          ┌────────────────┐
+│ Convex Backend │          │    Frontend    │
+│                │          │                │
+│ • queries      │          │ • components   │
+│ • mutations    │          │ • views        │
+│ • features/    │          │ • features/    │
+│ • shared/      │          │ • shared/      │
+└────────────────┘          └────────────────┘
+     │                               │
+     └───────────────┬───────────────┘
+                     │
+          ┌──────────┴──────────┐
+          │   Workspace UI      │
+          │   with Features     │
+          └─────────────────────┘
 ```
 
-### 🎯 Key Benefits
+---
 
-**✅ 100% Modular**
-- Each feature is completely self-contained in its own folder
-- Add feature = create `config.ts` in feature folder (that's it!)
-- No need to edit central files
+## 🎯 Key Concepts
 
-**✅ Zero Manual Registration**
-- Auto-discovery via `import.meta.glob` (browser) and `glob` (Node scripts)
-- Add 29 features discovered automatically
-- No imports, no manual config
+### 1. Modular Feature Structure
 
-**✅ Type-Safe & Validated**
-- Single schema via `defineFeature()` helper
-- Zod validation for runtime safety
-- TypeScript for compile-time safety
+**Setiap feature bisa memiliki:**
+- **config.ts** - Single source of truth
+- **components/** - UI components
+- **views/** - Page components
+- **hooks/** - Custom hooks
+- **types/** - TypeScript types
+- **settings/** - Feature-specific settings
+- **features/** - Sub-features (nested)
+- **shared/** - Shared dalam feature
 
-**✅ DRY (Don't Repeat Yourself)**
-- No duplication between files
-- Single source of truth per feature
-- Auto-generated aggregations
+**Example Structure:**
+```
+frontend/features/{feature-slug}/
+├── config.ts              # Feature config (SSOT)
+├── components/            # Main components
+├── contexts/              # React contexts
+├── hooks/                 # Custom hooks
+├── settings/              # Feature settings
+├── features/              # 🎯 Sub-features
+│   └── {sub-feature}/     #    Nested feature
+│       ├── components/
+│       └── pages/
+└── shared/                # 🎯 Shared in feature
+    ├── components/
+    ├── hooks/
+    └── utils/
+```
 
-### Komponen Utama
+### 2. Nested Features Pattern
 
-#### 1. **Feature Config (Per Feature)**
-
-Each feature has `frontend/features/{slug}/config.ts`:
+Features bisa punya **sub-features** dalam folder `features/`:
 
 ```typescript
-import { defineFeature } from '@/lib/features/defineFeature'
+// Parent feature
+frontend/features/{feature-slug}/config.ts
 
-export default defineFeature({
-  // Basic Info
-  id: 'cms',
-  name: 'CMS Builder',
-  description: 'Build and manage your content',
-
-  // UI Config
-  ui: {
-    icon: 'Layout',              // Lucide React icon
-    path: '/dashboard/cms',
-    component: 'CMSBuilderPage',
-    category: 'creativity',
-    order: 20,
-  },
-
-  // Technical Config
-  technical: {
-    featureType: 'optional',
-    hasUI: true,
-    hasConvex: true,
-    hasTests: true,
-    version: '1.0.0',
-  },
-
-  // Development Status
-  status: {
-    state: 'stable',
-    isReady: true,
-  },
-
-  // Optional: Permissions, tags, children
-  permissions: ['schemas.create', 'schemas.update'],
-  tags: ['cms', 'content', 'builder'],
-})
+// Sub-features (if needed)
+frontend/features/{feature-slug}/features/{sub-feature-1}/
+frontend/features/{feature-slug}/features/{sub-feature-2}/
 ```
 
-#### 2. **Auto-Discovery System**
+### 3. Feature-Level Shared
 
-`lib/features/registry.ts` automatically discovers all feature configs:
+Setiap feature bisa punya **shared/** untuk komponen yang dipakai internal:
+
+```typescript
+// Shared dalam feature
+frontend/features/{feature-slug}/shared/
+├── components/       // Shared components
+├── hooks/            // Shared hooks
+└── utils/            // Shared utilities
+```
+
+### 4. Global Shared
+
+**`frontend/shared/`** - Shared across ALL features:
+
+```
+frontend/shared/
+├── builder/              # Builder system (blocks, canvas, etc)
+├── communications/       # Chat, notifications, etc
+├── context/              # Global contexts
+├── foundation/           # Core utilities
+├── settings/             # Global settings
+│   ├── account/
+│   ├── chats/
+│   ├── general/
+│   ├── notifications/
+│   ├── personalization/
+│   ├── storage/
+│   ├── video-voice/
+│   └── workspace/
+└── ui/                   # UI components (shadcn/ui)
+```
+
+### 5. Convex Mirror Pattern
+
+**Convex backend mirrors frontend structure:**
+
+```
+convex/features/{feature_slug}/
+├── {domain-1}/
+│   └── api/
+├── {domain-2}/
+│   └── api/
+├── features/              # 🎯 Sub-features backend
+│   └── api/
+└── shared/                # 🎯 Shared dalam feature
+    ├── audit.ts
+    ├── auth.ts
+    └── schema.ts
+```
+
+**Global Convex Shared:**
+```
+convex/shared/             # Shared across ALL features
+├── permissions/
+├── audit/
+└── utils/
+```
+
+---
+
+## 🔑 Core Concepts
+
+### 1. Auto-Discovery System
+
+**Zero manual registration:**
 
 ```typescript
 // Browser (Vite)
@@ -127,116 +175,17 @@ export const FEATURES = Object.values(featureModules)
   .sort((a, b) => a.ui.order - b.ui.order)
 ```
 
-**✨ Result:** 29 features auto-discovered! No manual maintenance needed.
+### 2. Feature Types
 
-#### 3. **Scripts (Reorganized)**
+| Type | Auto-installed | Uninstallable | Usage |
+|------|----------------|---------------|-------|
+| **default** | ✅ Yes | ❌ No | Core features |
+| **optional** | ❌ No | ✅ Yes | Installable features |
+| **experimental** | ❌ No | ✅ Yes | Beta features |
 
-All scripts now organized by purpose in `scripts/`:
+### 3. RBAC (Role-Based Access Control)
 
-```
-scripts/
-├── build/          # Build and dev tools
-├── features/       # Feature management (scaffold, sync, generate)
-│   ├── scaffold.ts
-│   ├── sync.ts
-│   ├── generate-manifest.ts
-│   └── test-registry.ts
-├── validation/     # All validation scripts
-├── migration/      # Migration scripts
-└── health/         # Health checks
-```
-
-**Commands:**
-- `pnpm run scaffold:feature {slug}` → Create new feature
-- `pnpm run sync:all` → Sync features + generate manifest
-- `pnpm run test:registry` → Test auto-discovery system
-- `pnpm run validate:all` → Validate all schemas
-
-See [scripts/README.md](../scripts/README.md) for full documentation.
-
-#### 4. **Migration Status**
-
-| Aspect | Old System | New System | Status |
-|--------|-----------|------------|--------|
-| **Config Location** | `features.config.ts` (root) | `frontend/features/*/config.ts` | ✅ Migrated |
-| **Discovery** | Manual editing | Auto-discovery | ✅ Active |
-| **Lines of Code** | 933 lines | 230 lines | ✅ 75% reduction |
-| **Features** | 29 features | 29 features | ✅ All migrated |
-| **Maintenance** | Manual | Zero | ✅ Automated |
-
-**Backward Compatibility:** `features.config.ts` still exists but is now DEPRECATED. All new features should use the per-feature `config.ts` approach.
-
-### 📦 Adding a New Feature (1 Step!)
-
-**Old Way (DEPRECATED):**
-1. ❌ Edit `features.config.ts` (add 50+ lines)
-2. ❌ Edit `manifest.config.ts` (add import)
-3. ❌ Create `manifest.ts` in feature folder
-4. ❌ Run sync scripts
-
-**New Way (CURRENT):**
-1. ✅ Create `frontend/features/{slug}/config.ts`
-2. ✅ Run `pnpm run sync:all`
-3. ✅ **DONE!** Auto-discovered and integrated!
-
-**Example:**
-```bash
-# Create feature folder
-mkdir -p frontend/features/analytics
-
-# Create config.ts
-cat > frontend/features/analytics/config.ts << 'EOF'
-import { defineFeature } from '@/lib/features/defineFeature'
-
-export default defineFeature({
-  id: 'analytics',
-  name: 'Analytics',
-  description: 'Real-time analytics dashboard',
-
-  ui: {
-    icon: 'BarChart',
-    path: '/dashboard/analytics',
-    component: 'AnalyticsPage',
-    category: 'analytics',
-    order: 15,
-  },
-
-  technical: {
-    featureType: 'optional',
-    hasUI: true,
-    hasConvex: true,
-    hasTests: true,
-    version: '1.0.0',
-  },
-
-  status: {
-    state: 'stable',
-    isReady: true,
-  },
-})
-EOF
-
-# Sync - Done!
-pnpm run sync:all
-```
-
-That's it! No manual registration, no editing central files. ✨
-
----
-
-## 🔑 Konsep Kunci
-
-### 1. Feature Types
-
-| Type | Auto-installed | Uninstallable | Lokasi | Contoh |
-|------|----------------|---------------|--------|--------|
-| **default** | ✅ Ya | ❌ Tidak | `features/default/` | Overview, WA, Members |
-| **optional** | ❌ Tidak | ✅ Ya | `features/optional/` | Reports, Calendar, Tasks |
-| **experimental** | ❌ Tidak | ✅ Ya | `features/optional/` | Beta features |
-
-### 2. RBAC (Role-Based Access Control)
-
-**Hierarchy Roles:**
+**Hierarchy:**
 ```
 Owner (level 0)      → Full access
   ↓
@@ -253,77 +202,108 @@ Guest (level 90)     → Read-only
 
 **Permission Check Pattern:**
 ```typescript
-// Setiap query/mutation wajib cek permission
+// Every Convex handler MUST check permission
 const { membership, role } = await requirePermission(
   ctx,
   args.workspaceId,
-  PERMS.VIEW_REPORTS
+  PERMS.VIEW_RESOURCE
 )
 ```
 
-### 3. Audit Logging
+### 4. Audit Logging
 
-Semua mutations dicatat dalam `activityEvents` table:
-- **WHO**: User yang melakukan aksi
-- **WHAT**: Aksi yang dilakukan
-- **WHEN**: Timestamp
-- **WHERE**: Workspace context
-- **CHANGES**: Data diff (before/after)
-
+**All mutations logged:**
 ```typescript
 await logAuditEvent(ctx, {
   workspaceId: args.workspaceId,
   userId: membership.userId,
-  action: "REPORT_CREATED",
-  resourceType: "report",
-  resourceId: reportId,
+  action: "RESOURCE_CREATED",
+  resourceType: "resource",
+  resourceId: resourceId,
   metadata: { title: args.title },
 })
 ```
 
-### 4. Feature Status System
+---
 
-Features punya status development:
+## 📁 Complete Folder Structure
 
-| Status | Meaning | UI Behavior |
-|--------|---------|-------------|
-| `stable` | Production-ready | Normal |
-| `beta` | Testing phase | Badge "Beta" |
-| `development` | Under development | "Feature Not Ready" UI |
-| `experimental` | Proof of concept | Hidden dari catalog |
-| `deprecated` | Sunset soon | Warning message |
-
-**Configuration:**
-```typescript
-{
-  slug: "reports",
-  status: "development",
-  isReady: false,
-  expectedRelease: "Q1 2025",
-}
 ```
+frontend/
+├── features/                    # All features (modular)
+│   ├── {feature-slug}/
+│   │   ├── config.ts           # Feature config (SSOT)
+│   │   ├── components/
+│   │   ├── shared/             # 🎯 Feature-specific shared
+│   │   ├── features/           # 🎯 Nested sub-features
+│   │   │   └── {sub-feature}/
+│   │   └── settings/           # 🎯 Feature settings
+│   └── ...                      # All features
+│
+├── shared/                      # 🎯 Global shared
+│   ├── builder/                 # Builder system
+│   │   ├── blocks/
+│   │   ├── canvas/
+│   │   ├── elements/
+│   │   ├── flows/
+│   │   ├── inspector/
+│   │   ├── library/
+│   │   ├── sections/
+│   │   └── templates/
+│   ├── communications/          # Chat, notifications
+│   ├── context/                 # Global contexts
+│   ├── foundation/              # Core utilities
+│   ├── settings/                # Global settings
+│   │   ├── account/
+│   │   ├── chats/
+│   │   ├── general/
+│   │   ├── notifications/
+│   │   ├── personalization/
+│   │   ├── storage/
+│   │   ├── video-voice/
+│   │   └── workspace/
+│   └── ui/                      # shadcn/ui components
+│
+└── lib/
+    └── features/
+        ├── defineFeature.ts     # Type-safe feature helper
+        ├── registry.ts          # Auto-discovery (browser)
+        └── registry.server.ts   # Auto-discovery (Node)
 
-### 5. Layout Architecture
+convex/
+├── features/                    # Mirror frontend
+│   ├── {feature_slug}/
+│   │   ├── {domain}/
+│   │   │   └── api/
+│   │   ├── features/            # 🎯 Nested sub-features
+│   │   │   └── api/
+│   │   └── shared/              # 🎯 Feature-shared
+│   │       ├── audit.ts
+│   │       ├── auth.ts
+│   │       └── schema.ts
+│   └── ...
+│
+└── shared/                      # 🎯 Global shared
+    ├── permissions/
+    ├── audit/
+    └── utils/
 
-SuperSpace menggunakan **Secondary Sidebar Layout System** untuk UI yang konsisten:
+scripts/
+├── build/                       # Build tools
+├── features/                    # Feature management
+│   ├── scaffold.ts
+│   ├── sync.ts
+│   └── generate-manifest.ts
+├── validation/                  # Validation scripts
+└── health/                      # Health checks
 
-**Location:** `frontend/shared/layout/secondary-sidebar/`
-
-**Komponen Utama:**
-- `SecondarySidebarLayout` - Container utama untuk halaman feature
-- `SecondarySidebarHeader` - Header dengan title, actions, breadcrumbs, toolbar
-- `SecondarySidebarTools` - Toolbar dengan search, sort, filter, view toggle
-- `SecondarySidebar` - Navigation sidebar dengan sections dan items
-- `MenuPreview` - Preview panel untuk menu items (di `frontend/shared/layout/menus/`)
-
-**Menu Management:**
-- Menu Store adalah **feature** di `frontend/features/menu-store/`
-- Hanya accessible untuk users dengan `MANAGE_MENUS` permission (Owner & Admin)
-- Wrapped dengan `MenuStoreMenuWrapper` untuk access control
-- Supports 3 tabs: Installed, Available, Import
-- Supports 2 view modes: Tree (dengan preview), Grid
-
-See `frontend/shared/layout/secondary-sidebar/README.md` untuk dokumentasi lengkap.
+docs/
+├── 1_SYSTEM_OVERVIEW.md         # This file!
+├── 2_DEVELOPER_GUIDE.md
+├── 3_MODULAR_ARCHITECTURE.md
+├── 4_TROUBLESHOOTING.md
+└── 5_FEATURE_REFERENCE.md
+```
 
 ---
 
@@ -331,16 +311,19 @@ See `frontend/shared/layout/secondary-sidebar/README.md` untuk dokumentasi lengk
 
 ```
 1. PLANNING
-   └─> Define metadata di features.config.ts
+   └─> Design feature structure
 
 2. SCAFFOLDING
    └─> pnpm run scaffold:feature {slug}
 
 3. DEVELOPMENT
-   ├─> Implementasi Frontend (React)
-   ├─> Implementasi Backend (Convex)
-   ├─> Tambah RBAC checks
-   └─> Tambah Audit logging
+   ├─> Frontend (components, views, hooks)
+   ├─> Backend (queries, mutations, actions)
+   ├─> Sub-features (if needed) in features/
+   ├─> Shared components in shared/
+   ├─> Settings (if needed) in settings/
+   ├─> RBAC checks
+   └─> Audit logging
 
 4. TESTING
    ├─> Unit tests
@@ -357,59 +340,6 @@ See `frontend/shared/layout/secondary-sidebar/README.md` untuk dokumentasi lengk
    ├─> Create PR
    ├─> CI/CD runs
    └─> Merge to main
-
-8. PRODUCTION
-   └─> Feature tersedia (default) atau di Menu Store (optional)
-```
-
----
-
-##  Data Flow
-
-### Creating a Workspace
-
-```
-User creates workspace
-       │
-       ▼
-createWorkspace() mutation
-       │
-       ├─> Insert workspace record
-       ├─> Create default roles (Owner, Admin, Staff, Guest)
-       ├─> Create workspace membership (user as Owner)
-       ├─> Create default menu set
-       └─> Call createDefaultMenuItems()
-              │
-              └─> Install all "default" features from manifest
-                     │
-                     ▼
-              Workspace ready with navigation!
-```
-
-### Installing Optional Feature
-
-```
-User browses Menu Store
-       │
-       ▼
-getAvailableFeatureMenus()
-       │
-       └─> Returns features with featureType="optional"
-              │
-              ▼
-User clicks "Install"
-       │
-       ▼
-installFeatureMenus({ featureSlugs: ["reports"] })
-       │
-       ├─> Check RBAC (MANAGE_MENUS permission)
-       ├─> Validate feature exists in catalog
-       ├─> Insert menu item to workspace
-       ├─> Apply role restrictions
-       └─> Return menuItemId
-              │
-              ▼
-Feature appears in sidebar!
 ```
 
 ---
@@ -422,7 +352,7 @@ Feature appears in sidebar!
 - OAuth providers
 
 ### Layer 2: Authorization (RBAC)
-- Role hierarchy (Owner → Admin → ... → Guest)
+- Role hierarchy
 - Permission sets per role
 - Workspace membership validation
 
@@ -442,117 +372,13 @@ Feature appears in sidebar!
 
 ---
 
-##  Design Principles
-
-1. **DRY (Don't Repeat Yourself)**
-   - Single source of truth: `features.config.ts`
-   - Auto-generate everything else
-
-2. **Type Safety**
-   - Zod schemas for validation
-   - TypeScript for type checking
-   - Runtime + compile-time safety
-
-3. **Self-Contained Features**
-   - Each feature = independent package
-   - Clear boundaries
-   - Easy to add/remove
-
-4. **Permission-First**
-   - RBAC checks di setiap endpoint
-   - Principle of least privilege
-   - Audit everything
-
-5. **Developer Experience**
-   - CLI tools for common tasks
-   - Auto-scaffolding
-   - Clear documentation
-
----
-
-## 📁 Folder Structure (Current)
-
-```
-frontend/
-├── features/                 # ✨ All features (flat structure, auto-discovered)
-│   ├── overview/
-│   │   ├── config.ts        # ⭐ Feature config (SSOT)
-│   │   ├── OverviewPage.tsx
-│   │   └── ...
-│   ├── chat/
-│   │   ├── config.ts        # ⭐ Feature config (SSOT)
-│   │   └── ...
-│   ├── analytics/
-│   │   ├── config.ts        # ⭐ Feature config (SSOT)
-│   │   └── ...
-│   └── ...                   # 29 features total
-│
-├── shared/                   # Shared utilities only
-│   ├── components/           # Button, Modal, etc.
-│   ├── hooks/                # useAuth, useWorkspace
-│   ├── layout/               # Layout components
-│   │   ├── sidebar/
-│   │   ├── secondary-sidebar/
-│   │   └── menus/
-│   ├── utils/
-│   └── manifest/             # Auto-generated manifests
-│       └── registry.tsx      # Generated from configs
-│
-├── lib/
-│   └── features/             # ✨ Feature system core
-│       ├── defineFeature.ts  # Type-safe feature helper
-│       ├── registry.ts       # Auto-discovery (browser)
-│       └── registry.server.ts # Auto-discovery (Node)
-│
-└── views/
-    └── manifest.tsx          # Auto-generated
-
-convex/
-├── features/                 # Mirror frontend structure
-│   ├── overview/
-│   ├── chat/
-│   ├── analytics/
-│   └── ...
-│
-└── menu/store/
-    ├── menu_manifest_data.ts         # Auto-generated
-    └── optional_features_catalog.ts  # Auto-generated
-
-scripts/                      # ✨ Reorganized scripts
-├── build/                    # Build and dev tools
-├── features/                 # Feature management
-│   ├── scaffold.ts
-│   ├── sync.ts
-│   ├── generate-manifest.ts
-│   └── test-registry.ts
-├── validation/               # All validation scripts
-├── migration/                # Migration scripts
-└── health/                   # Health checks
-
-docs/                         # Documentation
-├── 1_SYSTEM_OVERVIEW.md      # This file!
-├── 2_DEVELOPER_GUIDE.md
-├── 3_AI_KNOWLEDGE_BASE.md
-├── 4_TROUBLESHOOTING.md
-├── 5_FEATURE_REFERENCE.md
-└── architecture/             # Additional architecture docs
-```
-
-**Key Changes:**
-- ✨ **Flat feature structure** - No more `default/` and `optional/` subfolders
-- ⭐ **Per-feature config.ts** - Single source of truth for each feature
-- 🎯 **Auto-discovery** - `lib/features/registry.ts` finds all configs
-- 📦 **Organized scripts** - Categorized by purpose in subfolders
-
----
-
 ## 🔧 Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | Next.js 15 (App Router) | React framework |
 | **Backend** | Convex | Real-time serverless DB |
-| **Auth** | Clerk + @convex-dev/auth | Authentication |
+| **Auth** | Clerk | Authentication |
 | **UI** | shadcn/ui + Tailwind CSS | Component library |
 | **State** | Zustand | Client state management |
 | **Validation** | Zod | Schema validation |
@@ -564,26 +390,10 @@ docs/                         # Documentation
 ## 📖 Lihat Juga
 
 - **[Developer Guide](./2_DEVELOPER_GUIDE.md)** - How to build features
-- **[AI Knowledge Base](./3_AI_KNOWLEDGE_BASE.md)** - Technical details
+- **[Modular Architecture](./3_MODULAR_ARCHITECTURE.md)** - Detailed patterns
 - **[Troubleshooting](./4_TROUBLESHOOTING.md)** - Common issues
+- **[Feature Reference](./5_FEATURE_REFERENCE.md)** - Feature catalog
 
 ---
 
-## Chat Platform Modernization Highlights
-
-- All product chat surfaces now share the `frontend/shared/chat` platform, replacing eight bespoke implementations with one configurable module.
-- Nine experiences (workspace, AI, support, projects, documents, CRM, notifications, workflows, comments) ship with the new stack and expose consistent UX patterns.
-- Feature visibility is guaranteed through the updated workspace navigation registry and the guarded catch-all route in `app/dashboard/[[...slug]]/page.tsx`.
-
-| Indicator | Previous | Current | Notes |
-|-----------|----------|---------|-------|
-| Chat-related LOC | ~12,000 | ~3,600 | 70% reduction through consolidation |
-| Distinct chat implementations | 8 | 1 shared module | Shared adapters provide Convex integration hooks |
-| Feature coverage | Workspace + AI | 9 feature-ready surfaces | Includes Support, Projects, CRM, Notifications, Workflows |
-| Time-to-add new chat view | 2-3 weeks | 1-2 hours | Configure presets and reuse shared containers |
-
-See the Developer Guide for migration instructions and the Feature Reference for per-feature usage notes.
-
----
-
-**Last Updated:** 2025-01-19
+**Last Updated:** 2025-11-01

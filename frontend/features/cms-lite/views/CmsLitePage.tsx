@@ -15,7 +15,8 @@ import {
   Bot, 
   BarChart3, 
   Sliders, 
-  Users 
+  Users,
+  Globe
 } from "lucide-react";
 import { SecondarySidebarLayout } from "@/frontend/shared/ui/layout/sidebar/secondary";
 import { AdminUserInitializer } from "../shared/components/AdminUserInitializer";
@@ -34,9 +35,10 @@ const AdminQuicklinks = dynamic(() => import("../features/admin/pages/AdminQuick
 const AdminNavigation = dynamic(() => import("../features/admin/pages/AdminNavigation"), { ssr: false });
 const AdminServices = dynamic(() => import("../features/admin/pages/AdminServices"), { ssr: false });
 const AdminAI = dynamic(() => import("../features/admin/pages/AdminAI"), { ssr: false });
-const AdminAIAnalytics = dynamic(() => import("../features/admin/pages/AdminAIAnalytics"), { ssr: false });
-const AdminAISettings = dynamic(() => import("../features/admin/pages/AdminAISettings"), { ssr: false });
+const AdminAIAnalytics = dynamic(() => import("../features/admin/pages/AdminAI"), { ssr: false });
+const AdminAISettings = dynamic(() => import("../features/admin/pages/AdminAI"), { ssr: false });
 const AdminUsers = dynamic(() => import("../features/admin/pages/AdminUsers"), { ssr: false });
+const AdminWebsiteSettings = dynamic(() => import("../features/admin/pages/AdminWebsiteSettings"), { ssr: false });
 
 /**
  * CMS Lite Admin Page - For Dashboard Dynamic Route
@@ -180,6 +182,13 @@ export default function CmsLitePage() {
       title: "Configuration",
       items: [
         {
+          id: "website-settings",
+          label: "Website Settings",
+          icon: Globe,
+          active: activeView === "website-settings",
+          onClick: () => setActiveView("website-settings"),
+        },
+        {
           id: "settings",
           label: "Settings",
           icon: Settings,
@@ -219,6 +228,8 @@ export default function CmsLitePage() {
         return <AdminAIAnalytics />;
       case "ai-settings":
         return <AdminAISettings />;
+      case "website-settings":
+        return <AdminWebsiteSettings />;
       case "settings":
         return <AdminSettings />;
       default:

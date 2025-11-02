@@ -1,22 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ExternalLink } from "lucide-react";
-import { useBackend } from "../shared/hooks/useBackend";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { ExternalLink, Loader2 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-export default function HelloPage() {
-  const [quicklinks, setQuicklinks] = useState<Quicklink[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Quicklink {
+  id: string;
+  title: string;
+  url: string;
+  icon?: string | null;
+  displayOrder: number;
+  active: boolean;
+}
 
-  useEffect(() => {
-    const backend = useBackend();    backend.quicklinks.list()
-      .then((res) => setQuicklinks(res.quicklinks))
-      .catch((err) => console.error("Failed to load quicklinks:", err))
-      .finally(() => setLoading(false));
-  }, []);
+export default function HelloPage() {
+  const quicklinksData = useQuery(api.features.cms_lite.quicklinks.api.queries.listQuicklinks);
+  
+  const quicklinks = quicklinksData?.quicklinks ?? [];
+  const loading = quicklinksData === undefined;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-accent/10">
@@ -61,6 +65,9 @@ export default function HelloPage() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
+                      {link.icon && (
+                        <div className="text-3xl mb-2">{link.icon}</div>
+                      )}
                       <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">
                         {link.title}
                       </h3>

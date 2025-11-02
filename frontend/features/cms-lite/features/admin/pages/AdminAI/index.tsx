@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useBackend } from "../../../shared/hooks/useBackend";
-import { Button } from "../../../shared/components/Button";
-import { Input, Textarea, Select } from "../../../shared/components/Form";
-import { Modal } from "../../../shared/components/Modal";
-import { LoadingSpinner } from "../../../shared/components/Loading";
-import { ErrorState } from "../../../shared/components/ErrorState";
+import { useBackend } from "../../../../shared/hooks/useBackend";
+import { LoadingSpinner } from "../../../../shared/components/Loading";
+import { ErrorState } from "../../../../shared/components/ErrorState";
+import { Button } from "../../../../shared/components/Button";
+import { Input, Textarea, Select } from "../../../../shared/components/Form";
+import { Modal } from "../../../../shared/components/Modal";
 import { AlertCircle, TrendingUp, MessageSquare, Globe, Plus, Trash2, Pencil, FileText } from "lucide-react";
-import ErrorBoundary from "../../../shared/components/ErrorBoundary";
+import ErrorBoundary from "../../../../shared/components/ErrorBoundary";
 import { useToast } from "@/hooks/use-toast";
 
 // Placeholder type until backend is integrated

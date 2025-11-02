@@ -291,4 +291,81 @@ export const bulkUpdateProducts = mutation({
   },
 });
 
+export const importProducts = mutation({
+  args: {
+    data: v.array(
+      v.object({
+        slug: v.string(),
+        titleId: v.string(),
+        titleEn: v.string(),
+        titleAr: v.string(),
+        descId: v.optional(v.union(v.string(), v.null())),
+        descEn: v.optional(v.union(v.string(), v.null())),
+        descAr: v.optional(v.union(v.string(), v.null())),
+        price: v.number(),
+        currency: v.string(),
+        paymentLink: v.optional(v.union(v.string(), v.null())),
+        coverImage: v.optional(v.union(v.string(), v.null())),
+        status: v.string(),
+        metaTitle: v.optional(v.union(v.string(), v.null())),
+        metaDescription: v.optional(v.union(v.string(), v.null())),
+        metaKeywords: v.optional(v.union(v.array(v.string()), v.null())),
+        scheduledActivateAt: v.optional(v.union(v.number(), v.null())),
+      }),
+    ),
+  },
+  returns: v.object({
+    imported: v.number(),
+    skipped: v.number(),
+    errors: v.array(v.string()),
+  }),
+  handler: async (ctx: MutationCtx, args: { data: ProductWriteArgs[] }) => {
+    const actor = await requireAdmin(ctx);
+
+    let imported = 0;
+    let skipped = 0;
+    const errors: string[] = [];
+
+    for (const item of args.data) {
+      try {
+        // Check if product with slug already exists
+        const existing = await ctx.db
+          .query("products")
+          .withIndex("by_slug", (q: any) => q.eq("slug", item.slug))
+          .first();
+
+        if (existing) {
+          skipped++;
+          errors.push(`Product with slug "${item.slug}" already exists`);
+          continue;
+        }
+
+        // Create product
+        const productId = await ctx.db.insert(
+          "products",
+          buildProductWritePayload(item, actor.clerkUserId),
+        );
+
+        await recordAuditEvent(ctx, {
+          actorId: actor.clerkUserId,
+          entity: "product",
+          entityId: productId,
+          action: "import",
+          changes: {
+            slug: item.slug,
+          },
+        });
+
+        imported++;
+      } catch (error) {
+        errors.push(
+          `Failed to import product "${item.slug}": ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+        skipped++;
+      }
+    }
+
+    return { imported, skipped, errors };
+  },
+});
 

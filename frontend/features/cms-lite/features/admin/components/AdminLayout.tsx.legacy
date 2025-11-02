@@ -1,3 +1,17 @@
+/**
+ * ⚠️ LEGACY FILE - DO NOT USE IN NEXT.JS
+ * 
+ * This file was designed for a standalone React app with React Router.
+ * It is NOT compatible with Next.js App Router.
+ * 
+ * For Next.js admin layouts, use:
+ * - app/dashboard/layout.tsx
+ * - components/sidebar.tsx
+ * - app/dashboard/cms-lite/* routes
+ * 
+ * This file is kept for reference only.
+ */
+
 "use client";
 
 import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
@@ -104,5 +118,3 @@ export default function AdminLayout() {
     </div>
   );
 }
-
-

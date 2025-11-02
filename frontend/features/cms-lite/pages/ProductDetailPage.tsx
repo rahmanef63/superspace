@@ -1,24 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useBackend } from "../shared/hooks/useBackend";
+import type { Product } from "../types/cms-types";
 
 import { ArrowLeft, ShoppingCart, Plus } from "lucide-react";
 import { ShareButtons } from "../shared/components/ShareButtons";
 
-export default function ProductDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
+interface ProductDetailPageProps {
+  slug?: string; // Can be passed as prop from dynamic route
+}
+
+export default function ProductDetailPage({ slug: slugProp }: ProductDetailPageProps = {}) {
+  const pathname = usePathname();
   const { t, locale } = useLanguage();
   const { addToCart } = useCart();
   const { convertPrice, formatCurrency } = useCurrency();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Extract slug from pathname if not provided as prop
+  const slug = slugProp || pathname?.split('/').pop();
 
   useEffect(() => {
     if (slug) {
@@ -48,7 +57,7 @@ export default function ProductDetailPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-xl mb-4">Product not found</p>
-            <Link to="/products" className="text-primary hover:underline">
+            <Link href="/products" className="text-primary hover:underline">
               ← Back to products
             </Link>
           </div>
@@ -66,7 +75,7 @@ export default function ProductDetailPage() {
       <Navbar />
       
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Link to="/products" className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground mb-8">
+        <Link href="/products" className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground mb-8">
           <ArrowLeft className="w-4 h-4" />
           Back to products
         </Link>
@@ -76,7 +85,7 @@ export default function ProductDetailPage() {
             {product.coverImage ? (
               <img
                 src={product.coverImage}
-                alt={title}
+                alt={title ?? 'Product'}
                 className="w-full rounded-lg shadow-lg"
               />
             ) : (
@@ -89,7 +98,7 @@ export default function ProductDetailPage() {
           <div>
             <h1 className="text-4xl font-bold mb-4">{title}</h1>
             <p className="text-3xl font-bold text-primary mb-6">
-              {formatCurrency(convertPrice(product.price, product.currency))}
+              {formatCurrency(convertPrice(product.price, product.currency ?? 'USD'))}
             </p>
             <p className="text-foreground/80 mb-8 whitespace-pre-wrap">
               {desc}
@@ -99,7 +108,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={async () => {
                   try {
-                    await addToCart(product.id);
+                    await addToCart(String(product.id));
                   } catch (error) {
                     console.error("Add to cart error:", error);
                   }
@@ -125,8 +134,8 @@ export default function ProductDetailPage() {
 
             <ShareButtons
               url={`/products/${product.slug}`}
-              title={title}
-              description={desc}
+              title={title ?? 'Product'}
+              description={desc ?? undefined}
               variant="compact"
             />
           </div>

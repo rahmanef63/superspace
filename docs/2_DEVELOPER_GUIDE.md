@@ -1,19 +1,22 @@
-# Developer Guide
+# 2. Developer Guide
 
 > **Comprehensive guide for developers building features in SuperSpace**
-> **Last Updated:** 2025-01-19
+
+**Last Updated:** 2025-11-01
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start (5 Minutes)](#quick-start-5-minutes)
-2. [Checklist: Default Feature](#checklist-default-feature)
-3. [Checklist: Optional Feature](#checklist-optional-feature)
-4. [Best Practices](#best-practices)
-5. [Testing Guidelines](#testing-guidelines)
-6. [CI/CD Workflow](#cicd-workflow)
-7. [Pre-Commit Checklist](#pre-commit-checklist)
+2. [Building a Simple Feature](#building-a-simple-feature)
+3. [Building a Complex Feature (with Sub-Features)](#building-a-complex-feature-with-sub-features)
+4. [Using Feature-Level Shared](#using-feature-level-shared)
+5. [Using Global Shared](#using-global-shared)
+6. [Settings Integration](#settings-integration)
+7. [RBAC & Security](#rbac--security)
+8. [Testing Guidelines](#testing-guidelines)
+9. [Pre-Commit Checklist](#pre-commit-checklist)
 
 ---
 
@@ -22,10 +25,10 @@
 Create a fully functional feature in under 5 minutes:
 
 ```bash
-# 1. Scaffold the feature (creates all boilerplate)
+# 1. Scaffold the feature
 pnpm run scaffold:feature analytics --type optional --category analytics
 
-# 2. Sync to manifests (updates auto-generated files)
+# 2. Sync to manifests
 pnpm run sync:all
 
 # 3. Validate everything
@@ -36,447 +39,511 @@ pnpm test
 
 # 5. Start development
 pnpm dev
-npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace  # In separate terminal
+npx convex dev
 ```
 
 **What gets created:**
 ```
-✅ frontend/features/analytics/          # UI components
-✅ convex/features/analytics/            # Backend logic
-✅ tests/features/analytics/             # Test files
-✅ Entry in features.config.ts           # Metadata
-✅ Auto-updated manifest files           # Menu data
+✅ frontend/features/analytics/config.ts  # Feature config (SSOT)
+✅ frontend/features/analytics/           # UI components
+✅ convex/features/analytics/             # Backend logic
+✅ tests/features/analytics/              # Test files
 ```
 
 ---
 
-## Checklist: Default Feature
+## Building a Simple Feature
 
-**Use this for features that should be included in every new workspace.**
+### Step 1: Create Feature Config
 
-### Phase 1: Scaffolding
+Create `frontend/features/analytics/config.ts`:
 
-- [ ] **Run scaffold command**
-  ```bash
-  pnpm run scaffold:feature {slug} --type default --category {category}
-  # Categories: communication, productivity, collaboration, administration, social, creativity, analytics
-  ```
+```typescript
+import { defineFeature } from '@/lib/features/defineFeature'
 
-- [ ] **Verify generated structure**
-  ```
-  frontend/features/{slug}/
-    ├── index.ts
-    ├── views/{Name}Page.tsx
-    ├── components/
-    ├── hooks/
-    └── types/
+export default defineFeature({
+  // Basic Info
+  id: 'analytics',
+  name: 'Analytics',
+  description: 'Real-time analytics dashboard',
 
-  convex/features/{slug}/
-    ├── index.ts
-    ├── queries.ts
-    ├── mutations.ts
-    └── actions.ts (optional)
+  // UI Config
+  ui: {
+    icon: 'BarChart',              // Lucide React icon
+    path: '/dashboard/analytics',
+    component: 'AnalyticsPage',
+    category: 'analytics',
+    order: 15,
+  },
 
-  tests/features/{slug}/
-    ├── {slug}.test.ts
-    └── {slug}.integration.test.ts
-  ```
-
-### Phase 2: Implementation
-
-- [ ] **Update features.config.ts**
-  ```typescript
-  {
-    slug: "analytics",
-    name: "Analytics",
-    description: "Real-time analytics dashboard",
-    featureType: "default",
-    category: "analytics",
-    icon: "BarChart",          // Lucide icon name
-    path: "/dashboard/analytics",
-    component: "AnalyticsPage",
-    order: 15,                 // Position in menu
-    type: "route",             // route | folder | divider
-    version: "1.0.0",
+  // Technical Config
+  technical: {
+    featureType: 'optional',
     hasUI: true,
     hasConvex: true,
     hasTests: true,
-    requiresPermission: "VIEW_ANALYTICS", // Optional
-  }
-  ```
+    version: '1.0.0',
+  },
 
-- [ ] **Implement UI (frontend/features/{slug}/)**
-  - Update `views/{Name}Page.tsx` with main UI
-  - Create reusable components in `components/`
-  - Add React hooks in `hooks/use{Name}.ts`
-  - Define TypeScript types in `types/index.ts`
-  - Export public API in `index.ts`
+  // Development Status
+  status: {
+    state: 'stable',
+    isReady: true,
+  },
 
-- [ ] **Implement Backend (convex/features/{slug}/)**
-  - Add queries in `queries.ts`
-  - Add mutations in `mutations.ts`
-  - Add actions in `actions.ts` (if needed)
-  - Export public API in `index.ts`
-
-### Phase 3: RBAC & Security
-
-- [ ] **Add permission check to ALL queries**
-  ```typescript
-  // convex/features/analytics/queries.ts
-  import { requireActiveMembership } from "../../auth/helpers"
-
-  export const getAnalytics = query({
-    args: { workspaceId: v.id("workspaces") },
-    handler: async (ctx, args) => {
-      // ✅ REQUIRED: Check membership
-      const { membership, role } = await requireActiveMembership(
-        ctx,
-        args.workspaceId
-      )
-
-      // Your logic here
-      const data = await ctx.db.query("analytics")
-        .withIndex("by_workspace", q => q.eq("workspaceId", args.workspaceId))
-        .collect()
-
-      return data
-    }
-  })
-  ```
-
-- [ ] **Add permission check to ALL mutations**
-  ```typescript
-  // convex/features/analytics/mutations.ts
-  import { requirePermission } from "../../auth/helpers"
-  import { PERMS } from "../../workspace/permissions"
-
-  export const createReport = mutation({
-    args: {
-      workspaceId: v.id("workspaces"),
-      name: v.string(),
-      data: v.any(),
-    },
-    handler: async (ctx, args) => {
-      // ✅ REQUIRED: Check specific permission
-      const { membership } = await requirePermission(
-        ctx,
-        args.workspaceId,
-        PERMS.DOCUMENTS_CREATE  // Or create custom permission
-      )
-
-      // Your logic here
-      const reportId = await ctx.db.insert("reports", {
-        workspaceId: args.workspaceId,
-        name: args.name,
-        data: args.data,
-        createdBy: membership.userId,
-      })
-
-      return reportId
-    }
-  })
-  ```
-
-- [ ] **Add audit logging for mutations**
-  ```typescript
-  // After successful mutation
-  await ctx.runMutation(internal.audit.logEvent, {
-    actorUserId: membership.userId,
-    workspaceId: args.workspaceId,
-    entityType: "report",
-    entityId: String(reportId),
-    action: "create",
-    diff: { name: args.name },
-    createdAt: Date.now(),
-  })
-  ```
-
-### Phase 4: Testing
-
-- [ ] **Write unit tests**
-  ```typescript
-  // tests/features/analytics/analytics.test.ts
-  import { describe, it, expect } from "vitest"
-
-  describe("Analytics Feature", () => {
-    it("should initialize correctly", () => {
-      // Test pure functions, utilities, etc.
-    })
-  })
-  ```
-
-- [ ] **Write integration tests**
-  ```typescript
-  // tests/features/analytics/analytics.integration.test.ts
-  import { describe, it, expect, beforeEach } from "vitest"
-  import { convexTest } from "convex-test"
-  import schema from "@/convex/schema"
-  import { api } from "@/convex/_generated/api"
-
-  describe("Analytics Integration", () => {
-    let t: any
-
-    beforeEach(async () => {
-      t = convexTest(schema)
-      // Setup test data
-    })
-
-    it("should enforce RBAC", async () => {
-      // Test permission checks
-    })
-
-    it("should create analytics report", async () => {
-      const reportId = await t.mutation(
-        api.features.analytics.mutations.createReport,
-        { /* args */ }
-      )
-      expect(reportId).toBeDefined()
-    })
-  })
-  ```
-
-- [ ] **Run tests and verify coverage**
-  ```bash
-  pnpm test tests/features/analytics
-  pnpm test:coverage
-  ```
-
-### Phase 5: Sync & Validate
-
-- [ ] **Sync features to manifests**
-  ```bash
-  pnpm run sync:all
-  ```
-
-- [ ] **Validate all schemas**
-  ```bash
-  pnpm run validate:all
-  ```
-
-- [ ] **Run full test suite**
-  ```bash
-  pnpm test
-  ```
-
-- [ ] **Type check**
-  ```bash
-  pnpm run typecheck
-  ```
-
-### Phase 6: Documentation & PR
-
-- [ ] **Add JSDoc comments to public APIs**
-  ```typescript
-  /**
-   * Get analytics data for a workspace
-   * @param workspaceId - The workspace to get analytics for
-   * @returns Analytics data with metrics
-   */
-  export const getAnalytics = query({...})
-  ```
-
-- [ ] **Update feature documentation (if complex)**
-  - Add usage examples
-  - Document special configurations
-  - Add troubleshooting tips
-
-- [ ] **Create Pull Request**
-  - Title: `feat: add analytics feature`
-  - Description: Feature overview, screenshots
-  - Link related issues
-  - Include test results
-
----
-
-## Checklist: Optional Feature
-
-**Use this for features available in the Menu Store catalog.**
-
-Follow all steps from "Default Feature" above, plus:
-
-### Additional Steps
-
-- [ ] **Set featureType to "optional"**
-  ```typescript
-  {
-    slug: "tasks",
-    featureType: "optional",  // ✅ Must be optional
-    // ... rest of config
-  }
-  ```
-
-- [ ] **Verify catalog generation**
-  ```bash
-  # After sync:all, check this file exists
-  cat convex/features/menus/optional_features_catalog.ts
-
-  # Should contain your feature:
-  export const OPTIONAL_FEATURES_CATALOG = [
-    {
-      slug: "tasks",
-      name: "Tasks",
-      description: "Task management and tracking",
-      // ...
-    }
-  ]
-  ```
-
-- [ ] **Test installation flow**
-  1. Start app: `pnpm dev`
-  2. Navigate to Menu Store (`/dashboard/menus`)
-  3. Verify feature appears in catalog
-  4. Click "Install" button
-  5. Verify feature appears in sidebar
-  6. Test feature functionality
-
-- [ ] **Test uninstallation**
-  1. Click "Uninstall" in Menu Store
-  2. Verify feature removed from sidebar
-  3. Verify data persists (not deleted)
-
----
-
-## Best Practices
-
-### 1. RBAC Pattern
-
-**Always check permissions in Convex handlers:**
-
-```typescript
-// ✅ GOOD: Use requireActiveMembership for basic access
-export const listItems = query({
-  handler: async (ctx, args) => {
-    const { membership } = await requireActiveMembership(ctx, args.workspaceId)
-    // User has access to workspace
-  }
+  // Optional: Permissions
+  permissions: ['analytics.view'],
 })
+```
 
-// ✅ GOOD: Use requirePermission for specific actions
-export const deleteItem = mutation({
+### Step 2: Create Frontend Structure
+
+```
+frontend/features/analytics/
+├── config.ts              # ✅ Created above
+├── AnalyticsPage.tsx      # Main page
+├── components/            # Feature components
+│   ├── Chart.tsx
+│   └── Stats.tsx
+└── hooks/                 # Custom hooks
+    └── useAnalytics.ts
+```
+
+**AnalyticsPage.tsx:**
+```typescript
+import { useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { Chart } from './components/Chart'
+import { Stats } from './components/Stats'
+
+export function AnalyticsPage() {
+  const data = useQuery(api.features.analytics.queries.getAnalytics, {
+    workspaceId: currentWorkspace._id
+  })
+
+  return (
+    <div>
+      <h1>Analytics</h1>
+      <Stats data={data} />
+      <Chart data={data} />
+    </div>
+  )
+}
+```
+
+### Step 3: Create Convex Backend
+
+```
+convex/features/analytics/
+├── queries.ts
+├── mutations.ts
+└── schema.ts
+```
+
+**queries.ts:**
+```typescript
+import { query } from '../../_generated/server'
+import { v } from 'convex/values'
+import { requirePermission } from '@/convex/shared/permissions/helpers'
+
+export const getAnalytics = query({
+  args: { workspaceId: v.id('workspaces') },
   handler: async (ctx, args) => {
+    // ✅ RBAC check
+    await requirePermission(ctx, args.workspaceId, 'analytics.view')
+
+    // Query data
+    const data = await ctx.db
+      .query('analytics')
+      .withIndex('by_workspace', q => q.eq('workspaceId', args.workspaceId))
+      .collect()
+
+    return data
+  },
+})
+```
+
+**mutations.ts:**
+```typescript
+import { mutation } from '../../_generated/server'
+import { v } from 'convex/values'
+import { requirePermission } from '@/convex/shared/permissions/helpers'
+import { logAuditEvent } from '@/convex/shared/audit/logger'
+
+export const trackEvent = mutation({
+  args: {
+    workspaceId: v.id('workspaces'),
+    eventType: v.string(),
+    metadata: v.any(),
+  },
+  handler: async (ctx, args) => {
+    // ✅ RBAC check
     const { membership } = await requirePermission(
       ctx,
       args.workspaceId,
-      PERMS.DOCUMENTS_DELETE
+      'analytics.create'
     )
-    // User has specific permission
-  }
-})
 
-// ❌ BAD: No permission check
-export const dangerousQuery = query({
-  handler: async (ctx, args) => {
-    // Anyone can call this!
-    return await ctx.db.query("sensitiveData").collect()
-  }
-})
-```
-
-### 2. Audit Logging Pattern
-
-**Log ALL mutations that change data:**
-
-```typescript
-export const updateDocument = mutation({
-  handler: async (ctx, args) => {
-    const { membership } = await requirePermission(...)
-
-    // Get old data for diff
-    const oldDoc = await ctx.db.get(args.documentId)
-
-    // Update
-    await ctx.db.patch(args.documentId, { title: args.newTitle })
-
-    // ✅ Log the change
-    await ctx.runMutation(internal.audit.logEvent, {
-      actorUserId: membership.userId,
+    // Insert data
+    const eventId = await ctx.db.insert('analytics', {
       workspaceId: args.workspaceId,
-      entityType: "document",
-      entityId: String(args.documentId),
-      action: "update",
-      diff: {
-        old: { title: oldDoc.title },
-        new: { title: args.newTitle }
-      },
+      eventType: args.eventType,
+      metadata: args.metadata,
       createdAt: Date.now(),
     })
 
-    return args.documentId
-  }
+    // ✅ Audit log
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      userId: membership.userId,
+      action: 'ANALYTICS_EVENT_TRACKED',
+      resourceType: 'analytics',
+      resourceId: eventId,
+      metadata: { eventType: args.eventType },
+    })
+
+    return eventId
+  },
 })
 ```
 
-### 3. Dynamic Import Pattern
+### Step 4: Sync & Validate
 
-**Improve performance with code splitting:**
+```bash
+# Sync features
+pnpm run sync:all
 
-```typescript
-// ✅ GOOD: Dynamic import for large components
-const AnalyticsPage = lazy(() =>
-  import("@/frontend/features/analytics").then(m => ({
-    default: m.AnalyticsPage
-  }))
-)
+# Validate
+pnpm run validate:all
 
-// ✅ GOOD: Show loading state
-<Suspense fallback={<LoadingSpinner />}>
-  <AnalyticsPage />
-</Suspense>
-
-// ❌ BAD: Static import for large feature
-import { AnalyticsPage } from "@/frontend/features/analytics"
+# Test
+pnpm test
 ```
 
-### 4. Error Handling
+---
 
+## Building a Complex Feature (with Sub-Features)
+
+### When to Use Sub-Features
+
+Use sub-features when:
+- Feature has multiple distinct domains (e.g., CMS with posts, products, pages)
+- Feature has admin panel separate from public UI
+- Feature needs internal organization
+
+### Example: CMS-Lite Feature
+
+**Structure:**
+```
+frontend/features/cms-lite/
+├── config.ts              # Main feature config
+├── components/            # Main components
+│   ├── Navbar.tsx
+│   └── Footer.tsx
+├── contexts/              # React contexts
+│   ├── CartContext.tsx
+│   └── ThemeContext.tsx
+├── hooks/                 # Main hooks
+│   └── useCart.ts
+├── pages/                 # Public pages
+│   ├── LandingPage.tsx
+│   └── StorePage.tsx
+├── features/              # 🎯 Sub-features
+│   └── admin/             # Admin panel sub-feature
+│       ├── components/
+│       │   ├── AdminLayout.tsx
+│       │   ├── ProductForm.tsx
+│       │   └── PostForm.tsx
+│       └── pages/
+│           ├── AdminDashboard.tsx
+│           └── ProductsAdmin.tsx
+├── shared/                # 🎯 Feature-level shared
+│   ├── components/
+│   │   ├── ImageUploader.tsx  # Used by admin & public
+│   │   └── RichEditor.tsx
+│   ├── hooks/
+│   │   └── useImageUpload.ts
+│   └── utils/
+│       └── imageUtils.ts
+└── settings/              # Feature settings
+    ├── GeneralSettings.tsx
+    └── PaymentSettings.tsx
+```
+
+**Convex structure:**
+```
+convex/features/cms_lite/
+├── posts/                 # Posts domain
+│   └── api/
+│       ├── queries.ts
+│       ├── mutations.ts
+│       └── schema.ts
+├── products/              # Products domain
+│   └── api/
+│       ├── queries.ts
+│       ├── mutations.ts
+│       └── schema.ts
+├── features/              # 🎯 Sub-features backend
+│   └── api/
+│       ├── queries.ts
+│       └── mutations.ts
+├── shared/                # 🎯 Feature-level shared
+│   ├── audit.ts           # CMS-specific audit
+│   ├── auth.ts            # CMS-specific auth
+│   └── schema.ts          # Shared schemas
+├── queries.ts             # Aggregated queries
+├── mutations.ts           # Aggregated mutations
+└── schema.ts              # Main schema
+```
+
+---
+
+## Using Feature-Level Shared
+
+**Purpose:** Share code WITHIN a feature (across sub-features)
+
+### Frontend Feature-Shared
+
+**Create shared component:**
 ```typescript
-// ✅ GOOD: Specific error messages
-export const createReport = mutation({
+// frontend/features/cms-lite/shared/components/ImageUploader.tsx
+export function ImageUploader({ onUpload }: ImageUploaderProps) {
+  // Shared logic for image upload
+  // Used by both admin panel AND public pages
+}
+```
+
+**Use in sub-feature:**
+```typescript
+// frontend/features/cms-lite/features/admin/components/ProductForm.tsx
+import { ImageUploader } from '@/features/cms-lite/shared/components/ImageUploader'
+import { useImageUpload } from '@/features/cms-lite/shared/hooks/useImageUpload'
+
+export function ProductForm() {
+  const { upload } = useImageUpload()
+
+  return (
+    <form>
+      <ImageUploader onUpload={upload} />
+    </form>
+  )
+}
+```
+
+### Convex Feature-Shared
+
+**Create shared helper:**
+```typescript
+// convex/features/cms_lite/shared/auth.ts
+export async function requireCmsPermission(
+  ctx: QueryCtx | MutationCtx,
+  workspaceId: Id<'workspaces'>,
+  permission: string
+) {
+  // CMS-specific permission logic
+  const { membership } = await requirePermission(ctx, workspaceId, permission)
+
+  // Additional CMS-specific checks
+  const cmsSettings = await ctx.db
+    .query('cms_settings')
+    .withIndex('by_workspace', q => q.eq('workspaceId', workspaceId))
+    .first()
+
+  if (!cmsSettings?.enabled) {
+    throw new Error('CMS is not enabled for this workspace')
+  }
+
+  return { membership, cmsSettings }
+}
+```
+
+**Use in domain:**
+```typescript
+// convex/features/cms_lite/posts/api/mutations.ts
+import { requireCmsPermission } from '../../shared/auth'
+import { logCmsAudit } from '../../shared/audit'
+
+export const createPost = mutation({
   handler: async (ctx, args) => {
-    const { membership } = await requirePermission(...)
+    // Use feature-shared helper
+    const { membership } = await requireCmsPermission(ctx, args.workspaceId, 'posts.create')
 
-    // Validate input
-    if (!args.name || args.name.trim().length === 0) {
-      throw new Error("Report name is required")
-    }
+    const postId = await ctx.db.insert('posts', args)
 
-    // Check constraints
-    const existing = await ctx.db.query("reports")
-      .withIndex("by_workspace_name", q =>
-        q.eq("workspaceId", args.workspaceId).eq("name", args.name)
-      )
-      .first()
+    // Use feature-shared audit
+    await logCmsAudit(ctx, 'POST_CREATED', postId)
 
-    if (existing) {
-      throw new Error(`Report "${args.name}" already exists`)
-    }
-
-    // Create
-    return await ctx.db.insert("reports", {...})
+    return postId
   }
 })
 ```
 
-### 5. Naming Conventions
+---
 
+## Using Global Shared
+
+**Purpose:** Share code ACROSS ALL features
+
+### Frontend Global Shared
+
+**Available modules:**
 ```typescript
-// Feature slugs: lowercase-kebab-case
-slug: "task-management"
+// UI Components (shadcn/ui)
+import { Button } from '@/frontend/shared/ui/button'
+import { Input } from '@/frontend/shared/ui/input'
+import { Card } from '@/frontend/shared/ui/card'
 
-// Components: PascalCase + Page suffix
-TaskManagementPage.tsx
+// Builder System
+import { Canvas } from '@/frontend/shared/builder/canvas'
+import { Inspector } from '@/frontend/shared/builder/inspector'
 
-// Hooks: camelCase + use prefix
-useTaskManagement.ts
+// Communications
+import { ChatWidget } from '@/frontend/shared/communications/chat'
 
-// Types: PascalCase
-export type TaskItem = {...}
+// Contexts
+import { useWorkspace } from '@/frontend/shared/context/WorkspaceContext'
 
-// Files: kebab-case
-task-list-item.tsx
+// Hooks
+import { useAuth } from '@/frontend/shared/foundation/hooks/useAuth'
+```
 
-// Convex functions: camelCase
-export const getTaskList = query({...})
+### Convex Global Shared
+
+**Available modules:**
+```typescript
+// RBAC
+import { requirePermission } from '@/convex/shared/permissions/helpers'
+import { hasPermission } from '@/convex/shared/permissions/helpers'
+
+// Audit
+import { logAuditEvent } from '@/convex/shared/audit/logger'
+
+// Validation
+import { validateSchema } from '@/convex/shared/utils/validation'
+```
+
+---
+
+## Settings Integration
+
+### Global Settings
+
+**Location:** `frontend/shared/settings/`
+
+**Example:**
+```typescript
+// frontend/shared/settings/workspace/WorkspaceSettings.tsx
+export function WorkspaceSettings() {
+  // Global workspace settings
+  return <div>Workspace Settings</div>
+}
+```
+
+### Feature Settings
+
+**Location:** `frontend/features/{feature}/settings/`
+
+**Example:**
+```typescript
+// frontend/features/cms-lite/settings/GeneralSettings.tsx
+export function GeneralSettings() {
+  // CMS-lite specific settings
+  return <div>CMS Lite Settings</div>
+}
+```
+
+**Register in settings registry:**
+```typescript
+// frontend/shared/settings/featureSettingsRegistry.ts
+export const FEATURE_SETTINGS_REGISTRY = {
+  'cms-lite': {
+    id: 'cms-lite',
+    label: 'CMS Lite Settings',
+    component: lazy(() => import('@/features/cms-lite/settings/GeneralSettings'))
+  },
+}
+```
+
+---
+
+## RBAC & Security
+
+### ✅ REQUIRED: Permission Checks
+
+**Every Convex query MUST check permissions:**
+```typescript
+export const getData = query({
+  args: { workspaceId: v.id('workspaces') },
+  handler: async (ctx, args) => {
+    // ✅ REQUIRED
+    const { membership } = await requirePermission(
+      ctx,
+      args.workspaceId,
+      'resource.view'
+    )
+
+    // Your logic
+  }
+})
+```
+
+**Every Convex mutation MUST check permissions AND log audit:**
+```typescript
+export const createData = mutation({
+  args: { workspaceId: v.id('workspaces'), data: v.any() },
+  handler: async (ctx, args) => {
+    // ✅ REQUIRED: Permission check
+    const { membership } = await requirePermission(
+      ctx,
+      args.workspaceId,
+      'resource.create'
+    )
+
+    // Insert data
+    const id = await ctx.db.insert('resources', args.data)
+
+    // ✅ REQUIRED: Audit log
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      userId: membership.userId,
+      action: 'RESOURCE_CREATED',
+      resourceType: 'resource',
+      resourceId: id,
+      metadata: { ...args.data },
+    })
+
+    return id
+  }
+})
+```
+
+### Permission Patterns
+
+**Basic permission:**
+```typescript
+await requirePermission(ctx, workspaceId, 'posts.create')
+```
+
+**Custom permission logic:**
+```typescript
+// In feature/shared/auth.ts
+export async function requirePostOwnership(
+  ctx: MutationCtx,
+  postId: Id<'posts'>
+) {
+  const { membership } = await requireActiveMembership(ctx, workspaceId)
+
+  const post = await ctx.db.get(postId)
+  if (!post) throw new Error('Post not found')
+
+  if (post.authorId !== membership.userId) {
+    if (!hasPermission(membership.role, 'posts.manage')) {
+      throw new Error('You can only edit your own posts')
+    }
+  }
+
+  return { membership, post }
+}
 ```
 
 ---
@@ -485,295 +552,100 @@ export const getTaskList = query({...})
 
 ### Unit Tests
 
-**Location:** `tests/features/{slug}/{slug}.test.ts`
-
-**Test pure functions, utilities, helpers:**
+**Location:** `tests/features/{feature}/{feature}.test.ts`
 
 ```typescript
-import { describe, it, expect } from "vitest"
-import { formatTaskDate, calculateProgress } from "@/frontend/features/tasks"
+import { describe, it, expect } from 'vitest'
+import { analyzeData } from '@/features/analytics/utils/analyze'
 
-describe("Task Utilities", () => {
-  it("should format dates correctly", () => {
-    const date = new Date("2025-01-19")
-    expect(formatTaskDate(date)).toBe("Jan 19, 2025")
-  })
-
-  it("should calculate progress percentage", () => {
-    expect(calculateProgress(3, 10)).toBe(30)
-    expect(calculateProgress(0, 10)).toBe(0)
-    expect(calculateProgress(10, 10)).toBe(100)
+describe('Analytics Utils', () => {
+  it('should calculate correct metrics', () => {
+    const data = [{ value: 10 }, { value: 20 }]
+    const result = analyzeData(data)
+    expect(result.total).toBe(30)
   })
 })
 ```
 
 ### Integration Tests
 
-**Location:** `tests/features/{slug}/{slug}.integration.test.ts`
-
-**Test Convex queries/mutations with database:**
+**Location:** `tests/features/{feature}/{feature}.integration.test.ts`
 
 ```typescript
-import { describe, it, expect, beforeEach } from "vitest"
-import { convexTest } from "convex-test"
-import schema from "@/convex/schema"
-import { api } from "@/convex/_generated/api"
+import { convexTest } from 'convex-test'
+import { describe, it, expect } from 'vitest'
+import schema from '@/convex/schema'
+import { api } from '@/convex/_generated/api'
 
-  describe("Tasks Integration", () => {
-    let t: any
-    let workspaceId: any
-  let userId: any
+describe('Analytics Integration', () => {
+  it('should track events', async () => {
+    const t = convexTest(schema)
 
-  beforeEach(async () => {
-    t = convexTest(schema)
-
-    // Setup test data
-    userId = await t.run(async (ctx) => {
-      return await ctx.db.insert("users", {
-        name: "Test User",
-        email: "test@example.com",
+    // Create workspace
+    const workspaceId = await t.run(async (ctx) => {
+      return await ctx.db.insert('workspaces', {
+        name: 'Test Workspace'
       })
     })
 
-    workspaceId = await t.mutation(api.workspace.workspaces.createWorkspace, {
-      name: "Test Workspace",
-      slug: "test",
-      type: "personal",
-      isPublic: false,
-    })
-  })
-
-  it("should create a task", async () => {
-    const taskId = await t.mutation(api.features.tasks.mutations.createTask, {
+    // Track event
+    const eventId = await t.mutation(api.features.analytics.mutations.trackEvent, {
       workspaceId,
-      name: "Test Task",
+      eventType: 'page_view',
+      metadata: { page: '/home' }
     })
 
-    expect(taskId).toBeDefined()
-
-    const task = await t.run(async (ctx) => ctx.db.get(taskId))
-    expect(task).toMatchObject({
-      workspaceId,
-      name: "Test Task",
-    })
+    expect(eventId).toBeDefined()
   })
-
-  it("should enforce RBAC on task creation", async () => {
-    // Test without membership should fail
-    await expect(
-      t.mutation(api.features.tasks.mutations.createTask, {
-        workspaceId: "invalid_workspace_id",
-        name: "Test",
-      })
-    ).rejects.toThrow()
-  })
-  })
-  ```
-
-### Dashboard Navigation Regression
-
-- `tests/features/navigation-registry.test.ts` guards the required dashboard slugs (Reports, Support, Projects, CRM, Notifications, Workflows, etc.) so that future refactors cannot accidentally hide them from end users.
-- Update `frontend/views/static/workspaces/constants/navigation.ts` and rerun `pnpm test` whenever you add or rename a dashboard view slug to keep the manifest, navigation, and toast UX in sync.
-- The catch-all route (`app/dashboard/[[...slug]]/page.tsx`) now emits a developer-facing `[frog]` log and a workspace toast if a slug is missing. Treat failing tests or unexpected toasts as blockers before shipping.
-
-### Menu Version Tracking Workflow
-
-- `frontend/shared/layout/menus/components/DragDropMenuTree.tsx` now queries `api.menu.store.menuItems.getMenuUpdates` so every menu item can surface a version badge and an "Update Available" pill when a newer catalog entry exists.
-
-### Layout System (Secondary Sidebar)
-
-The app uses a modular **Secondary Sidebar Layout System** located in `frontend/shared/layout/secondary-sidebar/`:
-
-**Components:**
-- `SecondarySidebarLayout` - Main container component
-- `SecondarySidebarHeader` - Header with title, actions, breadcrumbs, toolbar
-- `SecondarySidebarTools` - Toolbar with search, sort, filter, view toggle
-- `SecondarySidebar` - Sidebar navigation with sections and items
-- `MenuPreview` - Preview panel for menu items (in `frontend/shared/layout/menus/`)
-
-**Usage:**
-```typescript
-import {
-  SecondarySidebarLayout,
-  SecondarySidebarHeader,
-  SecondarySidebarTools,
-} from "@/frontend/shared/layout/secondary-sidebar";
-
-<SecondarySidebarLayout
-  headerProps={{
-    title: "My Feature",
-    description: "Feature description",
-    primaryAction: {
-      label: "New Item",
-      icon: Plus,
-      onClick: () => setShowForm(true),
-    },
-    toolbar: (
-      <SecondarySidebarTools
-        search={{ value: search, onChange: setSearch }}
-        sortOptions={[...]}
-        filterOptions={[...]}
-        viewOptions={[...]}
-      />
-    ),
-  }}
-  sidebarProps={{
-    sections: [...],
-  }}
->
-  <MainContent />
-</SecondarySidebarLayout>
-```
-
-See `frontend/shared/layout/secondary-sidebar/README.md` for full documentation.
-- Extend `frontend/views/static/menus/hooks/useMenuMutations.ts` with the optional `forceUpdate` flag and call `installFeatureMenus({ workspaceId, featureSlugs, forceUpdate: true })` to upgrade an item without reinstalling the entire workspace.
-- Keep semantic versions in sync by editing the catalog entry (`menu_manifest_data.ts` or `optional_features_catalog.ts`) and include `metadata.version`, `previousVersion`, and `lastUpdated` fields for audit logging.
-- All version jumps emit `action: "version_updated"` events in `activityEvents`. Add regression coverage any time you touch the versioning flow.
-
-### Shared Chat Migration Playbook
-
-- New chat surfaces should import the appropriate container from `frontend/features/{domain}/components/*ChatContainer.tsx` or use the generic `shared/chat` presets; never reimplement message loops.
-- Each feature adapter wires Convex through `frontend/features/chat/adapters/convexChatAdapter.ts`; reuse or extend the adapter instead of calling Convex APIs directly.
-- When migrating a legacy screen, follow the three-phase plan: run the shared module in parallel, swap imports feature-by-feature, then delete the bespoke implementation once analytics and QA are green.
-- Convex schema requirements live in `convex/schema.ts` under `chatRooms` and `chatMessages`. Ensure new contexts populate `contextMode`, `linkedEntities`, and `participantIds` so shared analytics (presence, audit trails) remain accurate.
-
-### Test Coverage Requirements
-
-- **Unit Tests:** > 80% coverage for utilities and helpers
-- **Integration Tests:** 100% coverage for all CRUD operations
-- **RBAC Tests:** Test all permission scenarios
-- **Edge Cases:** Test validation, error handling
-
----
-
-## CI/CD Workflow
-
-### Automated Checks (on PR)
-
-1. **Feature Validation**
-   - Validates `features.config.ts` schema
-   - Checks for duplicate slugs
-   - Ensures manifest sync
-
-2. **Type Checking**
-   ```bash
-   pnpm run typecheck
-   ```
-
-3. **Linting**
-   ```bash
-   pnpm run lint
-   ```
-
-4. **Schema Validation**
-   ```bash
-   pnpm run validate:all
-   ```
-
-5. **Tests**
-   ```bash
-   pnpm test
-   pnpm test:coverage
-   ```
-
-### Manual Validation Before Push
-
-```bash
-# Run all checks locally
-pnpm run precommit
-
-# This runs:
-# - Linting
-# - Validation (all schemas)
-# - All tests
+})
 ```
 
 ---
 
 ## Pre-Commit Checklist
 
-Before creating a PR, verify:
+Before committing your feature:
 
-- [ ] **Code Quality**
-  - [ ] No TypeScript errors: `pnpm run typecheck`
-  - [ ] No ESLint errors: `pnpm run lint`
-  - [ ] Code formatted consistently
+### 1. Code Quality
+- [ ] No TypeScript errors (`pnpm type-check`)
+- [ ] No ESLint errors (`pnpm lint`)
+- [ ] Code formatted (`pnpm format`)
 
-- [ ] **Features Config**
-  - [ ] Updated `features.config.ts` with correct metadata
-  - [ ] Ran `pnpm run sync:all`
-  - [ ] All manifest files updated
+### 2. RBAC & Security
+- [ ] All queries have permission checks
+- [ ] All mutations have permission checks
+- [ ] All mutations have audit logging
 
-- [ ] **Schema Validation**
-  - [ ] Ran `pnpm run validate:all`
-  - [ ] No validation errors
+### 3. Testing
+- [ ] Unit tests written and passing
+- [ ] Integration tests written and passing
+- [ ] All tests pass (`pnpm test`)
 
-- [ ] **RBAC Compliance**
-  - [ ] All queries have permission checks
-  - [ ] All mutations have permission checks
-  - [ ] Audit logging added to mutations
+### 4. Validation
+- [ ] Feature config is valid (`pnpm run validate:all`)
+- [ ] Schemas are valid
+- [ ] No hardcoded feature references
 
-- [ ] **Testing**
-  - [ ] Unit tests written and passing
-  - [ ] Integration tests written and passing
-  - [ ] Coverage > 80%: `pnpm test:coverage`
+### 5. Documentation
+- [ ] Feature config has description
+- [ ] Complex logic has comments
+- [ ] README.md updated (if needed)
 
-- [ ] **Documentation**
-  - [ ] JSDoc comments on public APIs
-  - [ ] Complex logic documented
-  - [ ] README updated (if needed)
-
-- [ ] **Manual Testing**
-  - [ ] Feature works in dev environment
-  - [ ] UI responsive on mobile/tablet/desktop
-  - [ ] No console errors
-  - [ ] No accessibility issues
+### 6. Sync
+- [ ] Run `pnpm run sync:all`
+- [ ] Manifests are up to date
+- [ ] No merge conflicts
 
 ---
 
-## Common Commands Cheat Sheet
+## 📖 See Also
 
-```bash
-# Scaffolding
-pnpm run scaffold:feature {slug} --type {default|optional} --category {category}
-
-# Syncing
-pnpm vitest run tests/manifest-content.test.ts          # Sync features + generate manifest
-pnpm run sync:features         # Sync features only
-pnpm run generate:manifest     # Generate manifest only
-
-# Validation
-pnpm run validate:features     # Validate features.config.ts
-pnpm run validate:all          # Validate all schemas
-pnpm run check:features        # Validate + sync (dry-run)
-
-# Testing
-pnpm test                      # Run all tests
-pnpm test:coverage             # Run with coverage report
-pnpm test tests/features/{slug} # Run specific feature tests
-pnpm test:ui                   # Run with UI (Vitest UI)
-
-# Development
-pnpm dev                       # Start Next.js dev server
-npx convex dev --configure=existing --team abdurrahman-fakhrul --project superspace  # Start Convex dev server
-pnpm run typecheck             # Run TypeScript compiler
-pnpm run lint                  # Run ESLint
-
-# Pre-commit
-pnpm run precommit             # Run all pre-commit checks
-```
+- **[System Overview](./1_SYSTEM_OVERVIEW.md)** - High-level architecture
+- **[Modular Architecture](./3_MODULAR_ARCHITECTURE.md)** - Detailed patterns
+- **[Troubleshooting](./4_TROUBLESHOOTING.md)** - Common issues
+- **[Feature Reference](./5_FEATURE_REFERENCE.md)** - Feature catalog
+- **[Feature Rules](./FEATURE_RULES.md)** - Strict rules & enforcement
 
 ---
 
-## Need Help?
-
-1. Check [3_AI_KNOWLEDGE_BASE.md](./3_AI_KNOWLEDGE_BASE.md) for technical details
-2. Check [4_TROUBLESHOOTING.md](./4_TROUBLESHOOTING.md) for common issues
-3. Check [5_FEATURE_REFERENCE.md](./5_FEATURE_REFERENCE.md) for feature examples
-4. Ask in team chat
-5. Create GitHub issue
-
----
-
-**Last Updated:** 2025-01-19
-**Version:** 1.0.0
+**Last Updated:** 2025-11-01

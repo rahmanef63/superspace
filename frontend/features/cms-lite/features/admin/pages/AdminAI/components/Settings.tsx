@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useBackend } from "../../../shared/hooks/useBackend";
-import { LoadingSpinner as Loading } from "../../../shared/components/Loading";
-import { ErrorState } from "../../../shared/components/ErrorState";
+import { useBackend } from "../../../../../shared/hooks/useBackend";
+import { LoadingSpinner as Loading } from "../../../../../shared/components/Loading";
+import { ErrorState } from "../../../../../shared/components/ErrorState";
 import { Button } from "@/components/ui";
-import { Input, Textarea, Select } from "../../../shared/components/Form";
-import { Modal } from "../../../shared/components/Modal";
+import { Input, Textarea, Select } from "../../../../../shared/components/Form";
+import { Modal } from "../../../../../shared/components/Modal";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Pencil, FileText } from "lucide-react";
-import { logger } from "../../../shared/utils/logger";
+import { logger } from "../../../../../shared/utils/logger";
 
 // Placeholder type until backend is integrated
 interface KBDocument {

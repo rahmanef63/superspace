@@ -2,21 +2,21 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
+import { PageHeader } from "@/frontend/shared/ui/components/pages/PageHeader"
 import {
   Activity,
   Calendar,
   FileText,
   MessageSquare,
-  TrendingUp,
   Users,
   Clock,
   CheckCircle2,
   AlertCircle,
-  BarChart3,
 } from "lucide-react"
 
 interface OverviewViewProps {
@@ -34,6 +34,36 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
     api.workspace.workspaces.getWorkspaceMembers,
     workspaceId ? { workspaceId } : "skip"
   )
+
+  // Loading state
+  if (workspace === undefined || members === undefined) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (!workspaceId) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          No workspace selected. Please select a workspace to continue.
+        </AlertDescription>
+      </Alert>
+    )
+  }
 
   // Mock data for demonstration (replace with real queries)
   const stats = {
@@ -100,20 +130,14 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
   ]
 
   return (
-    <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back{workspace?.name ? ` to ${workspace.name}` : ""}!
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening with your workspace today.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={`Welcome back${workspace?.name ? ` to ${workspace.name}` : ""}!`}
+        subtitle="Here's what's happening with your workspace today."
+      />
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
@@ -157,10 +181,10 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               <p className="text-xs text-muted-foreground">+8 from last week</p>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Two Column Layout */}
-        <div className="grid gap-6 md:grid-cols-2">
+      {/* Two Column Layout */}
+      <div className="grid gap-6 md:grid-cols-2">
           {/* Recent Activity */}
           <Card className="col-span-1">
             <CardHeader>
@@ -225,10 +249,10 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               </div>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Quick Actions */}
-        <Card>
+      {/* Quick Actions */}
+      <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Common tasks to get started</CardDescription>
@@ -270,8 +294,7 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               </Button>
             </div>
           </CardContent>
-        </Card>
-      </div>
-    </ScrollArea>
+      </Card>
+    </div>
   )
 }

@@ -31,15 +31,11 @@ export default function DashboardLayout({
             <OnboardingGuard />
           </Suspense>
           <AppSidebar/>
-          <SidebarInset>
+          <SidebarInset className="flex flex-col h-screen overflow-hidden">
             <LoadingBar />
             <SiteHeader />
-            <div className="flex flex-1 flex-col">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col h-full gap-4 md:gap-6">
-                  {children}
-                </div>
-              </div>
+            <div className="@container/main flex flex-1 min-h-0">
+              {children}
             </div>
           </SidebarInset>
         </WorkspaceProvider>

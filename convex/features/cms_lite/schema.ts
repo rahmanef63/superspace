@@ -1,5 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
+import { pagesTable } from "./pages/api/schema";
 
 // Common fields for all CMS entities
 const commonFields = {
@@ -9,6 +10,9 @@ const commonFields = {
   status: v.union(v.literal("active"), v.literal("inactive"), v.literal("draft")),
   metadata: v.optional(v.record(v.string(), v.any())),
 };
+
+// Export pages table
+export { pagesTable };
 
 // Posts table
 export const postsTable = defineTable({

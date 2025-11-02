@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 
 /**
  * Backend Hook for CMS Lite with Convex Integration
@@ -19,6 +20,7 @@ export function useBackend() {
   const createProductMutation = useMutation(api.features.cms_lite.products.api.mutations.createProduct);
   const updateProductMutation = useMutation(api.features.cms_lite.products.api.mutations.updateProduct);
   const deleteProductMutation = useMutation(api.features.cms_lite.products.api.mutations.deleteProduct);
+  const importProductsMutation = useMutation(api.features.cms_lite.products.api.mutations.importProducts);
 
   // Posts mutations
   const createPostMutation = useMutation(api.features.cms_lite.posts.api.mutations.createPost);
@@ -29,6 +31,10 @@ export function useBackend() {
   const createPortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.createPortfolio);
   const updatePortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.updatePortfolio);
   const deletePortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.deletePortfolio);
+
+  // Website Settings mutations
+  const updateWebsiteSettingsMutation = useMutation(api.features.cms_lite.website_settings.api.mutations.updateWebsiteSettings);
+  const verifyDomainMutation = useMutation(api.features.cms_lite.website_settings.api.mutations.verifyDomain);
 
   const backend = {
     products: {
@@ -60,9 +66,9 @@ export function useBackend() {
         console.warn('⚠️ products.exportJSON not yet implemented');
         return { data: [] };
       },
-      importJSON: async (_params?: any) => {
-        console.warn('⚠️ products.importJSON not yet implemented');
-        return { imported: 0 };
+      importJSON: async (params: { data: any[] }) => {
+        const result = await importProductsMutation({ data: params.data });
+        return result;
       },
     },
     posts: {
@@ -171,6 +177,14 @@ export function useBackend() {
     settings: {
       get: async (_params?: any) => ({ settings: {} }),
       update: async (_params?: any) => ({ success: true }),
+      exportAll: async (_params?: any) => {
+        console.warn('⚠️ settings.exportAll not yet implemented');
+        return { data: {} };
+      },
+      importAll: async (_params?: any) => {
+        console.warn('⚠️ settings.importAll not yet implemented');
+        return { success: true, imported: 0 };
+      },
     },
     navigation: {
       list: async (_params?: any) => {
@@ -293,6 +307,20 @@ export function useBackend() {
     landing: {
       getContent: async (_params?: any) => ({ content: { data: {} } }),
       updateContent: async (_params?: any) => ({ success: true }),
+    },
+    websiteSettings: {
+      get: async (_params?: any) => {
+        console.warn('⚠️ websiteSettings.get - use useQuery(api.features.cms_lite.website_settings.api.queries.getWebsiteSettings) directly');
+        return null;
+      },
+      update: async (params: any) => {
+        const result = await updateWebsiteSettingsMutation(params);
+        return { id: result };
+      },
+      verifyDomain: async (params: { workspaceId: Id<"workspaces">; domain: string }) => {
+        const result = await verifyDomainMutation(params);
+        return result;
+      },
     },
   };
 

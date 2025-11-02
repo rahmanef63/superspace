@@ -7,9 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 
 import ConvexClientProvider from "@/components/ConvexClientProvider"
-import { DebugInfo } from "@/components/debug-info"
 import { SafeClerkProvider } from "@/components/SafeClerkProvider"
-import { AuthDebugger } from "@/components/AuthDebugger"
 
 export const metadata: Metadata = {
   title: "SuperSpace App",
@@ -34,8 +32,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SafeClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
             <ConvexClientProvider>
-              <AuthDebugger />
-              <DebugInfo />
               {children}
               <Toaster position="top-right" richColors />
             </ConvexClientProvider>

@@ -24,12 +24,14 @@ import { tables as cmsLiteCurrencyTables } from "./cms_lite/currency/api/schema"
 import cmsLiteFeaturesSchema from "./cms_lite/features/api/schema";
 import cmsLiteLandingSchema from "./cms_lite/landing/api/schema";
 import cmsLiteNavigationSchema from "./cms_lite/navigation/api/schema";
+import { pagesTable } from "./cms_lite/pages/api/schema";
 import { tables as cmsLitePortfolioTables } from "./cms_lite/portfolio/api/schema";
 import { tables as cmsLitePostsTables } from "./cms_lite/posts/api/schema";
 import { tables as cmsLiteProductsTables } from "./cms_lite/products/api/schema";
 import { tables as cmsLiteQuicklinksTables } from "./cms_lite/quicklinks/api/schema";
 import { tables as cmsLiteServicesTables } from "./cms_lite/services/api/schema";
 import { tables as cmsLiteSettingsTables } from "./cms_lite/settings/api/schema";
+import { websiteSettingsTable } from "./cms_lite/website_settings/api/schema";
 import cmsLiteStorageTables from "./cms_lite/storage/api/schema";
 import cmsLiteUsersTables from "./cms_lite/users/api/schema";
 import cmsLiteWishlistTables from "./cms_lite/wishlist/api/schema";
@@ -62,12 +64,14 @@ export const featureTables = {
   ...cmsLiteFeaturesSchema.tables,
   ...cmsLiteLandingSchema.tables,
   ...cmsLiteNavigationSchema.tables,
+  cms_lite_pages: pagesTable,
   ...cmsLitePortfolioTables,
   ...cmsLitePostsTables,
   ...cmsLiteProductsTables,
   ...cmsLiteQuicklinksTables,
   ...cmsLiteServicesTables,
   ...cmsLiteSettingsTables,
+  cms_lite_website_settings: websiteSettingsTable,
   ...cmsLiteStorageTables,
   ...cmsLiteUsersTables,
   ...cmsLiteWishlistTables,

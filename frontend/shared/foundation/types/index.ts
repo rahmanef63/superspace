@@ -13,13 +13,45 @@ export * from "./json-schema"
 export * from "./registry"
 
 // Conversion types
-export * from "./conversion"
+export type {
+  TypeScriptConversionOptions,
+  JSONConversionOptions,
+  ConversionMetadata,
+  IJSONConverter,
+  ITypeScriptConverter,
+  ISchemaConverter,
+  ConversionError,
+  ConversionErrorType,
+  ConversionWarning,
+  ConversionWarningType,
+  ASTNode,
+  SourceLocation,
+  Position,
+  JSXElement,
+  JSXOpeningElement,
+  JSXClosingElement,
+  JSXAttribute,
+  JSXAttributeValue,
+  JSXIdentifier,
+  JSXMemberExpression,
+  JSXText,
+  JSXExpressionContainer,
+  Literal,
+  ConversionContext,
+} from "./conversion"
+export {
+  defaultConversionOptions,
+  createConversionContext,
+} from "./conversion"
 
 // Error types
 export * from "./errors"
 
 // Manifest types
 export * from "./manifest"
+
+// Universal Database types
+export * from "./universal-database"
 
 // Re-export commonly used types for convenience
 export type {
@@ -60,16 +92,23 @@ export type {
   LayoutConfig,
   RouteConfig,
 
+} from "./core"
+
+export type {
   // Registry
   IRegistry,
   RegistryEntry,
   RegistryConfig,
+} from "./registry"
 
+export type {
   // Conversion
   ConversionOptions,
   ConversionResult,
   IConverter,
+} from "./conversion"
 
+export type {
   // JSON
   ComponentJSONType as ComponentJSON,
   ElementJSONType as ElementJSON,
@@ -78,7 +117,7 @@ export type {
   TemplateJSONType as TemplateJSON,
   FlowJSONType as FlowJSON,
   ExportSchemaV1Type as ExportSchema,
-} from "./core"
+} from "./json-schema"
 
 export type {
   Result,

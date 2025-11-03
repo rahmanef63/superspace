@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/ui";
+import { ViewSwitcher, type LegacyViewConfig } from "@/frontend/shared/ui/layout/view-system";
 import { useFriends, useRemoveFriend } from "../api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, UserMinus } from "lucide-react";
@@ -29,7 +29,7 @@ export function FriendsView({ workspaceId }: { workspaceId?: Id<"workspaces"> })
   const rows = (useFriends() || []) as any as FriendRow[];
   const removeFriend = useRemoveFriend();
 
-  const config: ViewConfig<FriendRow> = useMemo(() => ({
+  const config: LegacyViewConfig<FriendRow> = useMemo(() => ({
     getId: (r) => String(r._id),
     columns: [
       {

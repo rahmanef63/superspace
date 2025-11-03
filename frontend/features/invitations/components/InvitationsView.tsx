@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { ViewSwitcher, type ViewConfig } from "@/frontend/shared/ui";
+import { ViewProvider, ViewRenderer, ViewType, type ViewConfig, type ViewColumn, type ViewAction } from "@/frontend/shared/ui/layout/view-system";
 import { Button } from "@/components/ui/button";
 import { Mail, Check, X, Users, UserPlus } from "lucide-react";
 
@@ -35,91 +35,100 @@ export function InvitationsView({ onInvite }: { onInvite?: () => void }) {
   const declineInvitation = useMutation(api.workspace.invitations.declineInvitation);
   const cancelInvitation = useMutation(api.workspace.invitations.cancelInvitation);
 
-  const config: ViewConfig<InvitationRow> = useMemo(() => ({
-    getId: (r) => String(r._id),
-    columns: [
-      {
-        id: "what",
-        header: "Item",
-        cell: (r) => (
-          <div className="flex items-center gap-2">
-            {r.type === "workspace" ? (
-              <Users className="w-4 h-4 text-blue-600" />
-            ) : (
-              <UserPlus className="w-4 h-4 text-green-600" />
-            )}
-            <span className="font-medium">
-              {r.type === "workspace" ? `Workspace: ${r.workspace?.name || "Unknown"}` : "Friend Request"}
-            </span>
-          </div>
-        ),
-      },
-      { id: "direction", header: "Direction", accessor: (r) => r.direction },
-      {
-        id: "who",
-        header: "Party",
-        accessor: (r) => (r.direction === "sent" ? r.inviteeEmail : r.inviter?.name || "Unknown"),
-      },
-      {
-        id: "status",
-        header: "Status",
-        accessor: (r) => r.status,
-      },
-    ],
-    actions: [
-      {
-        id: "accept",
-        label: "Accept",
-        icon: <Check className="w-4 h-4" />,
-        visible: (r) => r.direction === "received" && r.status === "pending",
-        onClick: async (r) => {
-          await acceptInvitation({ invitationId: r._id });
-        },
-      },
-      {
-        id: "decline",
-        label: "Decline",
-        icon: <X className="w-4 h-4" />,
-        visible: (r) => r.direction === "received" && r.status === "pending",
-        onClick: async (r) => {
-          await declineInvitation({ invitationId: r._id });
-        },
-      },
-      {
-        id: "cancel",
-        label: "Cancel",
-        icon: <X className="w-4 h-4" />,
-        visible: (r) => r.direction === "sent" && r.status === "pending",
-        onClick: async (r) => {
-          await cancelInvitation({ invitationId: r._id });
-        },
-      },
-    ],
-    card: {
-      title: (r) => (r.type === "workspace" ? r.workspace?.name || "Workspace" : "Friend Request"),
-      subtitle: (r) => (r.direction === "sent" ? `To: ${r.inviteeEmail}` : `From: ${r.inviter?.name || "Unknown"}`),
-      avatar: () => (
-        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-          <Mail className="w-4 h-4 text-blue-600" />
+  const columns: ViewColumn<InvitationRow>[] = useMemo(() => [
+    {
+      id: "what",
+      key: "what",
+      label: "Item",
+      render: (r: InvitationRow) => (
+        <div className="flex items-center gap-2">
+          {r.type === "workspace" ? (
+            <Users className="w-4 h-4 text-blue-600" />
+          ) : (
+            <UserPlus className="w-4 h-4 text-green-600" />
+          )}
+          <span className="font-medium">
+            {r.type === "workspace" ? `Workspace: ${r.workspace?.name || "Unknown"}` : "Friend Request"}
+          </span>
         </div>
       ),
-      extra: (r) => <span className="text-xs text-gray-500 capitalize">{r.status}</span>,
     },
-    details: {
-      fields: [
-        { label: "Type", value: (r) => r.type },
-        { label: "Direction", value: (r) => r.direction },
-        { label: "Party", value: (r) => (r.direction === "sent" ? r.inviteeEmail : r.inviter?.name || "Unknown") },
-        { label: "Status", value: (r) => r.status },
-        { label: "Workspace", value: (r) => r.workspace?.name },
-        { label: "Role", value: (r) => r.role?.name },
-      ],
+    { id: "direction", key: "direction", label: "Direction", accessor: (r: InvitationRow) => r.direction },
+    {
+      id: "who",
+      key: "who",
+      label: "Party",
+      accessor: (r: InvitationRow) => (r.direction === "sent" ? r.inviteeEmail : r.inviter?.name || "Unknown"),
     },
-    searchFn: (r, q) =>
-      (r.workspace?.name || "").toLowerCase().includes(q) ||
-      r.inviteeEmail.toLowerCase().includes(q) ||
-      (r.inviter?.name || "").toLowerCase().includes(q),
-  }), [acceptInvitation, declineInvitation, cancelInvitation]);
+    {
+      id: "status",
+      key: "status",
+      label: "Status",
+      accessor: (r: InvitationRow) => r.status,
+    },
+  ], []);
+
+  const actions: ViewAction<InvitationRow>[] = useMemo(() => [
+    {
+      id: "accept",
+      label: "Accept",
+      icon: Check,
+      hidden: (r: InvitationRow) => r.direction !== "received" || r.status !== "pending",
+      onClick: async (r: InvitationRow) => {
+        await acceptInvitation({ invitationId: r._id });
+      },
+    },
+    {
+      id: "decline",
+      label: "Decline",
+      icon: X,
+      hidden: (r: InvitationRow) => r.direction !== "received" || r.status !== "pending",
+      onClick: async (r: InvitationRow) => {
+        await declineInvitation({ invitationId: r._id });
+      },
+    },
+    {
+      id: "cancel",
+      label: "Cancel",
+      icon: X,
+      hidden: (r: InvitationRow) => r.direction !== "sent" || r.status !== "pending",
+      onClick: async (r: InvitationRow) => {
+        await cancelInvitation({ invitationId: r._id });
+      },
+    },
+  ], [acceptInvitation, declineInvitation, cancelInvitation]);
+
+  const config: ViewConfig<InvitationRow> = useMemo(() => ({
+    id: "invitations-view",
+    type: ViewType.TABLE,
+    label: "Invitations",
+    columns,
+    rowActions: actions,
+    settings: {
+      showSearch: true,
+      showFilters: true,
+      selectable: false,
+    },
+    renderCard: (r: InvitationRow) => (
+      <div className="p-4 border rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <Mail className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <div className="font-medium">{r.type === "workspace" ? r.workspace?.name || "Workspace" : "Friend Request"}</div>
+            <div className="text-sm text-muted-foreground">
+              {r.direction === "sent" ? `To: ${r.inviteeEmail}` : `From: ${r.inviter?.name || "Unknown"}`}
+            </div>
+          </div>
+          <span className="text-xs text-gray-500 capitalize">{r.status}</span>
+        </div>
+      </div>
+    ),
+    onSearch: (query: string) => {
+      // Search handled by local filter below
+    },
+  }), [columns, actions]);
 
   return (
     <div className="space-y-4">
@@ -180,14 +189,12 @@ export function InvitationsView({ onInvite }: { onInvite?: () => void }) {
           )}
         </div>
       </div>
-      <ViewSwitcher
-        storageKey={`invitations.view`}
-        initialMode="card"
-        data={invitations}
+      <ViewProvider
         config={config}
-        searchable
-        emptyState="No invitations found"
-      />
+        data={invitations}
+      >
+        <ViewRenderer />
+      </ViewProvider>
     </div>
   );
 }

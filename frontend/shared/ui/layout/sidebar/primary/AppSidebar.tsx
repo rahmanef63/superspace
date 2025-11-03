@@ -38,7 +38,7 @@ const REQUIRED_MENU_SLUGS = [
   "user-settings",
 ]
 
-interface AppSidebarProps {
+export interface AppSidebarProps {
   workspaceId?: Id<"workspaces"> | null
   onWorkspaceChange?: (workspaceId: Id<"workspaces">) => void
   activeView?: string

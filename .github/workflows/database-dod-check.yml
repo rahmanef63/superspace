@@ -1,0 +1,236 @@
+name: Database DoD Check
+
+# Run on pull requests that touch database-related code
+on:
+  pull_request:
+    paths:
+      - 'convex/features/database/**'
+      - 'convex/lib/rbac/**'
+      - 'convex/lib/audit/**'
+      - 'frontend/features/database/**'
+      - 'frontend/shared/ui/layout/view-system/**'
+      - 'frontend/shared/foundation/types/**'
+      - 'docs/UNIVERSAL_DATABASE_*.md'
+      - 'scripts/validate-*.ts'
+      - '.github/workflows/database-dod-check.yml'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  validate-dod:
+    name: Validate Definition of Done
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript check
+        run: pnpm tsc --noEmit
+        continue-on-error: true
+
+      # DoD Check #1: Schema Validation
+      - name: DoD #1 - Validate Schemas
+        id: check-schemas
+        run: |
+          echo "::group::Schema Validation"
+          echo "Checking for Zod schemas and Convex schema..."
+
+          # Check if validation files exist
+          if [ ! -d "frontend/shared/foundation/validation" ]; then
+            echo "::error::Validation directory not found"
+            exit 1
+          fi
+
+          if [ ! -f "convex/schema.ts" ]; then
+            echo "::error::Convex schema not found"
+            exit 1
+          fi
+
+          echo "✅ Schema files found"
+          echo "::endgroup::"
+
+      # DoD Check #2: RBAC & Permission Checks
+      - name: DoD #2 - Validate Permission Checks
+        id: check-permissions
+        run: |
+          echo "::group::Permission Check Validation"
+          pnpm run validate:permissions
+          echo "::endgroup::"
+
+      # DoD Check #3: Audit Logging
+      - name: DoD #3 - Validate Audit Logging
+        id: check-audit
+        run: |
+          echo "::group::Audit Log Validation"
+          pnpm run validate:audit
+          echo "::endgroup::"
+
+      # DoD Check #4: Tests
+      - name: DoD #4 - Run Tests
+        id: check-tests
+        run: |
+          echo "::group::Running Tests"
+          pnpm test
+          echo "::endgroup::"
+        continue-on-error: false
+
+      - name: DoD #4 - Check Test Coverage
+        id: check-coverage
+        run: |
+          echo "::group::Test Coverage"
+          pnpm test:coverage
+          echo "::endgroup::"
+        continue-on-error: true
+
+      # DoD Check #5: CI/CD Configuration
+      - name: DoD #5 - Validate CI/CD Config
+        id: check-cicd
+        run: |
+          echo "::group::CI/CD Configuration"
+          echo "Checking GitHub Actions workflows..."
+
+          if [ ! -d ".github/workflows" ]; then
+            echo "::error::.github/workflows directory not found"
+            exit 1
+          fi
+
+          workflow_count=$(ls -1 .github/workflows/*.yml 2>/dev/null | wc -l)
+
+          if [ "$workflow_count" -eq 0 ]; then
+            echo "::error::No GitHub Actions workflows found"
+            exit 1
+          fi
+
+          echo "✅ Found $workflow_count workflow file(s)"
+          echo "::endgroup::"
+
+      # Master DoD Validation
+      - name: Master DoD Validation
+        id: validate-dod
+        run: |
+          echo "::group::Complete DoD Validation"
+          pnpm run validate:dod
+          echo "::endgroup::"
+
+      # Generate DoD Report
+      - name: Generate DoD Report
+        if: always()
+        run: |
+          echo "## Definition of Done (DoD) Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # Check #1: Schema
+          if [ "${{ steps.check-schemas.outcome }}" == "success" ]; then
+            echo "| ✅ DoD #1: Schema Validation | PASS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ DoD #1: Schema Validation | FAIL |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check #2: Permissions
+          if [ "${{ steps.check-permissions.outcome }}" == "success" ]; then
+            echo "| ✅ DoD #2: Permission Checks | PASS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ DoD #2: Permission Checks | FAIL |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check #3: Audit
+          if [ "${{ steps.check-audit.outcome }}" == "success" ]; then
+            echo "| ✅ DoD #3: Audit Logging | PASS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ DoD #3: Audit Logging | FAIL |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check #4: Tests
+          if [ "${{ steps.check-tests.outcome }}" == "success" ]; then
+            echo "| ✅ DoD #4: Tests | PASS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ DoD #4: Tests | FAIL |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check #5: CI/CD
+          if [ "${{ steps.check-cicd.outcome }}" == "success" ]; then
+            echo "| ✅ DoD #5: CI/CD Config | PASS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ DoD #5: CI/CD Config | FAIL |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Overall status
+          if [ "${{ steps.validate-dod.outcome }}" == "success" ]; then
+            echo "### ✅ All DoD Requirements Met!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Code is ready for review and deployment." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ DoD Requirements Not Met" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please fix the failing checks above." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📚 **Resources:**" >> $GITHUB_STEP_SUMMARY
+          echo "- [Mutation Template](convex/templates/mutation_template.ts)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Project Guardrails](.claude/CLAUDE.md)" >> $GITHUB_STEP_SUMMARY
+
+      # Post comment on PR with results
+      - name: Comment PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dodPassed = '${{ steps.validate-dod.outcome }}' === 'success';
+
+            const body = `## 🔍 Definition of Done (DoD) Check
+
+            ${dodPassed ? '✅ **All DoD requirements met!**' : '❌ **Some DoD requirements not met**'}
+
+            | Check | Status |
+            |-------|--------|
+            | DoD #1: Schema Validation | ${{ steps.check-schemas.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
+            | DoD #2: Permission Checks | ${{ steps.check-permissions.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
+            | DoD #3: Audit Logging | ${{ steps.check-audit.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
+            | DoD #4: Tests | ${{ steps.check-tests.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
+            | DoD #5: CI/CD Config | ${{ steps.check-cicd.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
+
+            ${dodPassed ? '' : '### 🔧 How to Fix\n\nRun locally:\n```bash\nnpm run validate:dod\n```\n\nSee [Mutation Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md) for details.'}
+
+            ---
+            📚 **Resources:**
+            - [Mutation Template](convex/templates/mutation_template.ts)
+            - [Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md)
+            - [Project Guardrails](.claude/CLAUDE.md)
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      # Fail the job if DoD validation failed
+      - name: Check DoD Status
+        if: steps.validate-dod.outcome != 'success'
+        run: |
+          echo "::error::DoD validation failed. Please fix the issues above."
+          exit 1

@@ -4,9 +4,8 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-  Card,
-  CardTitle,
-} from '@/frontend/shared/ui';
+} from '@/components/ui/resizable';
+import { Card, CardTitle } from '@/components/ui/card';
 
 import { SharedCanvas } from '@/frontend/shared/ui';
 import { UnifiedLibrary } from '@/frontend/shared/builder';

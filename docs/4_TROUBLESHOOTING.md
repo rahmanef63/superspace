@@ -1,7 +1,7 @@
 # Troubleshooting Guide
 
 > **Solutions to common SuperSpace issues**
-> **Last Updated:** 2025-01-19
+> **Last Updated:** 2025-11-03
 
 ---
 

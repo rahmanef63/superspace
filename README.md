@@ -23,8 +23,111 @@ A modern, production-ready SaaS starter template for building full-stack applica
 -  **Interactive Dashboard** - Complete admin interface with charts
 - 🔔 **Webhook Integration** - Automated user and payment sync
 - 🚢 **Vercel Ready** - One-click deployment
+- 🗄️ **Universal Database** - Notion-like database with 21 property types
 
-## Tech Stack
+## 🗄️ Universal Database System
+
+SuperSpace implements a **Universal Database** system inspired by Notion, providing flexible database functionality:
+
+### Features
+- **21 Property Types:** title, rich_text, number, select, multi_select, date, people, files, checkbox, url, email, relation, rollup, formula, status, phone, button, unique_id, place, created_time, created_by, last_edited_time, last_edited_by
+- **10 View Layouts:** table, board, list, timeline, calendar, gallery, map, chart, feed, form
+- **Type-Safe:** Complete TypeScript + Zod validation
+- **Bidirectional Conversion:** V1 ↔ Universal v2.0
+- **RBAC Enforced:** Permission checks on all operations
+- **Audit Logging:** All changes tracked in activityEvents table
+
+### Type System Example
+
+```typescript
+import type { 
+  UniversalDatabase, 
+  Property, 
+  View 
+} from "@/frontend/shared/foundation/types";
+
+// Create a database
+const database: UniversalDatabase = {
+  schemaVersion: "2.0",
+  db: {
+    id: "db_001",
+    name: "Project Tasks",
+    properties: [
+      {
+        key: "title",
+        name: "Task Name",
+        type: "title",
+        isPrimary: true,
+        position: 0,
+      },
+      {
+        key: "status",
+        name: "Status",
+        type: "select",
+        options: {
+          choices: ["To Do", "In Progress", "Done"]
+        },
+        position: 1,
+      },
+      {
+        key: "assignee",
+        name: "Assignee",
+        type: "people",
+        options: {
+          allowMultiple: false,
+          showAvatars: true
+        },
+        position: 2,
+      }
+    ],
+    views: [
+      {
+        name: "All Tasks",
+        layout: "table",
+        isDefault: true,
+        position: 0,
+      },
+      {
+        name: "Board",
+        layout: "board",
+        groupBy: "status",
+        position: 1,
+      }
+    ],
+    rows: [],
+  }
+};
+```
+
+### Documentation
+
+- **Specification:** `docs/UNIVERSAL_DATABASE_SPEC.md` - Complete v2.0 spec
+- **TODO List:** `docs/UNIVERSAL_DATABASE_TODO.md` - Implementation tasks
+- **Progress:** `docs/99_CURRENT_PROGRESS.md` - Phase tracker
+- **Completion Report:** `docs/PHASE_1_COMPLETION_REPORT.md` - Phase 1 details
+- **Progress Summary:** `docs/PHASE_1_PROGRESS_SUMMARY.md` - Current status
+- **Migration Guide:** `docs/MIGRATION_CHECKLIST.md` - V1 to Universal migration
+
+### Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run Universal Database tests only
+pnpm test universal-database
+
+# Check coverage
+pnpm test:coverage
+```
+
+**Current Status:**
+- ✅ Phase 1 (Tasks 1.1-1.4) Complete - Foundation & Type System
+- ⏳ Phase 1 (Tasks 1.5-1.7) Next - Property/View Options
+- 🎯 87+ unit tests passing
+- 📊 85%+ test coverage
+
+
 
 ### Frontend
 - **Next.js 15** - React framework with App Router

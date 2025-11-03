@@ -1,42 +1,73 @@
 // Public API for shared/layout
 export { default as MasterDetailLayout } from "./MasterDetailLayout";
 
-// Secondary Sidebar
+// ============================================================================
+// Chrome (Top-level UI)
+// ============================================================================
+
+export { HeaderBar } from "./chrome/HeaderBar";
+export type { HeaderBarProps, Breadcrumb } from "./chrome/HeaderBar";
+export { StatusBar } from "./chrome/StatusBar";
+export type { StatusBarProps } from "./chrome/StatusBar";
+
+// ============================================================================
+// Sidebar System (SSOT)
+// ============================================================================
+
+// Primary Sidebar
+export { 
+  AppSidebar,
+  WorkspaceSwitcher,
+  NavMain,
+  NavSecondary,
+  NavSystem,
+  NavUser 
+} from "./sidebar/primary";
+export type { AppSidebarProps } from "./sidebar/primary";
+
+// Secondary Sidebar (includes SecondaryList and variants)
 export * from "./sidebar/secondary";
 
-// Universal Toolbar
-// Explicitly namespace toolbar exports to avoid conflicts
+// Site Header & Components
+export {
+  SiteHeader,
+  BreadcrumbsProvider,
+  useBreadcrumbs,
+  LoadingBar,
+  OnboardingGuard,
+} from "./sidebar/components";
+
+// ============================================================================
+// Toolbar System (SSOT)
+// ============================================================================
+
 export * as Toolbar from "./toolbar";
 
-// ✅ View System (SSOT - Single Source of Truth)
-// Registry-based view system with 18+ layouts
-// Completely independent from sidebar and toolbar
+// ============================================================================
+// View System (SSOT)
+// ============================================================================
+
 export * as ViewSystem from "./view-system";
 
-// Re-export view components for convenience (only fully implemented ones)
-export { 
-  TableView, 
-  GridView 
-} from "./view-system";
+// Re-export commonly used views
+export { TableView, GridView } from "./view-system";
 
-// Layout Compositions
-// Combines sidebar, view-system, and toolbar in common patterns
+// ============================================================================
+// Compositions (High-level layouts)
+// ============================================================================
+
 export * as Compositions from "./compositions";
 export * from "./compositions";
 
-// Menus
+// ============================================================================
+// Menus System
+// ============================================================================
+
 export * as Menus from "./menus";
 export * from "./menus";
 
+// ============================================================================
 // Notifications
-export * from "./notifications";
+// ============================================================================
 
-// ⚠️ DEPRECATED: Legacy view folder
-// The following exports are kept for backward compatibility only.
-// New code should use ViewSystem.* instead.
-// These will be removed in a future version.
-export { ViewSwitcher } from "./view/ViewSwitcher";
-export { ViewToolbar } from "./view/ViewToolbar";
-export { RowActions } from "./view/RowActions";
-export { useViewMode } from "./view/useViewMode";
-export type { ViewMode } from "./view/types";
+export * from "./notifications";

@@ -60,3 +60,7 @@ export { default as GridView } from "./views/GridView";
 // Note: Legacy CardView and DetailListView were moved to view/ folder
 // as they use incompatible Column/RowAction types and need rewriting.
 // For now, all unimplemented view types use fallback components in renderer.tsx
+
+// ⚠️ DEPRECATED: Legacy Compatibility Layer
+// TODO: Remove after migrating all features to new ViewProvider/ViewRenderer API
+export { ViewSwitcher, type LegacyViewConfig } from "./ViewSwitcher-compat";

@@ -1,353 +1,136 @@
 # SuperSpace Documentation
 
-> **Complete documentation for SuperSpace modular architecture**
+**Essential AI Context Files - Optimized for Token Efficiency**
 
-**Last Updated:** 2025-11-02
-
----
-
-## 📚 Core Documentation (6 Files)
-
-### 1. [System Overview](./1_SYSTEM_OVERVIEW.md)
-**Arsitektur high-level, konsep kunci, dan tech stack**
-
-**Topics:**
-- Modular Architecture (Nested Features & Shared)
-- Auto-Discovery System
-- Feature Types & Lifecycle
-- RBAC & Security Model
-- Complete Folder Structure
-- Tech Stack
-
-**Read this if:** You're new to SuperSpace or need architectural overview.
+This folder contains minimal, high-quality documentation to provide AI with necessary context while minimizing token usage.
 
 ---
 
-### 2. [Developer Guide](./2_DEVELOPER_GUIDE.md)
-**Step-by-step guide untuk building features**
+## 📚 Core Documentation (Numbered Files)
 
-**Topics:**
-- Quick Start (5 minutes)
-- Building Simple Features (boilerplate)
-- Building Complex Features (with Sub-Features)
-- Using Feature-Level Shared
-- Using Global Shared
-- Settings Integration
-- RBAC & Security Patterns
-- Testing Guidelines
-- Pre-Commit Checklist
+### System & Architecture
+- **[1_SYSTEM_OVERVIEW.md](./1_SYSTEM_OVERVIEW.md)** - High-level architecture, modular system, tech stack, RBAC model
+- **[2_DEVELOPER_GUIDE.md](./2_DEVELOPER_GUIDE.md)** - Complete implementation guide, RBAC patterns, testing guidelines
+- **[3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md)** - 3-tier architecture, nested features, decision trees
+- **[4_TROUBLESHOOTING.md](./4_TROUBLESHOOTING.md)** - Common issues and solutions
+- **[5_FEATURE_REFERENCE.md](./5_FEATURE_REFERENCE.md)** - Dynamic feature discovery, API patterns
+- **[6_DESIGN_SYSTEM.md](./6_DESIGN_SYSTEM.md)** - UI/UX guidelines, component library, design tokens
 
-**Read this if:** You're building a new feature or need implementation guide.
-
----
-
-### 3. [Modular Architecture](./3_MODULAR_ARCHITECTURE.md)
-**Deep dive into 3-tier modular system**
-
-**Topics:**
-- 3-Tier Architecture (Feature → Feature-Shared → Global-Shared)
-- Feature-Level Structure (boilerplate)
-- Nested Features Pattern
-- Feature-Shared Pattern
-- Global-Shared Pattern
-- Decision Trees (Where to Put Code)
-- Settings Architecture
-- Best Practices
-
-**Read this if:** You need to understand modular patterns or decide where to put code.
+### Progress Tracking
+- **[99_CURRENT_PROGRESS.md](./99_CURRENT_PROGRESS.md)** - Universal Database implementation tracker
+  - Current: Week 0 Complete (95/100 Agent Alpha Score) → Phase 1 Starting
+  - 7 phases planned, ~250 tasks total
 
 ---
 
-### 4. [Troubleshooting](./4_TROUBLESHOOTING.md)
-**Common issues and solutions**
+## 🗄️ Universal Database Implementation
 
-**Topics:**
-- Build & Runtime Errors
-- Convex Issues
-- RBAC & Permission Errors
-- Feature Registration Issues
-- Testing Issues
-- Performance Issues
+### Core Specifications
+- **[UNIVERSAL_DATABASE_SPEC.md](./UNIVERSAL_DATABASE_SPEC.md)** - Complete specification
+  - 21 property types (text, number, select, date, person, etc.)
+  - 10 view layouts (table, board, gallery, calendar, etc.)
+  - Universal JSON schema v2.0
+  - Notion-like flexibility
 
-**Read this if:** You're facing an error or issue.
+- **[UNIVERSAL_DATABASE_TODO.md](./UNIVERSAL_DATABASE_TODO.md)** - Master task breakdown
+  - ~250 tasks across 7 phases
+  - Week 0: ✅ Complete (Preparation & Compliance)
+  - Phase 1-7: Foundation → Properties → Views → Integration → Export → Polish → Rollout
 
----
+### Implementation Guides
+- **[MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)** - **MANDATORY READING** (800+ lines)
+  - The 6-Step Pattern (permission → validation → verification → auth → logic → audit)
+  - 4 mutation templates (create, update, delete, batch)
+  - RBAC + audit logging enforcement
+  - Best practices, anti-patterns, testing requirements
+  - Real-world examples
 
-### 5. [Feature Reference](./5_FEATURE_REFERENCE.md)
-**Dynamic feature discovery and API reference**
-
-**Topics:**
-- **Dynamic Feature Discovery** (pnpm run list:features)
-- Feature Structure Reference (boilerplate)
-- Feature Config Schema
-- Programmatic Access (Frontend, Node, Convex)
-- Feature Analysis & Validation
-- UI & RBAC Patterns (boilerplate)
-
-**Read this if:** You need reference for feature structure or API patterns.
-
----
-
-### 6. [Design System & UI Guidelines](./6_DESIGN_SYSTEM.md)
-**Comprehensive design system for consistent UI**
-
-**Topics:**
-- Design Principles & Design Tokens
-- Color System (Light/Dark Mode)
-- Typography & Spacing
-- Component Library (40+ shadcn/ui components)
-- Layout Patterns (Page, Sidebar, Cards)
-- Common Patterns (Loading, Empty, Error states)
-- Best Practices & Accessibility
-- Complete Page Examples
-
-**Read this if:** You're building UI or need design consistency guidelines.
+- **[V1_V2_BOUNDARIES.md](./V1_V2_BOUNDARIES.md)** - Prevents circular dependencies
+  - Clear import rules during parallel V1/V2 development
+  - Adapter layer pattern
+  - TypeScript project references
+  - Directory structure guidelines
 
 ---
 
-## 📖 Support Documentation
+## 📜 Rules & Guidelines
 
-### [Feature Rules](./FEATURE_RULES.md)
-**Strict rules for feature development**
+### Development Rules
+- **[FEATURE_RULES.md](./FEATURE_RULES.md)** - **CRITICAL - MUST FOLLOW**
+  - Golden Rule: Zero hardcoding outside feature folders
+  - Single Source of Truth (config.ts)
+  - 100% auto-discovery
+  - Dynamic everything
+  - Agent enforcement
 
-**Golden Rules:**
-1. Zero Hardcoding Outside Feature Folders
-2. Single Source of Truth (config.ts)
-3. 100% Auto-Discovery
-4. Dynamic Everything
-
-**Read this if:** You want to understand the enforcement rules.
-
----
-
-### [Convex Rules](./convex_rules.mdc)
-**Convex-specific rules and patterns (Cursor-specific)**
+### Convex Patterns
+- **[convex_rules.mdc](./convex_rules.mdc)** - Convex-specific patterns (Cursor IDE)
 
 ---
 
-## 📁 Additional Resources
+## 🎯 Quick Start
 
-### `features/`
-Feature-specific documentation generated by analyzer:
-```bash
-pnpm run analyze:feature {feature-slug} --save
-```
+### For New Features
+1. Read: [2_DEVELOPER_GUIDE.md](./2_DEVELOPER_GUIDE.md)
+2. Follow: [FEATURE_RULES.md](./FEATURE_RULES.md)
+3. If writing mutations: [MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)
 
-### `examples/`
-Code examples and templates
+### For Universal Database Work
+1. Status: [99_CURRENT_PROGRESS.md](./99_CURRENT_PROGRESS.md)
+2. Spec: [UNIVERSAL_DATABASE_SPEC.md](./UNIVERSAL_DATABASE_SPEC.md)
+3. Tasks: [UNIVERSAL_DATABASE_TODO.md](./UNIVERSAL_DATABASE_TODO.md)
+4. Patterns: [MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)
+5. Boundaries: [V1_V2_BOUNDARIES.md](./V1_V2_BOUNDARIES.md)
 
----
-
-## 🏗️ Architecture Summary
-
-### 3-Tier Modular System
-
-```
-┌─────────────────────────────────────────┐
-│          Feature Level                  │
-│  (Self-contained features)              │
-│                                         │
-│  frontend/features/{feature}/           │
-│  convex/features/{feature}/             │
-└────────────────┬────────────────────────┘
-                 │
-┌────────────────┴────────────────────────┐
-│      Feature-Shared Level               │
-│  (Shared within feature)                │
-│                                         │
-│  features/{feature}/shared/             │
-│  convex/features/{feature}/shared/      │
-└────────────────┬────────────────────────┘
-                 │
-┌────────────────┴────────────────────────┐
-│       Global-Shared Level               │
-│  (Shared across ALL features)           │
-│                                         │
-│  frontend/shared/                       │
-│  convex/shared/                         │
-└─────────────────────────────────────────┘
-```
-
-### Key Patterns (Placeholders Only!)
-
-**Nested Features:**
-```
-frontend/features/{feature-slug}/
-├── config.ts              # Feature config (SSOT)
-├── components/            # Main components
-├── features/              # 🎯 Sub-features
-│   └── {sub-feature}/
-└── shared/                # 🎯 Feature-shared
-    ├── components/
-    └── hooks/
-```
-
-**Convex Mirror:**
-```
-convex/features/{feature_slug}/
-├── {domain}/              # Domain
-├── features/              # 🎯 Sub-features
-└── shared/                # 🎯 Feature-shared
-    ├── audit.ts
-    └── auth.ts
-```
-
-**Global Shared:**
-```
-frontend/shared/
-├── builder/              # Builder system
-├── communications/       # Chat, notifications
-├── context/              # Global contexts
-├── foundation/           # Core utilities
-├── settings/             # Global settings
-└── ui/                   # shadcn/ui
-```
+### For Architecture Understanding
+1. Overview: [1_SYSTEM_OVERVIEW.md](./1_SYSTEM_OVERVIEW.md)
+2. Patterns: [3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md)
+3. Design: [6_DESIGN_SYSTEM.md](./6_DESIGN_SYSTEM.md)
 
 ---
 
-## 🚀 Quick Links
+## 📊 Documentation Stats
 
-### Getting Started
-1. [System Overview](./1_SYSTEM_OVERVIEW.md) - Start here!
-2. [Developer Guide](./2_DEVELOPER_GUIDE.md) - Build your first feature
-3. [Modular Architecture](./3_MODULAR_ARCHITECTURE.md) - Understand the patterns
+| Category | Files | Description |
+|----------|-------|-------------|
+| **Core Docs** | 7 files | System, guides, reference (numbered 1-6, 99) |
+| **Universal DB** | 4 files | Spec, tasks, guides, boundaries |
+| **Rules** | 2 files | Feature rules, Convex patterns |
+| **Total** | 13 files | Essential context only |
 
-### Reference
-- [Feature Rules](./FEATURE_RULES.md) - Enforcement rules
-- [Feature Reference](./5_FEATURE_REFERENCE.md) - Dynamic discovery & patterns
-- [Troubleshooting](./4_TROUBLESHOOTING.md) - Fix issues
-
-### Advanced
-- [Nested Features](./3_MODULAR_ARCHITECTURE.md#tier-1-feature-level) - Complex features
-- [Settings Architecture](./3_MODULAR_ARCHITECTURE.md#settings-architecture) - Settings system
-- [Decision Trees](./3_MODULAR_ARCHITECTURE.md#decision-tree-where-to-put-code) - Where to put code
+**Optimization:** Reduced from 20+ files to 13 essential files for AI context efficiency.
 
 ---
 
-## 🎯 Zero Hardcoding Principle
+## 🔄 Recent Updates
 
-**ALL docs use placeholders:**
-- `{feature-slug}` - Feature slug
-- `{FeatureName}` - Feature name in PascalCase
-- `{Component}` - Component name
-- `{domain}` - Domain/subdomain
-- `{sub-feature}` - Sub-feature name
-
-**NO hardcoded feature names!**
-- ❌ WRONG: "cms-lite", "analytics", "chat"
-- ✅ RIGHT: "{feature-slug}", boilerplate examples
-
-**Dynamic discovery:**
-```bash
-# Get actual feature list dynamically
-pnpm run list:features
-pnpm run analyze:feature {feature-slug}
-```
+### 2025-11-03
+- ✅ Documentation cleanup for token efficiency
+- ✅ Consolidated to 13 essential files
+- ✅ Updated 2_DEVELOPER_GUIDE.md with mutation guide reference
+- ✅ Updated 99_CURRENT_PROGRESS.md with Week 0 completion status
+- ✅ Agent Alpha conditional approval (95/100)
 
 ---
 
-## 📊 Documentation Statistics
+## 💡 Documentation Philosophy
 
-| File | Size | Topics | Approach |
-|------|------|--------|----------|
-| 1_SYSTEM_OVERVIEW.md | 12 KB | Architecture, Concepts | Placeholders |
-| 2_DEVELOPER_GUIDE.md | 17 KB | Implementation | Boilerplate |
-| 3_MODULAR_ARCHITECTURE.md | 17 KB | Patterns, Best Practices | Generic |
-| 4_TROUBLESHOOTING.md | 21 KB | Issues, Solutions | Generic |
-| 5_FEATURE_REFERENCE.md | 11 KB | Dynamic Discovery, API | Placeholders |
-| 6_DESIGN_SYSTEM.md | 26 KB | UI/UX, Components | Patterns & Examples |
+**Keep:**
+- High-signal, essential information
+- Rules that AI must follow
+- Current specifications and progress
+- Comprehensive guides for complex patterns
 
-**Total:** 6 core docs, ~104 KB, **ZERO hardcoded features**
+**Remove:**
+- Redundant information
+- Historical/completed migration docs
+- Temporary status files
+- Information that can be derived from code
 
----
-
-## 🔄 Update History
-
-### 2025-11-02 - Design System Documentation
-- ✅ **Added 6_DESIGN_SYSTEM.md** (new)
-- ✅ Complete design guidelines & component library reference
-- ✅ 40+ shadcn/ui components documented
-- ✅ Layout patterns & best practices
-- ✅ Accessibility guidelines (WCAG 2.1 AA)
-- ✅ Complete page examples with all states
-
-### 2025-11-01 - Zero Hardcoding Update
-- ✅ **Removed ALL hardcoded feature names**
-- ✅ Replaced with placeholders (`{feature-slug}`, `{FeatureName}`)
-- ✅ All examples use boilerplate/generic patterns
-- ✅ 5_FEATURE_REFERENCE.md now focuses on **dynamic discovery**
-- ✅ Docs are now **100% feature-agnostic**
-
-### 2025-11-01 - Major Restructure
-- ✅ Removed 15+ obsolete migration docs
-- ✅ Created [3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md) (new)
-- ✅ Updated all docs for modular patterns
-- ✅ Consolidated from 20+ files to 5 core files
-- ✅ Documented 3-tier modular system
-- ✅ Added nested features & feature-shared patterns
-- ✅ Updated for shared/ restructure
-
-### Key Improvements
-- **Zero Hardcoding** ✅ - All placeholders
-- **Fundamental Focus** ✅ - Patterns, not specifics
-- **Dynamic Discovery** ✅ - pnpm run list:features
-- **Boilerplate Examples** ✅ - Generic templates
-- **Feature-Agnostic** ✅ - Works for ANY feature
+**Result:** Maximum context value with minimum token usage.
 
 ---
 
-## 📝 Contributing to Docs
-
-### When to Update Docs
-
-**Update when:**
-- Adding new architectural pattern
-- Changing core concepts
-- Adding new feature type
-- Refactoring shared/ structure
-
-**Don't create new docs for:**
-- Specific features (use `pnpm run analyze:feature {slug} --save`)
-- Migration status (temporary)
-- One-off issues (goes in Troubleshooting)
-
-### How to Update
-
-1. Find relevant core doc (1-5)
-2. Update section or add new section
-3. **Use placeholders** - NO hardcoded names!
-4. Update "Last Updated" date
-5. Update this README if structure changes
-
-### Placeholder Guidelines
-
-Always use:
-- `{feature-slug}` for feature slug
-- `{FeatureName}` for PascalCase names
-- `{Component}` for component names
-- `{domain}` for domains
-- `{sub-feature}` for sub-features
-
-NEVER use actual feature names like "cms-lite", "analytics", etc.
-
----
-
-## 🎯 Design Principles
-
-1. **6 Core Docs** - All essential content in 6 focused files
-2. **Zero Hardcoding** - Use placeholders everywhere
-3. **Fundamental Focus** - Document patterns, not specifics
-4. **Dynamic Discovery** - Features discovered via CLI
-5. **Boilerplate Examples** - Generic, reusable templates
-6. **Design Consistency** - UI guidelines for all features
-7. **Clear Navigation** - Easy to find what you need
-
----
-
-**Questions?** Check [Troubleshooting](./4_TROUBLESHOOTING.md) or ask the team.
-
-**List Features:** `pnpm run list:features`
-
-**Analyze Feature:** `pnpm run analyze:feature {feature-slug} --save`
-
-**Last Updated:** 2025-11-02
+**Current Status:** Week 0 Complete → Phase 1 Starting
+**Next Milestone:** Foundation & Type System (Week 1-2)
+**Last Updated:** 2025-11-03

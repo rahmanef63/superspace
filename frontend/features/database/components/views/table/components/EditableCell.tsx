@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronDown, X } from "lucide-react";
 import type { DatabaseField, DatabaseSelectOption } from "../../../../types";
 import { FieldValue } from "../../../FieldValue";
+import { propertyRegistry } from "../../../../registry";
+import type { Property } from "@/frontend/shared/foundation/types/universal-database";
 
 const isArrayEqual = (a: unknown[], b: unknown[]) => {
   if (a.length !== b.length) return false;
@@ -96,13 +98,69 @@ const formatMultiSelectPreview = (options: DatabaseSelectOption[], selected: str
 };
 
 export interface EditableCellProps {
-  field: DatabaseField;
+  field: DatabaseField | Property;
   value: unknown;
   disabled?: boolean;
   onCommit?: (value: unknown) => Promise<void> | void;
 }
 
+/**
+ * Detect if field is V2 Universal Database Property
+ */
+const isV2Property = (field: DatabaseField | Property): field is Property => {
+  return 'key' in field && 'required' in field;
+};
+
+/**
+ * Render V2 editable cell using Property Registry
+ */
+const renderV2Editor = (
+  property: Property,
+  value: unknown,
+  onCommit?: (value: unknown) => Promise<void> | void,
+) => {
+  const config = propertyRegistry.get(property.type);
+  
+  if (!config) {
+    // Fallback to generic input
+    return (
+      <Input
+        value={value ? String(value) : ''}
+        onChange={(e) => onCommit?.(e.target.value || null)}
+        className="h-8"
+      />
+    );
+  }
+
+  const { Editor } = config;
+  
+  return (
+    <div className="w-full">
+      <Editor
+        value={value}
+        property={property}
+        onChange={(newValue) => {
+          void onCommit?.(newValue);
+        }}
+      />
+    </div>
+  );
+};
+
 export function EditableCell({ field, value, disabled, onCommit }: EditableCellProps) {
+  // V2 Universal Database: Use Property Registry Editors
+  if (isV2Property(field)) {
+    if (disabled) {
+      return (
+        <div className="w-full cursor-not-allowed rounded-md px-2 py-1 text-sm text-muted-foreground">
+          <FieldValue field={field} value={value} />
+        </div>
+      );
+    }
+    return renderV2Editor(field, value, onCommit);
+  }
+
+  // V1 Legacy Database: Use old editing logic
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<string>(() => (value == null ? "" : String(value)));
   const [multiDraft, setMultiDraft] = useState<string[]>(() => normalizeToStringArray(value));

@@ -2,7 +2,7 @@
 
 > **Comprehensive guide for developers building features in SuperSpace**
 
-**Last Updated:** 2025-11-01
+**Last Updated:** 2025-11-03
 
 ---
 
@@ -298,6 +298,63 @@ convex/features/cms_lite/
 
 ---
 
+
+## 🚀 Developer Workflow
+
+### Adding a New Feature
+
+```bash
+# 1. Create feature (auto-generates everything)
+pnpm run create:feature my-feature --type optional --category productivity
+
+# 2. Implement feature
+# Edit frontend/features/my-feature/page.tsx
+# Edit convex/features/my-feature/index.ts
+
+# 3. Sync and validate
+pnpm run sync:all
+pnpm run validate:features
+
+# 4. Test
+pnpm test
+
+# 5. Commit
+# Feature is auto-discovered, zero manual registration!
+```
+
+### Modifying an Existing Feature
+
+```bash
+# 1. Edit feature config
+pnpm run edit:feature my-feature
+
+# 2. Make changes to config.ts
+# Update name, description, icon, order, etc.
+
+# 3. Sync
+pnpm run sync:all
+
+# 4. Validate
+pnpm run validate:features
+
+# 5. Navigation and manifests update automatically!
+```
+
+### Removing a Feature
+
+```bash
+# 1. Archive feature (recommended)
+pnpm run delete:feature my-feature --archive --confirm
+
+# 2. Or permanently delete
+pnpm run delete:feature my-feature --confirm
+
+# 3. Sync
+pnpm run sync:all
+
+# 4. Navigation and manifests update automatically!
+```
+
 ## Using Feature-Level Shared
 
 **Purpose:** Share code WITHIN a feature (across sub-features)
@@ -545,6 +602,18 @@ export async function requirePostOwnership(
   return { membership, post }
 }
 ```
+
+### 📚 Advanced Mutation Patterns
+
+For comprehensive mutation patterns with RBAC + audit logging, see:
+- **[MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)** - 800+ lines covering:
+  - The 6-Step Pattern (permission, validation, verification, auth, logic, audit)
+  - 4 mutation templates (create, update, delete, batch operations)
+  - Best practices & anti-patterns
+  - Testing requirements
+  - Real-world examples
+
+This guide is **mandatory reading** for Universal Database implementation and recommended for all feature development.
 
 ---
 

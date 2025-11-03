@@ -7,7 +7,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { ViewSwitcher } from "@/frontend/shared/ui";
+import { ViewSwitcher } from "@/frontend/shared/ui/layout/view-system";
 import {
   SecondarySidebarLayout,
   type SecondarySidebarHeaderProps,

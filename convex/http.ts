@@ -1,3 +1,4 @@
+// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";

@@ -1,0 +1,428 @@
+/**
+ * MUTATION TEMPLATE WITH MANDATORY RBAC + AUDIT LOGGING
+ *
+ * This template enforces SuperSpace project guardrails:
+ * - ✅ RBAC permission checks (DoD #2)
+ * - ✅ Audit event logging (DoD #3)
+ * - ✅ Zod validation (DoD #1)
+ * - ✅ Workspace isolation
+ * - ✅ Proper error handling
+ *
+ * USAGE:
+ * 1. Copy this template
+ * 2. Replace `YourEntity` with your entity name
+ * 3. Replace `YourInput` with your input schema
+ * 4. Implement business logic in the designated section
+ * 5. Update audit log action type
+ * 6. Update permission string
+ *
+ * VALIDATION:
+ * This template will be validated by:
+ * - scripts/validate-permissions.ts
+ * - scripts/validate-audit-logs.ts
+ * - scripts/validate-dod.ts
+ *
+ * @see docs/MUTATION_TEMPLATE_GUIDE.md for detailed usage
+ * @see .claude/CLAUDE.md for project guardrails
+ */
+
+import { v } from "convex/values";
+import { mutation } from "../_generated/server";
+import { requirePermission } from "../lib/rbac/permissions";
+import { logAudit } from "../lib/audit/logger";
+
+/**
+ * Example: Create Entity Mutation
+ *
+ * Template for creating a new entity with full RBAC and audit compliance
+ */
+export const createEntity = mutation({
+  // ============================================================================
+  // STEP 1: DEFINE ARGS WITH ZOD-LIKE VALIDATION (DoD #1)
+  // ============================================================================
+  args: {
+    workspaceId: v.id("workspaces"),        // Required for workspace isolation
+
+    // Entity-specific fields (customize these)
+    name: v.string(),
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()),
+
+    // Add your custom fields here
+    // Example:
+    // status: v.string(),
+    // priority: v.number(),
+    // assigneeId: v.optional(v.id("users")),
+  },
+
+  // ============================================================================
+  // STEP 2: HANDLER WITH MANDATORY RBAC + AUDIT
+  // ============================================================================
+  handler: async (ctx, args) => {
+    // ------------------------------------------------------------------------
+    // 🔴 CRITICAL: PERMISSION CHECK (DoD #2)
+    // This MUST be the first line in every mutation
+    // Replace 'entity.create' with your actual permission string
+    // ------------------------------------------------------------------------
+    await requirePermission(ctx, args.workspaceId, "entity.create");
+
+    // ------------------------------------------------------------------------
+    // STEP 3: VALIDATE INPUT (DoD #1)
+    // Add custom validation logic here
+    // ------------------------------------------------------------------------
+    if (!args.name || args.name.trim().length === 0) {
+      throw new Error("Entity name is required and cannot be empty");
+    }
+
+    if (args.name.length > 100) {
+      throw new Error("Entity name must be 100 characters or less");
+    }
+
+    // ------------------------------------------------------------------------
+    // STEP 4: VERIFY WORKSPACE EXISTS
+    // Ensure workspace isolation
+    // ------------------------------------------------------------------------
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+
+    // ------------------------------------------------------------------------
+    // STEP 5: BUSINESS LOGIC
+    // Implement your entity creation logic here
+    // ------------------------------------------------------------------------
+    const now = Date.now();
+    const userId = await ctx.auth.getUserIdentity();
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Create the entity
+    const entityId = await ctx.db.insert("yourEntitiesTable", {
+      workspaceId: args.workspaceId,
+      name: args.name,
+      description: args.description,
+      icon: args.icon,
+
+      // Audit fields (standard for all entities)
+      createdById: userId.subject as any, // Cast to match your User ID type
+      updatedById: userId.subject as any,
+      createdAt: now,
+      updatedAt: now,
+
+      // Add your custom fields here
+      // Example:
+      // status: args.status,
+      // priority: args.priority,
+    });
+
+    // ------------------------------------------------------------------------
+    // 🔴 CRITICAL: AUDIT LOGGING (DoD #3)
+    // This MUST be called after successful operation
+    // Replace 'entity.created' with your actual action type
+    // ------------------------------------------------------------------------
+    await logAudit(ctx, {
+      action: "entity.created",
+      entityType: "yourEntitiesTable",
+      entityId: entityId,
+      workspaceId: args.workspaceId,
+      userId: userId.subject,
+      metadata: {
+        name: args.name,
+        // Add relevant metadata for audit trail
+      },
+    });
+
+    // ------------------------------------------------------------------------
+    // STEP 6: RETURN RESULT
+    // ------------------------------------------------------------------------
+    return {
+      id: entityId,
+      message: "Entity created successfully",
+    };
+  },
+});
+
+/**
+ * Example: Update Entity Mutation
+ *
+ * Template for updating an existing entity
+ */
+export const updateEntity = mutation({
+  args: {
+    id: v.id("yourEntitiesTable"),
+    workspaceId: v.id("workspaces"),
+
+    // Updatable fields (all optional for PATCH semantics)
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()),
+
+    // Add your custom updatable fields here
+  },
+
+  handler: async (ctx, args) => {
+    // 🔴 CRITICAL: Permission check first
+    await requirePermission(ctx, args.workspaceId, "entity.update");
+
+    // Verify entity exists and belongs to workspace
+    const entity = await ctx.db.get(args.id);
+    if (!entity) {
+      throw new Error("Entity not found");
+    }
+
+    if (entity.workspaceId !== args.workspaceId) {
+      throw new Error("Entity does not belong to this workspace");
+    }
+
+    // Validate updates
+    if (args.name !== undefined) {
+      if (!args.name || args.name.trim().length === 0) {
+        throw new Error("Entity name cannot be empty");
+      }
+      if (args.name.length > 100) {
+        throw new Error("Entity name must be 100 characters or less");
+      }
+    }
+
+    // Get user ID
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Build update object (only include provided fields)
+    const updates: any = {
+      updatedById: userId.subject,
+      updatedAt: Date.now(),
+    };
+
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.description !== undefined) updates.description = args.description;
+    if (args.icon !== undefined) updates.icon = args.icon;
+
+    // Add your custom field updates here
+
+    // Perform update
+    await ctx.db.patch(args.id, updates);
+
+    // 🔴 CRITICAL: Audit logging
+    await logAudit(ctx, {
+      action: "entity.updated",
+      entityType: "yourEntitiesTable",
+      entityId: args.id,
+      workspaceId: args.workspaceId,
+      userId: userId.subject,
+      metadata: {
+        updates: Object.keys(updates),
+        // Log what changed
+      },
+    });
+
+    return {
+      id: args.id,
+      message: "Entity updated successfully",
+    };
+  },
+});
+
+/**
+ * Example: Delete Entity Mutation
+ *
+ * Template for deleting an entity (soft or hard delete)
+ */
+export const deleteEntity = mutation({
+  args: {
+    id: v.id("yourEntitiesTable"),
+    workspaceId: v.id("workspaces"),
+
+    // Optional: support soft delete
+    permanent: v.optional(v.boolean()),
+  },
+
+  handler: async (ctx, args) => {
+    // 🔴 CRITICAL: Permission check first
+    await requirePermission(ctx, args.workspaceId, "entity.delete");
+
+    // Verify entity exists and belongs to workspace
+    const entity = await ctx.db.get(args.id);
+    if (!entity) {
+      throw new Error("Entity not found");
+    }
+
+    if (entity.workspaceId !== args.workspaceId) {
+      throw new Error("Entity does not belong to this workspace");
+    }
+
+    // Get user ID
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Perform delete (soft or hard)
+    if (args.permanent) {
+      // Hard delete
+      await ctx.db.delete(args.id);
+    } else {
+      // Soft delete (mark as deleted)
+      await ctx.db.patch(args.id, {
+        deletedAt: Date.now(),
+        deletedById: userId.subject,
+        updatedById: userId.subject,
+        updatedAt: Date.now(),
+      });
+    }
+
+    // 🔴 CRITICAL: Audit logging
+    await logAudit(ctx, {
+      action: args.permanent ? "entity.deleted" : "entity.soft_deleted",
+      entityType: "yourEntitiesTable",
+      entityId: args.id,
+      workspaceId: args.workspaceId,
+      userId: userId.subject,
+      metadata: {
+        permanent: args.permanent || false,
+        entityName: entity.name,
+      },
+    });
+
+    return {
+      id: args.id,
+      message: args.permanent
+        ? "Entity permanently deleted"
+        : "Entity moved to trash",
+    };
+  },
+});
+
+/**
+ * Example: Batch Operation Mutation
+ *
+ * Template for operations on multiple entities
+ */
+export const batchUpdateEntities = mutation({
+  args: {
+    ids: v.array(v.id("yourEntitiesTable")),
+    workspaceId: v.id("workspaces"),
+
+    // Updates to apply to all entities
+    updates: v.object({
+      status: v.optional(v.string()),
+      // Add your batch updatable fields
+    }),
+  },
+
+  handler: async (ctx, args) => {
+    // 🔴 CRITICAL: Permission check first
+    await requirePermission(ctx, args.workspaceId, "entity.update");
+
+    // Validate batch size
+    if (args.ids.length === 0) {
+      throw new Error("No entities provided");
+    }
+
+    if (args.ids.length > 100) {
+      throw new Error("Batch size cannot exceed 100 entities");
+    }
+
+    // Get user ID
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Verify all entities exist and belong to workspace
+    const entities = await Promise.all(
+      args.ids.map((id) => ctx.db.get(id))
+    );
+
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i];
+      if (!entity) {
+        throw new Error(`Entity ${args.ids[i]} not found`);
+      }
+      if (entity.workspaceId !== args.workspaceId) {
+        throw new Error(`Entity ${args.ids[i]} does not belong to this workspace`);
+      }
+    }
+
+    // Perform batch update
+    const updatePromises = args.ids.map((id) =>
+      ctx.db.patch(id, {
+        ...args.updates,
+        updatedById: userId.subject,
+        updatedAt: Date.now(),
+      })
+    );
+
+    await Promise.all(updatePromises);
+
+    // 🔴 CRITICAL: Audit logging (batch operation)
+    await logAudit(ctx, {
+      action: "entity.batch_updated",
+      entityType: "yourEntitiesTable",
+      entityId: args.ids[0], // Use first ID as reference
+      workspaceId: args.workspaceId,
+      userId: userId.subject,
+      metadata: {
+        count: args.ids.length,
+        ids: args.ids,
+        updates: args.updates,
+      },
+    });
+
+    return {
+      count: args.ids.length,
+      message: `${args.ids.length} entities updated successfully`,
+    };
+  },
+});
+
+/**
+ * ANTI-PATTERNS TO AVOID:
+ *
+ * ❌ DON'T: Skip permission checks
+ * ❌ DON'T: Skip audit logging
+ * ❌ DON'T: Return sensitive data without filtering
+ * ❌ DON'T: Allow cross-workspace operations
+ * ❌ DON'T: Perform operations without user authentication
+ * ❌ DON'T: Ignore validation errors
+ * ❌ DON'T: Use hard-coded permission strings (use constants)
+ *
+ * ✅ DO: Always check permissions first
+ * ✅ DO: Always log audit events
+ * ✅ DO: Validate all inputs thoroughly
+ * ✅ DO: Verify workspace isolation
+ * ✅ DO: Handle errors gracefully
+ * ✅ DO: Return only necessary data
+ * ✅ DO: Use TypeScript types properly
+ */
+
+/**
+ * TESTING CHECKLIST (DoD #4):
+ *
+ * For each mutation, write tests for:
+ * - [ ] Permission check (should reject without permission)
+ * - [ ] Workspace isolation (should reject cross-workspace access)
+ * - [ ] Input validation (should reject invalid inputs)
+ * - [ ] Success case (should create/update/delete entity)
+ * - [ ] Audit logging (should log to audit table)
+ * - [ ] Error cases (should handle errors gracefully)
+ * - [ ] Edge cases (empty strings, max length, etc.)
+ *
+ * Example test file: tests/features/yourFeature/mutations.test.ts
+ */
+
+/**
+ * CI/CD INTEGRATION (DoD #5):
+ *
+ * This mutation will be validated by CI/CD:
+ * - scripts/validate-permissions.ts ✅
+ * - scripts/validate-audit-logs.ts ✅
+ * - scripts/validate-dod.ts ✅
+ * - npm test (unit + integration tests) ✅
+ *
+ * See .github/workflows/database-dod-check.yml
+ */

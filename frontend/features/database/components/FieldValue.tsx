@@ -21,6 +21,8 @@ import type {
   DatabaseSelectOption,
 } from "../types";
 import { formatDate } from "../lib/format";
+import { propertyRegistry } from "../registry";
+import type { Property } from "@/frontend/shared/foundation/types/universal-database";
 
 const toStringValue = (value: unknown): string | null => {
   if (value == null) return null;
@@ -445,11 +447,48 @@ const RENDERERS: Record<
 };
 
 export interface FieldValueProps {
-  field: DatabaseField;
+  field: DatabaseField | Property;
   value: unknown;
 }
 
+/**
+ * Detect if field is V2 Universal Database Property
+ */
+const isV2Property = (field: DatabaseField | Property): field is Property => {
+  // V2 properties have 'type' as PropertyType (21 types) instead of DatabaseFieldType (14 types)
+  // V2 also has additional fields like 'key', 'required', etc.
+  return 'key' in field && 'required' in field;
+};
+
+/**
+ * Render using V2 Property Registry
+ */
+const renderV2Property = (property: Property, value: unknown): ReactNode => {
+  const config = propertyRegistry.get(property.type);
+  
+  if (!config) {
+    // Fallback if property type not registered
+    return renderGeneric(value);
+  }
+
+  const { Renderer } = config;
+  
+  return (
+    <Renderer
+      value={value}
+      property={property}
+      readOnly={true}
+    />
+  );
+};
+
 export function FieldValue({ field, value }: FieldValueProps) {
+  // V2 Universal Database: Use Property Registry
+  if (isV2Property(field)) {
+    return <Fragment>{renderV2Property(field, value)}</Fragment>;
+  }
+
+  // V1 Legacy Database: Use old RENDERERS
   const renderer = RENDERERS[field.type as DatabaseFieldType];
   if (!renderer) {
     return renderGeneric(value);

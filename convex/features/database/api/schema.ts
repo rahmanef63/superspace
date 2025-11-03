@@ -115,11 +115,36 @@ export const dbRows = defineTable({
   updatedAt: v.optional(v.number()),
 }).index("by_table", ["tableId"]);
 
+/**
+ * Universal Database Table (v2.0)
+ * Stores databases using the Universal Database specification
+ * @see docs/UNIVERSAL_DATABASE_SPEC.md
+ */
+export const universalDatabases = defineTable({
+  workspaceId: v.id("workspaces"),
+  name: v.string(),
+
+  // Complete Universal Database spec as JSON
+  universalSpec: v.any(),
+
+  // Version tracking
+  version: v.string(),
+
+  // Audit fields
+  createdById: v.id("users"),
+  updatedById: v.id("users"),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_workspace", ["workspaceId"])
+  .index("by_workspace_name", ["workspaceId", "name"]);
+
 export const databaseTables = {
   dbTables,
   dbFields,
   dbViews,
   dbRows,
+  universalDatabases,
 };
 
 export type DatabaseTables = typeof databaseTables;

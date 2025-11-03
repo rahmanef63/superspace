@@ -13,7 +13,7 @@ import {
   type SortToolParams,
 } from "@/frontend/shared/ui/layout/toolbar";
 import { SecondarySidebarTools } from "@/frontend/shared/ui";
-import { ViewSwitcher } from "@/frontend/shared/ui";
+import { ViewSwitcher } from "@/frontend/shared/ui/layout/view-system";
 import type { DocumentRecord, DocumentSortOptions } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
 import { createDocumentViewConfig } from "../config";

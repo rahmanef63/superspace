@@ -151,4 +151,4 @@ export * from './components/utils'
 // ============================================================
 // shadcn/ui Components
 // ============================================================
-export * from './components/ui'
+export * from './components'

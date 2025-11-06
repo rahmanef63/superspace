@@ -51,3 +51,6 @@ export const createdByPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['user', 'creator', 'author', 'auto-generated', 'audit'],
 };
+
+
+export default createdByPropertyConfig;

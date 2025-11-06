@@ -88,6 +88,7 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
     updateField,
     deleteField,
     reorderField,
+    reorderRow,
     updateView,
   } = useDatabaseMutations();
 
@@ -312,13 +313,36 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
           id: rowId,
           data: updates,
         });
+        
+        toast.success("Cell updated successfully");
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to update row.";
+        console.error('Failed to update cell:', error);
         toast.error(message);
       }
     },
     [updateRow],
+  );
+  
+  const handleUpdateFieldOptions = useCallback(
+    async (fieldId: string, options: Partial<any>) => {
+      try {
+        await updateField({
+          id: fieldId as any,
+          options: options as any,
+        });
+        
+        toast.success("Field options updated");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to update field options.";
+        console.error('Failed to update field options:', error);
+        toast.error(message);
+        throw error; // Re-throw to allow component to handle rollback
+      }
+    },
+    [updateField],
   );
 
   const handleDeleteRow = useCallback(
@@ -467,6 +491,36 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
       }
     },
     [activeDbView, record, reorderField, updateView],
+  );
+
+  const handleReorderRows = useCallback(
+    async (orderedIds: string[]) => {
+      if (!viewModel) {
+        return;
+      }
+
+      const orderedRows = orderedIds
+        .map((id) => viewModel.features.find((feature) => String(feature.id) === id))
+        .filter((feature): feature is DatabaseFeature => Boolean(feature));
+
+      try {
+        await Promise.all(
+          orderedRows.map((feature, index) =>
+            reorderRow({
+              rowId: feature.id as Id<"dbRows">,
+              newPosition: index,
+            }),
+          ),
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to reorder rows.";
+        toast.error(message);
+      }
+    },
+    [viewModel, reorderRow],
   );
 
   const handleRenameTable = async (table: DatabaseTable) => {
@@ -722,7 +776,9 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
             onDeleteField={handleDeleteField}
             onToggleFieldVisibility={handleToggleFieldVisibility}
             onReorderFields={handleReorderFields}
+            onReorderRows={handleReorderRows}
             onColumnSizingChange={handleColumnSizingChange}
+            onUpdateFieldOptions={handleUpdateFieldOptions}
           />
         );
         break;

@@ -2,10 +2,12 @@
  * Property Auto-Discovery
  *
  * Automatically discovers and registers all property type configurations
- * from the properties/ directory using Vite's glob import feature.
+ * from the properties/ directory.
  *
  * This enables zero-config property registration - just create a new
  * property folder with config.ts and it will be automatically registered.
+ *
+ * Note: Next.js doesn't support import.meta.glob, so we use explicit imports.
  *
  * @module frontend/features/database/registry/auto-discovery
  */
@@ -13,13 +15,57 @@
 import { propertyRegistry } from "./PropertyRegistry";
 import type { PropertyConfig } from "./types";
 
-// Auto-discover all property configurations using Vite's glob import
-// Pattern matches: properties/*/config.ts
-// Example: properties/title/config.ts, properties/rich-text/config.ts, etc.
-const propertyModules = import.meta.glob<{ default: PropertyConfig }>(
-  "../properties/*/config.ts",
-  { eager: true }
-);
+// Explicitly import all property configurations for Next.js compatibility
+import buttonConfig from "../properties/button/config";
+import checkboxConfig from "../properties/checkbox/config";
+import createdByConfig from "../properties/created_by/config";
+import createdTimeConfig from "../properties/created_time/config";
+import dateConfig from "../properties/date/config";
+import emailConfig from "../properties/email/config";
+import filesConfig from "../properties/files/config";
+import formulaConfig from "../properties/formula/config";
+import lastEditedByConfig from "../properties/last_edited_by/config";
+import lastEditedTimeConfig from "../properties/last_edited_time/config";
+import multiSelectConfig from "../properties/multi_select/config";
+import numberConfig from "../properties/number/config";
+import peopleConfig from "../properties/people/config";
+import phoneConfig from "../properties/phone/config";
+import placeConfig from "../properties/place/config";
+import relationConfig from "../properties/relation/config";
+import richTextConfig from "../properties/rich_text/config";
+import rollupConfig from "../properties/rollup/config";
+import selectConfig from "../properties/select/config";
+import statusConfig from "../properties/status/config";
+import titleConfig from "../properties/title/config";
+import uniqueIdConfig from "../properties/unique_id/config";
+import urlConfig from "../properties/url/config";
+
+// Create a modules map for consistent processing
+const propertyModules: Record<string, { default: PropertyConfig }> = {
+  "../properties/button/config.ts": { default: buttonConfig },
+  "../properties/checkbox/config.ts": { default: checkboxConfig },
+  "../properties/created_by/config.ts": { default: createdByConfig },
+  "../properties/created_time/config.ts": { default: createdTimeConfig },
+  "../properties/date/config.ts": { default: dateConfig },
+  "../properties/email/config.ts": { default: emailConfig },
+  "../properties/files/config.ts": { default: filesConfig },
+  "../properties/formula/config.ts": { default: formulaConfig },
+  "../properties/last_edited_by/config.ts": { default: lastEditedByConfig },
+  "../properties/last_edited_time/config.ts": { default: lastEditedTimeConfig },
+  "../properties/multi_select/config.ts": { default: multiSelectConfig },
+  "../properties/number/config.ts": { default: numberConfig },
+  "../properties/people/config.ts": { default: peopleConfig },
+  "../properties/phone/config.ts": { default: phoneConfig },
+  "../properties/place/config.ts": { default: placeConfig },
+  "../properties/relation/config.ts": { default: relationConfig },
+  "../properties/rich_text/config.ts": { default: richTextConfig },
+  "../properties/rollup/config.ts": { default: rollupConfig },
+  "../properties/select/config.ts": { default: selectConfig },
+  "../properties/status/config.ts": { default: statusConfig },
+  "../properties/title/config.ts": { default: titleConfig },
+  "../properties/unique_id/config.ts": { default: uniqueIdConfig },
+  "../properties/url/config.ts": { default: urlConfig },
+};
 
 /**
  * Register all discovered properties

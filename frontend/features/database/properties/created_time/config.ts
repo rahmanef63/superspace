@@ -60,3 +60,6 @@ export const createdTimePropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['time', 'timestamp', 'created', 'auto-generated', 'audit'],
 };
+
+
+export default createdTimePropertyConfig;

@@ -234,3 +234,48 @@ export const deleteRow = mutation({
     });
   },
 });
+
+export const reorder = mutation({
+  args: {
+    rowId: v.id("dbRows"),
+    newPosition: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+
+    const row = await ctx.db.get(args.rowId);
+    if (!row) {
+      throw new Error("Row not found");
+    }
+
+    // RBAC: Check permission before reordering
+    await requirePermission(ctx, row.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
+    await assertWorkspaceAccess(ctx, row.workspaceId, userId);
+
+    const rows = await ctx.db
+      .query("dbRows")
+      .withIndex("by_table", (q) => q.eq("tableId", row.tableId))
+      .collect();
+
+    const sortByPosition = <T extends { position?: number }>(a: T, b: T) =>
+      (a.position ?? 0) - (b.position ?? 0);
+
+    const ordered = rows.sort(sortByPosition);
+    const withoutTarget = ordered.filter((item) => item._id !== args.rowId);
+    const targetIndex = Math.max(0, Math.min(Math.floor(args.newPosition), withoutTarget.length));
+    const reordered = [
+      ...withoutTarget.slice(0, targetIndex),
+      row,
+      ...withoutTarget.slice(targetIndex),
+    ];
+
+    await Promise.all(
+      reordered.map((current, index) =>
+        (current.position ?? 0) === index
+          ? Promise.resolve()
+          : ctx.db.patch(current._id, { position: index }),
+      ),
+    );
+  },
+});

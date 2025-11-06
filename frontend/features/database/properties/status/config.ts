@@ -41,3 +41,6 @@ export const statusPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['status', 'state', 'workflow', 'color'],
 };
+
+
+export default statusPropertyConfig;

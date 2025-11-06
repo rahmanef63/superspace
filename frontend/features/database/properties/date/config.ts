@@ -58,3 +58,6 @@ export const datePropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['date', 'time', 'calendar'],
 };
+
+
+export default datePropertyConfig;

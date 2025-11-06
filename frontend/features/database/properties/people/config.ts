@@ -60,3 +60,6 @@ export const peoplePropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['people', 'user', 'person', 'avatar'],
 };
+
+
+export default peoplePropertyConfig;

@@ -37,6 +37,7 @@ export {
   create as createRow,
   update as updateRow,
   deleteRow,
+  reorder as reorderRow,
 } from "./rows";
 
 const filterValidator = v.object({

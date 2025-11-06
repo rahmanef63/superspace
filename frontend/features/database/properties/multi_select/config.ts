@@ -45,3 +45,6 @@ export const multiSelectPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['multi-select', 'options', 'array'],
 };
+
+
+export default multiSelectPropertyConfig;

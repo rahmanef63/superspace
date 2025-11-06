@@ -41,3 +41,6 @@ export const uniqueIdPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['id', 'unique', 'auto-generated', 'identifier'],
 };
+
+
+export default uniqueIdPropertyConfig;

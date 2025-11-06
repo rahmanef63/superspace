@@ -63,3 +63,6 @@ export const buttonPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['button', 'action', 'trigger', 'interactive', 'url', 'email', 'phone', 'webhook'],
 };
+
+
+export default buttonPropertyConfig;

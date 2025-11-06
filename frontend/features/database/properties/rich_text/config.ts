@@ -42,3 +42,6 @@ export const richTextPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['text', 'markdown', 'multiline', 'rich'],
 };
+
+
+export default richTextPropertyConfig;

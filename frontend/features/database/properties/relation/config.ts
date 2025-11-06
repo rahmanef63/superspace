@@ -45,3 +45,6 @@ export const relationPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['relation', 'link', 'reference'],
 };
+
+
+export default relationPropertyConfig;

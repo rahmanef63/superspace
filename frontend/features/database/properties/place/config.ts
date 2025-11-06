@@ -65,3 +65,6 @@ export const placePropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['place', 'location', 'address', 'coordinates', 'maps'],
 };
+
+
+export default placePropertyConfig;

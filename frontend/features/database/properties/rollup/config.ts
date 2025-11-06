@@ -42,3 +42,6 @@ export const rollupPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['rollup', 'aggregate', 'computed'],
 };
+
+
+export default rollupPropertyConfig;

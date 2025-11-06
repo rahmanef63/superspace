@@ -32,9 +32,11 @@ import {
   SortableContext,
   arrayMove,
   horizontalListSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +51,7 @@ import {
   FileSpreadsheet,
   Plus,
   Filter,
+  GripVertical,
 } from "lucide-react";
 import type {
   DatabaseFeature,
@@ -63,6 +66,7 @@ import {
   RowActions,
   SortableHeader,
 } from "./components";
+import { SortableRow } from "./components/SortableRow";
 import { getRowValue, isEditableField } from "./lib";
 import { cn } from "@/lib/utils";
 
@@ -115,7 +119,7 @@ function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
                       )}
                   {canResize ? (
                     <div
-                      className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none bg-transparent opacity-0 transition group-hover:opacity-100"
+                      className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none bg-border opacity-0 transition group-hover:opacity-100 hover:!opacity-100 hover:bg-primary"
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
                       role="separator"
@@ -132,6 +136,8 @@ function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
     </TableHeaderElement>
   );
 }
+
+import type { PropertyOptions } from '@/frontend/shared/foundation/types/property-options';
 
 export interface DatabaseTableViewProps {
   features: DatabaseFeature[];
@@ -156,7 +162,9 @@ export interface DatabaseTableViewProps {
     visible: boolean,
   ) => Promise<void> | void;
   onReorderFields?: (orderedFieldIds: string[]) => Promise<void> | void;
+  onReorderRows?: (orderedRowIds: string[]) => Promise<void> | void;
   onColumnSizingChange?: (sizes: Record<string, number>) => void;
+  onUpdateFieldOptions?: (fieldId: string, options: Partial<PropertyOptions>) => Promise<void> | void;
 }
 
 export function DatabaseTableView({
@@ -173,7 +181,9 @@ export function DatabaseTableView({
   onDeleteField,
   onToggleFieldVisibility,
   onReorderFields,
+  onReorderRows,
   onColumnSizingChange,
+  onUpdateFieldOptions,
 }: DatabaseTableViewProps) {
   const orderedFields = useMemo(
     () =>
@@ -247,6 +257,9 @@ export function DatabaseTableView({
 
   const [columnOrder, setColumnOrder] = useState<string[]>(displayFieldIds);
 
+  // Row selection state
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     setColumnOrder((prev) => {
       const next = displayFieldIds;
@@ -287,6 +300,34 @@ export function DatabaseTableView({
     [onReorderFields],
   );
 
+  const rowSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
+  const rowIds = useMemo(() => features.map((f) => String(f.id)), [features]);
+
+  const handleRowDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      
+      const activeId = String(active.id);
+      const overId = String(over.id);
+      const oldIndex = rowIds.indexOf(activeId);
+      const newIndex = rowIds.indexOf(overId);
+      
+      if (oldIndex === -1 || newIndex === -1) return;
+      
+      const nextOrder = arrayMove(rowIds, oldIndex, newIndex);
+      if (onReorderRows) {
+        void onReorderRows(nextOrder);
+      }
+    },
+    [rowIds, onReorderRows],
+  );
+
   const initialColumnSizing = useMemo<ColumnSizingState | undefined>(() => {
     if (!activeView?.settings.fieldWidths) {
       return undefined;
@@ -314,10 +355,13 @@ export function DatabaseTableView({
 
   const handleCommitCell = useCallback(
     (rowId: DatabaseFeature["id"], fieldId: string, nextValue: unknown) => {
-      if (!onUpdateCell) return;
+      if (!onUpdateCell) {
+        console.error('No onUpdateCell handler provided');
+        return;
+      }
       void onUpdateCell(rowId, { [fieldId]: nextValue });
     },
-    [onUpdateCell],
+    [onUpdateCell]
   );
 
   const renderAddPropertyTrigger = useCallback(() => {
@@ -391,6 +435,56 @@ export function DatabaseTableView({
 
     const baseColumns: ColumnDef<RowData>[] = [];
 
+    // Checkbox column for row selection
+    baseColumns.push({
+      id: "select",
+      enableResizing: false,
+      size: 40,
+      minSize: 40,
+      maxSize: 40,
+      header: ({ table }) => (
+        <div className="flex h-full items-center justify-center">
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+            className="translate-y-[2px]"
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex h-full items-center justify-center">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+            className="translate-y-[2px]"
+          />
+        </div>
+      ),
+    });
+
+    // DnD handle column
+    baseColumns.push({
+      id: "drag",
+      enableResizing: false,
+      size: 40,
+      minSize: 40,
+      maxSize: 40,
+      header: () => <div className="h-full w-full" />,
+      cell: () => (
+        <div className="flex h-full items-center justify-center">
+          <button
+            type="button"
+            className="cursor-grab rounded p-1 text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:bg-muted hover:text-foreground active:cursor-grabbing"
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        </div>
+      ),
+    });
+
     baseColumns.push({
       id: "name",
       accessorFn: (feature) => feature.name,
@@ -431,6 +525,7 @@ export function DatabaseTableView({
                     field={titleField}
                     value={titleValue}
                     onCommit={(next) => handleCommitCell(feature.id, titleFieldId, next)}
+                    onPropertyUpdate={onUpdateFieldOptions}
                   />
                 ) : (
                   <span className="text-sm font-medium leading-none text-foreground">
@@ -438,9 +533,9 @@ export function DatabaseTableView({
                   </span>
                 )}
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-mono uppercase tracking-wide">
+                  {/* <span className="font-mono uppercase tracking-wide">
                     {rowId.slice(-6).toUpperCase()}
-                  </span>
+                  </span> */}
                   {status ? (
                     <>
                       <span aria-hidden="true">{`\u2022`}</span>
@@ -505,6 +600,7 @@ export function DatabaseTableView({
             value={getRowValue(row.original, fieldId)}
             disabled={!isEditableField(field)}
             onCommit={(next) => handleCommitCell(row.original.id, fieldId, next)}
+            onPropertyUpdate={onUpdateFieldOptions}
           />
         ),
       });
@@ -554,9 +650,26 @@ export function DatabaseTableView({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-border px-6 py-2 text-xs text-muted-foreground">
-        <Filter className="h-3.5 w-3.5" />
-        Inline editing enabled — double-click a cell to edit.
+      <div className="flex items-center justify-between gap-2 border-b border-border px-6 py-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Filter className="h-3.5 w-3.5" />
+          <span>Inline editing enabled — double-click a cell to edit.</span>
+        </div>
+        {Object.keys(rowSelection).length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-foreground">
+              {Object.keys(rowSelection).length} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs"
+              onClick={() => setRowSelection({})}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-auto">
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
@@ -566,35 +679,38 @@ export function DatabaseTableView({
             className="table-auto min-w-full"
             initialColumnSizing={initialColumnSizing}
             onColumnSizingChange={handleColumnSizingChange}
+            rowSelection={rowSelection}
+            onRowSelectionChange={setRowSelection}
           >
             <TableHeaderContent columnOrder={columnOrder} />
-            <TableBody
-              className={cn(features.length === 0 && "[&>tr]:hidden")}
-            >
-              {({ row }) => (
-                <TableRow
-                  key={row.id}
-                  row={row}
-                  className="group"
+            <DndContext sensors={rowSensors} onDragEnd={handleRowDragEnd}>
+              <SortableContext
+                items={rowIds}
+                strategy={verticalListSortingStrategy}
+              >
+                <TableBody
+                  className={cn(features.length === 0 && "[&>tr]:hidden")}
                 >
-                  {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-                </TableRow>
-              )}
-            </TableBody>
-            {onAddRow ? (
-              <div className="border-t border-border px-6 py-3">
-                <button
-                  type="button"
-                  onClick={onAddRow}
-                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  <span>New page</span>
-                </button>
-              </div>
-            ) : null}
+                  {({ row }) => (
+                    <SortableRow key={row.id} row={row} className="group" />
+                  )}
+                </TableBody>
+              </SortableContext>
+            </DndContext>
           </TableProvider>
         </DndContext>
+        {onAddRow ? (
+          <div className="border-t border-border px-6 py-3">
+            <button
+              type="button"
+              onClick={onAddRow}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+            >
+              <span className="text-lg leading-none">+</span>
+              <span>New page</span>
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

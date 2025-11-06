@@ -64,3 +64,6 @@ export const filesPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['files', 'attachments', 'upload', 'media'],
 };
+
+
+export default filesPropertyConfig;

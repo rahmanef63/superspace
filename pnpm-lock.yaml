@@ -105,7 +105,7 @@ importers:
         specifier: latest
         version: 1.1.15(@types/react-dom@18.2.18)(@types/react@18.2.47)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@radix-ui/react-label':
-        specifier: latest
+        specifier: ^2.1.7
         version: 2.1.7(@types/react-dom@18.2.18)(@types/react@18.2.47)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@radix-ui/react-menubar':
         specifier: latest
@@ -252,8 +252,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0
       react-day-picker:
-        specifier: latest
-        version: 9.10.0(react@18.2.0)
+        specifier: ^9.11.1
+        version: 9.11.1(react@18.2.0)
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
@@ -4895,8 +4895,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  react-day-picker@9.10.0:
-    resolution: {integrity: sha512-tedecLSd+fpSN+J08601MaMsf122nxtqZXxB6lwX37qFoLtuPNuRJN8ylxFjLhyJS1kaLfAqL1GUkSLd2BMrpQ==}
+  react-day-picker@9.11.1:
+    resolution: {integrity: sha512-l3ub6o8NlchqIjPKrRFUCkTUEq6KwemQlfv3XZzzwpUeGwmDJ+0u0Upmt38hJyd7D/vn2dQoOoLV/qAp0o3uUw==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8.0'
@@ -10772,7 +10772,7 @@ snapshots:
       '@types/react': 18.2.47
       '@types/react-dom': 18.2.18
 
-  react-day-picker@9.10.0(react@18.2.0):
+  react-day-picker@9.11.1(react@18.2.0):
     dependencies:
       '@date-fns/tz': 1.4.1
       date-fns: 4.1.0

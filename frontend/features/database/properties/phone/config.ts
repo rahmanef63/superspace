@@ -49,3 +49,6 @@ export const phonePropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['phone', 'contact', 'tel'],
 };
+
+
+export default phonePropertyConfig;

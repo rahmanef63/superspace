@@ -18,6 +18,8 @@ import type { DatabaseField, DatabaseSelectOption } from "../../../../types";
 import { FieldValue } from "../../../FieldValue";
 import { propertyRegistry } from "../../../../registry";
 import type { Property } from "@/frontend/shared/foundation/types/universal-database";
+import type { PropertyOptions } from "@/frontend/shared/foundation/types/property-options";
+import { convertFieldToProperty } from "../../../../lib/field-converter";
 
 const isArrayEqual = (a: unknown[], b: unknown[]) => {
   if (a.length !== b.length) return false;
@@ -97,11 +99,12 @@ const formatMultiSelectPreview = (options: DatabaseSelectOption[], selected: str
   );
 };
 
-export interface EditableCellProps {
+interface EditableCellProps {
   field: DatabaseField | Property;
   value: unknown;
   disabled?: boolean;
   onCommit?: (value: unknown) => Promise<void> | void;
+  onPropertyUpdate?: (fieldId: string, options: Partial<PropertyOptions>) => Promise<void> | void;
 }
 
 /**
@@ -118,6 +121,7 @@ const renderV2Editor = (
   property: Property,
   value: unknown,
   onCommit?: (value: unknown) => Promise<void> | void,
+  onPropertyUpdate?: (options: Partial<PropertyOptions>) => Promise<void> | void,
 ) => {
   const config = propertyRegistry.get(property.type);
   
@@ -140,27 +144,42 @@ const renderV2Editor = (
         value={value}
         property={property}
         onChange={(newValue) => {
-          void onCommit?.(newValue);
+          if (onCommit) {
+            void onCommit(newValue);
+          }
         }}
+        onPropertyUpdate={onPropertyUpdate}
       />
     </div>
   );
 };
 
-export function EditableCell({ field, value, disabled, onCommit }: EditableCellProps) {
-  // V2 Universal Database: Use Property Registry Editors
-  if (isV2Property(field)) {
+export function EditableCell({ field, value, disabled, onCommit, onPropertyUpdate }: EditableCellProps) {
+  // Auto-convert V1 DatabaseField to V2 Property for new editors
+  const v2Field: Property = 'key' in field ? field : convertFieldToProperty(field as DatabaseField);
+  const isV2Converted = !('key' in field);
+  const fieldId = 'key' in field ? field.key : String((field as DatabaseField)._id);
+
+  // Wrap onPropertyUpdate to include field ID
+  const handlePropertyUpdate = onPropertyUpdate 
+    ? (options: Partial<PropertyOptions>) => onPropertyUpdate(fieldId, options)
+    : undefined;
+
+  // Try V2 Property Registry Editor first
+  if (isV2Property(field) || isV2Converted) {
     if (disabled) {
       return (
         <div className="w-full cursor-not-allowed rounded-md px-2 py-1 text-sm text-muted-foreground">
-          <FieldValue field={field} value={value} />
+          <FieldValue field={v2Field} value={value} />
         </div>
       );
     }
-    return renderV2Editor(field, value, onCommit);
+    return renderV2Editor(v2Field, value, onCommit, handlePropertyUpdate);
   }
 
-  // V1 Legacy Database: Use old editing logic
+  // Fallback to V1 Legacy Editor
+  console.log('⚠️ [EditableCell] Using V1 Legacy Editor');
+  
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<string>(() => (value == null ? "" : String(value)));
   const [multiDraft, setMultiDraft] = useState<string[]>(() => normalizeToStringArray(value));

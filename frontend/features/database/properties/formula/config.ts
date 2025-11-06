@@ -45,3 +45,6 @@ export const formulaPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['formula', 'computed', 'expression'],
 };
+
+
+export default formulaPropertyConfig;

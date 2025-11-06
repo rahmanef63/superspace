@@ -8,6 +8,7 @@ import type {
   SortingState,
   Table,
   ColumnSizingState,
+  RowSelectionState,
   Updater,
 } from "@tanstack/react-table";
 import {
@@ -58,6 +59,8 @@ export type TableProviderProps<TData, TValue> = {
   className?: string;
   initialColumnSizing?: ColumnSizingState;
   onColumnSizingChange?: (state: ColumnSizingState) => void;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (state: RowSelectionState) => void;
 };
 
 export function TableProvider<TData, TValue>({
@@ -67,11 +70,17 @@ export function TableProvider<TData, TValue>({
   className,
   initialColumnSizing,
   onColumnSizingChange,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange,
 }: TableProviderProps<TData, TValue>) {
   const [sorting, setSorting] = useAtom(sortingAtom);
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(
     initialColumnSizing ?? {},
   );
+  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
+  
+  // Use controlled or internal row selection
+  const rowSelection = controlledRowSelection ?? internalRowSelection;
 
   useEffect(() => {
     setColumnSizing(initialColumnSizing ?? {});
@@ -92,13 +101,29 @@ export function TableProvider<TData, TValue>({
     [onColumnSizingChange],
   );
 
+  const handleRowSelectionChange = useCallback(
+    (updater: Updater<RowSelectionState>) => {
+      const next = typeof updater === "function"
+        ? (updater as (old: RowSelectionState) => RowSelectionState)(rowSelection)
+        : updater;
+
+      if (onRowSelectionChange) {
+        onRowSelectionChange(next);
+      } else {
+        setInternalRowSelection(next);
+      }
+    },
+    [rowSelection, onRowSelectionChange],
+  );
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    columnResizeMode: "onChange",
+    columnResizeMode: "onEnd", // ✅ Google Sheets style - only resize the dragged column
     enableColumnResizing: true,
+    enableRowSelection: true, // ✅ Enable row selection
     onSortingChange: (updater) => {
       // @ts-expect-error updater is a function that returns a sorting object
       const newSorting = updater(sorting);
@@ -106,9 +131,11 @@ export function TableProvider<TData, TValue>({
       setSorting(newSorting);
     },
     onColumnSizingChange: handleColumnSizingChange,
+    onRowSelectionChange: handleRowSelectionChange,
     state: {
       sorting,
       columnSizing,
+      rowSelection, // ✅ Pass row selection state
     },
   });
 

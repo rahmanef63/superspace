@@ -47,3 +47,6 @@ export const numberPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['number', 'numeric', 'integer', 'decimal'],
 };
+
+
+export default numberPropertyConfig;

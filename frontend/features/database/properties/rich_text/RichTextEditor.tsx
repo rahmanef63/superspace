@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PropertyEditorProps } from '../../registry/types';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 export const RichTextEditor: React.FC<PropertyEditorProps> = ({ value, onChange }) => {
   const [localValue, setLocalValue] = useState(value ? String(value) : '');
@@ -9,19 +9,18 @@ export const RichTextEditor: React.FC<PropertyEditorProps> = ({ value, onChange 
     setLocalValue(value ? String(value) : '');
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
     onChange(newValue);
   };
 
   return (
-    <Textarea
+    <Input
       value={localValue}
       onChange={handleChange}
-      placeholder="Enter rich text..."
-      className="min-h-[120px] font-mono text-sm"
-      rows={5}
+      placeholder="Enter text..."
+      className="h-8 w-full text-sm"
     />
   );
 };

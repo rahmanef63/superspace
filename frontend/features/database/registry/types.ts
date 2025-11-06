@@ -54,6 +54,9 @@ export interface PropertyEditorProps<T = unknown> {
 
   /** Whether to auto-focus on mount */
   autoFocus?: boolean;
+  
+  /** Callback to update property configuration (options, choices, etc.) */
+  onPropertyUpdate?: (options: Partial<PropertyOptions>) => Promise<void> | void;
 
   /** Additional CSS classes */
   className?: string;

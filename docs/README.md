@@ -1,115 +1,135 @@
 # SuperSpace Documentation
 
-**Essential AI Context Files - Optimized for Token Efficiency**
-
-This folder contains minimal, high-quality documentation to provide AI with necessary context while minimizing token usage.
-
----
-
-## 📚 Core Documentation (Numbered Files)
-
-### System & Architecture
-- **[1_SYSTEM_OVERVIEW.md](./1_SYSTEM_OVERVIEW.md)** - High-level architecture, modular system, tech stack, RBAC model
-- **[2_DEVELOPER_GUIDE.md](./2_DEVELOPER_GUIDE.md)** - Complete implementation guide, RBAC patterns, testing guidelines
-- **[3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md)** - 3-tier architecture, nested features, decision trees
-- **[4_TROUBLESHOOTING.md](./4_TROUBLESHOOTING.md)** - Common issues and solutions
-- **[5_FEATURE_REFERENCE.md](./5_FEATURE_REFERENCE.md)** - Dynamic feature discovery, API patterns
-- **[6_DESIGN_SYSTEM.md](./6_DESIGN_SYSTEM.md)** - UI/UX guidelines, component library, design tokens
-
-### Progress Tracking
-- **[99_CURRENT_PROGRESS.md](./99_CURRENT_PROGRESS.md)** - Universal Database implementation tracker
-  - Current: Week 0 Complete (95/100 Agent Alpha Score) → Phase 1 Starting
-  - 7 phases planned, ~250 tasks total
-
----
-
-## 🗄️ Universal Database Implementation
-
-### Core Specifications
-- **[UNIVERSAL_DATABASE_SPEC.md](./UNIVERSAL_DATABASE_SPEC.md)** - Complete specification
-  - 21 property types (text, number, select, date, person, etc.)
-  - 10 view layouts (table, board, gallery, calendar, etc.)
-  - Universal JSON schema v2.0
-  - Notion-like flexibility
-
-- **[UNIVERSAL_DATABASE_TODO.md](./UNIVERSAL_DATABASE_TODO.md)** - Master task breakdown
-  - ~250 tasks across 7 phases
-  - Week 0: ✅ Complete (Preparation & Compliance)
-  - Phase 1-7: Foundation → Properties → Views → Integration → Export → Polish → Rollout
-
-### Implementation Guides
-- **[MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)** - **MANDATORY READING** (800+ lines)
-  - The 6-Step Pattern (permission → validation → verification → auth → logic → audit)
-  - 4 mutation templates (create, update, delete, batch)
-  - RBAC + audit logging enforcement
-  - Best practices, anti-patterns, testing requirements
-  - Real-world examples
-
-- **[V1_V2_BOUNDARIES.md](./V1_V2_BOUNDARIES.md)** - Prevents circular dependencies
-  - Clear import rules during parallel V1/V2 development
-  - Adapter layer pattern
-  - TypeScript project references
-  - Directory structure guidelines
-
----
-
-## 📜 Rules & Guidelines
-
-### Development Rules
-- **[FEATURE_RULES.md](./FEATURE_RULES.md)** - **CRITICAL - MUST FOLLOW**
-  - Golden Rule: Zero hardcoding outside feature folders
-  - Single Source of Truth (config.ts)
-  - 100% auto-discovery
-  - Dynamic everything
-  - Agent enforcement
-
-### Convex Patterns
-- **[convex_rules.mdc](./convex_rules.mdc)** - Convex-specific patterns (Cursor IDE)
+**Organized documentation for SuperSpace modular SaaS platform**
 
 ---
 
 ## 🎯 Quick Start
 
-### For New Features
-1. Read: [2_DEVELOPER_GUIDE.md](./2_DEVELOPER_GUIDE.md)
-2. Follow: [FEATURE_RULES.md](./FEATURE_RULES.md)
-3. If writing mutations: [MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)
+### New to SuperSpace?
+**START HERE:** [00_BASE_KNOWLEDGE.md](00_BASE_KNOWLEDGE.md)
+- Essential knowledge for developing features (inside or outside this project)
+- Core concepts & patterns
+- Tech stack explained
+- Quick start checklist
+- Cheat sheets
 
-### For Universal Database Work
-1. Status: [99_CURRENT_PROGRESS.md](./99_CURRENT_PROGRESS.md)
-2. Spec: [UNIVERSAL_DATABASE_SPEC.md](./UNIVERSAL_DATABASE_SPEC.md)
-3. Tasks: [UNIVERSAL_DATABASE_TODO.md](./UNIVERSAL_DATABASE_TODO.md)
-4. Patterns: [MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)
-5. Boundaries: [V1_V2_BOUNDARIES.md](./V1_V2_BOUNDARIES.md)
+---
 
-### For Architecture Understanding
-1. Overview: [1_SYSTEM_OVERVIEW.md](./1_SYSTEM_OVERVIEW.md)
-2. Patterns: [3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md)
-3. Design: [6_DESIGN_SYSTEM.md](./6_DESIGN_SYSTEM.md)
+## 📁 Documentation Structure
+
+### 📚 [1-core/](1-core/) - Core System Documentation
+Essential system documentation for understanding architecture and development.
+
+**Files:**
+- [1_SYSTEM_OVERVIEW.md](1-core/1_SYSTEM_OVERVIEW.md) - High-level architecture
+- [2_DEVELOPER_GUIDE.md](1-core/2_DEVELOPER_GUIDE.md) - Complete development guide
+- [3_MODULAR_ARCHITECTURE.md](1-core/3_MODULAR_ARCHITECTURE.md) - 3-tier architecture patterns
+- [4_TROUBLESHOOTING.md](1-core/4_TROUBLESHOOTING.md) - Common issues & solutions
+- [5_FEATURE_REFERENCE.md](1-core/5_FEATURE_REFERENCE.md) - Feature catalog & API
+- [6_DESIGN_SYSTEM.md](1-core/6_DESIGN_SYSTEM.md) - UI/UX guidelines
+
+---
+
+### 📜 [2-rules/](2-rules/) - Rules & Guidelines
+**CRITICAL** - Development rules that must be followed.
+
+**Files:**
+- [FEATURE_RULES.md](2-rules/FEATURE_RULES.md) - **MUST READ** (Zero hardcoding, auto-discovery)
+- [MUTATION_TEMPLATE_GUIDE.md](2-rules/MUTATION_TEMPLATE_GUIDE.md) - **MANDATORY** (6-step pattern, RBAC + audit)
+- [convex_rules.mdc](2-rules/convex_rules.mdc) - Convex best practices
+
+---
+
+### 🗄️ [3-universal-database/](3-universal-database/) - Universal Database Project
+Notion-like universal database with 21 property types and 10 view layouts.
+
+**Files:**
+- [UNIVERSAL_DATABASE_SPEC.md](3-universal-database/UNIVERSAL_DATABASE_SPEC.md) - Complete v2.0 specification
+- [UNIVERSAL_DATABASE_TODO.md](3-universal-database/UNIVERSAL_DATABASE_TODO.md) - Master task breakdown (~250 tasks)
+- [99_CURRENT_PROGRESS.md](3-universal-database/99_CURRENT_PROGRESS.md) - Live progress tracker
+- [TESTING_PROGRESS.md](3-universal-database/TESTING_PROGRESS.md) - Test coverage
+- [V1_V2_BOUNDARIES.md](3-universal-database/V1_V2_BOUNDARIES.md) - Prevents circular dependencies
+- [MIGRATION_CHECKLIST.md](3-universal-database/MIGRATION_CHECKLIST.md) - V1 to v2.0 migration
+- [PROPERTY_SYSTEM_EXAMPLES.md](3-universal-database/PROPERTY_SYSTEM_EXAMPLES.md) - Implementation examples
+
+**Status:** Phase 4 Complete | **Tests:** 87+ passing, 85%+ coverage
+
+---
+
+### 📊 [4-phase-reports/](4-phase-reports/) - Implementation Phase Reports
+Detailed reports from Universal Database implementation phases.
+
+**Structure:**
+- [phase-1/](4-phase-reports/phase-1/) - Foundation & Type System ✅
+- [phase-2/](4-phase-reports/phase-2/) - Property Types ✅
+- [phase-3/](4-phase-reports/phase-3/) - Advanced Properties ✅
+- [phase-4/](4-phase-reports/phase-4/) - View Layouts ✅
+
+---
+
+### 🎨 [5-features/](5-features/) - Feature-Specific Documentation
+Documentation for individual features and their isolation guides.
+
+**Available Features:**
+- [cms-lite/](5-features/cms-lite/) - Complete CMS with e-commerce (~330 files)
+  - [CMS_LITE_ISOLATION_GUIDE.md](5-features/cms-lite/CMS_LITE_ISOLATION_GUIDE.md) - Isolation guide
+  - [cms-lite-isolation-manifest.md](5-features/cms-lite/cms-lite-isolation-manifest.md) - File manifest
+
+---
+
+## 🚀 Common Tasks
+
+### I want to...
+
+#### ...understand the system
+1. Read [00_BASE_KNOWLEDGE.md](00_BASE_KNOWLEDGE.md)
+2. Read [1-core/1_SYSTEM_OVERVIEW.md](1-core/1_SYSTEM_OVERVIEW.md)
+3. Read [1-core/2_DEVELOPER_GUIDE.md](1-core/2_DEVELOPER_GUIDE.md)
+
+#### ...build a new feature
+1. Read [2-rules/FEATURE_RULES.md](2-rules/FEATURE_RULES.md) (MUST)
+2. Read [1-core/2_DEVELOPER_GUIDE.md](1-core/2_DEVELOPER_GUIDE.md)
+3. Read [2-rules/MUTATION_TEMPLATE_GUIDE.md](2-rules/MUTATION_TEMPLATE_GUIDE.md)
+
+#### ...work on Universal Database
+1. Check [3-universal-database/99_CURRENT_PROGRESS.md](3-universal-database/99_CURRENT_PROGRESS.md)
+2. Read [3-universal-database/UNIVERSAL_DATABASE_TODO.md](3-universal-database/UNIVERSAL_DATABASE_TODO.md)
+3. Follow [2-rules/MUTATION_TEMPLATE_GUIDE.md](2-rules/MUTATION_TEMPLATE_GUIDE.md)
+
+#### ...isolate cms-lite feature
+1. Read [5-features/cms-lite/CMS_LITE_ISOLATION_GUIDE.md](5-features/cms-lite/CMS_LITE_ISOLATION_GUIDE.md)
+2. Run `scripts\isolate-cms-lite.bat`
 
 ---
 
 ## 📊 Documentation Stats
 
-| Category | Files | Description |
-|----------|-------|-------------|
-| **Core Docs** | 7 files | System, guides, reference (numbered 1-6, 99) |
-| **Universal DB** | 4 files | Spec, tasks, guides, boundaries |
-| **Rules** | 2 files | Feature rules, Convex patterns |
-| **Total** | 13 files | Essential context only |
-
-**Optimization:** Reduced from 20+ files to 13 essential files for AI context efficiency.
+| Category | Folders | Files | Purpose |
+|----------|---------|-------|---------|
+| **Core** | 1 | 7 | System, architecture, guides |
+| **Rules** | 1 | 3 | Critical development rules |
+| **Universal DB** | 1 | 7 | Database implementation docs |
+| **Phase Reports** | 4 | 16 | Implementation phase reports |
+| **Features** | 1 | 2 | Feature-specific docs (cms-lite) |
+| **Root** | - | 2 | README + Base Knowledge |
+| **TOTAL** | **8** | **37** | Well-organized documentation |
 
 ---
 
 ## 🔄 Recent Updates
 
-### 2025-11-03
-- ✅ Documentation cleanup for token efficiency
-- ✅ Consolidated to 13 essential files
-- ✅ Updated 2_DEVELOPER_GUIDE.md with mutation guide reference
-- ✅ Updated 99_CURRENT_PROGRESS.md with Week 0 completion status
-- ✅ Agent Alpha conditional approval (95/100)
+### 2025-11-04 - Major Documentation Reorganization
+- ✅ Created organized folder structure (8 folders)
+- ✅ Moved 37 files to appropriate locations
+- ✅ Created README for each folder (8 READMEs)
+- ✅ Updated navigation and cross-references
+- ✅ Improved discoverability
+
+### Previous Updates
+- 2025-11-03: Documentation cleanup for token efficiency
+- 2025-11-03: Phase 4 completion reports
+- 2025-11-04: CMS-Lite isolation guide created
 
 ---
 
@@ -117,20 +137,18 @@ This folder contains minimal, high-quality documentation to provide AI with nece
 
 **Keep:**
 - High-signal, essential information
-- Rules that AI must follow
+- Rules that must be followed
 - Current specifications and progress
-- Comprehensive guides for complex patterns
 
-**Remove:**
-- Redundant information
-- Historical/completed migration docs
-- Temporary status files
-- Information that can be derived from code
+**Organize:**
+- Group related documents
+- Clear folder structure
+- Easy navigation
 
-**Result:** Maximum context value with minimum token usage.
+**Result:** Maximum clarity with logical organization
 
 ---
 
-**Current Status:** Week 0 Complete → Phase 1 Starting
-**Next Milestone:** Foundation & Type System (Week 1-2)
-**Last Updated:** 2025-11-03
+**Last Updated:** 2025-11-04
+**Documentation Version:** 2.0 (Organized)
+**Status:** Active Development

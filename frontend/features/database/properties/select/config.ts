@@ -41,3 +41,6 @@ export const selectPropertyConfig: PropertyConfig = {
   version: '2.0',
   tags: ['select', 'option', 'dropdown'],
 };
+
+
+export default selectPropertyConfig;

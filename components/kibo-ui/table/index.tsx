@@ -121,7 +121,8 @@ export function TableProvider<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    columnResizeMode: "onEnd", // ✅ Google Sheets style - only resize the dragged column
+    columnResizeMode: "onChange", // ✅ Real-time resize for better UX (handled by optimized hook)
+    columnResizeDirection: "ltr", // ✅ Left-to-right: only expand right side, left stays fixed
     enableColumnResizing: true,
     enableRowSelection: true, // ✅ Enable row selection
     onSortingChange: (updater) => {
@@ -171,18 +172,24 @@ export const TableHead = memo(({ header, className }: TableHeadProps) => {
       {header.isPlaceholder
         ? null
         : flexRender(header.column.columnDef.header, header.getContext())}
-      {header.column.getCanResize() ? (
+      {header.column.getCanResize() && (
         <div
-          className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none bg-transparent group-hover:bg-border"
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
+          className={cn(
+            "absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize select-none",
+            "hover:bg-primary/60 active:bg-primary transition-colors",
+            header.column.getIsResizing() && "bg-primary"
+          )}
+          style={{
+            transform: "translateX(50%)", // Center on border
+          }}
           role="separator"
           aria-orientation="vertical"
-          aria-hidden="true"
-        >
-          <span className="absolute -right-[1px] top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-full bg-border opacity-0 transition group-hover:opacity-100" />
-        </div>
-      ) : null}
+          aria-label="Resize column"
+          title="Drag to resize column"
+        />
+      )}
     </TableHeadRaw>
   );
 });

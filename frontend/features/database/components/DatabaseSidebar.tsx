@@ -15,6 +15,8 @@ import {
   type SecondarySidebarItem,
 } from "@/frontend/shared/ui";
 import { SearchBox } from "@/frontend/shared/ui";
+import { getIconComponent, getColorValue } from "@/frontend/shared/ui";
+import { parseTableData } from "../utils/table-parser";
 import {
   Copy,
   Layers,
@@ -69,27 +71,28 @@ export function DatabaseSidebar({
         action?.(table);
       };
 
-    // Safety: Parse table.name if it's accidentally stored as JSON object
-    const tableName = (() => {
-      if (typeof table.name === 'string') {
-        try {
-          const parsed = JSON.parse(table.name);
-          if (parsed && typeof parsed === 'object' && 'name' in parsed) {
-            return parsed.name;
-          }
-        } catch {
-          return table.name;
-        }
-      }
-      return table.name;
-    })();
+    // Parse table data (name and icon) using DRY utility
+    const {
+      name: tableName,
+      icon: { iconName, iconColor },
+    } = parseTableData(table);
+
+    const IconComponent = getIconComponent(iconName);
+    const colorValue = getColorValue(iconColor);
 
     return {
       id: String(table._id),
-      label: tableName || "Untitled database",
+      label: tableName,
       description: table.description ?? undefined,
       active,
-      icon: table.icon ? (() => <span>{table.icon}</span>) : Table2,
+      icon: () => (
+        <IconComponent
+          className="size-4"
+          style={{
+            color: colorValue === "default" ? "currentColor" : colorValue,
+          }}
+        />
+      ),
       onClick: () => onSelectTable(table._id as Id<"dbTables">),
       trailing: hasActions ? (
         <DropdownMenu>

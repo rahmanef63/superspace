@@ -71,6 +71,7 @@ import { getRowValue, isEditableField } from "./lib";
 import { cn } from "@/lib/utils";
 import { usePropertyMenuHandlers } from "../../PropertyMenu/usePropertyMenuHandlers";
 import type { Id } from "@convex/_generated/dataModel";
+import { useOptimizedColumnResize } from "../../../hooks/useOptimizedColumnResize";
 
 type RowData = DatabaseFeature;
 
@@ -78,14 +79,18 @@ const MIN_COLUMN_WIDTH = 120;
 
 interface TableHeaderContentProps {
   columnOrder: string[];
+  fixedColumnIds: string[];
 }
 
-function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
+function TableHeaderContent({ columnOrder, fixedColumnIds }: TableHeaderContentProps) {
   const { table } = useContext(TableContext);
 
   if (!table) {
     return null;
   }
+
+  // Fixed columns that should not be draggable
+  const fixedSet = new Set(fixedColumnIds);
 
   return (
     <TableHeaderElement>
@@ -96,22 +101,20 @@ function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
             strategy={horizontalListSortingStrategy}
           >
             {headerGroup.headers.map((header) => {
-              const width = header.getSize();
-              const minWidth =
-                header.column.columnDef.minSize ?? MIN_COLUMN_WIDTH;
-              const maxWidth =
-                header.column.columnDef.maxSize ?? Number.MAX_SAFE_INTEGER;
               const canResize = header.column.getCanResize();
+              const isResizing = header.column.getIsResizing();
+              const isFixed = fixedSet.has(header.id);
 
               return (
                 <TableHeadElement
                   key={header.id}
-                  className="relative group align-middle"
+                  className="relative group align-middle select-none"
                   style={{
-                    width,
-                    minWidth,
-                    maxWidth,
+                    width: header.getSize(),
+                    minWidth: header.column.columnDef.minSize ?? MIN_COLUMN_WIDTH,
+                    maxWidth: header.column.columnDef.maxSize,
                   }}
+                  data-fixed={isFixed || undefined}
                 >
                   {header.isPlaceholder
                     ? null
@@ -119,16 +122,27 @@ function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                  {canResize ? (
+                  
+                  {/* Google Sheets-like resize handle */}
+                  {canResize && (
                     <div
-                      className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none bg-border opacity-0 transition group-hover:opacity-100 hover:!opacity-100 hover:bg-primary"
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
+                      onDoubleClick={() => header.column.resetSize()}
+                      className={cn(
+                        "absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize select-none",
+                        "hover:bg-primary/60 active:bg-primary transition-colors",
+                        isResizing && "bg-primary"
+                      )}
+                      style={{
+                        transform: "translateX(50%)", // Center on border: half inside, half outside
+                      }}
                       role="separator"
                       aria-orientation="vertical"
-                      aria-hidden="true"
+                      aria-label="Resize column"
+                      title="Drag to resize column"
                     />
-                  ) : null}
+                  )}
                 </TableHeadElement>
               );
             })}
@@ -303,6 +317,17 @@ export function DatabaseTableView({
 
   const rowIds = useMemo(() => features.map((f) => String(f.id)), [features]);
 
+  // Optimized column resize with local state + debounced persistence
+  const { 
+    columnSizing: optimizedColumnSizing, 
+    handleColumnSizingChange: handleOptimizedResize 
+  } = useOptimizedColumnResize({
+    initialSizing: activeView?.settings.fieldWidths,
+    onPersist: onColumnSizingChange,
+    debounceMs: 500, // Persist to backend after 500ms of inactivity
+    minColumnWidth: MIN_COLUMN_WIDTH,
+  });
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -356,31 +381,6 @@ export function DatabaseTableView({
       }
     },
     [columnOrder, rowIds, onReorderFields, onReorderRows],
-  );
-
-  const initialColumnSizing = useMemo<ColumnSizingState | undefined>(() => {
-    if (!activeView?.settings.fieldWidths) {
-      return undefined;
-    }
-    const sizing: ColumnSizingState = {};
-    Object.entries(activeView.settings.fieldWidths).forEach(([key, value]) => {
-      sizing[key] = value;
-    });
-    return sizing;
-  }, [activeView?.settings.fieldWidths]);
-
-  const handleColumnSizingChange = useCallback(
-    (state: ColumnSizingState) => {
-      if (!onColumnSizingChange) return;
-      const normalized: Record<string, number> = {};
-      Object.entries(state).forEach(([key, value]) => {
-        if (typeof value === "number" && Number.isFinite(value)) {
-          normalized[key] = Math.max(MIN_COLUMN_WIDTH, Math.round(value));
-        }
-      });
-      onColumnSizingChange(normalized);
-    },
-    [onColumnSizingChange],
   );
 
   const handleCommitCell = useCallback(
@@ -459,6 +459,9 @@ export function DatabaseTableView({
       </DropdownMenu>
     );
   }, [hiddenFields, onAddProperty, onToggleFieldVisibility]);
+
+  // Fixed columns that should not be draggable/reorderable
+  const FIXED_COLUMN_IDS = useMemo(() => ['select', 'drag', 'name', 'propertyActions', 'rowActions'], []);
 
   const columns = useMemo<ColumnDef<RowData>[]>(() => {
     const fieldWidths = activeView?.settings.fieldWidths ?? {};
@@ -697,13 +700,16 @@ export function DatabaseTableView({
           <TableProvider<RowData, unknown>
             columns={columns}
             data={features}
-            className="table-auto min-w-full"
-            initialColumnSizing={initialColumnSizing}
-            onColumnSizingChange={handleColumnSizingChange}
+            className="table-fixed min-w-full"
+            initialColumnSizing={optimizedColumnSizing}
+            onColumnSizingChange={handleOptimizedResize}
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
           >
-            <TableHeaderContent columnOrder={columnOrder} />
+            <TableHeaderContent 
+              columnOrder={columnOrder} 
+              fixedColumnIds={FIXED_COLUMN_IDS}
+            />
             <SortableContext
               items={rowIds}
               strategy={verticalListSortingStrategy}

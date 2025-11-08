@@ -1,9 +1,9 @@
 "use client";
 
+import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Row } from "@tanstack/react-table";
-import { TableRow as TableRowRaw, TableCell as TableCellRaw } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { flexRender } from "@tanstack/react-table";
 
@@ -30,43 +30,38 @@ export function SortableRow<TData>({ row, className }: SortableRowProps<TData>) 
   };
 
   return (
-    <TableRowRaw
+    <tr
       ref={setNodeRef}
       style={style}
       className={cn(
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
         className,
         isDragging && "opacity-50",
       )}
-      data-state={row.getIsSelected() && "selected"}
+      data-state={row.getIsSelected() ? "selected" : undefined}
     >
       {row.getVisibleCells().map((cell) => {
         // Special handling for drag handle cell
         if (cell.column.id === "drag") {
           return (
-            <TableCellRaw key={cell.id}>
+            <td key={cell.id} className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
               <div
                 {...attributes}
                 {...listeners}
-                className="flex h-full items-center justify-center"
+                className="flex h-full items-center justify-center cursor-grab active:cursor-grabbing"
               >
-                <button
-                  type="button"
-                  className="cursor-grab rounded p-1 text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:bg-muted hover:text-foreground active:cursor-grabbing"
-                  aria-label="Drag to reorder"
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </button>
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </div>
-            </TableCellRaw>
+            </td>
           );
         }
 
         return (
-          <TableCellRaw key={cell.id}>
+          <td key={cell.id} className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </TableCellRaw>
+          </td>
         );
       })}
-    </TableRowRaw>
+    </tr>
   );
 }

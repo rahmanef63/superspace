@@ -34,6 +34,7 @@ export const list = query({
     workspaceId: v.id("workspaces"),
     limit: v.optional(v.number()),
   },
+  returns: v.array(v.any()),
   handler: async (ctx, { workspaceId, limit = 100 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -61,6 +62,7 @@ export const search = query({
     term: v.string(),
     limit: v.optional(v.number()),
   },
+  returns: v.array(v.any()),
   handler: async (ctx, { workspaceId, term, limit = 12 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -92,6 +94,7 @@ export const search = query({
 
 export const get = query({
   args: { id: v.id("dbTables") },
+  returns: v.union(v.any(), v.null()),
   handler: async (ctx, { id }): Promise<DatabaseWithRelations | null> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -149,7 +152,8 @@ export const get = query({
 
 export const getRow = query({
   args: { id: v.id("dbRows") },
-  handler: async (ctx, { id }) => {
+  returns: v.union(v.any(), v.null()),
+  handler: async (ctx, { id}) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return null;
@@ -170,6 +174,7 @@ export const listRows = query({
     tableId: v.id("dbTables"),
     limit: v.optional(v.number()),
   },
+  returns: v.array(v.any()),
   handler: async (ctx, { tableId, limit = 1000 }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -195,6 +200,7 @@ export const listRows = query({
 
 export const listFields = query({
   args: { tableId: v.id("dbTables") },
+  returns: v.array(v.any()),
   handler: async (ctx, { tableId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -219,6 +225,7 @@ export const listFields = query({
 
 export const listViews = query({
   args: { tableId: v.id("dbTables") },
+  returns: v.array(v.any()),
   handler: async (ctx, { tableId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {

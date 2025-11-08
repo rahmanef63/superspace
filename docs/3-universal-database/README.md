@@ -1,6 +1,34 @@
 # Universal Database Documentation
 
-> Notion-like universal database system with 21 property types and 10 view layouts
+> **Notion-like universal database system** - Flexible, type-safe, auto-discovery architecture
+
+---
+
+## 📌 Purpose
+
+This folder contains **high-level specifications and planning documents** for the Universal Database feature. 
+
+For **detailed implementation documentation**, see:
+👉 **[frontend/features/database/docs/](../../frontend/features/database/docs/README.md)**
+
+---
+
+## 📂 Documentation Structure
+
+### Main App Docs (`docs/3-universal-database/`)
+**Focus:** Architecture, specifications, and consistency with main app
+- Project specifications and planning
+- V1/V2 boundaries and migration strategy  
+- High-level progress tracking
+- Phase planning and task breakdown
+
+### Feature Implementation Docs (`frontend/features/database/docs/`)
+**Focus:** Implementation details, component API, developer guides
+- Property system architecture and examples
+- Component usage and API reference
+- Step-by-step implementation guides
+- Session changelogs and detailed changes
+- Testing strategies and examples
 
 ---
 
@@ -8,8 +36,8 @@
 
 ### Core Specification
 - **[UNIVERSAL_DATABASE_SPEC.md](UNIVERSAL_DATABASE_SPEC.md)** - Complete v2.0 specification
-  - 21 property types (title, rich_text, number, select, multi_select, date, people, files, checkbox, url, email, relation, rollup, formula, status, phone, button, unique_id, place, created_time, created_by, last_edited_time, last_edited_by)
-  - 10 view layouts (table, board, list, timeline, calendar, gallery, map, chart, feed, form)
+  - 20+ property types (title, text, number, select, date, people, files, etc.)
+  - 7 view layouts (table, board, calendar, timeline, gallery, list, form)
   - Universal JSON schema v2.0
   - Type-safe TypeScript interfaces
   - Zod validation schemas
@@ -17,86 +45,128 @@
 ### Implementation Plan
 - **[UNIVERSAL_DATABASE_TODO.md](UNIVERSAL_DATABASE_TODO.md)** - Master task breakdown
   - ~250 tasks across 7 phases
-  - Week 0: ✅ Complete (Preparation & Compliance)
-  - Phase 1-7: Foundation → Properties → Views → Integration → Export → Polish → Rollout
+  - Phase 0-4: ✅ Complete (Foundation → Views)
+  - Current: Active development (Property Menu & UI)
   - Detailed task lists with dependencies
 
 ### Current Progress
-- **[99_CURRENT_PROGRESS.md](99_CURRENT_PROGRESS.md)** - Implementation tracker
-  - Current phase status
-  - Completed tasks
-  - Next milestones
-  - Agent Alpha scores
-  - Week-by-week progress
+- **[99_CURRENT_PROGRESS.md](99_CURRENT_PROGRESS.md)** - **START HERE** 📍
+  - Current phase status (Property Menu System - Nov 6, 2025)
+  - Recent work and next steps
+  - Quick status overview
+  - Links to feature implementation docs
 
-### Testing Status
-- **[TESTING_PROGRESS.md](TESTING_PROGRESS.md)** - Test coverage tracker
-  - Unit test status
-  - Integration test status
-  - Coverage metrics
-  - Test plan
-
-### Implementation Guides
+### Migration & Boundaries
 - **[MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md)** - V1 to Universal v2.0 migration
-  - Migration strategy
-  - Compatibility layers
-  - Rollback plan
-  - Testing checklist
-
+  - Migration strategy and compatibility layers
+  - Rollback plan and testing checklist
+  
 - **[V1_V2_BOUNDARIES.md](V1_V2_BOUNDARIES.md)** - Prevents circular dependencies
   - Clear import rules during parallel V1/V2 development
   - Adapter layer pattern
-  - TypeScript project references
   - Directory structure guidelines
 
-- **[PROPERTY_SYSTEM_EXAMPLES.md](PROPERTY_SYSTEM_EXAMPLES.md)** - Implementation examples
-  - Property type implementations
-  - View layout examples
-  - Real-world use cases
-  - Code samples
+### Testing Status
+- **[TESTING_PROGRESS.md](TESTING_PROGRESS.md)** - Test coverage tracker
+  - Unit test status and coverage metrics
+  - Integration test status
+  - Test plan overview
 
 ---
 
-## 📊 Current Status
+## 🎯 Current Status (November 6, 2025)
 
-**Phase:** Phase 1 (Tasks 1.1-1.4) Complete - Foundation & Type System
-**Next:** Phase 1 (Tasks 1.5-1.7) - Property/View Options
-**Tests:** 87+ unit tests passing
-**Coverage:** 85%+
-**Agent Alpha Score:** 95/100 (Week 0 Complete)
+**Active Work:** Property Menu Configuration System
+**Status:** Implementation complete, wiring component next
+**Recent:** Property Menu system + Feature documentation structure
+
+### What We've Built
+- ✅ **Property System:** 20+ property types with registry
+- ✅ **View System:** 7 view types (table, board, calendar, etc.)
+- ✅ **Property Menu:** Base config + type-specific configs + registry
+- ✅ **Documentation:** Complete feature docs structure
+
+### Next Steps
+1. Wire PropertyMenu component to use registry
+2. Implement menu action handlers
+3. Complete remaining property type configs
+4. Architecture and API reference docs
 
 ---
 
-## 🎯 Implementation Phases
+## 🚀 Quick Links
 
-### Week 0: ✅ Complete (95/100 Score)
-- Preparation & Compliance
-- Type system foundation
-- Testing infrastructure
+### For Developers
+- **[Getting Started](../../frontend/features/database/docs/guides/getting-started.md)** - 5-minute setup guide
+- **[Property Menu System](../../frontend/features/database/docs/property-system/property-menu.md)** - Detailed implementation
+- **[Database Feature README](../../frontend/features/database/docs/README.md)** - Feature documentation hub
 
-### Phase 1: Foundation & Type System (Week 1-2)
-- ✅ Tasks 1.1-1.4: Core types and schemas
-- ⏳ Tasks 1.5-1.7: Property/view options
+### For Planning
+- **[99_CURRENT_PROGRESS.md](99_CURRENT_PROGRESS.md)** - Current status
+- **[UNIVERSAL_DATABASE_TODO.md](UNIVERSAL_DATABASE_TODO.md)** - Task breakdown
+- **[Phase Reports](../4-phase-reports/README.md)** - Phase completion reports
 
-### Phase 2: Property Types (Week 3-4)
-- 21 property type implementations
-- Value editors
-- Type-specific validation
+### For Architecture
+- **[UNIVERSAL_DATABASE_SPEC.md](UNIVERSAL_DATABASE_SPEC.md)** - Complete specification
+- **[V1_V2_BOUNDARIES.md](V1_V2_BOUNDARIES.md)** - Dependency rules
+- **[Database Feature Docs](../../frontend/features/database/docs/README.md)** - Implementation architecture
 
-### Phase 3: View Layouts (Week 5-6)
-- 10 view layout implementations
-- View renderers
-- View-specific features
+---
 
-### Phase 4: Integration (Week 7)
-- End-to-end flows
-- Feature integration
-- Performance optimization
+## 📖 Key Concepts
 
-### Phase 5: Export/Import (Week 8)
-- CSV export
-- JSON export
-- Import functionality
+### Universal Database System
+- **Auto-discovery:** Zero hardcoding, registry-based architecture
+- **Type-safe:** TypeScript + Zod validation throughout
+- **Modular:** Each property/view type is self-contained
+- **Reactive:** Convex real-time sync and queries
+- **Flexible:** Notion-like experience, any feature can be a database
+
+### Property Types (20+)
+```typescript
+// Basic
+'text' | 'title' | 'number' | 'checkbox'
+
+// Rich
+'select' | 'multi_select' | 'date' | 'people' | 'files'
+
+// Advanced
+'formula' | 'rollup' | 'relation'
+
+// Auto-generated
+'created_time' | 'created_by' | 'last_edited_time' | 'last_edited_by'
+```
+
+### View Types (7)
+- **Table:** TanStack Table with inline editing
+- **Board:** Kanban with drag-and-drop
+- **Calendar:** Month/week/day views
+- **Timeline:** Gantt chart with date ranges
+- **Gallery:** Card grid with images
+- **List:** Simplified list view
+- **Form:** Single-record editing
+
+---
+
+## 🔧 Development Principles
+
+### Documentation Separation
+1. **Main docs (`docs/`)** = Architecture, planning, specifications
+2. **Feature docs (`frontend/features/database/docs/`)** = Implementation, code, examples
+3. Always reference, never duplicate
+4. Keep main docs lean and high-level
+
+### Code Organization
+1. **Registry pattern** - Auto-discovery, no hardcoding
+2. **DRY principle** - Reuse, don't repeat
+3. **Type-safe** - TypeScript everywhere
+4. **Modular** - Each feature is self-contained
+
+---
+
+**Last Updated:** 2025-11-06
+**Status:** Active Development
+**Current Focus:** Property Menu System & UI Components
 
 ### Phase 6: Polish (Week 9)
 - UI/UX improvements

@@ -5,17 +5,41 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Column } from "@tanstack/react-table";
 import type { DatabaseFeature } from "../../../../types";
-import { PropertyMenu, type PropertyMenuProps } from "./PropertyMenu";
+import { PropertyMenu } from "../../../PropertyMenu/PropertyMenu";
+import type { PropertyMenuProps } from "../../../PropertyMenu/types";
 import { cn } from "@/lib/utils";
 
-export interface SortableHeaderProps
-  extends Pick<
-    PropertyMenuProps,
-    "field" | "isVisible" | "onRename" | "onToggleVisibility" | "onToggleRequired" | "onDelete"
-  > {
+export interface SortableHeaderProps {
   column: Column<DatabaseFeature, unknown>;
+  field: PropertyMenuProps['field'];
+  isVisible?: boolean;
+  isRequired?: boolean;
   disableDrag?: boolean;
   id: string;
+  
+  // PropertyMenu handlers - all optional, pass what you have
+  onRename?: (fieldId: string, name: string) => Promise<void> | void;
+  onDuplicate?: (fieldId: string) => Promise<void> | void;
+  onChangeType?: (fieldId: string, newType: any) => Promise<void> | void;
+  onSort?: (fieldId: string, direction: 'asc' | 'desc') => void;
+  onFilter?: (fieldId: string) => void;
+  onCalculate?: (fieldId: string, calcType: string) => void;
+  onWrap?: (fieldId: string) => void;
+  onSetFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onShowAs?: (fieldId: string, displayType: string) => Promise<void> | void;
+  onDateFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onTimeFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onEditOptions?: (fieldId: string) => void;
+  onManageColors?: (fieldId: string) => void;
+  onNotifications?: (fieldId: string) => void;
+  onShowPageIcon?: (fieldId: string) => void;
+  onInsertLeft?: (fieldId: string) => Promise<void> | void;
+  onInsertRight?: (fieldId: string) => Promise<void> | void;
+  onMoveLeft?: (fieldId: string) => Promise<void> | void;
+  onMoveRight?: (fieldId: string) => Promise<void> | void;
+  onToggleRequired?: (fieldId: string, required: boolean) => Promise<void> | void;
+  onHide?: (fieldId: string) => Promise<void> | void;
+  onDelete?: (fieldId: string) => Promise<void> | void;
 }
 
 export function SortableHeader({
@@ -23,10 +47,30 @@ export function SortableHeader({
   column,
   field,
   isVisible,
+  isRequired,
   disableDrag,
+  // Pass all PropertyMenu handlers
   onRename,
-  onToggleVisibility,
+  onDuplicate,
+  onChangeType,
+  onSort,
+  onFilter,
+  onCalculate,
+  onWrap,
+  onSetFormat,
+  onShowAs,
+  onDateFormat,
+  onTimeFormat,
+  onEditOptions,
+  onManageColors,
+  onNotifications,
+  onShowPageIcon,
+  onInsertLeft,
+  onInsertRight,
+  onMoveLeft,
+  onMoveRight,
   onToggleRequired,
+  onHide,
   onDelete,
 }: SortableHeaderProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -74,9 +118,28 @@ export function SortableHeader({
       <PropertyMenu
         field={field}
         isVisible={isVisible}
+        isRequired={isRequired}
         onRename={onRename}
-        onToggleVisibility={onToggleVisibility}
+        onDuplicate={onDuplicate}
+        onChangeType={onChangeType}
+        onSort={onSort}
+        onFilter={onFilter}
+        onCalculate={onCalculate}
+        onWrap={onWrap}
+        onSetFormat={onSetFormat}
+        onShowAs={onShowAs}
+        onDateFormat={onDateFormat}
+        onTimeFormat={onTimeFormat}
+        onEditOptions={onEditOptions}
+        onManageColors={onManageColors}
+        onNotifications={onNotifications}
+        onShowPageIcon={onShowPageIcon}
+        onInsertLeft={onInsertLeft}
+        onInsertRight={onInsertRight}
+        onMoveLeft={onMoveLeft}
+        onMoveRight={onMoveRight}
         onToggleRequired={onToggleRequired}
+        onHide={onHide}
         onDelete={onDelete}
       />
     </div>

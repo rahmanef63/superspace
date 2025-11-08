@@ -73,6 +73,7 @@ export interface PropertyMenuProps {
   // Common Actions
   onRename?: (fieldId: string, name: string) => Promise<void> | void;
   onDuplicate?: (fieldId: string) => Promise<void> | void;
+  onChangeType?: (fieldId: string, newType: any) => Promise<void> | void;
   onHide?: (fieldId: string) => Promise<void> | void;
   onDelete?: (fieldId: string) => Promise<void> | void;
   onToggleRequired?: (fieldId: string, required: boolean) => Promise<void> | void;
@@ -87,13 +88,23 @@ export interface PropertyMenuProps {
   onSort?: (fieldId: string, direction: 'asc' | 'desc') => Promise<void> | void;
   onFilter?: (fieldId: string) => Promise<void> | void;
   onCalculate?: (fieldId: string, aggregation: string) => Promise<void> | void;
+  onWrap?: (fieldId: string) => Promise<void> | void;
   
-  // Type-specific Actions
-  onEditOptions?: (fieldId: string) => Promise<void> | void; // For Select/MultiSelect
-  onSetFormat?: (fieldId: string, format: string) => Promise<void> | void; // For Number/Date
+  // Type-specific Actions (Select/MultiSelect)
+  onEditOptions?: (fieldId: string) => Promise<void> | void;
+  onManageColors?: (fieldId: string) => Promise<void> | void;
   
-  // Custom Extension
-  extension?: PropertyMenuExtension;
+  // Type-specific Actions (Number)
+  onSetFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onShowAs?: (fieldId: string, display: string) => Promise<void> | void;
+  
+  // Type-specific Actions (Date)
+  onDateFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onTimeFormat?: (fieldId: string, format: string) => Promise<void> | void;
+  onNotifications?: (fieldId: string) => Promise<void> | void;
+  
+  // Type-specific Actions (Title)
+  onShowPageIcon?: (fieldId: string) => Promise<void> | void;
   
   // UI
   children?: React.ReactNode; // Trigger element

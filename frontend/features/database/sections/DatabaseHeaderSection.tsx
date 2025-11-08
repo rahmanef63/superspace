@@ -11,6 +11,35 @@ export interface DatabaseHeaderSectionProps {
 export function DatabaseHeaderSection({ record }: DatabaseHeaderSectionProps) {
   const { table, stats } = record;
 
+  // Safety: Parse table.name if it's accidentally stored as JSON object
+  const tableName = (() => {
+    if (typeof table.name === 'string') {
+      try {
+        // Check if it's a JSON string
+        const parsed = JSON.parse(table.name);
+        // If it's an object with a name property, extract it
+        if (parsed && typeof parsed === 'object' && 'name' in parsed) {
+          console.log('🏷️ [Database Name] Parsed from JSON:', {
+            raw: table.name,
+            extracted: parsed.name,
+            tableId: table._id
+          });
+          return parsed.name;
+        }
+      } catch {
+        // Not JSON, use as-is
+        return table.name;
+      }
+    }
+    
+    console.log('🏷️ [Database Name] Display:', {
+      name: table.name,
+      tableId: table._id
+    });
+    
+    return table.name;
+  })();
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-4">
       <div className="flex items-center gap-3">
@@ -19,7 +48,7 @@ export function DatabaseHeaderSection({ record }: DatabaseHeaderSectionProps) {
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {table.name}
+            {tableName}
           </h1>
           {table.description ? (
             <p className="text-sm text-muted-foreground">

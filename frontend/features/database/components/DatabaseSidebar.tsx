@@ -69,9 +69,24 @@ export function DatabaseSidebar({
         action?.(table);
       };
 
+    // Safety: Parse table.name if it's accidentally stored as JSON object
+    const tableName = (() => {
+      if (typeof table.name === 'string') {
+        try {
+          const parsed = JSON.parse(table.name);
+          if (parsed && typeof parsed === 'object' && 'name' in parsed) {
+            return parsed.name;
+          }
+        } catch {
+          return table.name;
+        }
+      }
+      return table.name;
+    })();
+
     return {
       id: String(table._id),
-      label: table.name || "Untitled database",
+      label: tableName || "Untitled database",
       description: table.description ?? undefined,
       active,
       icon: table.icon ? (() => <span>{table.icon}</span>) : Table2,

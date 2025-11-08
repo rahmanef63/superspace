@@ -10,9 +10,6 @@ import type {
   FieldMapping,
 } from "../types";
 
-type DatabaseQueryResult =
-  typeof api.features.database.queries.get._returnType;
-
 export function useDatabaseRecord(
   tableId?: Id<"dbTables"> | null,
 ): {
@@ -21,10 +18,10 @@ export function useDatabaseRecord(
   mapping: FieldMapping | null;
   isLoading: boolean;
 } {
-  const queryResult = useQuery(
-    api.features.database.queries.get,
+  const queryResult: any = useQuery(
+    (api.features.database.queries as any).get,
     tableId ? { id: tableId } : "skip",
-  ) as DatabaseQueryResult | undefined;
+  );
 
   const record = useMemo<DatabaseRecord | null>(() => {
     if (!queryResult) return null;
@@ -66,7 +63,7 @@ export function useDatabaseSidebar(
   isLoading: boolean;
 } {
   const result = useQuery(
-    api.features.database.queries.list,
+    (api.features.database.queries as any).list,
     workspaceId ? { workspaceId } : "skip",
   ) as TableDoc[] | undefined;
 
@@ -84,7 +81,7 @@ export function useDatabaseSearch(
   isSearching: boolean;
 } {
   const queryResult = useQuery(
-    api.features.database.queries.search,
+    (api.features.database.queries as any).search,
     workspaceId && term.trim()
       ? { workspaceId, term }
       : "skip",
@@ -148,6 +145,9 @@ export function useDatabaseMutations() {
   const reorderRow = useMutation(
     api.features.database.mutations.reorderRow as any,
   );
+  const changeFieldType = useMutation(
+    api.features.database.mutations.changeFieldType as any,
+  );
 
   return {
     createTable,
@@ -166,5 +166,6 @@ export function useDatabaseMutations() {
     deleteField,
     reorderField,
     reorderRow,
+    changeFieldType,
   };
 }

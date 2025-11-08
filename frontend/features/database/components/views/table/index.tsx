@@ -69,6 +69,8 @@ import {
 import { SortableRow } from "./components/SortableRow";
 import { getRowValue, isEditableField } from "./lib";
 import { cn } from "@/lib/utils";
+import { usePropertyMenuHandlers } from "../../PropertyMenu/usePropertyMenuHandlers";
+import type { Id } from "@convex/_generated/dataModel";
 
 type RowData = DatabaseFeature;
 
@@ -140,6 +142,7 @@ function TableHeaderContent({ columnOrder }: TableHeaderContentProps) {
 import type { PropertyOptions } from '@/frontend/shared/foundation/types/property-options';
 
 export interface DatabaseTableViewProps {
+  tableId: Id<"dbTables">; // Add tableId for PropertyMenu handlers
   features: DatabaseFeature[];
   fields: DatabaseField[];
   mapping?: FieldMapping | null;
@@ -168,6 +171,7 @@ export interface DatabaseTableViewProps {
 }
 
 export function DatabaseTableView({
+  tableId,
   features,
   fields,
   mapping,
@@ -185,6 +189,13 @@ export function DatabaseTableView({
   onColumnSizingChange,
   onUpdateFieldOptions,
 }: DatabaseTableViewProps) {
+  // Use PropertyMenu handlers hook
+  const propertyMenuHandlers = usePropertyMenuHandlers({
+    tableId,
+    fields,
+    activeView,
+  });
+  
   const orderedFields = useMemo(
     () =>
       [...fields].sort(
@@ -263,14 +274,34 @@ export function DatabaseTableView({
   useEffect(() => {
     setColumnOrder((prev) => {
       const next = displayFieldIds;
-      const prevKey = prev.join("|");
-      const nextKey = next.join("|");
-      if (prevKey === nextKey) {
-        return prev;
+      
+      // If no previous state (first render), use next
+      if (prev.length === 0) {
+        return next;
       }
-      return next;
+      
+      // Check if field set changed (added or removed)
+      const prevSet = new Set(prev);
+      const nextSet = new Set(next);
+      
+      const added = next.filter(id => !prevSet.has(id));
+      const removed = prev.filter(id => !nextSet.has(id));
+      
+      // Only reset if fields were added or removed
+      // Don't reset if it's just the same fields in different order (preserve user's drag order)
+      if (added.length > 0 || removed.length > 0) {
+        // Merge: keep order of existing fields, add new ones at the end
+        const reordered = prev.filter(id => nextSet.has(id));
+        const newOnes = added;
+        return [...reordered, ...newOnes];
+      }
+      
+      // If same fields, keep existing order (user might have dragged columns)
+      return prev;
     });
   }, [displayFieldIds]);
+
+  const rowIds = useMemo(() => features.map((f) => String(f.id)), [features]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -282,50 +313,49 @@ export function DatabaseTableView({
     (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-      setColumnOrder((prev) => {
-        const activeId = String(active.id);
-        const overId = String(over.id);
-        const oldIndex = prev.indexOf(activeId);
-        const newIndex = prev.indexOf(overId);
-        if (oldIndex === -1 || newIndex === -1) {
-          return prev;
-        }
-        const nextOrder = arrayMove(prev, oldIndex, newIndex);
-        if (onReorderFields) {
-          void onReorderFields(nextOrder);
-        }
-        return nextOrder;
-      });
-    },
-    [onReorderFields],
-  );
 
-  const rowSensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-  );
-
-  const rowIds = useMemo(() => features.map((f) => String(f.id)), [features]);
-
-  const handleRowDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-      
       const activeId = String(active.id);
       const overId = String(over.id);
-      const oldIndex = rowIds.indexOf(activeId);
-      const newIndex = rowIds.indexOf(overId);
-      
-      if (oldIndex === -1 || newIndex === -1) return;
-      
-      const nextOrder = arrayMove(rowIds, oldIndex, newIndex);
-      if (onReorderRows) {
-        void onReorderRows(nextOrder);
+
+      // Check if this is a column drag (fieldId in columnOrder)
+      if (columnOrder.includes(activeId) && columnOrder.includes(overId)) {
+        setColumnOrder((prev) => {
+          const oldIndex = prev.indexOf(activeId);
+          const newIndex = prev.indexOf(overId);
+          
+          if (oldIndex === -1 || newIndex === -1) {
+            return prev;
+          }
+          
+          const nextOrder = arrayMove(prev, oldIndex, newIndex);
+          
+          // Track column order changes
+          console.log('� [Column Order] DND:', {
+            before: prev,
+            after: nextOrder,
+            moved: `${activeId} from position ${oldIndex} to ${newIndex}`
+          });
+          
+          if (onReorderFields) {
+            void onReorderFields(nextOrder);
+          }
+          return nextOrder;
+        });
+      }
+      // Check if this is a row drag (rowId in rowIds)
+      else if (rowIds.includes(activeId)) {
+        const oldIndex = rowIds.indexOf(activeId);
+        const newIndex = rowIds.indexOf(overId);
+        
+        if (oldIndex === -1 || newIndex === -1) return;
+        
+        const nextOrder = arrayMove(rowIds, oldIndex, newIndex);
+        if (onReorderRows) {
+          void onReorderRows(nextOrder);
+        }
       }
     },
-    [rowIds, onReorderRows],
+    [columnOrder, rowIds, onReorderFields, onReorderRows],
   );
 
   const initialColumnSizing = useMemo<ColumnSizingState | undefined>(() => {
@@ -473,15 +503,7 @@ export function DatabaseTableView({
       maxSize: 40,
       header: () => <div className="h-full w-full" />,
       cell: () => (
-        <div className="flex h-full items-center justify-center">
-          <button
-            type="button"
-            className="cursor-grab rounded p-1 text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:bg-muted hover:text-foreground active:cursor-grabbing"
-            aria-label="Drag to reorder"
-          >
-            <GripVertical className="h-4 w-4" />
-          </button>
-        </div>
+        <GripVertical className="h-4 w-4 text-muted-foreground opacity-50 transition group-hover:opacity-100" />
       ),
     });
 
@@ -572,7 +594,9 @@ export function DatabaseTableView({
 
     columnOrder.forEach((fieldId) => {
       const field = fieldById.get(fieldId);
-      if (!field) return;
+      if (!field) {
+        return;
+      }
 
       baseColumns.push({
         id: fieldId,
@@ -586,12 +610,9 @@ export function DatabaseTableView({
             column={column}
             field={field}
             isVisible
-            onRename={onRenameField}
-            onToggleVisibility={(id, visible) =>
-              onToggleFieldVisibility?.(id, visible)
-            }
-            onToggleRequired={onToggleFieldRequired}
-            onDelete={(id) => onDeleteField?.(id)}
+            isRequired={field.isRequired}
+            // Pass all PropertyMenu handlers from hook
+            {...propertyMenuHandlers}
           />
         ),
         cell: ({ row }) => (
@@ -671,8 +692,8 @@ export function DatabaseTableView({
           </div>
         )}
       </div>
-      <div className="flex-1 overflow-auto">
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="flex-1 overflow-auto">
           <TableProvider<RowData, unknown>
             columns={columns}
             data={features}
@@ -683,35 +704,33 @@ export function DatabaseTableView({
             onRowSelectionChange={setRowSelection}
           >
             <TableHeaderContent columnOrder={columnOrder} />
-            <DndContext sensors={rowSensors} onDragEnd={handleRowDragEnd}>
-              <SortableContext
-                items={rowIds}
-                strategy={verticalListSortingStrategy}
-              >
-                <TableBody
-                  className={cn(features.length === 0 && "[&>tr]:hidden")}
-                >
-                  {({ row }) => (
-                    <SortableRow key={row.id} row={row} className="group" />
-                  )}
-                </TableBody>
-              </SortableContext>
-            </DndContext>
-          </TableProvider>
-        </DndContext>
-        {onAddRow ? (
-          <div className="border-t border-border px-6 py-3">
-            <button
-              type="button"
-              onClick={onAddRow}
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+            <SortableContext
+              items={rowIds}
+              strategy={verticalListSortingStrategy}
             >
-              <span className="text-lg leading-none">+</span>
-              <span>New page</span>
-            </button>
-          </div>
-        ) : null}
-      </div>
+              <TableBody
+                className={cn(features.length === 0 && "[&>tr]:hidden")}
+              >
+                {({ row }) => (
+                  <SortableRow key={row.id} row={row} className="group" />
+                )}
+              </TableBody>
+            </SortableContext>
+          </TableProvider>
+          {onAddRow ? (
+            <div className="border-t border-border px-6 py-3">
+              <button
+                type="button"
+                onClick={onAddRow}
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                <span className="text-lg leading-none">+</span>
+                <span>New page</span>
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </DndContext>
     </div>
   );
 }

@@ -82,6 +82,7 @@ export const create = mutation({
           ),
         ),
         dateFormat: v.optional(v.string()),
+        timeFormat: v.optional(v.string()),
         numberFormat: v.optional(v.string()),
         formula: v.optional(v.string()),
       }),
@@ -148,6 +149,24 @@ export const update = mutation({
   args: {
     id: v.id("dbFields"),
     name: v.optional(v.string()),
+    type: v.optional(
+      v.union(
+        v.literal("text"),
+        v.literal("number"),
+        v.literal("select"),
+        v.literal("multiSelect"),
+        v.literal("date"),
+        v.literal("person"),
+        v.literal("files"),
+        v.literal("checkbox"),
+        v.literal("url"),
+        v.literal("email"),
+        v.literal("phone"),
+        v.literal("formula"),
+        v.literal("relation"),
+        v.literal("rollup"),
+      ),
+    ),
     options: v.optional(
       v.object({
         selectOptions: v.optional(
@@ -160,6 +179,7 @@ export const update = mutation({
           ),
         ),
         dateFormat: v.optional(v.string()),
+        timeFormat: v.optional(v.string()),
         numberFormat: v.optional(v.string()),
         formula: v.optional(v.string()),
       }),
@@ -186,6 +206,7 @@ export const update = mutation({
 
     const updates: Record<string, unknown> = {};
     if (args.name !== undefined) updates.name = args.name;
+    if (args.type !== undefined) updates.type = args.type;
     if (args.options !== undefined) updates.options = args.options;
     if (args.isRequired !== undefined) updates.isRequired = args.isRequired;
 

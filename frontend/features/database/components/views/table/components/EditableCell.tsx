@@ -115,6 +115,110 @@ const isV2Property = (field: DatabaseField | Property): field is Property => {
 };
 
 /**
+ * V2 Editor Wrapper Component with debounced commit
+ */
+function V2EditorWrapper({
+  property,
+  value,
+  onCommit,
+  onPropertyUpdate,
+}: {
+  property: Property;
+  value: unknown;
+  onCommit?: (value: unknown) => Promise<void> | void;
+  onPropertyUpdate?: (options: Partial<PropertyOptions>) => Promise<void> | void;
+}) {
+  const config = propertyRegistry.get(property.type);
+  const [localValue, setLocalValue] = useState(value);
+  const commitTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (commitTimeoutRef.current) {
+        clearTimeout(commitTimeoutRef.current);
+      }
+    };
+  }, []);
+  
+  if (!config) {
+    // Fallback to generic input with local state
+    const [draft, setDraft] = useState(value ? String(value) : '');
+    
+    useEffect(() => {
+      setDraft(value ? String(value) : '');
+    }, [value]);
+    
+    return (
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const trimmed = draft.trim();
+          if (trimmed !== String(value || '')) {
+            onCommit?.(trimmed || null);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const trimmed = draft.trim();
+            if (trimmed !== String(value || '')) {
+              onCommit?.(trimmed || null);
+            }
+            e.currentTarget.blur();
+          } else if (e.key === 'Escape') {
+            setDraft(value ? String(value) : '');
+            e.currentTarget.blur();
+          }
+        }}
+        className="h-8"
+      />
+    );
+  }
+
+  const { Editor } = config;
+  
+  const handleChange = useCallback((newValue: unknown) => {
+    setLocalValue(newValue);
+    
+    // Debounce commit - only save after user stops typing
+    if (commitTimeoutRef.current) {
+      clearTimeout(commitTimeoutRef.current);
+    }
+    
+    // For immediate commit types (checkbox, select, etc), commit right away
+    if (property.type === 'checkbox' || property.type === 'select' || property.type === 'multi_select') {
+      if (JSON.stringify(newValue) !== JSON.stringify(value)) {
+        onCommit?.(newValue);
+      }
+    } else {
+      // For text inputs, debounce for 1000ms (1 second)
+      commitTimeoutRef.current = setTimeout(() => {
+        if (JSON.stringify(newValue) !== JSON.stringify(value)) {
+          onCommit?.(newValue);
+        }
+      }, 1000);
+    }
+  }, [property.type, value, onCommit]);
+  
+  return (
+    <div className="w-full">
+      <Editor
+        value={localValue}
+        property={property}
+        onChange={handleChange}
+        onPropertyUpdate={onPropertyUpdate}
+      />
+    </div>
+  );
+}
+
+/**
  * Render V2 editable cell using Property Registry
  */
 const renderV2Editor = (
@@ -123,34 +227,13 @@ const renderV2Editor = (
   onCommit?: (value: unknown) => Promise<void> | void,
   onPropertyUpdate?: (options: Partial<PropertyOptions>) => Promise<void> | void,
 ) => {
-  const config = propertyRegistry.get(property.type);
-  
-  if (!config) {
-    // Fallback to generic input
-    return (
-      <Input
-        value={value ? String(value) : ''}
-        onChange={(e) => onCommit?.(e.target.value || null)}
-        className="h-8"
-      />
-    );
-  }
-
-  const { Editor } = config;
-  
   return (
-    <div className="w-full">
-      <Editor
-        value={value}
-        property={property}
-        onChange={(newValue) => {
-          if (onCommit) {
-            void onCommit(newValue);
-          }
-        }}
-        onPropertyUpdate={onPropertyUpdate}
-      />
-    </div>
+    <V2EditorWrapper
+      property={property}
+      value={value}
+      onCommit={onCommit}
+      onPropertyUpdate={onPropertyUpdate}
+    />
   );
 };
 
@@ -468,11 +551,15 @@ export function EditableCell({ field, value, disabled, onCommit, onPropertyUpdat
       ref={inputRef}
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
-      onBlur={() => void commitValue(draft.trim() === "" ? null : draft)}
+      onBlur={() => {
+        const trimmed = draft.trim();
+        void commitValue(trimmed === "" ? null : trimmed);
+      }}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           event.preventDefault();
-          void commitValue(draft.trim() === "" ? null : draft);
+          const trimmed = draft.trim();
+          void commitValue(trimmed === "" ? null : trimmed);
         }
         if (event.key === "Escape") {
           event.preventDefault();

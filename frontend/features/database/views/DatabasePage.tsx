@@ -314,12 +314,10 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
           data: updates,
         });
         
-        toast.success("Cell updated successfully");
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to update row.";
         console.error('Failed to update cell:', error);
-        toast.error(message);
       }
     },
     [updateRow],
@@ -333,7 +331,7 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
           options: options as any,
         });
         
-        toast.success("Field options updated");
+        // Silent save (Notion-style) - no toast on success
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to update field options.";
@@ -366,7 +364,7 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
           id: fieldId as Id<"dbFields">,
           name,
         });
-        toast.success("Property renamed.");
+        // Silent save (Notion-style) - no toast on success
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to rename property.";
@@ -524,7 +522,22 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
   );
 
   const handleRenameTable = async (table: DatabaseTable) => {
-    const currentName = table.name || "Untitled database";
+    // Safety: Parse table.name if it's accidentally stored as JSON object
+    const currentName = (() => {
+      const name = table.name || "Untitled database";
+      if (typeof name === 'string') {
+        try {
+          const parsed = JSON.parse(name);
+          if (parsed && typeof parsed === 'object' && 'name' in parsed) {
+            return parsed.name;
+          }
+        } catch {
+          return name;
+        }
+      }
+      return name;
+    })();
+    
     const nextName = window.prompt("Rename database", currentName);
     if (nextName == null) {
       return;
@@ -761,10 +774,21 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
         break;
       case "table":
       default:
+        // Ensure record and viewModel are defined (TypeScript assertion)
+        if (!record || !viewModel) {
+          content = (
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-sm text-muted-foreground">No data available</p>
+            </div>
+          );
+          break;
+        }
+        
         content = (
           <DatabaseTableView
+            tableId={record.table._id}
             features={viewModel.features}
-            fields={record?.fields ?? []}
+            fields={record.fields}
             mapping={mapping}
             activeView={activeDbView}
             onAddProperty={handleAddProperty}

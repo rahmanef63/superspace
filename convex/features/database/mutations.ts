@@ -40,6 +40,9 @@ export {
   reorder as reorderRow,
 } from "./rows";
 
+export { changeFieldType } from "./changeType";
+export { fixTableNames } from "./fixTableNames";
+
 const filterValidator = v.object({
   fieldId: v.string(),
   operator: v.union(

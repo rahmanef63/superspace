@@ -19,16 +19,6 @@ export function OnboardingGuard() {
   const hasNoWorkspaces = Array.isArray(userWorkspaces) && userWorkspaces.length === 0
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      // Helpful debug during development
-      console.debug('OnboardingGuard', {
-        isLoading,
-        isAuthenticated,
-        workspacesLoaded,
-        workspacesCount: Array.isArray(userWorkspaces) ? userWorkspaces.length : 'undef',
-        pathname,
-      })
-    }
     if (isLoading) return
     if (!workspacesLoaded) return
     if (!isAuthed) return
@@ -41,11 +31,6 @@ export function OnboardingGuard() {
       if (!backfillAttemptedRef.current) {
         backfillAttemptedRef.current = true
         backfillMemberships({})
-          .then((res) => {
-            if (process.env.NODE_ENV !== 'production') {
-              console.debug('OnboardingGuard:backfillMemberships result', res)
-            }
-          })
           .catch((err) => {
             console.error('OnboardingGuard:backfillMemberships error', err)
           })

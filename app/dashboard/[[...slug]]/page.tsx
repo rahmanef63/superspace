@@ -136,10 +136,6 @@ export default function CatchAllPage() {
     [debugBasePayload],
   )
 
-  if (process.env.NODE_ENV !== "production") {
-    console.debug("[[...slug]]/page:init", debugBasePayload)
-  }
-
   const deriveFallbackStatus = (status?: string) => {
     switch ((status || "").toLowerCase()) {
       case "development":
@@ -157,17 +153,9 @@ export default function CatchAllPage() {
 
   const logDecision = useCallback(
     (type: string, extra: Record<string, unknown> = {}) => {
-      if (process.env.NODE_ENV === "production") return
-      console.debug("[[...slug]]/page:content-decision", {
-        ...debugBasePayload,
-        decision: type,
-        manifestComponentId: manifestEntry?.componentId ?? null,
-        menuItemResolved: Boolean(activeMenuItem),
-        menuItemMetadata: activeMenuItem?.metadata ?? null,
-        ...extra,
-      })
+      // Disabled for cleaner console
     },
-    [activeMenuItem, debugBasePayload, manifestEntry],
+    [],
   )
 
   useEffect(() => {

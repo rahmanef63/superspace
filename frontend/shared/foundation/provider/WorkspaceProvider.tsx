@@ -30,17 +30,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Debug when the fetched workspaces change
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      console.debug("WorkspaceProvider:userWorkspaces", {
-        loaded: userWorkspaces !== undefined,
-        count: Array.isArray(userWorkspaces) ? userWorkspaces.length : "undef",
-        names: Array.isArray(userWorkspaces) ? userWorkspaces.slice(0, 5).map((w) => w.name) : [],
-      });
-    }
-  }, [userWorkspaces]);
-
   // Clear selection when user loses all workspaces (e.g. deleted the last one)
   useEffect(() => {
     if (Array.isArray(userWorkspaces) && userWorkspaces.length === 0 && workspaceId !== null) {

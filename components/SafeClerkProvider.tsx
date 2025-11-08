@@ -12,27 +12,43 @@ interface SafeClerkProviderProps {
 export function SafeClerkProvider({ children, publishableKey, afterSignOutUrl = "/" }: SafeClerkProviderProps) {
   const [hasError, setHasError] = useState(false)
 
-  // Suppress Clerk clock skew warnings in development
+  // Suppress known warnings in development
   useEffect(() => {
     const originalWarn = console.warn
     const originalError = console.error
     
     console.warn = (...args: any[]) => {
       const message = args[0]?.toString() || ''
+      
+      // Suppress Clerk clock skew warnings
       if (message.includes('Clock skew detected') || message.includes('token-iat-in-the-future')) {
-        // Silently ignore clock skew warnings in development
         return
       }
+      
+      // Suppress Radix UI forwardRef warnings (known issue with @radix-ui/react-slot)
+      if (message.includes('Function components cannot be given refs') && 
+          message.includes('SlotClone')) {
+        return
+      }
+      
       originalWarn.apply(console, args)
     }
 
     console.error = (...args: any[]) => {
       const message = args[0]?.toString() || ''
+      
+      // Log but don't crash on Clerk infinite redirect in development
       if (message.includes('infinite redirect loop') && process.env.NODE_ENV === 'development') {
-        // Log but don't crash on infinite redirect in development
         console.log('[SafeClerkProvider] Clerk redirect loop detected - this is often caused by clock skew')
         return
       }
+      
+      // Suppress Radix UI forwardRef errors (non-critical)
+      if (message.includes('Function components cannot be given refs') && 
+          message.includes('SlotClone')) {
+        return
+      }
+      
       originalError.apply(console, args)
     }
 

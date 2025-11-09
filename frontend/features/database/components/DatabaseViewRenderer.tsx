@@ -24,6 +24,7 @@ interface DatabaseViewRendererProps {
   mapping: FieldMapping | null;
   activeDbView: DatabaseView | null;
   tableId: Id<"dbTables">;
+  filterQuery?: any | null; // ConvexQueryFilter from filters
   // Row operations
   onAddRow: () => Promise<void>;
   onUpdateCell: (rowId: DatabaseFeature["id"], updates: Record<string, unknown>) => Promise<void>;
@@ -51,6 +52,7 @@ export function DatabaseViewRenderer({
   mapping,
   activeDbView,
   tableId,
+  filterQuery,
   onAddRow,
   onUpdateCell,
   onDeleteRow,
@@ -112,6 +114,7 @@ export function DatabaseViewRenderer({
           fields={record.fields}
           mapping={mapping}
           activeView={activeDbView}
+          filterQuery={filterQuery}
           onAddProperty={onAddProperty}
           onAddRow={onAddRow}
           onUpdateCell={onUpdateCell}

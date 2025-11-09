@@ -50,6 +50,7 @@ export interface DatabaseTableViewProps {
   fields: DatabaseField[];
   mapping?: FieldMapping | null;
   activeView?: DatabaseView | null;
+  filterQuery?: any | null; // ConvexQueryFilter from filters
   onAddProperty?: (type: DatabaseFieldType) => void;
   onAddRow?: () => void;
   onColumnSizingChange?: (sizes: Record<string, number>) => void;
@@ -66,10 +67,24 @@ export function DatabaseTableView({
   fields,
   mapping,
   activeView,
+  filterQuery,
   onAddProperty,
   onAddRow,
   onColumnSizingChange,
 }: DatabaseTableViewProps) {
+  // Apply filters to features
+  const filteredFeatures = useMemo(() => {
+    if (!filterQuery || !filterQuery.filters || filterQuery.filters.length === 0) {
+      return features;
+    }
+
+    // Import filter helper
+    const { applyConvexFilters } = require('@/convex/lib/filters');
+    
+    // Apply filters client-side
+    return applyConvexFilters(features, filterQuery);
+  }, [features, filterQuery]);
+
   const titleFieldId = mapping?.titleField ? String(mapping.titleField) : null;
 
   const orderedFields = useMemo(
@@ -265,7 +280,7 @@ export function DatabaseTableView({
     <div className="size-full overflow-auto">
       <TableProvider
         columns={columns}
-        data={features}
+        data={filteredFeatures}
         className="table-auto min-w-full"
         initialColumnSizing={initialColumnSizing}
         onColumnSizingChange={handleColumnSizingChange}
@@ -279,7 +294,7 @@ export function DatabaseTableView({
             </TableHeaderGroup>
           )}
         </TableHeader>
-        <TableBody className={features.length === 0 ? "[&>tr]:hidden" : undefined}>
+        <TableBody className={filteredFeatures.length === 0 ? "[&>tr]:hidden" : undefined}>
           {({ row }) => (
             <TableRow key={row.id} row={row} className="group">
               {({ cell }) => <TableCell cell={cell} key={cell.id} />}

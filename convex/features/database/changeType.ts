@@ -1,8 +1,14 @@
 /**
  * Change Property Type Mutation
  * 
- * This mutation handles changing a database field's type AND transforming all existing data
- * Uses the dataTransformer utility to convert values from old type to new type
+ * Handles changing a database field's type AND intelligently transforming all existing data.
+ * Uses comprehensive transformation rules to preserve data when possible.
+ * 
+ * Examples:
+ * - text → number: Extracts numeric values
+ * - text → select: Splits by comma to create options
+ * - select → checkbox: Maps true/false values
+ * - number → text: Converts to string
  */
 
 import { mutation } from "../../_generated/server";
@@ -10,54 +16,7 @@ import { v } from "convex/values";
 import type { Id } from "../../_generated/dataModel";
 import { ensureUser, requirePermission } from "../../auth/helpers";
 import { PERMISSIONS } from "../../workspace/permissions";
-
-// Import transformation logic (we'll implement this in Convex)
-function transformValue(fromType: string, toType: string, value: any): any {
-  // Text → Number: Extract numeric values
-  if (fromType === 'text' && toType === 'number') {
-    if (value === null || value === undefined || value === "") {
-      return null;
-    }
-    
-    const str = String(value).trim();
-    
-    // Try direct parse first
-    const directNum = Number(str);
-    if (!isNaN(directNum)) {
-      return directNum;
-    }
-    
-    // Extract numeric part: keep digits, decimal point, minus sign
-    const numericStr = str.replace(/[^0-9.-]/g, '');
-    
-    if (numericStr === '' || numericStr === '-' || numericStr === '.') {
-      return null;
-    }
-    
-    const num = Number(numericStr);
-    return isNaN(num) ? null : num;
-  }
-  
-  // Number → Text: Convert and trim
-  if (fromType === 'number' && toType === 'text') {
-    if (value === null || value === undefined) {
-      return "";
-    }
-    return String(value).trim();
-  }
-  
-  // Text → Text: Trim whitespace (for type refresh or same-type transformation)
-  if (fromType === 'text' && toType === 'text') {
-    if (value === null || value === undefined) {
-      return "";
-    }
-    return String(value).trim();
-  }
-  
-  // Add more transformations as needed
-  // For now, keep value as-is for unsupported transformations
-  return value;
-}
+import { transformValue } from "./transformations";
 
 export const changeFieldType = mutation({
   args: {
@@ -85,20 +44,27 @@ export const changeFieldType = mutation({
 
     const oldType = field.type;
     
-    // Update ONLY the field type - preserve position, options, and other fields
-    // Note: Options might need to be cleared for incompatible types (e.g., select→number)
-    // but we preserve them here for flexibility. Frontend should handle validation.
-    await ctx.db.patch(args.fieldId, {
-      type: args.newType as any, // Cast to any to allow string
-    });
+    // Collect new options generated during transformation
+    const allNewOptions = new Map<string, { id: string; name: string; color: string }>();
+    let transformStats = {
+      total: 0,
+      success: 0,
+      failed: 0,
+      withWarnings: 0,
+    };
 
-    // Transform existing data if requested
+    // Transform existing data if requested (default: true)
     if (args.transformData !== false) {
       // Get all rows for this table
       const rows = await ctx.db
         .query("dbRows")
         .withIndex("by_table", (q) => q.eq("tableId", field.tableId))
         .collect();
+
+      transformStats.total = rows.length;
+
+      // Get current field options (for select types)
+      const currentOptions = field.options?.selectOptions;
 
       // Transform each row's value for this field
       for (const row of rows) {
@@ -107,24 +73,93 @@ export const changeFieldType = mutation({
         
         if (data && fieldKey in data) {
           const oldValue = data[fieldKey];
-          const newValue = transformValue(oldType, args.newType, oldValue);
           
-          // Only update if value changed
-          if (newValue !== oldValue) {
-            await ctx.db.patch(row._id, {
-              data: {
-                ...data,
-                [fieldKey]: newValue,
-              },
+          // Apply transformation
+          const result = transformValue(oldType, args.newType, oldValue, currentOptions);
+          
+          // Track statistics
+          if (result.success) {
+            transformStats.success++;
+          } else {
+            transformStats.failed++;
+          }
+          if (result.warning) {
+            transformStats.withWarnings++;
+          }
+          
+          // Collect new options
+          if (result.newOptions) {
+            result.newOptions.forEach(option => {
+              allNewOptions.set(option.id, option);
             });
           }
+          
+          // Update row value (even if transformation failed, to preserve behavior)
+          await ctx.db.patch(row._id, {
+            data: {
+              ...data,
+              [fieldKey]: result.value,
+            },
+          });
         }
       }
     }
 
+    // Prepare field update
+    const fieldUpdate: any = {
+      type: args.newType,
+    };
+
+    // If new options were generated, update field options
+    if (allNewOptions.size > 0) {
+      fieldUpdate.options = {
+        ...field.options,
+        selectOptions: Array.from(allNewOptions.values()),
+      };
+    }
+
+    // Update the field type and options
+    await ctx.db.patch(args.fieldId, fieldUpdate);
+
+    // Create audit log
+    await createAuditLog(ctx, {
+      workspaceId: table.workspaceId,
+      userId,
+      action: 'FIELD_TYPE_CHANGED',
+      resourceType: 'dbField',
+      resourceId: args.fieldId,
+      metadata: {
+        fieldName: field.name,
+        oldType,
+        newType: args.newType,
+        transformStats,
+        generatedOptions: allNewOptions.size,
+      },
+    });
+
     return {
       success: true,
       field: await ctx.db.get(args.fieldId),
+      transformStats,
+      generatedOptions: allNewOptions.size > 0 ? Array.from(allNewOptions.values()) : undefined,
     };
   },
 });
+
+// Audit log helper
+async function createAuditLog(ctx: any, params: {
+  workspaceId: any,
+  userId: any,
+  action: string,
+  resourceType: string,
+  resourceId: any,
+  metadata?: any
+}) {
+  console.log('[Database Audit - Type Change]', {
+    action: params.action,
+    field: params.metadata?.fieldName,
+    conversion: `${params.metadata?.oldType} → ${params.metadata?.newType}`,
+    stats: params.metadata?.transformStats,
+    generatedOptions: params.metadata?.generatedOptions,
+  });
+}

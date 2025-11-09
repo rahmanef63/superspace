@@ -14,6 +14,7 @@ import {
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +22,8 @@ import type { PropertyMenuProps, PropertyMenuItem } from './types';
 import { getFieldId } from './utils';
 import { buildPropertyMenu, type PropertyMenuCallbacks } from './menu-builder';
 import { RenamePropertyDialog, DeletePropertyDialog, ChangePropertyTypeDialog } from './dialogs';
+import { useOptionActions } from '../shared/useOptionActions';
+import { OptionsSheet } from '../shared/OptionsSheet';
 
 /**
  * Property Menu Component (Notion-style)
@@ -87,6 +90,26 @@ export function PropertyMenu({
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeTypeDialogOpen, setChangeTypeDialogOpen] = useState(false);
+  const [optionsSheetOpen, setOptionsSheetOpen] = useState(false);
+
+  // Get current options for select/multi-select fields
+  const currentOptions = (field.options as any)?.choices || (field.options as any)?.selectOptions || [];
+
+  // Use reusable option actions hook
+  const optionActions = useOptionActions({
+    options: currentOptions,
+    onUpdateOptions: (updatedOptions) => {
+      if (onEditOptions) {
+        // Ensure all options have required fields (id, name, color)
+        const validOptions = updatedOptions.map((opt) => ({
+          id: opt.id || `option-${Date.now()}`,
+          name: opt.name,
+          color: opt.color || '#6b7280',
+        }));
+        onEditOptions(fieldId, validOptions);
+      }
+    },
+  });
 
   // Build menu items using registry system
   const menuItems = useMemo(() => {
@@ -247,18 +270,14 @@ export function PropertyMenu({
         }
       } : undefined,
 
-      onEditOptions: onEditOptions ? () => {
-        try {
-          onEditOptions(fieldId);
-          // Options editor modal will provide feedback
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Failed to open options editor",
-            description: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-      } : undefined,
+      // onEditOptions will not have onClick, submenu will be used
+      onEditOptions: undefined,
+
+      // Use reusable option actions from hook
+      onEditOption: onEditOptions ? optionActions.handleRename : undefined,
+      onAddOption: onEditOptions ? optionActions.handleAdd : undefined,
+      onDeleteOption: onEditOptions ? optionActions.handleDelete : undefined,
+      onChangeOptionColor: onEditOptions ? optionActions.handleChangeColor : undefined,
 
       onManageColors: onManageColors ? () => {
         try {
@@ -384,6 +403,7 @@ export function PropertyMenu({
     onTimeFormat,
     onNotifications,
     onShowPageIcon,
+    optionActions, // Add option actions to dependencies
   ]);
   
   // Handle rename confirmation
@@ -441,13 +461,48 @@ export function PropertyMenu({
       return <DropdownMenuSeparator key={item.id} />;
     }
 
-    // Submenu
-    if (item.submenu && item.submenu.length > 0) {
+    // Special case: sheet submenu for Edit options
+    if (item.submenu === 'combobox' && item.id === 'editOptions') {
       return (
-        <DropdownMenuSub key={item.id}>
-          <DropdownMenuSubTrigger className="flex items-center gap-2">
+        <DropdownMenuItem
+          key={item.id}
+          onClick={() => setOptionsSheetOpen(true)}
+          className="flex items-center justify-between gap-2"
+        >
+          <div className="flex items-center gap-2">
             {item.icon && <item.icon className="h-4 w-4" />}
             <span>{item.label}</span>
+          </div>
+          {item.shortcut && (
+            <span className="text-xs text-muted-foreground">
+              {item.shortcut}
+            </span>
+          )}
+        </DropdownMenuItem>
+      );
+    }
+
+    // Submenu
+    if (item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0) {
+      return (
+        <DropdownMenuSub key={item.id}>
+          <DropdownMenuSubTrigger className="flex items-center gap-2 flex-1 min-w-0">
+            {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
+            {item.badge ? (
+              <Badge 
+                variant="secondary"
+                className="truncate"
+                style={item.badge.color ? { 
+                  backgroundColor: item.badge.color + '20',
+                  borderColor: item.badge.color,
+                  color: item.badge.color 
+                } : undefined}
+              >
+                {item.badge.text}
+              </Badge>
+            ) : (
+              <span>{item.label}</span>
+            )}
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
@@ -472,9 +527,29 @@ export function PropertyMenu({
             'text-destructive focus:text-destructive'
         )}
       >
-        <div className="flex items-center gap-2">
-          {item.icon && <item.icon className="h-4 w-4" />}
-          <span>{item.label}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {item.color && (
+            <div 
+              className="h-4 w-4 rounded border flex-shrink-0"
+              style={{ backgroundColor: item.color }}
+            />
+          )}
+          {item.icon && <item.icon className="h-4 w-4 flex-shrink-0" />}
+          {item.badge ? (
+            <Badge 
+              variant="secondary"
+              className="truncate"
+              style={item.badge.color ? { 
+                backgroundColor: item.badge.color + '20',
+                borderColor: item.badge.color,
+                color: item.badge.color 
+              } : undefined}
+            >
+              {item.badge.text}
+            </Badge>
+          ) : (
+            <span>{item.label}</span>
+          )}
         </div>
         {item.shortcut && (
           <span className="text-xs text-muted-foreground">
@@ -533,6 +608,25 @@ export function PropertyMenu({
         currentType={field.type as any}
         onConfirm={handleChangeTypeConfirm}
       />
+      
+      {/* Options Sheet for Select/Multi-Select */}
+      {(field.type === 'select' || field.type === 'multi_select') && onEditOptions && (
+        <OptionsSheet
+          open={optionsSheetOpen}
+          onOpenChange={setOptionsSheetOpen}
+          options={currentOptions}
+          propertyName={fieldName}
+          onUpdateOptions={(updatedOptions) => {
+            // Ensure all options have required fields (id, name, color)
+            const validOptions = updatedOptions.map((opt) => ({
+              id: opt.id || `option-${Date.now()}`,
+              name: opt.name,
+              color: opt.color || '#6b7280',
+            }));
+            onEditOptions(fieldId, validOptions);
+          }}
+        />
+      )}
     </>
   );
 }

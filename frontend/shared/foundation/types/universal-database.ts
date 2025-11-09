@@ -19,7 +19,7 @@
 export type PropertyType =
   // Core properties (14)
   | "title"              // Primary text field
-  | "rich_text"          // Formatted text with markdown
+  | "text"               // Formatted text with markdown
   | "number"             // Numeric values with formatting
   | "select"             // Single choice from options
   | "multi_select"       // Multiple choices
@@ -593,7 +593,7 @@ export interface UniversalDatabase {
  */
 export function isPropertyType(value: string): value is PropertyType {
   const validTypes: PropertyType[] = [
-    "title", "rich_text", "number", "select", "multi_select",
+    "title", "text", "number", "select", "multi_select",
     "date", "people", "files", "checkbox", "url", "email",
     "relation", "rollup", "formula", "status", "phone",
     "button", "unique_id", "place",
@@ -632,7 +632,7 @@ export function isFilterOperator(value: string): value is FilterOperator {
  */
 export const PropertyTypeCategories = {
   core: [
-    "title", "rich_text", "number", "select", "multi_select",
+    "title", "text", "number", "select", "multi_select",
     "date", "people", "files", "checkbox", "url", "email",
     "relation", "rollup", "formula"
   ] as const,

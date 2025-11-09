@@ -10,6 +10,7 @@ import { DEFAULT_PROPERTY_MENU_CONFIG } from '../components/PropertyMenu/menu-co
 // Import all property menu configs
 import { selectPropertyMenuConfig } from './select/menu-config';
 import { multiSelectPropertyMenuConfig } from './multi_select/menu-config';
+import { statusPropertyMenuConfig } from './status/menu-config';
 import { numberPropertyMenuConfig } from './number/menu-config';
 import { datePropertyMenuConfig } from './date/menu-config';
 import { titlePropertyMenuConfig } from './title/menu-config';
@@ -17,9 +18,25 @@ import { richTextPropertyMenuConfig } from './rich_text/menu-config';
 import { checkboxPropertyMenuConfig } from './checkbox/menu-config';
 import { createdTimePropertyMenuConfig } from './created_time/menu-config';
 import { createdByPropertyMenuConfig } from './created_by/menu-config';
+import { lastEditedTimePropertyMenuConfig } from './last_edited_time/menu-config';
+import { lastEditedByPropertyMenuConfig } from './last_edited_by/menu-config';
+import { peoplePropertyMenuConfig } from './people/menu-config';
+import { urlPropertyMenuConfig } from './url/menu-config';
+import { emailPropertyMenuConfig } from './email/menu-config';
+import { phonePropertyMenuConfig } from './phone/menu-config';
+import { filesPropertyMenuConfig } from './files/menu-config';
+import { placePropertyMenuConfig } from './place/menu-config';
+import { uniqueIdPropertyMenuConfig } from './unique_id/menu-config';
+import { formulaPropertyMenuConfig } from './formula/menu-config';
+import { rollupPropertyMenuConfig } from './rollup/menu-config';
+import { relationPropertyMenuConfig } from './relation/menu-config';
+import { buttonPropertyMenuConfig } from './button/menu-config';
 
 /**
  * Property Type to Menu Config Mapping
+ * 
+ * All 20+ property types now have dedicated menu-config.ts files
+ * imported and registered here for clean, maintainable code.
  */
 export const PROPERTY_MENU_REGISTRY: Record<string, PropertyTypeMenuConfig> = {
   // Text types
@@ -33,7 +50,7 @@ export const PROPERTY_MENU_REGISTRY: Record<string, PropertyTypeMenuConfig> = {
   // Select types
   select: selectPropertyMenuConfig,
   multi_select: multiSelectPropertyMenuConfig,
-  status: selectPropertyMenuConfig, // Similar to select
+  status: statusPropertyMenuConfig,
   
   // Date types
   date: datePropertyMenuConfig,
@@ -44,124 +61,27 @@ export const PROPERTY_MENU_REGISTRY: Record<string, PropertyTypeMenuConfig> = {
   // Auto properties
   created_time: createdTimePropertyMenuConfig,
   created_by: createdByPropertyMenuConfig,
-  last_edited_time: createdTimePropertyMenuConfig, // Same as created_time
-  last_edited_by: createdByPropertyMenuConfig, // Same as created_by
+  last_edited_time: lastEditedTimePropertyMenuConfig,
+  last_edited_by: lastEditedByPropertyMenuConfig,
   
   // People
-  people: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-unique', label: 'Count unique', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
+  people: peoplePropertyMenuConfig,
   
-  // Contact types (url, email, phone)
-  url: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-count', label: 'Count all', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-          { id: 'calculate-unique', label: 'Count unique', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
-  email: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-count', label: 'Count all', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-          { id: 'calculate-unique', label: 'Count unique', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
-  phone: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-count', label: 'Count all', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-          { id: 'calculate-unique', label: 'Count unique', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
+  // Contact types
+  url: urlPropertyMenuConfig,
+  email: emailPropertyMenuConfig,
+  phone: phonePropertyMenuConfig,
   
-  // Files
-  files: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-count', label: 'Count files', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
+  // Files & Location
+  files: filesPropertyMenuConfig,
+  place: placePropertyMenuConfig,
   
-  // Advanced types (read-only in most cases)
-  formula: {
-    typeSpecificItems: [],
-    overrides: {},
-    hidden: ['duplicate'],
-    disabled: ['toggleRequired'],
-  },
-  
-  rollup: {
-    typeSpecificItems: [],
-    overrides: {},
-    hidden: ['duplicate'],
-    disabled: ['toggleRequired'],
-  },
-  
-  relation: {
-    typeSpecificItems: [],
-    overrides: {
-      calculate: {
-        submenu: [
-          { id: 'calculate-count', label: 'Count relations', icon: undefined },
-          { id: 'calculate-empty', label: 'Count empty', icon: undefined },
-          { id: 'calculate-filled', label: 'Count filled', icon: undefined },
-        ],
-      },
-    },
-    hidden: [],
-    disabled: [],
-  },
-  
-  unique_id: {
-    typeSpecificItems: [],
-    overrides: {},
-    hidden: ['delete', 'duplicate'],
-    disabled: ['toggleRequired'],
-  },
+  // Advanced types
+  formula: formulaPropertyMenuConfig,
+  rollup: rollupPropertyMenuConfig,
+  relation: relationPropertyMenuConfig,
+  unique_id: uniqueIdPropertyMenuConfig,
+  button: buttonPropertyMenuConfig,
 };
 
 /**

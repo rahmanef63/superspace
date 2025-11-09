@@ -16,9 +16,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Check, ChevronsUpDown, Plus, X, Palette } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus, X, Palette, MoreHorizontal, Pencil, Trash2, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ColorPicker, getRandomColor } from '../../components/ColorPicker';
+import { ColorPicker } from '../../components/ColorPicker';
+import { COLOR_PALETTE, getRandomColor } from '../shared/constants';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { useOptionsCRUD } from '../shared/useOptionsCRUD';
 
 // Default choices when property.options is not configured - REMOVED, use empty array instead
 // const DEFAULT_CHOICES: SelectChoice[] = [
@@ -46,6 +56,22 @@ export const SelectEditor: React.FC<PropertyEditorProps> = ({ value, onChange, p
   const choices = selectOptions?.choices && selectOptions.choices.length > 0 
     ? selectOptions.choices 
     : [];
+
+  // ✅ Use shared CRUD hook
+  const {
+    editingChoice,
+    editingName,
+    setEditingName,
+    handleCreate,
+    handleEdit,
+    handleSaveEdit: saveEdit,
+    handleCancelEdit,
+    handleDelete,
+    handleChangeColor,
+  } = useOptionsCRUD({
+    choices,
+    onPropertyUpdate,
+  });
 
   useEffect(() => {
     setSelectedValue(value ? String(value) : '');
@@ -75,33 +101,59 @@ export const SelectEditor: React.FC<PropertyEditorProps> = ({ value, onChange, p
 
   const handleCreateWithColor = async (color?: string) => {
     if (searchQuery.trim() && (selectOptions?.allowCreate !== false)) {
-      const finalColor = color || getRandomColor();
+      const newChoice = await handleCreate(searchQuery, color);
       
-      const newChoice: SelectChoice = {
-        id: searchQuery.toLowerCase().replace(/\s+/g, '-'),
-        name: searchQuery.trim(),
-        color: finalColor,
-      };
+      if (newChoice) {
+        handleSelect(newChoice.name);
+        setShowColorPicker(false);
+        setTempNewChoice(null);
+      }
+    }
+  };
+
+  // Handle bulk create (comma-separated)
+  const handleBulkCreate = async () => {
+    if (!searchQuery.trim() || (selectOptions?.allowCreate === false)) return;
+    
+    // Check if input contains comma - if yes, create multiple
+    if (searchQuery.includes(',')) {
+      const names = searchQuery
+        .split(',')
+        .map(n => n.trim())
+        .filter(n => n.length > 0)
+        .filter(n => !choices.some(choice => choice.name.toLowerCase() === n.toLowerCase())); // Prevent duplicates
       
-      const updatedChoices = [...choices, newChoice];
+      if (names.length === 0) {
+        setSearchQuery('');
+        return;
+      }
+
+      // Create all new choices at once (not in loop to avoid race condition)
+      const newChoices = names.map((name, index) => ({
+        id: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now() + '-' + index,
+        name: name.trim(),
+        color: getRandomColor(),
+      }));
+
+      const updatedChoices = [...choices, ...newChoices];
       
-      // ✅ PERSIST TO DATABASE - Convex will handle state update!
       if (onPropertyUpdate) {
         try {
           await onPropertyUpdate({
-            selectOptions: updatedChoices, // ✅ Fix: Use 'selectOptions' not 'choices'
+            selectOptions: updatedChoices,
           });
-          // ✅ No setChoices() - Convex reactive query will update automatically!
         } catch (error) {
-          console.error('Failed to save new choice:', error);
-          // No rollback needed - Convex state remains unchanged on error
-          return; // Exit early on error
+          console.error('Failed to bulk create options:', error);
+          return;
         }
       }
       
-      handleSelect(newChoice.name);
+      setSearchQuery('');
       setShowColorPicker(false);
       setTempNewChoice(null);
+    } else {
+      // Single create
+      await handleCreateWithColor();
     }
   };
 
@@ -114,6 +166,31 @@ export const SelectEditor: React.FC<PropertyEditorProps> = ({ value, onChange, p
       });
       setShowColorPicker(true);
     }
+  };
+
+  const handleSaveEditWithValueUpdate = async () => {
+    const oldName = editingChoice?.name;
+    const success = await saveEdit();
+    
+    // Update selected value if we renamed the selected option
+    if (success && oldName && selectedValue === oldName) {
+      setSelectedValue(editingName.trim());
+      onChange(editingName.trim());
+    }
+  };
+
+  const handleDeleteChoice = async (choice: SelectChoice) => {
+    await handleDelete(choice);
+    
+    // Clear selected value if we deleted the selected option
+    if (selectedValue === choice.name) {
+      setSelectedValue('');
+      onChange(null);
+    }
+  };
+
+  const handleColorChange = async (choice: SelectChoice, newColor: string) => {
+    await handleChangeColor(choice, newColor);
   };
 
   const selectedChoice = choices.find(choice => choice.name === selectedValue);
@@ -212,30 +289,57 @@ export const SelectEditor: React.FC<PropertyEditorProps> = ({ value, onChange, p
         ) : (
           <Command>
             <CommandInput 
-              placeholder="Cari atau buat opsi..." 
+              placeholder="Cari atau buat opsi (pisahkan dengan koma)..." 
               value={searchQuery}
               onValueChange={setSearchQuery}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canCreateNew) {
+                  e.preventDefault();
+                  handleBulkCreate();
+                }
+              }}
             />
             <CommandList>
               <CommandEmpty>
                 {canCreateNew ? (
-                  <div className="p-2 space-y-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => handleCreateWithColor()}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Buat &quot;{searchQuery}&quot; (warna acak)
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={handleOpenColorPicker}
-                    >
-                      <Palette className="mr-2 h-4 w-4" />
-                      Buat dengan pilih warna
-                    </Button>
+                  <div className="p-2 space-y-2">
+                    {searchQuery.includes(',') ? (
+                      <>
+                        <div className="text-xs text-muted-foreground px-2 py-1">
+                          Buat {searchQuery.split(',').filter(n => n.trim()).length} opsi baru
+                        </div>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={handleBulkCreate}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Buat semua dengan warna acak
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => handleCreateWithColor()}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Buat &quot;{searchQuery}&quot; (warna acak)
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={handleOpenColorPicker}
+                        >
+                          <Palette className="mr-2 h-4 w-4" />
+                          Buat dengan pilih warna
+                        </Button>
+                      </>
+                    )}
+                    <div className="text-xs text-muted-foreground px-2 py-1 border-t mt-2 pt-2">
+                      💡 Tip: Gunakan koma untuk membuat beberapa opsi sekaligus
+                    </div>
                   </div>
                 ) : (
                   <div className="py-6 text-center text-sm">Tidak ada opsi ditemukan.</div>
@@ -244,30 +348,96 @@ export const SelectEditor: React.FC<PropertyEditorProps> = ({ value, onChange, p
               {filteredChoices.length > 0 && (
                 <CommandGroup>
                   {filteredChoices.map((choice) => (
-                    <CommandItem
-                      key={choice.id || choice.name}
-                      value={choice.name}
-                      onSelect={() => handleSelect(choice.name)}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          selectedValue === choice.name ? 'opacity-100' : 'opacity-0'
-                        )}
-                      />
-                      <Badge 
-                        variant="secondary"
-                        className="truncate"
-                        style={choice.color ? { 
-                          backgroundColor: choice.color + '20',
-                          borderColor: choice.color,
-                          color: choice.color 
-                        } : undefined}
-                      >
-                        {choice.icon && <span className="mr-1">{choice.icon}</span>}
-                        {choice.name}
-                      </Badge>
-                    </CommandItem>
+                    <div key={choice.id || choice.name} className="group relative">
+                      {editingChoice?.id === choice.id ? (
+                        <div className="flex items-center gap-2 px-2 py-1.5">
+                          <GripVertical className="h-4 w-4 text-muted-foreground" />
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSaveEditWithValueUpdate();
+                              } else if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            onBlur={handleSaveEditWithValueUpdate}
+                            autoFocus
+                            className="h-7 flex-1"
+                          />
+                        </div>
+                      ) : (
+                        <CommandItem
+                          value={choice.name}
+                          onSelect={() => handleSelect(choice.name)}
+                          className="flex items-center gap-2"
+                        >
+                          <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                          <Check
+                            className={cn(
+                              'h-4 w-4 shrink-0',
+                              selectedValue === choice.name ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                          <Badge 
+                            variant="secondary"
+                            className="truncate flex-1"
+                            style={choice.color ? { 
+                              backgroundColor: choice.color + '20',
+                              borderColor: choice.color,
+                              color: choice.color 
+                            } : undefined}
+                          >
+                            {choice.icon && <span className="mr-1">{choice.icon}</span>}
+                            {choice.name}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenuItem onClick={() => handleEdit(choice)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Rename
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <div className="px-2 py-1.5">
+                                <div className="text-xs text-muted-foreground mb-2">Colors</div>
+                                <div className="grid grid-cols-4 gap-1">
+                                  {COLOR_PALETTE.map((color) => (
+                                    <button
+                                      key={color}
+                                      onClick={() => handleColorChange(choice, color)}
+                                      className={cn(
+                                        'h-6 w-6 rounded border-2 hover:scale-110 transition-transform',
+                                        choice.color === color ? 'border-foreground' : 'border-transparent'
+                                      )}
+                                      style={{ backgroundColor: color }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteChoice(choice)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </CommandItem>
+                      )}
+                    </div>
                   ))}
                 </CommandGroup>
               )}

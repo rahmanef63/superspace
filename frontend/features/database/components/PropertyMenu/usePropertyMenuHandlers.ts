@@ -36,7 +36,10 @@ export interface PropertyMenuHandlers {
   onShowAs: (fieldId: string, displayType: string) => Promise<void>;
   onDateFormat: (fieldId: string, format: string) => Promise<void>;
   onTimeFormat: (fieldId: string, format: string) => Promise<void>;
-  onEditOptions: (fieldId: string) => void;
+  onEditOptions: (
+    fieldId: string, 
+    updatedOptions: Array<{ id: string; name: string; color: string }>
+  ) => Promise<void>;
   onManageColors: (fieldId: string) => void;
   onNotifications: (fieldId: string) => void;
   onShowPageIcon: (fieldId: string) => void;
@@ -177,10 +180,21 @@ export function usePropertyMenuHandlers({
   }, [updateField]);
 
   // Type-Specific: Edit Options (Select/MultiSelect)
-  const onEditOptions = useCallback((fieldId: string) => {
-    // TODO: Open options editor modal
-    console.log(`Edit options for ${fieldId}`);
-  }, []);
+  const onEditOptions = useCallback(async (
+    fieldId: string,
+    updatedOptions: Array<{ id: string; name: string; color: string }>
+  ) => {
+    await updateField({
+      id: fieldId as Id<"dbFields">,
+      options: { 
+        selectOptions: updatedOptions.map(opt => ({
+          id: opt.id,
+          name: opt.name,
+          color: opt.color,
+        }))
+      } as any,
+    });
+  }, [updateField]);
 
   // Type-Specific: Manage Colors (Select/MultiSelect)
   const onManageColors = useCallback((fieldId: string) => {

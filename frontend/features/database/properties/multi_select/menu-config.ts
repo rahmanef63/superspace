@@ -15,9 +15,9 @@ export const multiSelectPropertyMenuConfig: PropertyTypeMenuConfig = {
   typeSpecificItems: [
     {
       id: 'editOptions',
-      label: 'Edit options',
+      label: 'Edit property',
       icon: Settings,
-      shortcut: '⌘E',
+      submenu: 'combobox', // Opens side sheet
     },
     {
       id: 'manageColors',

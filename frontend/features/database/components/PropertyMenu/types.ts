@@ -35,7 +35,12 @@ export interface PropertyMenuItem {
   disabled?: boolean;
   hidden?: boolean;
   onClick?: () => void;
-  submenu?: PropertyMenuItem[];
+  submenu?: PropertyMenuItem[] | 'combobox'; // Allow 'combobox' for special rendering
+  badge?: {
+    color?: string;
+    text: string;
+  };
+  color?: string; // For color picker items
 }
 
 /**
@@ -91,7 +96,10 @@ export interface PropertyMenuProps {
   onWrap?: (fieldId: string) => Promise<void> | void;
   
   // Type-specific Actions (Select/MultiSelect)
-  onEditOptions?: (fieldId: string) => Promise<void> | void;
+  onEditOptions?: (
+    fieldId: string, 
+    updatedOptions: Array<{ id: string; name: string; color: string }>
+  ) => Promise<void> | void;
   onManageColors?: (fieldId: string) => Promise<void> | void;
   
   // Type-specific Actions (Number)

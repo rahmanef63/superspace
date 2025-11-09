@@ -13,6 +13,8 @@ import { BASE_MENU_ITEMS } from './menu-config';
 import { getPropertyMenuConfig } from '../../properties/menu-registry';
 import type { Property } from '@/frontend/shared/foundation/types/universal-database';
 import type { DatabaseField } from '../../types';
+import { buildOptionMenuItems } from '../shared/OptionActionsMenu';
+import { Plus } from 'lucide-react';
 
 /**
  * Build complete menu for a property
@@ -45,7 +47,7 @@ export function buildPropertyMenu(
   // Build sections
   const sections: Array<{ id: string; items: PropertyMenuItem[] }> = [
     { id: 'edit', items: buildEditSection(config, callbacks) },
-    { id: 'typeSpecific', items: buildTypeSpecificSection(config, callbacks) },
+    { id: 'typeSpecific', items: buildTypeSpecificSection(config, callbacks, field) },
     { id: 'data', items: buildDataSection(config, callbacks) },
     { id: 'column', items: buildColumnSection(config, callbacks) },
     { id: 'settings', items: buildSettingsSection(config, callbacks) },
@@ -110,7 +112,11 @@ function buildEditSection(config: any, callbacks: PropertyMenuCallbacks): Proper
 /**
  * Type-Specific Section: property-specific menu items
  */
-function buildTypeSpecificSection(config: any, callbacks: PropertyMenuCallbacks): PropertyMenuItem[] {
+function buildTypeSpecificSection(
+  config: any, 
+  callbacks: PropertyMenuCallbacks, 
+  field: Property | DatabaseField
+): PropertyMenuItem[] {
   const items: PropertyMenuItem[] = [];
   
   // Add type-specific items from config
@@ -118,16 +124,66 @@ function buildTypeSpecificSection(config: any, callbacks: PropertyMenuCallbacks)
     config.typeSpecificItems.forEach((item: any) => {
       // Build submenu if present
       let submenu: PropertyMenuItem[] | undefined;
-      if (item.submenu) {
+      
+      // Check if submenu is 'combobox' - use combobox instead of nested submenu
+      if (item.submenu === 'combobox' && item.id === 'editOptions') {
+        // PropertyMenu will render OptionsCombobox for this item
+        // Just pass through without building nested submenu
+        items.push({
+          id: item.id,
+          label: item.label,
+          icon: item.icon,
+          shortcut: item.shortcut,
+          submenu: 'combobox', // Flag for PropertyMenu to render combobox
+        });
+        return; // Skip the rest of the loop for this item
+      }
+      
+      // Check if submenu is 'dynamic' - build from field data (deprecated)
+      if (item.submenu === 'dynamic' && item.id === 'editOptions') {
+        // Build options submenu from field.options
+        const fieldOptions = (field as any).options;
+        const choices = fieldOptions?.choices || fieldOptions?.selectOptions || [];
+        
+        // Use reusable helper to build option menu items
+        submenu = choices.map((choice: any) => ({
+          id: `option-${choice.id || choice.name}`,
+          label: choice.name,
+          icon: undefined,
+          badge: {
+            color: choice.color,
+            text: choice.name,
+          },
+          // Build nested submenu using reusable helper
+          submenu: buildOptionMenuItems(choice, {
+            onRename: (optionId) => callbacks.onEditOption?.(optionId),
+            onDelete: (optionId) => callbacks.onDeleteOption?.(optionId),
+            onChangeColor: (optionId, color) => callbacks.onChangeOptionColor?.(optionId, color),
+          }),
+        }));
+        
+        // Add "Add option" at the end  
+        if (submenu) {
+          submenu.push({
+            id: 'add-option',
+            label: 'Add option',
+            icon: Plus,
+            onClick: () => {
+              if (callbacks.onAddOption) {
+                callbacks.onAddOption();
+              }
+            },
+          });
+        }
+      } else if (item.submenu && Array.isArray(item.submenu)) {
+        // Static submenu
         submenu = item.submenu.map((subItem: any) => ({
           id: subItem.id || subItem.label,
           label: subItem.label,
           icon: subItem.icon,
           onClick: () => {
             // Call appropriate callback based on parent item
-            if (item.id === 'editOptions' && callbacks.onEditOptions) {
-              callbacks.onEditOptions();
-            } else if (item.id === 'setFormat' && callbacks.onSetFormat) {
+            if (item.id === 'setFormat' && callbacks.onSetFormat) {
               callbacks.onSetFormat(subItem.value || subItem.label);
             } else if (item.id === 'showAs' && callbacks.onShowAs) {
               callbacks.onShowAs(subItem.value || subItem.label);
@@ -147,7 +203,9 @@ function buildTypeSpecificSection(config: any, callbacks: PropertyMenuCallbacks)
         submenu,
         onClick: item.onClick || (() => {
           // Default onClick for items without submenu
-          if (item.id === 'manageColors' && callbacks.onManageColors) {
+          if (item.id === 'editOptions' && callbacks.onEditOptions) {
+            callbacks.onEditOptions();
+          } else if (item.id === 'manageColors' && callbacks.onManageColors) {
             callbacks.onManageColors();
           } else if (item.id === 'showPageIcon' && callbacks.onShowPageIcon) {
             callbacks.onShowPageIcon();
@@ -356,6 +414,10 @@ export interface PropertyMenuCallbacks {
   
   // Type-specific actions
   onEditOptions?: () => void;
+  onEditOption?: (optionId: string) => void;
+  onAddOption?: () => void;
+  onDeleteOption?: (optionId: string) => void;
+  onChangeOptionColor?: (optionId: string, color: string) => void;
   onManageColors?: () => void;
   onSetFormat?: (format: string) => void;
   onShowAs?: (display: string) => void;

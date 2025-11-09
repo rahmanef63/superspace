@@ -39,6 +39,9 @@ import {
   ExportControl,
   ImportControl,
 } from "@/frontend/shared/ui";
+import { DatabaseFilters } from "./DatabaseFilters";
+import type { Property } from "@/frontend/shared/foundation/types/universal-database";
+import type { ConvexQueryFilter } from "@/frontend/features/database/filters";
 
 const VIEW_ICONS: Record<
   DatabaseViewType,
@@ -70,6 +73,9 @@ export interface DatabaseToolbarProps {
   onGetLink: () => void;
   onExport: () => void;
   onImport: () => void;
+  properties?: Property[];
+  filters?: import('@/components/ui/filters').Filter[];
+  onFiltersChange?: (filters: import('@/components/ui/filters').Filter[], query: ConvexQueryFilter) => void;
 }
 
 export function DatabaseToolbar({
@@ -83,6 +89,9 @@ export function DatabaseToolbar({
   onGetLink,
   onExport,
   onImport,
+  properties = [],
+  filters = [],
+  onFiltersChange,
 }: DatabaseToolbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -113,48 +122,46 @@ export function DatabaseToolbar({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-3">
-      <Tabs
-        value={activeView}
-        onValueChange={(value) => onViewChange(value as DatabaseViewType)}
-        className="flex-1"
-      >
-        <TabsList className="ml-[-0.25rem] justify-start gap-1">
-          {orderedViews.map((view) => {
-            const Icon =
-              VIEW_ICONS[view] ??
-              ((props: { size?: number; className?: string }) => (
-                <LayoutListIcon size={props.size} className={props.className} />
-              ));
-            const label = getViewLabel(view);
-            return (
-              <TabsTrigger key={view} value={view} className="gap-2">
-                <Icon size={16} />
-                {label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+    <div className="flex flex-col gap-3 border-b border-border px-6 py-3">
+      {/* Top Row: View Tabs + Actions */}
+      <div className="flex items-center justify-between gap-3">
+        <Tabs
+          value={activeView}
+          onValueChange={(value) => onViewChange(value as DatabaseViewType)}
+          className="flex-1"
+        >
+          <TabsList className="ml-[-0.25rem] justify-start gap-1">
+            {orderedViews.map((view) => {
+              const Icon =
+                VIEW_ICONS[view] ??
+                ((props: { size?: number; className?: string }) => (
+                  <LayoutListIcon size={props.size} className={props.className} />
+                ));
+              const label = getViewLabel(view);
+              return (
+                <TabsTrigger key={view} value={view} className="gap-2">
+                  <Icon size={16} />
+                  {label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Filter
-        </Button>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <SortAsc className="h-4 w-4" />
-          Sort
-        </Button>
-        <ExportControl size="sm" onExport={onExport}>
-          <Download className="h-4 w-4" />
-          Export
-        </ExportControl>
-        <ImportControl size="sm" onImport={onImport}>
-          <Upload className="h-4 w-4" />
-          Import
-        </ImportControl>
-        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <SortAsc className="h-4 w-4" />
+            Sort
+          </Button>
+          <ExportControl size="sm" onExport={onExport}>
+            <Download className="h-4 w-4" />
+            Export
+          </ExportControl>
+          <ImportControl size="sm" onImport={onImport}>
+            <Upload className="h-4 w-4" />
+            Import
+          </ImportControl>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -236,6 +243,24 @@ export function DatabaseToolbar({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
+      </div>
+      
+      {/* Bottom Row: Filters (visible chips) */}
+      <div className="flex items-center gap-2 min-h-[40px]">
+        {properties.length > 0 && onFiltersChange ? (
+          <DatabaseFilters
+            properties={properties}
+            filters={filters} 
+            onFiltersChange={onFiltersChange}
+            variant="outline"
+            size="sm"
+          />
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            {/* Empty state - filters akan muncul setelah database properties loaded */}
+          </div>
+        )}
       </div>
     </div>
   );

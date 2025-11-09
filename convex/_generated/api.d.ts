@@ -115,6 +115,7 @@ import type * as features_database_mutations from "../features/database/mutation
 import type * as features_database_queries from "../features/database/queries.js";
 import type * as features_database_rows from "../features/database/rows.js";
 import type * as features_database_tables from "../features/database/tables.js";
+import type * as features_database_transformations from "../features/database/transformations.js";
 import type * as features_database_utils from "../features/database/utils.js";
 import type * as features_docs_documents from "../features/docs/documents.js";
 import type * as features_docs_presence from "../features/docs/presence.js";
@@ -154,6 +155,7 @@ import type * as http from "../http.js";
 import type * as lib_audit_logger from "../lib/audit/logger.js";
 import type * as lib_converters_databaseConverter from "../lib/converters/databaseConverter.js";
 import type * as lib_converters_index from "../lib/converters/index.js";
+import type * as lib_filters from "../lib/filters.js";
 import type * as lib_rbac_permissions from "../lib/rbac/permissions.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as payment_paymentAttemptTypes from "../payment/paymentAttemptTypes.js";
@@ -297,6 +299,7 @@ declare const fullApi: ApiFromModules<{
   "features/database/queries": typeof features_database_queries;
   "features/database/rows": typeof features_database_rows;
   "features/database/tables": typeof features_database_tables;
+  "features/database/transformations": typeof features_database_transformations;
   "features/database/utils": typeof features_database_utils;
   "features/docs/documents": typeof features_docs_documents;
   "features/docs/presence": typeof features_docs_presence;
@@ -336,6 +339,7 @@ declare const fullApi: ApiFromModules<{
   "lib/audit/logger": typeof lib_audit_logger;
   "lib/converters/databaseConverter": typeof lib_converters_databaseConverter;
   "lib/converters/index": typeof lib_converters_index;
+  "lib/filters": typeof lib_filters;
   "lib/rbac/permissions": typeof lib_rbac_permissions;
   "lib/utils": typeof lib_utils;
   "payment/paymentAttemptTypes": typeof payment_paymentAttemptTypes;

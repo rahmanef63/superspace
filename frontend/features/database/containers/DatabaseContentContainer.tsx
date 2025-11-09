@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import { useDatabaseRecord } from "../hooks/useDatabase";
 import { useDatabaseViewState } from "../hooks";
@@ -8,6 +8,9 @@ import { DatabaseToolbar, DatabaseViewRenderer } from "../components";
 import { DatabaseHeaderSection } from "../sections";
 import { findActiveDbView } from "../utils";
 import type { DatabaseViewType } from "../types";
+import type { Filter as UIFilter } from "@/components/ui/filters";
+import type { ConvexQueryFilter } from "../filters";
+import { convertFieldsToProperties } from "../lib/field-converter";
 
 interface DatabaseContentContainerProps {
   tableId: Id<"dbTables">;
@@ -29,10 +32,29 @@ export function DatabaseContentContainer({
     selectedTableId: tableId,
   });
 
+  // Filter state
+  const [filters, setFilters] = useState<UIFilter[]>([]);
+  const [filterQuery, setFilterQuery] = useState<ConvexQueryFilter | null>(null);
+
   const activeDbView = useMemo(() => {
     if (!record) return null;
     return findActiveDbView(record.views, activeView);
   }, [record, activeView]);
+  
+  // Convert fields to properties
+  const properties = useMemo(() => {
+    if (!record?.fields) return [];
+    return convertFieldsToProperties(record.fields);
+  }, [record?.fields]);
+  
+  // Handle filter changes
+  const handleFiltersChange = (newFilters: UIFilter[], query: ConvexQueryFilter) => {
+    setFilters(newFilters);
+    setFilterQuery(query);
+    console.log('Filters updated:', newFilters);
+    console.log('Convex query:', query);
+    // TODO: Pass filterQuery to data fetching
+  };
 
   if (isLoading || !viewModel || !record) {
     return (
@@ -57,6 +79,9 @@ export function DatabaseContentContainer({
           onGetLink={handlers.handleGetLink}
           onExport={handlers.handleExport}
           onImport={handlers.handleImport}
+          properties={properties}
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
         />
       </div>
       <DatabaseViewRenderer
@@ -66,6 +91,7 @@ export function DatabaseContentContainer({
         mapping={mapping}
         activeDbView={activeDbView}
         tableId={record.table._id}
+        filterQuery={filterQuery}
         onAddRow={handlers.handleAddRow}
         onUpdateCell={handlers.handleUpdateCell}
         onDeleteRow={handlers.handleDeleteRow}

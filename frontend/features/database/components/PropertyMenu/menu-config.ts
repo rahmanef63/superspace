@@ -148,7 +148,14 @@ export interface PropertyTypeMenuConfig {
    * Additional menu items specific to this property type
    * These will be inserted after 'duplicate' and before 'sortAsc'
    */
-  typeSpecificItems?: PropertyMenuItem[];
+  typeSpecificItems?: Array<PropertyMenuItem | {
+    id: string;
+    label: string;
+    icon?: React.ComponentType<{ className?: string }>;
+    shortcut?: string;
+    submenu?: PropertyMenuItem[] | 'dynamic' | 'combobox'; // Allow 'dynamic' for runtime-generated submenus, 'combobox' for combobox
+    onClick?: () => void;
+  }>;
   
   /**
    * Override base menu items behavior

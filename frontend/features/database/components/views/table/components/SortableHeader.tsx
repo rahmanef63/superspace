@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useCallback, useRef, useState } from "react";
 import { GripVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -8,6 +9,8 @@ import type { DatabaseFeature } from "../../../../types";
 import { PropertyMenu } from "../../../PropertyMenu/PropertyMenu";
 import type { PropertyMenuProps } from "../../../PropertyMenu/types";
 import { cn } from "@/lib/utils";
+import { DATABASE_FIELD_DEFINITIONS } from "../../../../config/fields";
+import { getFieldId } from "../../../PropertyMenu/utils";
 
 export interface SortableHeaderProps {
   column: Column<DatabaseFeature, unknown>;
@@ -84,41 +87,103 @@ export function SortableHeader({
     transition,
   };
 
+  // State for PropertyMenu
+  const [menuOpen, setMenuOpen] = useState(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+  
+  // Get field icon
+  const fieldDefinition = DATABASE_FIELD_DEFINITIONS[field.type as keyof typeof DATABASE_FIELD_DEFINITIONS];
+  const FieldIcon = fieldDefinition?.icon;
+
+  // Handle click behavior
+  const handleHeaderClick = useCallback((e: React.MouseEvent) => {
+    // Don't interfere with drag handle
+    if ((e.target as HTMLElement).closest('[data-drag-handle]')) {
+      return;
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Clear any pending single-click timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = undefined;
+    }
+    
+    // Single click - open menu (with small delay to detect double-click)
+    clickTimeoutRef.current = setTimeout(() => {
+      setMenuOpen(true);
+    }, 200);
+  }, []);
+
+  const handleHeaderDoubleClick = useCallback((e: React.MouseEvent) => {
+    // Don't interfere with drag handle
+    if ((e.target as HTMLElement).closest('[data-drag-handle]')) {
+      return;
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Clear single-click timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = undefined;
+    }
+    
+    // Double click - trigger rename directly
+    if (onRename) {
+      const fieldId = getFieldId(field);
+      const newName = prompt('Rename property:', field.name);
+      if (newName && newName !== field.name) {
+        onRename(fieldId, newName);
+      }
+    }
+  }, [field, onRename]);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex h-full select-none items-center gap-2 rounded-md bg-background px-2 py-1 text-xs font-medium uppercase text-muted-foreground",
-        isDragging && "ring-2 ring-ring",
+        "group flex h-full w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/50",
+        isDragging && "bg-muted ring-2 ring-primary/20",
       )}
     >
+      {/* Drag Handle - only visible on hover, separate from click area */}
       <button
         type="button"
+        data-drag-handle
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-md border border-transparent text-muted-foreground transition",
+          "flex h-5 w-5 shrink-0 items-center justify-center opacity-0 transition-opacity group-hover:opacity-100",
           !disableDrag && "cursor-grab active:cursor-grabbing",
-          isDragging && "border-border bg-muted",
+          isDragging && "opacity-100",
         )}
         {...listeners}
         {...attributes}
         aria-label={`Drag to reposition ${field.name}`}
         tabIndex={-1}
       >
-        <GripVertical className="h-4 w-4" />
+        <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
-      <div className="flex flex-1 items-center gap-2">
-        <span className="truncate text-xs font-semibold text-foreground">
-          {field.name}
-        </span>
-        {field.isRequired ? (
-          <span className="text-[10px] font-semibold uppercase text-primary">Required</span>
-        ) : null}
-      </div>
+
+      {/* PropertyMenu wraps the clickable name area */}
       <PropertyMenu
         field={field}
         isVisible={isVisible}
         isRequired={isRequired}
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
         onRename={onRename}
         onDuplicate={onDuplicate}
         onChangeType={onChangeType}
@@ -141,7 +206,27 @@ export function SortableHeader({
         onToggleRequired={onToggleRequired}
         onHide={onHide}
         onDelete={onDelete}
-      />
+        align="start"
+        side="bottom"
+      >
+        <button
+          type="button"
+          className="flex flex-1 items-center gap-2 min-w-0 cursor-pointer rounded px-2 py-1 -mx-2 -my-1 hover:bg-muted/30 bg-transparent border-0 text-left"
+          onClick={handleHeaderClick}
+          onDoubleClick={handleHeaderDoubleClick}
+        >
+          {/* Property Icon + Name */}
+          {FieldIcon && (
+            <FieldIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+          <span className="truncate text-xs font-medium text-foreground">
+            {field.name}
+          </span>
+          {field.isRequired && (
+            <span className="shrink-0 text-[10px] font-medium text-red-500">*</span>
+          )}
+        </button>
+      </PropertyMenu>
     </div>
   );
 }

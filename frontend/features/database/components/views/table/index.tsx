@@ -72,6 +72,7 @@ import { cn } from "@/lib/utils";
 import { usePropertyMenuHandlers } from "../../PropertyMenu/usePropertyMenuHandlers";
 import type { Id } from "@convex/_generated/dataModel";
 import { useOptimizedColumnResize } from "../../../hooks/useOptimizedColumnResize";
+import { useCellEditor } from "../../../hooks/useCellEditor";
 
 type RowData = DatabaseFeature;
 
@@ -203,6 +204,39 @@ export function DatabaseTableView({
   onColumnSizingChange,
   onUpdateFieldOptions,
 }: DatabaseTableViewProps) {
+  // Navigation handler for cell editor
+  const handleNavigate = useCallback((
+    direction: 'up' | 'down' | 'left' | 'right',
+    current: { rowId: string; fieldId: string; rowIndex: number; colIndex: number }
+  ) => {
+    const { rowIndex, colIndex } = current;
+    let newRowIndex = rowIndex;
+    let newColIndex = colIndex;
+
+    if (direction === 'up') newRowIndex = Math.max(0, rowIndex - 1);
+    if (direction === 'down') newRowIndex = Math.min(features.length - 1, rowIndex + 1);
+    if (direction === 'left') newColIndex = Math.max(0, colIndex - 1);
+    if (direction === 'right') newColIndex = Math.min(fields.length - 1, colIndex + 1);
+
+    if (newRowIndex === rowIndex && newColIndex === colIndex) return null;
+
+    const newRow = features[newRowIndex];
+    const newField = fields[newColIndex];
+    if (!newRow || !newField) return null;
+
+    return {
+      rowId: String(newRow.id),
+      fieldId: String(newField._id),
+      rowIndex: newRowIndex,
+      colIndex: newColIndex,
+    };
+  }, [features, fields]);
+
+  // Cell editor state management with Google Sheets behavior
+  const cellEditor = useCellEditor({
+    onNavigate: handleNavigate,
+  });
+  
   // Use PropertyMenu handlers hook
   const propertyMenuHandlers = usePropertyMenuHandlers({
     tableId,
@@ -545,14 +579,27 @@ export function DatabaseTableView({
             </button>
             <div className="flex flex-1 items-center gap-3">
               <div className="flex flex-col gap-1">
-                {titleField && isEditableField(titleField) && titleFieldId ? (
-                  <EditableCell
-                    field={titleField}
-                    value={titleValue}
-                    onCommit={(next) => handleCommitCell(feature.id, titleFieldId, next)}
-                    onPropertyUpdate={onUpdateFieldOptions}
-                  />
-                ) : (
+                {titleField && isEditableField(titleField) && titleFieldId ? (() => {
+                  const rowIndex = features.findIndex(f => String(f.id) === rowId);
+                  const colIndex = -1; // Title column is special, not in columnOrder
+                  
+                  const isFocused = cellEditor.isCellFocused(rowId, titleFieldId);
+                  const isEditing = cellEditor.isCellEditing(rowId, titleFieldId);
+                  
+                  return (
+                    <EditableCell
+                      field={titleField}
+                      value={titleValue}
+                      onCommit={(next) => handleCommitCell(feature.id, titleFieldId, next)}
+                      onPropertyUpdate={onUpdateFieldOptions}
+                      isSelected={isFocused}
+                      isEditing={isEditing}
+                      onSelect={() => cellEditor.focusCell({ rowId, fieldId: titleFieldId, rowIndex, colIndex })}
+                      onStartEdit={() => cellEditor.startEditing({ rowId, fieldId: titleFieldId, rowIndex, colIndex })}
+                      onStopEdit={() => cellEditor.stopEditing()}
+                    />
+                  );
+                })() : (
                   <span className="text-sm font-medium leading-none text-foreground">
                     {feature.name || "Untitled"}
                   </span>
@@ -618,15 +665,29 @@ export function DatabaseTableView({
             {...propertyMenuHandlers}
           />
         ),
-        cell: ({ row }) => (
-          <EditableCell
-            field={field}
-            value={getRowValue(row.original, fieldId)}
-            disabled={!isEditableField(field)}
-            onCommit={(next) => handleCommitCell(row.original.id, fieldId, next)}
-            onPropertyUpdate={onUpdateFieldOptions}
-          />
-        ),
+        cell: ({ row }) => {
+          const rowId = String(row.original.id);
+          const rowIndex = features.findIndex(f => String(f.id) === rowId);
+          const colIndex = columnOrder.indexOf(fieldId);
+          
+          const isFocused = cellEditor.isCellFocused(rowId, fieldId);
+          const isEditing = cellEditor.isCellEditing(rowId, fieldId);
+          
+          return (
+            <EditableCell
+              field={field}
+              value={getRowValue(row.original, fieldId)}
+              disabled={!isEditableField(field)}
+              onCommit={(next) => handleCommitCell(row.original.id, fieldId, next)}
+              onPropertyUpdate={onUpdateFieldOptions}
+              isSelected={isFocused}
+              isEditing={isEditing}
+              onSelect={() => cellEditor.focusCell({ rowId, fieldId, rowIndex, colIndex })}
+              onStartEdit={() => cellEditor.startEditing({ rowId, fieldId, rowIndex, colIndex })}
+              onStopEdit={() => cellEditor.stopEditing()}
+            />
+          );
+        },
       });
     });
 

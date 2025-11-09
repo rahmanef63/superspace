@@ -12,8 +12,8 @@ import { selectPropertyMenuConfig } from './select/menu-config';
 import { multiSelectPropertyMenuConfig } from './multi_select/menu-config';
 import { numberPropertyMenuConfig } from './number/menu-config';
 import { datePropertyMenuConfig } from './date/menu-config';
-import { textPropertyMenuConfig } from './text/menu-config';
 import { titlePropertyMenuConfig } from './title/menu-config';
+import { richTextPropertyMenuConfig } from './rich_text/menu-config';
 import { checkboxPropertyMenuConfig } from './checkbox/menu-config';
 import { createdTimePropertyMenuConfig } from './created_time/menu-config';
 import { createdByPropertyMenuConfig } from './created_by/menu-config';
@@ -23,9 +23,9 @@ import { createdByPropertyMenuConfig } from './created_by/menu-config';
  */
 export const PROPERTY_MENU_REGISTRY: Record<string, PropertyTypeMenuConfig> = {
   // Text types
-  text: textPropertyMenuConfig,
   title: titlePropertyMenuConfig,
-  rich_text: textPropertyMenuConfig, // Same as text
+  rich_text: richTextPropertyMenuConfig,
+  text: richTextPropertyMenuConfig, // Legacy fallback, use rich_text instead
   
   // Number types
   number: numberPropertyMenuConfig,

@@ -1,19 +1,19 @@
 /**
- * Text Property - Menu Configuration
+ * Rich Text Property - Menu Configuration
  * 
- * Defines property-specific menu items for Text type
+ * Defines property-specific menu items for Rich Text type
  */
 
 import type { PropertyTypeMenuConfig } from '../../components/PropertyMenu/menu-config';
 
-export const textPropertyMenuConfig: PropertyTypeMenuConfig = {
+export const richTextPropertyMenuConfig: PropertyTypeMenuConfig = {
   /**
-   * Text has no type-specific items, uses all base menu items
+   * Rich text has no type-specific items, uses all base menu items
    */
   typeSpecificItems: [],
   
   /**
-   * Text-specific calculate options (text-focused)
+   * Rich text-specific calculate options (text-focused)
    */
   overrides: {
     calculate: {

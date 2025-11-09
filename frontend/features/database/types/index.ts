@@ -5,8 +5,14 @@ export type DatabaseField = Doc<"dbFields">;
 export type DatabaseRow = Doc<"dbRows">;
 export type DatabaseView = Doc<"dbViews">;
 
+/**
+ * Database Field Types
+ * 
+ * @deprecated "text" type is legacy. Use PropertyType from shared/foundation for new properties.
+ * "text" is kept for backward compatibility with existing database records.
+ */
 export type DatabaseFieldType =
-  | "text"
+  | "text"       // @deprecated Use "rich_text" from PropertyType instead
   | "number"
   | "select"
   | "multiSelect"

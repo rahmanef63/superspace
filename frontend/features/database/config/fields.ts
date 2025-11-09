@@ -32,8 +32,8 @@ export const DATABASE_FIELD_DEFINITIONS: Record<
 > = {
   text: {
     type: "text",
-    label: "Text",
-    description: "Rich text content, ideal for notes or descriptions.",
+    label: "Text (Legacy)",
+    description: "⚠️ Deprecated: Use Rich Text instead. Kept for backward compatibility.",
     icon: Type,
   },
   number: {

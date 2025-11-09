@@ -6,6 +6,24 @@
 
 ## 📅 Recent Changes
 
+### [November 9, 2025 - Cleanup & Consolidation](2025-11-09-cleanup-consolidation.md) 🆕
+**Status:** ✅ Complete  
+**Impact:** Medium  
+**Type:** Code Cleanup & Documentation
+
+**Summary:**
+- ✅ Removed incomplete `text` property folder
+- ✅ Removed duplicate `PropertyMenu` component
+- ✅ Added comprehensive documentation (config/, constants/ READMEs)
+- ✅ Marked "text" type as deprecated with migration path
+- ✅ Created rich_text menu-config
+- ✅ Zero errors, full backward compatibility
+
+**Files:** 3 removed, 5 modified, 3 created  
+**Lines:** ~400 lines removed, ~200 lines documentation added
+
+---
+
 ### [November 6, 2025 - PropertyMenu Registry Integration](2025-11-06-property-menu-wiring.md)
 **Status:** ✅ Complete  
 **Impact:** Medium  

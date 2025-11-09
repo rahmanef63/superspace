@@ -76,6 +76,8 @@ export function PropertyMenu({
   children,
   align = 'start',
   side = 'bottom',
+  open,
+  onOpenChange,
 }: PropertyMenuProps) {
   const fieldId = getFieldId(field);
   const fieldName = field.name;
@@ -485,7 +487,7 @@ export function PropertyMenu({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>
           {children || (
             <Button

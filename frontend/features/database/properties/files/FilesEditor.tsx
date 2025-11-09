@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { PropertyEditorProps } from '../../registry/types';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Upload, X, FileImage, FileText, File as FileIcon } from 'lucide-react';
 
@@ -118,51 +117,50 @@ export const FilesEditor: React.FC<PropertyEditorProps> = ({ value, onChange, pr
   };
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">
-          Files ({files.length}/{maxFiles})
-        </Label>
-        
-        <div className="flex gap-2">
-          <Input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileSelect}
-            accept={acceptedTypes.join(',')}
-            multiple
-            className="hidden"
-            id="file-upload"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={files.length >= maxFiles}
-          >
-            <Upload className="h-3 w-3 mr-1" />
-            Choose Files
-          </Button>
-        </div>
+    <div className="w-full space-y-2">
+      <Input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileSelect}
+        accept={acceptedTypes.join(',')}
+        multiple
+        className="hidden"
+        id="file-upload"
+      />
+      
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-8 w-full justify-start text-left font-normal px-2 text-sm"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={files.length >= maxFiles}
+      >
+        <Upload className="mr-2 h-3.5 w-3.5 flex-shrink-0" />
+        <span className="truncate">
+          {files.length > 0 
+            ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
+            : 'Choose Files'
+          }
+        </span>
+      </Button>
 
-        {error && (
-          <p className="text-xs text-destructive">{error}</p>
-        )}
-      </div>
+      {error && (
+        <p className="text-xs text-destructive px-2">{error}</p>
+      )}
 
       {files.length > 0 && (
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Selected Files</Label>
-          <div className="space-y-1">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 p-1.5 rounded border bg-muted/50"
-              >
+        <div className="space-y-1 max-h-[200px] overflow-y-auto">
+          {files.map((file, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-1.5 p-1.5 rounded border bg-muted/30 hover:bg-muted/50 transition-colors group"
+            >
+              <span className="flex-shrink-0">
                 {getFileIcon(file.name, file.type)}
-                <span className="flex-1 text-xs truncate" title={file.name}>
+              </span>
+              <div className="flex-1 min-w-0 flex flex-col">
+                <span className="text-xs truncate" title={file.name}>
                   {file.name}
                 </span>
                 {file.size && (
@@ -170,27 +168,20 @@ export const FilesEditor: React.FC<PropertyEditorProps> = ({ value, onChange, pr
                     {formatFileSize(file.size)}
                   </span>
                 )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => handleRemoveFile(index)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
               </div>
-            ))}
-          </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
+                onClick={() => handleRemoveFile(index)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
-
-      <div className="text-[10px] text-muted-foreground pt-1 border-t">
-        Max size: {(maxSize / (1024 * 1024)).toFixed(0)}MB per file
-        {acceptedTypes[0] !== '*/*' && (
-          <span> • Types: {acceptedTypes.join(', ')}</span>
-        )}
-      </div>
     </div>
   );
 };

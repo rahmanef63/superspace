@@ -110,6 +110,8 @@ export interface PropertyMenuProps {
   children?: React.ReactNode; // Trigger element
   align?: 'start' | 'center' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
+  open?: boolean; // Controlled state
+  onOpenChange?: (open: boolean) => void; // Controlled state handler
 }
 
 /**

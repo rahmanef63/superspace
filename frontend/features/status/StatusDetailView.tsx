@@ -1,45 +1,67 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "../chat/utils";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface StatusDetailViewProps {
   statusId?: string;
 }
 
-const mockStatusDetails = {
-  '1': {
-    name: 'User1❤️',
-    avatar: '',
-    time: '2 hours ago',
-    mediaType: 'photo',
-    media: [
-      { id: 'photo1', url: '/placeholder.svg', type: 'photo' },
-      { id: 'photo2', url: '/placeholder.svg', type: 'photo' },
-    ]
-  },
-  '2': {
-    name: 'Group1',
-    avatar: '',
-    time: '4 hours ago',
-    mediaType: 'video',
-    media: [
-      { id: 'video1', url: '/placeholder.svg', type: 'video' },
-    ]
+// Type for status detail
+interface StatusMedia {
+  id: string;
+  url: string;
+  type: 'photo' | 'video';
+}
+
+interface StatusDetail {
+  name: string;
+  avatar: string;
+  time: string;
+  mediaType: string;
+  media: StatusMedia[];
+}
+
+// Hook to fetch status detail from Convex
+const useStatusDetail = (statusId?: string) => {
+  const rawStatus = useQuery(
+    api.features.status.queries.getStatus,
+    statusId ? { statusId: statusId as Id<"statuses"> } : "skip"
+  );
+
+  if (!rawStatus) {
+    return { status: null as StatusDetail | null, isLoading: statusId !== undefined && rawStatus === undefined };
   }
+
+  const status: StatusDetail = {
+    name: rawStatus.user?.name ?? "User",
+    avatar: rawStatus.user?.image ?? "",
+    time: new Date(rawStatus.createdAt).toLocaleTimeString(),
+    mediaType: rawStatus.type,
+    media: rawStatus.storageId
+      ? [{ id: rawStatus._id, url: rawStatus.content, type: rawStatus.type === "video" ? "video" : "photo" }]
+      : [],
+  };
+
+  return { status, isLoading: false };
 };
 
 export function StatusDetailView({ statusId }: StatusDetailViewProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { status, isLoading } = useStatusDetail(statusId);
 
+  // Empty state - no status selected
   if (!statusId) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            📷
+            <ImageIcon className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-xl font-medium text-foreground mb-2">
             Status updates
@@ -52,8 +74,33 @@ export function StatusDetailView({ statusId }: StatusDetailViewProps) {
     );
   }
 
-  const status = mockStatusDetails[statusId as keyof typeof mockStatusDetails];
-  if (!status) return null;
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading status...</div>
+      </div>
+    );
+  }
+
+  // No status found
+  if (!status) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h2 className="text-lg font-medium text-foreground mb-2">
+            Status not found
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            This status may have expired or been deleted.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const currentMedia = status.media[currentMediaIndex];
 

@@ -17,6 +17,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Inbox,
 } from "lucide-react"
 
 interface OverviewViewProps {
@@ -65,69 +66,8 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
     )
   }
 
-  // Mock data for demonstration (replace with real queries)
-  const stats = {
-    totalMessages: 1247,
-    activeUsers: members?.length || 0,
-    documentsCreated: 42,
-    tasksCompleted: 18,
-  }
-
-  const recentActivity = [
-    {
-      id: "1",
-      user: "John Doe",
-      action: "created a new document",
-      target: "Project Proposal",
-      time: "5 minutes ago",
-      icon: FileText,
-    },
-    {
-      id: "2",
-      user: "Jane Smith",
-      action: "completed task",
-      target: "Review code changes",
-      time: "15 minutes ago",
-      icon: CheckCircle2,
-    },
-    {
-      id: "3",
-      user: "Mike Johnson",
-      action: "sent a message in",
-      target: "#general",
-      time: "30 minutes ago",
-      icon: MessageSquare,
-    },
-    {
-      id: "4",
-      user: "Sarah Wilson",
-      action: "joined the workspace",
-      target: "",
-      time: "1 hour ago",
-      icon: Users,
-    },
-  ]
-
-  const upcomingEvents = [
-    {
-      id: "1",
-      title: "Team Standup",
-      time: "Today at 10:00 AM",
-      attendees: 8,
-    },
-    {
-      id: "2",
-      title: "Project Review",
-      time: "Tomorrow at 2:00 PM",
-      attendees: 5,
-    },
-    {
-      id: "3",
-      title: "Client Meeting",
-      time: "Friday at 3:30 PM",
-      attendees: 12,
-    },
-  ]
+  // Use real data where available
+  const activeUsers = members?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -136,16 +76,16 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
         subtitle="Here's what's happening with your workspace today."
       />
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Use real data where available, show -- for features not yet implemented */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="border-dashed">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMessages}</div>
-              <p className="text-xs text-muted-foreground">+20% from last month</p>
+              <div className="text-2xl font-bold text-muted-foreground/50">--</div>
+              <p className="text-xs text-muted-foreground">Coming soon</p>
             </CardContent>
           </Card>
 
@@ -155,37 +95,37 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.activeUsers}</div>
-              <p className="text-xs text-muted-foreground">+2 new this week</p>
+              <div className="text-2xl font-bold">{activeUsers}</div>
+              <p className="text-xs text-muted-foreground">Workspace members</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-dashed">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Documents</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.documentsCreated}</div>
-              <p className="text-xs text-muted-foreground">+12 from last month</p>
+              <div className="text-2xl font-bold text-muted-foreground/50">--</div>
+              <p className="text-xs text-muted-foreground">Coming soon</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-dashed">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.tasksCompleted}</div>
-              <p className="text-xs text-muted-foreground">+8 from last week</p>
+              <div className="text-2xl font-bold text-muted-foreground/50">--</div>
+              <p className="text-xs text-muted-foreground">Coming soon</p>
             </CardContent>
           </Card>
       </div>
 
       {/* Two Column Layout */}
       <div className="grid gap-6 md:grid-cols-2">
-          {/* Recent Activity */}
+          {/* Recent Activity - Empty State */}
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -195,29 +135,17 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               <CardDescription>Latest updates from your workspace</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3">
-                    <div className="mt-1 rounded-full bg-primary/10 p-2">
-                      <activity.icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{activity.user}</span>{" "}
-                        {activity.action}{" "}
-                        {activity.target && (
-                          <span className="font-medium">{activity.target}</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Inbox className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h4 className="font-medium text-foreground mb-1">No recent activity</h4>
+                <p className="text-sm text-muted-foreground">
+                  Activity from your workspace will appear here.
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Upcoming Events */}
+          {/* Upcoming Events - Empty State */}
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -227,24 +155,14 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
               <CardDescription>Your schedule for the week</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {event.time}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      {event.attendees}
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="w-full mt-4">
-                  View All Events
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h4 className="font-medium text-foreground mb-1">No upcoming events</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Calendar events will appear here once you create them.
+                </p>
+                <Button variant="outline" size="sm">
+                  Open Calendar
                 </Button>
               </div>
             </CardContent>

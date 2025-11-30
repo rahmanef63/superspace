@@ -23,6 +23,8 @@ import type * as features_ai_queries from "../features/ai/queries.js";
 import type * as features_calendar_index from "../features/calendar/index.js";
 import type * as features_calendar_mutations from "../features/calendar/mutations.js";
 import type * as features_calendar_queries from "../features/calendar/queries.js";
+import type * as features_calls_index from "../features/calls/index.js";
+import type * as features_calls_queries from "../features/calls/queries.js";
 import type * as features_chat_conversations from "../features/chat/conversations.js";
 import type * as features_chat_messageReactions from "../features/chat/messageReactions.js";
 import type * as features_chat_messages from "../features/chat/messages.js";
@@ -139,6 +141,8 @@ import type * as features_reports_mutations from "../features/reports/mutations.
 import type * as features_reports_queries from "../features/reports/queries.js";
 import type * as features_shared_audit from "../features/shared/audit.js";
 import type * as features_shared_auth from "../features/shared/auth.js";
+import type * as features_status_index from "../features/status/index.js";
+import type * as features_status_queries from "../features/status/queries.js";
 import type * as features_support_index from "../features/support/index.js";
 import type * as features_support_mutations from "../features/support/mutations.js";
 import type * as features_support_queries from "../features/support/queries.js";
@@ -207,6 +211,8 @@ declare const fullApi: ApiFromModules<{
   "features/calendar/index": typeof features_calendar_index;
   "features/calendar/mutations": typeof features_calendar_mutations;
   "features/calendar/queries": typeof features_calendar_queries;
+  "features/calls/index": typeof features_calls_index;
+  "features/calls/queries": typeof features_calls_queries;
   "features/chat/conversations": typeof features_chat_conversations;
   "features/chat/messageReactions": typeof features_chat_messageReactions;
   "features/chat/messages": typeof features_chat_messages;
@@ -323,6 +329,8 @@ declare const fullApi: ApiFromModules<{
   "features/reports/queries": typeof features_reports_queries;
   "features/shared/audit": typeof features_shared_audit;
   "features/shared/auth": typeof features_shared_auth;
+  "features/status/index": typeof features_status_index;
+  "features/status/queries": typeof features_status_queries;
   "features/support/index": typeof features_support_index;
   "features/support/mutations": typeof features_support_mutations;
   "features/support/queries": typeof features_support_queries;

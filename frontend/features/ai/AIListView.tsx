@@ -1,42 +1,49 @@
 import { useState } from "react";
-import { Bot, Plus } from "lucide-react";
+import { Bot, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
+import { useUser } from "@clerk/nextjs";
 
-const mockAIChats = [
+// Sample preview data - shown to help users understand the feature
+// Will be replaced with real AI conversations once user starts using the feature
+const SAMPLE_PREVIEW_CHATS = [
   { 
-    id: '1', 
-    title: 'Recipe for Pasta Carbonara', 
-    lastMessage: 'Here\'s a classic carbonara recipe...', 
-    timestamp: '2:30 PM',
-    topic: 'Cooking'
-  },
-  { 
-    id: '2', 
-    title: 'JavaScript Array Methods', 
-    lastMessage: 'The most commonly used array methods are...', 
-    timestamp: '1:45 PM',
-    topic: 'Programming'
-  },
-  { 
-    id: '3', 
-    title: 'Travel Tips for Japan', 
-    lastMessage: 'When visiting Japan, consider these tips...', 
-    timestamp: 'Yesterday',
-    topic: 'Travel'
-  },
-  { 
-    id: '4', 
-    title: 'Workout Routine for Beginners', 
-    lastMessage: 'Start with these basic exercises...', 
-    timestamp: 'Yesterday',
-    topic: 'Fitness'
+    id: 'sample-1', 
+    title: 'Ask about anything...', 
+    lastMessage: 'Get help with writing, coding, learning...', 
+    timestamp: '',
+    topic: 'Example',
+    isSample: true,
   },
 ];
+
+// Hook to fetch AI chat sessions from Convex
+const useAIConversations = () => {
+  const { workspaceId } = useWorkspaceContext();
+  const { user } = useUser();
+  
+  const sessions = useQuery(
+    api.features.ai.queries.listChatSessions,
+    workspaceId && user?.id ? { workspaceId, userId: user.id } : "skip"
+  );
+
+  const conversations = (sessions ?? []).map(session => ({
+    id: session._id,
+    title: session.title,
+    lastMessage: session.messages[session.messages.length - 1]?.content ?? "No messages yet",
+    timestamp: new Date(session.updatedAt).toLocaleDateString(),
+    topic: session.status === "active" ? "Active" : "Archived",
+  }));
+
+  return { conversations, isLoading: sessions === undefined };
+};
 
 type AIListViewVariant = "standalone" | "layout";
 
@@ -53,8 +60,13 @@ export function AIListView({
 }: AIListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
+  const { conversations, isLoading } = useAIConversations();
 
-  const filteredChats = mockAIChats.filter(chat =>
+  // Show sample preview if no real conversations exist
+  const hasRealData = conversations.length > 0;
+  const displayChats = hasRealData ? conversations : SAMPLE_PREVIEW_CHATS;
+
+  const filteredChats = displayChats.filter(chat =>
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.topic.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -92,11 +104,28 @@ export function AIListView({
       <div className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full">
           <div className="space-y-1 p-2">
-            {filteredChats.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
-                {searchQuery ? "No AI conversations found" : "No AI conversations yet"}
+            {/* Empty State */}
+            {!hasRealData && !searchQuery && (
+              <div className="p-6 text-center">
+                <div className="h-16 w-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="font-medium text-foreground mb-2">Start a conversation with AI</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get help with writing, coding, learning, and more.
+                </p>
+                <Button size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Chat
+                </Button>
               </div>
-            ) : (
+            )}
+            
+            {searchQuery && filteredChats.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">
+                No AI conversations found
+              </div>
+            ) : hasRealData && (
               filteredChats.map((chat) => (
                 <div 
                   key={chat.id} 

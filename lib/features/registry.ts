@@ -10,6 +10,7 @@
 
 import type { FeatureConfig } from './defineFeature'
 
+// Active features only (archived features moved to frontend/features/archived/)
 import overviewConfig from '@/frontend/features/overview/config'
 import chatConfig from '@/frontend/features/chat/config'
 import callsConfig from '@/frontend/features/calls/config'
@@ -20,25 +21,21 @@ import starredConfig from '@/frontend/features/starred/config'
 import friendsConfig from '@/frontend/features/friends/config'
 import archivedConfig from '@/frontend/features/archived/config'
 import databaseConfig from '@/frontend/features/database/config'
-import canvasConfig from '@/frontend/features/canvas/config'
 import documentsConfig from '@/frontend/features/documents/config'
-import calendarConfig from '@/frontend/features/calendar/config'
 import menuStoreConfig from '@/frontend/features/menu-store/config'
 import invitationsConfig from '@/frontend/features/invitations/config'
 import reportsConfig from '@/frontend/features/reports/config'
 import tasksConfig from '@/frontend/features/tasks/config'
-import wikiConfig from '@/frontend/features/wiki/config'
 import supportConfig from '@/frontend/features/support/config'
 import projectsConfig from '@/frontend/features/projects/config'
 import crmConfig from '@/frontend/features/crm/config'
 import notificationsConfig from '@/frontend/features/notifications/config'
-import workflowConfig from '@/frontend/features/workflow/config'
 import userSettingsConfig from '@/frontend/features/user-settings/config'
-import cmsConfig from '@/frontend/features/cms/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
+import builderConfig from '@/frontend/features/builder/config'
 
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
@@ -51,25 +48,21 @@ const featureConfigs: FeatureConfig[] = [
   friendsConfig,
   archivedConfig,
   databaseConfig,
-  canvasConfig,
   documentsConfig,
-  calendarConfig,
   menuStoreConfig,
   invitationsConfig,
   reportsConfig,
   tasksConfig,
-  wikiConfig,
   supportConfig,
   projectsConfig,
   crmConfig,
   notificationsConfig,
-  workflowConfig,
   userSettingsConfig,
-  cmsConfig,
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
   cmsLiteConfig,
+  builderConfig,
 ]
 /**
  * Extract and validate all discovered features

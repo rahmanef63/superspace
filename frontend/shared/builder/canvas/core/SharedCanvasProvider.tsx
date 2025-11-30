@@ -56,11 +56,17 @@ import React, {
 import { addEdge, useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge, OnConnect, ReactFlowInstance } from 'reactflow';
 
-// TODO: Remove these CMS imports - see technical debt notice above
-import { INITIAL_CMS_SCHEMA } from '@/frontend/features/cms/mockdata/initialSchema';
-import { getWidgetConfig } from '@/frontend/features/cms/shared/registry';
+// Import from builder feature (restored from archived CMS)
 import { uid, clamp } from '@/lib/utils';
-import type { CMSNode, CMSEdge, ChildInfo, Schema, Workspace } from '@/frontend/features/cms/shared/types';
+import type { CMSNode, CMSEdge, Schema, Workspace } from '@/frontend/features/builder/shared/types';
+import { getWidgetConfig } from '@/frontend/features/builder/shared/registry';
+import { INITIAL_CMS_SCHEMA } from '@/frontend/features/builder/mockdata';
+
+interface ChildInfo {
+  id: string;
+  edgeId: string;
+  label: string;
+}
 
 // Key used for localStorage
 const STORAGE_KEY = "shadcn-cms-builder-sidebar-v3";

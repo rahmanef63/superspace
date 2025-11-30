@@ -1,38 +1,43 @@
 import { useState } from "react";
-import { Bot, Send } from "lucide-react";
+import { Bot, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface AIDetailViewProps {
   chatId?: string;
 }
 
-const mockAIConversations = {
-  '1': {
-    title: 'Recipe for Pasta Carbonara',
-    topic: 'Cooking',
-    messages: [
-      { id: '1', text: 'Can you give me a recipe for pasta carbonara?', sender: 'user', timestamp: '2:25 PM' },
-      { id: '2', text: 'Here\'s a classic carbonara recipe:\n\nIngredients:\n- 400g spaghetti\n- 200g pancetta or guanciale\n- 4 large eggs\n- 100g Pecorino Romano cheese\n- Black pepper\n- Salt', sender: 'ai', timestamp: '2:26 PM' },
-      { id: '3', text: 'How long should I cook the pasta?', sender: 'user', timestamp: '2:28 PM' },
-      { id: '4', text: 'Cook the spaghetti in salted boiling water for about 8-10 minutes until al dente. The exact time depends on the brand, so check the package instructions.', sender: 'ai', timestamp: '2:29 PM' },
-    ]
-  },
-  '2': {
-    title: 'JavaScript Array Methods',
-    topic: 'Programming',
-    messages: [
-      { id: '1', text: 'What are the most useful JavaScript array methods?', sender: 'user', timestamp: '1:40 PM' },
-      { id: '2', text: 'The most commonly used array methods are:\n\n1. **map()** - transforms each element\n2. **filter()** - filters elements based on condition\n3. **reduce()** - reduces array to single value\n4. **forEach()** - executes function for each element\n5. **find()** - finds first matching element\n6. **some()** - tests if any element passes test\n7. **every()** - tests if all elements pass test', sender: 'ai', timestamp: '1:41 PM' },
-    ]
-  }
+// Hook to fetch a single AI chat session from Convex
+const useAIConversation = (chatId?: string) => {
+  const session = useQuery(
+    api.features.ai.queries.getChatSession,
+    chatId ? { sessionId: chatId as Id<"aiChatSessions"> } : "skip"
+  );
+
+  const messages = (session?.messages ?? []).map((msg, idx) => ({
+    id: `${chatId}-${idx}`,
+    sender: msg.role === "user" ? "user" : "assistant",
+    text: msg.content,
+    timestamp: new Date(msg.timestamp).toLocaleTimeString(),
+  }));
+
+  return {
+    conversation: session ? { title: session.title, topic: session.status } : null,
+    messages,
+    isLoading: chatId !== undefined && session === undefined,
+  };
 };
 
 export function AIDetailView({ chatId }: AIDetailViewProps) {
   const [message, setMessage] = useState("");
+  const { conversation, messages, isLoading } = useAIConversation(chatId);
 
+  // Empty state - no conversation selected or no chatId
   if (!chatId) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
@@ -53,8 +58,67 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
     );
   }
 
-  const conversation = mockAIConversations[chatId as keyof typeof mockAIConversations];
-  if (!conversation) return null;
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading conversation...</div>
+      </div>
+    );
+  }
+
+  // No messages yet - new conversation
+  if (!messages || messages.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col bg-background">
+        {/* Header */}
+        <div className="p-4 border-b border-border bg-card">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">New Conversation</h3>
+              <p className="text-sm text-muted-foreground">Ask me anything</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Empty conversation area */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h3 className="font-medium text-foreground mb-2">Start the conversation</h3>
+            <p className="text-sm text-muted-foreground">
+              Type a message below to begin chatting with AI.
+            </p>
+          </div>
+        </div>
+
+        {/* Input */}
+        <div className="p-4 border-t border-border bg-card">
+          <div className="flex gap-2 max-w-4xl mx-auto">
+            <Input
+              placeholder="Ask AI anything..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && message.trim()) {
+                  e.preventDefault();
+                  console.log('Sending AI message:', message);
+                  setMessage("");
+                }
+              }}
+              className="flex-1"
+            />
+            <Button disabled={!message.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -79,8 +143,8 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
             <Bot className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground">{conversation.title}</h3>
-            <p className="text-sm text-muted-foreground">Topic: {conversation.topic}</p>
+            <h3 className="font-medium text-foreground">{conversation?.title || 'AI Chat'}</h3>
+            <p className="text-sm text-muted-foreground">Topic: {conversation?.topic || 'General'}</p>
           </div>
         </div>
       </div>
@@ -88,7 +152,7 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4 max-w-4xl mx-auto">
-          {conversation.messages.map((msg) => (
+          {messages.map((msg: any) => (
             <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <Card className={`max-w-[80%] p-3 ${
                 msg.sender === 'user' 

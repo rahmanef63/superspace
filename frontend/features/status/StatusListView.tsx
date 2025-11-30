@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Plus } from "lucide-react";
+import { Camera, Plus, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -8,13 +8,41 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
 import { getInitials } from "../chat/utils";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
+import type { Id } from "@/convex/_generated/dataModel";
 
+// Type for status updates
+interface StatusUpdate {
+  id: string;
+  name: string;
+  avatar: string;
+  time: string;
+  hasUpdate: boolean;
+  mediaType: 'photo' | 'video';
+}
 
-const mockStatuses = [
-  { id: '1', name: 'User1❤️', avatar: '', time: '2 hours ago', hasUpdate: true, mediaType: 'photo' },
-  { id: '2', name: 'Group1', avatar: '', time: '4 hours ago', hasUpdate: true, mediaType: 'video' },
-  { id: '3', name: 'Mom', avatar: '', time: '6 hours ago', hasUpdate: false, mediaType: 'photo' },
-];
+// Hook to fetch status updates from Convex
+const useStatusUpdates = () => {
+  const { workspaceId } = useWorkspaceContext();
+
+  const rawStatuses = useQuery(
+    api.features.status.queries.getStatusesByUser,
+    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
+  );
+
+  const statuses: StatusUpdate[] = (rawStatuses ?? []).map((item) => ({
+    id: item.userId,
+    name: item.user?.name ?? "User",
+    avatar: item.user?.image ?? "",
+    time: item.latestStatus ? new Date(item.latestStatus.createdAt).toLocaleTimeString() : "",
+    hasUpdate: item.hasUnviewed,
+    mediaType: item.latestStatus?.type === "video" ? "video" : "photo",
+  }));
+
+  return { statuses, isLoading: workspaceId !== null && rawStatuses === undefined };
+};
 
 type StatusListViewVariant = "standalone" | "layout";
 
@@ -31,8 +59,9 @@ export function StatusListView({
 }: StatusListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
+  const { statuses, isLoading } = useStatusUpdates();
 
-  const filteredStatuses = mockStatuses.filter(status =>
+  const filteredStatuses = statuses.filter(status =>
     status.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -85,9 +114,24 @@ export function StatusListView({
           <h2 className="text-sm font-medium text-muted-foreground mb-4">Recent updates</h2>
           <ScrollArea className="max-h-[400px]">
             <div className="space-y-1">
-              {filteredStatuses.length === 0 ? (
+              {/* Empty state when no statuses */}
+              {statuses.length === 0 && !searchQuery ? (
+                <div className="p-6 text-center">
+                  <div className="h-16 w-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="font-medium text-foreground mb-2">No status updates yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Share photos and videos that disappear in 24 hours.
+                  </p>
+                  <Button size="sm" className="gap-2">
+                    <Camera className="h-4 w-4" />
+                    Add Status
+                  </Button>
+                </div>
+              ) : filteredStatuses.length === 0 ? (
                 <div className="p-4 text-center text-muted-foreground">
-                  {searchQuery ? "No status updates found" : "No status updates yet"}
+                  No status updates found
                 </div>
               ) : (
                 filteredStatuses.map((status) => (

@@ -1,90 +1,109 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { BarChart3, TrendingUp, LineChart, Construction } from 'lucide-react';
+
+// Note: Analytics feature is in development
+// When ready, this will fetch real data from Convex queries
 
 export default function AnalyticsFeature() {
   const renderDashboard = () => (
-    <div className="h-full p-6 bg-white">
+    <div className="h-full p-6 bg-background">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Analytics Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
+        <h2 className="text-2xl font-bold text-foreground mb-6">Analytics Dashboard</h2>
+        
+        {/* Coming Soon State */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="border-dashed">
             <CardHeader>
-              <CardTitle>Total Users</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <BarChart3 className="h-5 w-5" />
+                Total Users
+              </CardTitle>
             </CardHeader>
-            <div className="p-4">
-              <div className="text-3xl font-bold">1,234</div>
-              <div className="text-sm text-gray-500">+12% from last month</div>
-            </div>
+            <CardContent>
+              <div className="text-3xl font-bold text-muted-foreground/50">--</div>
+              <div className="text-sm text-muted-foreground">Data will appear here</div>
+            </CardContent>
           </Card>
-          <Card>
+          <Card className="border-dashed">
             <CardHeader>
-              <CardTitle>Revenue</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <TrendingUp className="h-5 w-5" />
+                Revenue
+              </CardTitle>
             </CardHeader>
-            <div className="p-4">
-              <div className="text-3xl font-bold">$45,678</div>
-              <div className="text-sm text-gray-500">+8% from last month</div>
-            </div>
+            <CardContent>
+              <div className="text-3xl font-bold text-muted-foreground/50">--</div>
+              <div className="text-sm text-muted-foreground">Data will appear here</div>
+            </CardContent>
           </Card>
-          <Card>
+          <Card className="border-dashed">
             <CardHeader>
-              <CardTitle>Active Projects</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                <LineChart className="h-5 w-5" />
+                Active Projects
+              </CardTitle>
             </CardHeader>
-            <div className="p-4">
-              <div className="text-3xl font-bold">23</div>
-              <div className="text-sm text-gray-500">+3 new this week</div>
-            </div>
+            <CardContent>
+              <div className="text-3xl font-bold text-muted-foreground/50">--</div>
+              <div className="text-sm text-muted-foreground">Data will appear here</div>
+            </CardContent>
           </Card>
         </div>
+
+        {/* Feature Coming Soon Notice */}
+        <Card className="bg-muted/50">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Construction className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">Analytics Coming Soon</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              We're building powerful analytics tools to help you understand your workspace activity.
+              Check back soon for insights on usage, performance, and trends.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 
   const renderReports = () => (
-    <div className="h-full p-6 bg-white">
+    <div className="h-full p-6 bg-background">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Analytics Reports</h2>
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Report</CardTitle>
-            </CardHeader>
-            <div className="p-4">
-              <p className="text-gray-600">Detailed monthly analytics report will be displayed here.</p>
-            </div>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>User Engagement</CardTitle>
-            </CardHeader>
-            <div className="p-4">
-              <p className="text-gray-600">User engagement metrics and trends.</p>
-            </div>
-          </Card>
-        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-6">Analytics Reports</h2>
+        <Card className="bg-muted/50">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Construction className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">Reports Coming Soon</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              Generate detailed reports on your workspace activity.
+              This feature is currently in development.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 
   const renderRealtime = () => (
-    <div className="h-full p-6 bg-white">
+    <div className="h-full p-6 bg-background">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Real-time Analytics</h2>
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Metrics</CardTitle>
-            </CardHeader>
-            <div className="p-4">
-              <p className="text-gray-600">Real-time data monitoring dashboard.</p>
-            </div>
-          </Card>
-        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-6">Real-time Analytics</h2>
+        <Card className="bg-muted/50">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Construction className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">Real-time Monitoring Coming Soon</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              Monitor your workspace activity in real-time.
+              This feature is currently in development.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 
   // Determine view based on current path
-  const path = window.location.pathname;
+  const path = typeof window !== 'undefined' ? window.location.pathname : '';
   
   if (path.includes('/analytics/reports')) {
     return renderReports();

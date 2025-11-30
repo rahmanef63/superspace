@@ -20,7 +20,8 @@ describe('AsyncWrapper', () => {
       </AsyncWrapper>
     );
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // LoadingState shows "Loading..." text (may appear multiple times with sr-only)
+    expect(screen.getAllByText('Loading...').length).toBeGreaterThan(0);
     expect(screen.queryByTestId('content')).not.toBeInTheDocument();
   });
 
@@ -115,7 +116,8 @@ describe('AsyncWrapper', () => {
       </AsyncWrapper>
     );
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // LoadingState shows text (may appear with sr-only)
+    expect(screen.getAllByText('Loading...').length).toBeGreaterThan(0);
     expect(screen.queryByText('Error')).not.toBeInTheDocument();
     expect(screen.queryByTestId('content')).not.toBeInTheDocument();
   });

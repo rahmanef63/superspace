@@ -16,7 +16,7 @@ describe("Universal Database Type Guards", () => {
   describe("isPropertyType", () => {
     it("should validate core property types", () => {
       expect(isPropertyType("title")).toBe(true);
-      expect(isPropertyType("rich_text")).toBe(true);
+      expect(isPropertyType("text")).toBe(true);
       expect(isPropertyType("number")).toBe(true);
       expect(isPropertyType("select")).toBe(true);
       expect(isPropertyType("multi_select")).toBe(true);
@@ -49,7 +49,7 @@ describe("Universal Database Type Guards", () => {
     it("should reject invalid property types", () => {
       expect(isPropertyType("invalid")).toBe(false);
       expect(isPropertyType("")).toBe(false);
-      expect(isPropertyType("text")).toBe(false); // V1 type, not Universal
+      expect(isPropertyType("rich_text")).toBe(false); // V1 type, not Universal (uses "text")
     });
   });
 

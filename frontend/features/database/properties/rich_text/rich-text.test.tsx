@@ -87,29 +87,29 @@ describe('RichTextEditor', () => {
     mockOnChange = vi.fn();
   });
 
-  it('should render textarea with value', () => {
+  it('should render input with value', () => {
     const { container } = render(<RichTextEditor value="Hello world" onChange={mockOnChange} property={mockProperty} />);
-    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
-    expect(textarea).toBeInTheDocument();
-    expect(textarea.value).toBe('Hello world');
+    const input = container.querySelector('input') as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe('Hello world');
   });
 
   it('should call onChange when typing', async () => {
     const user = userEvent.setup();
     const { container } = render(<RichTextEditor value="" onChange={mockOnChange} property={mockProperty} />);
     
-    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
-    await user.type(textarea, 'Hello');
+    const input = container.querySelector('input') as HTMLInputElement;
+    await user.type(input, 'Hello');
     
     expect(mockOnChange).toHaveBeenCalled();
   });
 
-  it('should handle multiline input', async () => {
+  it('should handle text input', async () => {
     const user = userEvent.setup();
     const { container } = render(<RichTextEditor value="" onChange={mockOnChange} property={mockProperty} />);
     
-    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
-    await user.type(textarea, 'Line 1{Enter}Line 2');
+    const input = container.querySelector('input') as HTMLInputElement;
+    await user.type(input, 'Test text');
     
     expect(mockOnChange).toHaveBeenCalled();
   });

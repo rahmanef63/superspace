@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Share2, Link2, Copy, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { useShare } from "../hooks/useShare";
 import { Modal } from "./Modal";
+import { Button } from "@/components/ui/button";
 
 interface ShareButtonsProps {
   url: string;
@@ -44,58 +45,63 @@ export const ShareButtons: React.FC<ShareButtonsProps> = ({
     return (
       <>
         <div className={`flex gap-2 ${className}`}>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowModal(true)}
-            className="p-2 rounded-lg bg-background hover:bg-accent transition-colors"
             title="Share"
           >
             <Share2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Share" size="sm">
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => shareToSocial("facebook")}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                className="flex items-center gap-2 px-4 py-3 h-auto"
               >
                 <Facebook className="w-5 h-5 text-blue-600" />
                 <span>Facebook</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => shareToSocial("twitter")}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                className="flex items-center gap-2 px-4 py-3 h-auto"
               >
                 <Twitter className="w-5 h-5 text-sky-500" />
                 <span>Twitter</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => shareToSocial("linkedin")}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                className="flex items-center gap-2 px-4 py-3 h-auto"
               >
                 <Linkedin className="w-5 h-5 text-blue-700" />
                 <span>LinkedIn</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => shareToSocial("whatsapp")}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                className="flex items-center gap-2 px-4 py-3 h-auto"
               >
                 <MessageCircle className="w-5 h-5 text-green-600" />
                 <span>WhatsApp</span>
-              </button>
+              </Button>
             </div>
             <div className="pt-3 border-t border-border">
-              <button
+              <Button
                 onClick={() => {
                   copyToClipboard(fullUrl, title);
                   setShowModal(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 h-auto"
               >
                 <Copy className="w-5 h-5" />
                 <span>Copy Link</span>
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
@@ -106,58 +112,62 @@ export const ShareButtons: React.FC<ShareButtonsProps> = ({
   return (
     <>
       <div className={`flex gap-2 ${className}`}>
-        <button
+        <Button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2"
         >
           <Share2 className="w-4 h-4" />
           <span>Share</span>
-        </button>
+        </Button>
       </div>
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Share" size="sm">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
+              variant="outline"
               onClick={() => shareToSocial("facebook")}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-3 h-auto"
             >
               <Facebook className="w-5 h-5 text-blue-600" />
               <span>Facebook</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => shareToSocial("twitter")}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-3 h-auto"
             >
               <Twitter className="w-5 h-5 text-sky-500" />
               <span>Twitter</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => shareToSocial("linkedin")}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-3 h-auto"
             >
               <Linkedin className="w-5 h-5 text-blue-700" />
               <span>LinkedIn</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => shareToSocial("whatsapp")}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-3 h-auto"
             >
               <MessageCircle className="w-5 h-5 text-green-600" />
               <span>WhatsApp</span>
-            </button>
+            </Button>
           </div>
           <div className="pt-3 border-t border-border">
-            <button
+            <Button
               onClick={() => {
                 copyToClipboard(fullUrl, title);
                 setShowModal(false);
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 h-auto"
             >
               <Copy className="w-5 h-5" />
               <span>Copy Link</span>
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

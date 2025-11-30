@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { UserProfile } from './UserProfile';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 
-interface MenuItem {
-  label: string;
-  href?: string;
-  onClick?: () => void;
-  icon?: LucideIcon;
-  divider?: boolean;
-}
+type MenuItem = 
+  | {
+      label: string;
+      href?: string;
+      onClick?: () => void;
+      icon?: LucideIcon;
+      divider?: false;
+    }
+  | {
+      divider: true;
+      label?: never;
+      href?: never;
+      onClick?: never;
+      icon?: never;
+    };
 
 interface UserMenuProps {
   user: {
@@ -37,12 +46,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, menuItems = [], classN
 
   return (
     <div className={cn('relative', className)}>
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 p-2 h-auto"
       >
         <UserProfile {...user} size="sm" showDetails={false} />
-      </button>
+      </Button>
 
       {isOpen && (
         <>
@@ -56,8 +66,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, menuItems = [], classN
                 item.divider ? (
                   <div key={`divider-${index}`} className="h-px bg-gray-200 my-1" />
                 ) : (
-                  <button
+                  <Button
                     key={item.label}
+                    variant="ghost"
                     onClick={() => {
                       item.onClick?.();
                       if (item.href) {
@@ -65,11 +76,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, menuItems = [], classN
                       }
                       setIsOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors text-left"
+                    className="w-full justify-start h-auto px-3 py-2 text-sm"
                   >
-                    {item.icon && <item.icon size={16} />}
+                    {item.icon && <item.icon size={16} className="mr-2" />}
                     {item.label}
-                  </button>
+                  </Button>
                 )
               )}
             </div>

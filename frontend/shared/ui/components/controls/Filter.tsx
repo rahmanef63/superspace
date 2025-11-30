@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export type FilterChip = { key: string; label: string; value: string | number | boolean };
 
@@ -17,18 +18,20 @@ export default function Filter({ chips = [], children, onRemoveChip, className }
     <div className={["flex flex-col gap-2", className].filter(Boolean).join(" ")}>
       <div className="flex flex-wrap items-center gap-2">
         {chips.map((c) => (
-          <button
+          <Button
             key={c.key}
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => onRemoveChip?.(c.key)}
-            className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:bg-neutral-50"
+            className="rounded-full"
             aria-label={`Remove ${c.label}`}
             title={`Remove ${c.label}`}
           >
             <span className="font-medium">{c.label}:</span>
-            <span className="opacity-80">{String(c.value)}</span>
-            <span aria-hidden>×</span>
-          </button>
+            <span className="opacity-80 ml-1">{String(c.value)}</span>
+            <span aria-hidden className="ml-1">×</span>
+          </Button>
         ))}
       </div>
       {children ? <div className="flex flex-wrap gap-2">{children}</div> : null}

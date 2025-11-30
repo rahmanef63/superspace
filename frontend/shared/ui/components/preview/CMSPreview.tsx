@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Brush, FlaskConical } from 'lucide-react';
 
 interface CMSPreviewProps {
@@ -32,28 +33,26 @@ export const CMSPreview: React.FC<CMSPreviewProps> = ({
           <div
             className="bg-white/90 backdrop-blur rounded-full border border-gray-200 shadow-sm p-1 flex items-center gap-1 pointer-events-auto animate-in fade-in slide-in-from-top-1 duration-200"
           >
-            <button
-              className={cn(
-                'px-2 py-1 text-xs rounded-full transition-colors flex items-center gap-1',
-                currentMode === 'design' ? 'bg-black text-white' : 'hover:bg-gray-100'
-              )}
+            <Button
+              variant={currentMode === 'design' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full"
               title="Design mode (select in preview)"
               onClick={() => onToggleMode('design')}
             >
-              <Brush size={14} />
+              <Brush size={14} className="mr-1" />
               Design
-            </button>
-            <button
-              className={cn(
-                'px-2 py-1 text-xs rounded-full transition-colors flex items-center gap-1',
-                currentMode === 'interactive' ? 'bg-black text-white' : 'hover:bg-gray-100'
-              )}
+            </Button>
+            <Button
+              variant={currentMode === 'interactive' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full"
               title="Interactive mode (try the UI)"
               onClick={() => onToggleMode('interactive')}
             >
-              <FlaskConical size={14} />
+              <FlaskConical size={14} className="mr-1" />
               Interactive
-            </button>
+            </Button>
           </div>
         </div>
       )}

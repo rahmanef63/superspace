@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export type SortOption = { label: string; value: string; direction?: "asc" | "desc" };
 
@@ -37,15 +38,16 @@ export default function Sort({ options, value, direction = "asc", onChange, clas
         ))}
       </select>
 
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={() => setDir((d) => (d === "asc" ? "desc" : "asc"))}
-        className="rounded-md border px-2 py-1 text-sm hover:bg-neutral-50"
         aria-label="Toggle sort direction"
         title="Toggle sort direction"
       >
         {dir === "asc" ? "↑ Asc" : "↓ Desc"}
-      </button>
+      </Button>
     </div>
   );
 }

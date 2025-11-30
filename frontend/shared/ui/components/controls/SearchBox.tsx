@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export interface SearchBoxProps {
   value?: string;
@@ -46,13 +47,15 @@ export default function SearchBox({
         className="w-full rounded-md border px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-neutral-300"
         aria-label="Search"
       />
-      <button
+      <Button
         type="submit"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-sm hover:bg-neutral-100"
+        variant="ghost"
+        size="sm"
+        className="absolute right-1 top-1/2 -translate-y-1/2"
         aria-label="Submit search"
       >
         ⌕
-      </button>
+      </Button>
     </form>
   );
 }

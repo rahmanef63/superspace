@@ -4,17 +4,32 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { multiSelectPropertyConfig } from './config';
 import { MultiSelectRenderer } from './MultiSelectRenderer';
 import { MultiSelectEditor } from './MultiSelectEditor';
 import type { Property } from '@/frontend/shared/foundation/types/universal-database';
+import type { SelectOptions } from '@/frontend/shared/foundation/types/property-options';
 
 const mockProperty: Property = {
   name: 'Tags',
   type: 'multi_select',
   key: 'tags',
+};
+
+const mockPropertyWithOptions: Property = {
+  name: 'Tags',
+  type: 'multi_select',
+  key: 'tags',
+  options: {
+    choices: [
+      { id: 'tag1', name: 'Frontend', color: '#3b82f6' },
+      { id: 'tag2', name: 'Backend', color: '#10b981' },
+      { id: 'tag3', name: 'DevOps', color: '#f59e0b' },
+    ],
+    allowCreate: true,
+  } as SelectOptions,
 };
 
 describe('multiSelectPropertyConfig', () => {
@@ -104,47 +119,108 @@ describe('MultiSelectEditor', () => {
     mockOnChange = vi.fn();
   });
 
-  it('should render input with array value', () => {
-    render(<MultiSelectEditor value={['tag1', 'tag2']} onChange={mockOnChange} property={mockProperty} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
-    expect(input.value).toBe('tag1, tag2');
+  it('should render combobox trigger', () => {
+    render(<MultiSelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
   });
 
-  it('should call onChange when typing', async () => {
+  it('should show placeholder when no value selected', () => {
+    render(<MultiSelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    expect(screen.getByText(/pilih opsi/i)).toBeInTheDocument();
+  });
+
+  it('should display selected values as badges', () => {
+    render(<MultiSelectEditor value={['Frontend', 'Backend']} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+    expect(screen.getByText('Backend')).toBeInTheDocument();
+  });
+
+  it('should open dropdown on click', async () => {
     const user = userEvent.setup();
-    render(<MultiSelectEditor value={[]} onChange={mockOnChange} property={mockProperty} />);
-    
-    const input = screen.getByRole('textbox');
-    await user.type(input, 'new-tag');
-    
-    expect(mockOnChange).toHaveBeenCalled();
+    render(<MultiSelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+
+    // Wait for popover content
+    await waitFor(() => {
+      expect(screen.getByText('Frontend')).toBeInTheDocument();
+      expect(screen.getByText('Backend')).toBeInTheDocument();
+      expect(screen.getByText('DevOps')).toBeInTheDocument();
+    });
+  });
+
+  it('should call onChange when selecting an option', async () => {
+    const user = userEvent.setup();
+    render(<MultiSelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    // Open dropdown
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+
+    // Wait for and click option
+    const option = await screen.findByText('Frontend');
+    await user.click(option);
+
+    expect(mockOnChange).toHaveBeenCalledWith(['Frontend']);
+  });
+
+  it('should add to existing selection', async () => {
+    const user = userEvent.setup();
+    render(<MultiSelectEditor value={['Frontend']} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    // Open dropdown
+    await user.click(screen.getByRole('combobox'));
+
+    // Select another option
+    const option = await screen.findByText('Backend');
+    await user.click(option);
+
+    expect(mockOnChange).toHaveBeenCalledWith(['Frontend', 'Backend']);
+  });
+
+  it('should show search input in dropdown', async () => {
+    const user = userEvent.setup();
+    render(<MultiSelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    await user.click(screen.getByRole('combobox'));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/cari/i)).toBeInTheDocument();
+    });
   });
 });
 
 describe('Multi-Select Property Integration', () => {
   it('should work in read-edit-read cycle', async () => {
     const user = userEvent.setup();
-    let currentValue: string[] = ['tag1'];
+    let currentValue: string[] = ['Frontend'];
     const onChange = (newValue: unknown) => {
-      if (Array.isArray(newValue)) {
-        currentValue = newValue;
-      } else if (typeof newValue === 'string') {
-        currentValue = newValue.split(',').map(v => v.trim()).filter(Boolean);
-      }
+      currentValue = (newValue as string[]) || [];
     };
 
-    let result = render(<MultiSelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
-    expect(screen.getByText('tag1')).toBeInTheDocument();
-    result.unmount();
+    // Read mode
+    const { unmount } = render(<MultiSelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+    unmount();
 
-    result = render(<MultiSelectEditor value={currentValue} property={mockProperty} onChange={onChange} />);
-    const input = screen.getByRole('textbox');
-    await user.clear(input);
-    await user.type(input, 'tag1, tag2, tag3');
-    expect(currentValue.length).toBeGreaterThanOrEqual(1);
-    result.unmount();
+    // Edit mode - add another tag
+    const { unmount: unmount2 } = render(
+      <MultiSelectEditor value={currentValue} property={mockPropertyWithOptions} onChange={onChange} />
+    );
+    
+    await user.click(screen.getByRole('combobox'));
+    const backendOption = await screen.findByText('Backend');
+    await user.click(backendOption);
+    
+    expect(currentValue).toContain('Frontend');
+    expect(currentValue).toContain('Backend');
+    unmount2();
 
-    result = render(<MultiSelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
-    expect(screen.getByText('tag1')).toBeInTheDocument();
+    // Read mode again - should show both values
+    render(<MultiSelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+    expect(screen.getByText('Backend')).toBeInTheDocument();
   });
 });

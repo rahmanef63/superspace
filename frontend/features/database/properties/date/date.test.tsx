@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { datePropertyConfig } from './config';
 import { DateRenderer } from './DateRenderer';
@@ -104,6 +104,7 @@ describe('DateRenderer', () => {
   });
 });
 
+// NOTE: DateEditor tests use Popover/Calendar pattern
 describe('DateEditor', () => {
   let mockOnChange: ReturnType<typeof vi.fn>;
 
@@ -111,47 +112,82 @@ describe('DateEditor', () => {
     mockOnChange = vi.fn();
   });
 
-  it('should render date input with value', () => {
+  it('should render date picker button', () => {
+    render(<DateEditor value={null} onChange={mockOnChange} property={mockProperty} />);
+    const button = screen.getByRole('button');
+    expect(button).toBeInTheDocument();
+    expect(screen.getByText('Pick a date')).toBeInTheDocument();
+  });
+
+  it('should display formatted date when value provided', () => {
+    render(<DateEditor value="2024-01-15T00:00:00Z" onChange={mockOnChange} property={mockProperty} />);
+    // date-fns format PPP = "January 15th, 2024"
+    expect(screen.getByText(/January 15/)).toBeInTheDocument();
+  });
+
+  it('should open calendar popover when clicked', async () => {
+    const user = userEvent.setup();
+    render(<DateEditor value={null} onChange={mockOnChange} property={mockProperty} />);
+    
+    const button = screen.getByRole('button');
+    await user.click(button);
+    
+    await waitFor(() => {
+      // Calendar should show month/year navigation
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+  });
+
+  it('should call onChange when date selected', async () => {
+    const user = userEvent.setup();
+    render(<DateEditor value="2024-01-15T00:00:00Z" onChange={mockOnChange} property={mockProperty} />);
+    
+    const button = screen.getByRole('button');
+    await user.click(button);
+    
+    await waitFor(() => {
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+    
+    // Click on day 20
+    const day20 = screen.getByText('20');
+    await user.click(day20);
+    
+    // Verify onChange was called with an ISO string
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+      const calledValue = mockOnChange.mock.calls[0][0];
+      expect(typeof calledValue).toBe('string');
+      // Verify it parses to January 20th (may be offset due to timezone)
+      const date = new Date(calledValue);
+      expect(date.getDate()).toBe(20);
+    });
+  });
+
+  it('should clear date when X clicked', async () => {
+    const user = userEvent.setup();
     const { container } = render(<DateEditor value="2024-01-15T00:00:00Z" onChange={mockOnChange} property={mockProperty} />);
-    const input = container.querySelector('input[type="date"]') as HTMLInputElement;
-    expect(input).toBeInTheDocument();
-    expect(input.value).toBe('2024-01-15');
-  });
-
-  it('should have type="date" attribute', () => {
-    const { container } = render(<DateEditor value="" onChange={mockOnChange} property={mockProperty} />);
-    const input = container.querySelector('input');
-    expect(input).toHaveAttribute('type', 'date');
-  });
-
-  it('should call onChange when typing', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<DateEditor value="" onChange={mockOnChange} property={mockProperty} />);
     
-    const input = container.querySelector('input') as HTMLInputElement;
-    await user.type(input, '2024-01-15');
+    // Find the X clear button (last svg in the button)
+    const clearButton = container.querySelector('svg.ml-auto');
+    expect(clearButton).toBeInTheDocument();
     
-    expect(mockOnChange).toHaveBeenCalled();
-  });
-
-  it('should call onChange with null when cleared', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<DateEditor value="2024-01-15" onChange={mockOnChange} property={mockProperty} />);
-    
-    const input = container.querySelector('input') as HTMLInputElement;
-    await user.clear(input);
+    await user.click(clearButton!);
     
     expect(mockOnChange).toHaveBeenCalledWith(null);
   });
 
-  it('should update when value prop changes', () => {
-    const { rerender, container } = render(<DateEditor value="2024-01-15" onChange={mockOnChange} property={mockProperty} />);
-    let input = container.querySelector('input') as HTMLInputElement;
-    expect(input.value).toBe('2024-01-15');
+  it('should show calendar icon', () => {
+    const { container } = render(<DateEditor value={null} onChange={mockOnChange} property={mockProperty} />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+  });
 
-    rerender(<DateEditor value="2024-12-31" onChange={mockOnChange} property={mockProperty} />);
-    input = container.querySelector('input') as HTMLInputElement;
-    expect(input.value).toBe('2024-12-31');
+  it('should update display when value prop changes', () => {
+    const { rerender } = render(<DateEditor value="2024-01-15T00:00:00Z" onChange={mockOnChange} property={mockProperty} />);
+    expect(screen.getByText(/January 15/)).toBeInTheDocument();
+
+    rerender(<DateEditor value="2024-12-25T00:00:00Z" onChange={mockOnChange} property={mockProperty} />);
+    expect(screen.getByText(/December 25/)).toBeInTheDocument();
   });
 });
 
@@ -159,24 +195,39 @@ describe('Date Property Integration', () => {
   it('should work in read-edit-read cycle', async () => {
     const user = userEvent.setup();
     let currentValue = '2024-01-15T00:00:00Z';
-    const onChange = (newValue: unknown) => {
+    const handleChange = (newValue: unknown) => {
       currentValue = String(newValue);
     };
 
+    // 1. Render in read mode
     let result = render(<DateRenderer value={currentValue} property={mockProperty} readOnly={true} />);
     expect(screen.getByText('Jan 15, 2024')).toBeInTheDocument();
     result.unmount();
 
-    result = render(<DateEditor value={currentValue} property={mockProperty} onChange={onChange} />);
-    const input = result.container.querySelector('input') as HTMLInputElement;
-    await user.clear(input);
-    await user.type(input, '2024-12-25');
-    expect(new Date(currentValue).getMonth() + 1).toBe(12);
-    expect(new Date(currentValue).getDate()).toBe(25);
+    // 2. Render in edit mode and change date
+    result = render(<DateEditor value={currentValue} property={mockProperty} onChange={handleChange} />);
+    
+    // Open calendar
+    const button = screen.getByRole('button');
+    await user.click(button);
+    
+    await waitFor(() => {
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+    
+    // Select day 20
+    const day20 = screen.getByText('20');
+    await user.click(day20);
+    
+    // Wait for calendar to close and verify display shows Jan 20
+    await waitFor(() => {
+      expect(screen.getByText(/January 20/)).toBeInTheDocument();
+    });
     result.unmount();
 
+    // 3. Render back in read mode with new value - check new date was applied
     result = render(<DateRenderer value={currentValue} property={mockProperty} readOnly={true} />);
-    expect(screen.getByText('Dec 25, 2024')).toBeInTheDocument();
+    expect(screen.getByText('Jan 20, 2024')).toBeInTheDocument();
   });
 });
 

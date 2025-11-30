@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Upload, Trash2, Search, Grid, List, Download, ExternalLink, Copy } from 'lucide-react';
-import { Button } from '../../../shared/components/Button';
+import { Button } from '@/components/ui/button';
 import { SearchBar } from '../components/SearchBar';
 import { BulkImageUpload, UploadedImage } from '../../../shared/components/BulkImageUpload';
 import { Modal } from '../../../shared/components/Modal';
@@ -177,22 +177,20 @@ export default function AdminMediaLibrary() {
           </div>
           
           <div className="flex gap-2 border rounded-lg p-1">
-            <button
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="icon"
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-              }`}
             >
               <Grid className="w-4 h-4" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="icon"
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-              }`}
             >
               <List className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           {filteredItems.length > 0 && (
@@ -245,24 +243,27 @@ export default function AdminMediaLibrary() {
                 </div>
 
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       copyToClipboard(item.url);
                     }}
-                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm"
+                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm"
                   >
                     <Copy className="w-4 h-4 text-white" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(item.id);
                     }}
-                    className="p-2 bg-red-500/80 hover:bg-red-500 rounded-lg"
                   >
-                    <Trash2 className="w-4 h-4 text-white" />
-                  </button>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity truncate">
@@ -315,27 +316,31 @@ export default function AdminMediaLibrary() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => copyToClipboard(item.url)}
-                          className="p-2 hover:bg-muted rounded transition-colors"
                         >
                           <Copy className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => {
                             setSelectedItem(item);
                             setIsDetailModalOpen(true);
                           }}
-                          className="p-2 hover:bg-muted rounded transition-colors"
                         >
                           <ExternalLink className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDelete(item.id)}
-                          className="p-2 hover:bg-red-500/10 text-red-500 rounded transition-colors"
+                          className="text-red-500 hover:text-red-500 hover:bg-red-500/10"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -428,7 +433,7 @@ export default function AdminMediaLibrary() {
                   Download
                 </Button>
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   onClick={() => {
                     handleDelete(selectedItem.id);
                     setIsDetailModalOpen(false);

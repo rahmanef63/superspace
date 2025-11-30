@@ -24,7 +24,7 @@ describe('Shared Import Validation - Baseline', () => {
       )
       expect(SharedCanvasProvider).toBeDefined()
       expect(typeof SharedCanvasProvider).toBe('function')
-    })
+    }, 15000) // Increased timeout - canvas module is large
 
     it('should import canvas hooks', async () => {
       const { useSharedCanvas } = await import('@/frontend/shared/builder')
@@ -312,10 +312,10 @@ describe('Type Safety Validation', () => {
 /**
  * POST-MIGRATION TESTS
  *
- * After restructuring, add these tests to validate facade exports
+ * These tests validate facade exports after restructuring
  */
 
-describe.skip('Post-Migration: Facade Export Validation', () => {
+describe('Post-Migration: Facade Export Validation', () => {
   describe('Builder Facade', () => {
     it('should export canvas from builder facade', async () => {
       const { SharedCanvasProvider, useSharedCanvas } = await import(
@@ -393,7 +393,7 @@ describe.skip('Post-Migration: Facade Export Validation', () => {
   })
 })
 
-describe.skip('Post-Migration: Deep Import Prevention', () => {
+describe('Post-Migration: Deep Import Prevention', () => {
   it('should prevent deep imports via lint rules', () => {
     // This will be enforced by ESLint, not runtime
     // Validate that .eslintrc.js has no-restricted-imports configured

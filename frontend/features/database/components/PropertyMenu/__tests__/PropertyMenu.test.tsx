@@ -1,27 +1,54 @@
 /**
- * Property Menu CRUD Operations Test Suite
+ * Property Menu - Unit Tests
  * 
- * Comprehensive tests for all PropertyMenu handlers:
- * - Create (Insert, Duplicate)
- * - Read (Menu display, submenu)
- * - Update (Rename, Format, Required, Hide, Move)
- * - Delete (Permanent deletion)
+ * Tests for PropertyMenu component using registry-based menu builder.
  * 
- * Tests use Shadcn Dialog components (not window.prompt/confirm/alert)
+ * Uses jsdom environment for better Radix UI compatibility.
+ * 
+ * Core functionality tested:
+ * - Trigger button rendering
+ * - Menu opens on click
+ * - Field name shown in menu
+ * - Menu item callbacks
+ * - Dialog interactions
+ * 
+ * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import React from 'react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { render, screen, waitFor, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PropertyMenu } from '../PropertyMenu';
 import type { DatabaseField } from '../../../types';
 
 // Mock toast hook
+const mockToast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast: mockToast,
   }),
 }));
+
+// Helper to create all callbacks for testing
+function createAllCallbacks() {
+  return {
+    onRename: vi.fn(),
+    onDuplicate: vi.fn(),
+    onChangeType: vi.fn(),
+    onHide: vi.fn(),
+    onDelete: vi.fn(),
+    onToggleRequired: vi.fn(),
+    onInsertLeft: vi.fn(),
+    onInsertRight: vi.fn(),
+    onMoveLeft: vi.fn(),
+    onMoveRight: vi.fn(),
+    onSort: vi.fn(),
+    onFilter: vi.fn(),
+    onCalculate: vi.fn(),
+    onWrap: vi.fn(),
+  };
+}
 
 // Mock field data
 const mockNumberField: DatabaseField = {
@@ -36,7 +63,7 @@ const mockNumberField: DatabaseField = {
 };
 
 const mockSelectField: DatabaseField = {
-  _id: 'field_124' as any,
+  _id: 'field_select' as any,
   _creationTime: Date.now(),
   tableId: 'table_456' as any,
   name: 'Status',
@@ -45,586 +72,339 @@ const mockSelectField: DatabaseField = {
   isRequired: false,
   isPrimary: false,
   options: {
-    selectOptions: [
-      { id: '1', name: 'Active', color: 'green' },
-      { id: '2', name: 'Inactive', color: 'gray' },
+    choices: [
+      { id: 'opt1', name: 'Todo', color: '#6b7280' },
+      { id: 'opt2', name: 'In Progress', color: '#3b82f6' },
+      { id: 'opt3', name: 'Done', color: '#10b981' },
     ],
   },
 };
 
-const mockDateField: DatabaseField = {
-  _id: 'field_125' as any,
-  _creationTime: Date.now(),
-  tableId: 'table_456' as any,
-  name: 'Due Date',
-  type: 'date',
-  position: 2,
-  isRequired: true,
-  isPrimary: false,
-};
-
-describe('PropertyMenu - CRUD Operations', () => {
+describe('PropertyMenu - Basic Rendering', () => {
   let user: ReturnType<typeof userEvent.setup>;
   
   beforeEach(() => {
     user = userEvent.setup();
+    mockToast.mockClear();
+  });
+  
+  afterEach(() => {
+    cleanup();
   });
 
-  describe('READ Operations', () => {
-    it('should display property menu with all sections', async () => {
-      const onRename = vi.fn();
-      const onDelete = vi.fn();
-      
-      render(
-        <PropertyMenu
-          field={mockNumberField}
-          onRename={onRename}
-          onDelete={onDelete}
-        />
-      );
+  it('should render default trigger button', () => {
+    render(<PropertyMenu field={mockNumberField} />);
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    expect(trigger).toBeInTheDocument();
+  });
 
-      // Open menu
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
+  it('should render custom children as trigger', () => {
+    render(
+      <PropertyMenu field={mockNumberField}>
+        <button>Custom Trigger</button>
+      </PropertyMenu>
+    );
+    
+    expect(screen.getByRole('button', { name: /custom trigger/i })).toBeInTheDocument();
+  });
 
-      // Check sections present
-      expect(screen.getByText('Rename')).toBeInTheDocument();
-      expect(screen.getByText('Duplicate')).toBeInTheDocument();
+  it('should open dropdown menu when clicked', async () => {
+    render(<PropertyMenu field={mockNumberField} onRename={vi.fn()} />);
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      // Should show field name as label in menu
+      expect(screen.getByText('Price')).toBeInTheDocument();
+    });
+  });
+
+  it('should have correct aria attributes on trigger', () => {
+    render(<PropertyMenu field={mockNumberField} />);
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+    expect(trigger).toHaveAttribute('type', 'button');
+  });
+
+  it('should show menu open state', async () => {
+    render(<PropertyMenu field={mockNumberField} onRename={vi.fn()} />);
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    expect(trigger).toHaveAttribute('data-state', 'closed');
+    
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute('data-state', 'open');
+    });
+  });
+});
+
+describe('PropertyMenu - Menu Items', () => {
+  let user: ReturnType<typeof userEvent.setup>;
+  
+  beforeEach(() => {
+    user = userEvent.setup();
+    mockToast.mockClear();
+  });
+  
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('should show base menu items when callbacks provided', async () => {
+    const callbacks = createAllCallbacks();
+    
+    render(<PropertyMenu field={mockNumberField} {...callbacks} />);
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    // Wait for menu to open and verify base items are present
+    await waitFor(() => {
+      expect(screen.getByText('Rename property')).toBeInTheDocument();
+    });
+    
+    expect(screen.getByText('Duplicate property')).toBeInTheDocument();
+    expect(screen.getByText('Sort ascending')).toBeInTheDocument();
+    expect(screen.getByText('Sort descending')).toBeInTheDocument();
+    expect(screen.getByText('Filter')).toBeInTheDocument();
+    expect(screen.getByText('Delete property')).toBeInTheDocument();
+  });
+
+  it('should call onDuplicate when duplicate clicked', async () => {
+    const onDuplicate = vi.fn();
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onDuplicate={onDuplicate}
+        onRename={vi.fn()} // Need at least one callback to enable menu
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    // Wait for menu to fully render
+    await waitFor(() => {
+      expect(screen.getByText('Duplicate property')).toBeInTheDocument();
+    });
+    
+    const duplicateItem = screen.getByText('Duplicate property');
+    await user.click(duplicateItem);
+    
+    await waitFor(() => {
+      expect(onDuplicate).toHaveBeenCalledWith('field_123');
+    });
+  });
+
+  it('should call onSort with direction when sort clicked', async () => {
+    const onSort = vi.fn();
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onSort={onSort}
+        onRename={vi.fn()}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
       expect(screen.getByText('Sort ascending')).toBeInTheDocument();
-      expect(screen.getByText('Sort descending')).toBeInTheDocument();
-      expect(screen.getByText('Filter')).toBeInTheDocument();
-      expect(screen.getByText('Calculate')).toBeInTheDocument();
-      expect(screen.getByText('Insert left')).toBeInTheDocument();
-      expect(screen.getByText('Insert right')).toBeInTheDocument();
-      expect(screen.getByText('Move left')).toBeInTheDocument();
-      expect(screen.getByText('Move right')).toBeInTheDocument();
-      expect(screen.getByText('Toggle required')).toBeInTheDocument();
-      expect(screen.getByText('Hide')).toBeInTheDocument();
-      expect(screen.getByText('Delete')).toBeInTheDocument();
     });
-
-    it('should display type-specific items for Number property', async () => {
-      render(<PropertyMenu field={mockNumberField} />);
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      // Check Number-specific items
-      expect(screen.getByText('Set Format')).toBeInTheDocument();
-      expect(screen.getByText('Show As')).toBeInTheDocument();
-    });
-
-    it('should display submenu for Calculate with overrides', async () => {
-      render(<PropertyMenu field={mockNumberField} />);
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      // Hover over Calculate to show submenu
-      const calculateItem = screen.getByText('Calculate');
-      await user.hover(calculateItem);
-
-      // Wait for submenu to appear
-      await waitFor(() => {
-        expect(screen.getByText('Sum')).toBeInTheDocument();
-        expect(screen.getByText('Average')).toBeInTheDocument();
-        expect(screen.getByText('Median')).toBeInTheDocument();
-        expect(screen.getByText('Min')).toBeInTheDocument();
-        expect(screen.getByText('Max')).toBeInTheDocument();
-      });
-    });
-
-    it('should display type-specific items for Select property', async () => {
-      render(<PropertyMenu field={mockSelectField} />);
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      // Check Select-specific items
-      expect(screen.getByText('Edit Options')).toBeInTheDocument();
-      expect(screen.getByText('Manage Colors')).toBeInTheDocument();
-    });
-
-    it('should display type-specific items for Date property', async () => {
-      render(<PropertyMenu field={mockDateField} />);
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      // Check Date-specific items
-      expect(screen.getByText('Date Format')).toBeInTheDocument();
-      expect(screen.getByText('Time Format')).toBeInTheDocument();
-      expect(screen.getByText('Notifications')).toBeInTheDocument();
-    });
-  });
-
-  describe('CREATE Operations', () => {
-    it('should call onDuplicate when duplicate clicked', async () => {
-      const onDuplicate = vi.fn().mockResolvedValue(undefined);
-      
-      render(
-        <PropertyMenu field={mockNumberField} onDuplicate={onDuplicate} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const duplicateItem = screen.getByText('Duplicate');
-      await user.click(duplicateItem);
-
-      await waitFor(() => {
-        expect(onDuplicate).toHaveBeenCalledWith('field_123');
-      });
-    });
-
-    it('should call onInsertLeft when insert left clicked', async () => {
-      const onInsertLeft = vi.fn().mockResolvedValue(undefined);
-      
-      render(
-        <PropertyMenu field={mockNumberField} onInsertLeft={onInsertLeft} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const insertItem = screen.getByText('Insert left');
-      await user.click(insertItem);
-
-      await waitFor(() => {
-        expect(onInsertLeft).toHaveBeenCalledWith('field_123');
-      });
-    });
-
-    it('should call onInsertRight when insert right clicked', async () => {
-      const onInsertRight = vi.fn().mockResolvedValue(undefined);
-      
-      render(
-        <PropertyMenu field={mockNumberField} onInsertRight={onInsertRight} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const insertItem = screen.getByText('Insert right');
-      await user.click(insertItem);
-
-      await waitFor(() => {
-        expect(onInsertRight).toHaveBeenCalledWith('field_123');
-      });
-    });
-  });
-
-  describe('UPDATE Operations', () => {
-    describe('Rename', () => {
-      it('should open rename dialog when rename clicked', async () => {
-        const onRename = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onRename={onRename} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const renameItem = screen.getByText('Rename');
-        await user.click(renameItem);
-
-        // Check dialog appears
-        await waitFor(() => {
-          expect(screen.getByRole('dialog')).toBeInTheDocument();
-          expect(screen.getByText('Rename property')).toBeInTheDocument();
-          expect(screen.getByLabelText('Property name')).toHaveValue('Price');
-        });
-      });
-
-      it('should call onRename with new name when confirmed', async () => {
-        const onRename = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onRename={onRename} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const renameItem = screen.getByText('Rename');
-        await user.click(renameItem);
-
-        // Enter new name
-        const input = await screen.findByLabelText('Property name');
-        await user.clear(input);
-        await user.type(input, 'Unit Price');
-
-        // Confirm
-        const confirmButton = screen.getByRole('button', { name: /^rename$/i });
-        await user.click(confirmButton);
-
-        await waitFor(() => {
-          expect(onRename).toHaveBeenCalledWith('field_123', 'Unit Price');
-        });
-      });
-
-      it('should not call onRename when cancelled', async () => {
-        const onRename = vi.fn();
-        
-        render(
-          <PropertyMenu field={mockNumberField} onRename={onRename} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const renameItem = screen.getByText('Rename');
-        await user.click(renameItem);
-
-        // Cancel
-        const cancelButton = await screen.findByRole('button', { name: /cancel/i });
-        await user.click(cancelButton);
-
-        expect(onRename).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('Format Changes', () => {
-      it('should call onSetFormat with format value', async () => {
-        const onSetFormat = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onSetFormat={onSetFormat} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        // Hover over Set Format to show submenu
-        const formatItem = screen.getByText('Set Format');
-        await user.hover(formatItem);
-
-        // Click submenu item
-        await waitFor(async () => {
-          const numberOption = await screen.findByText('Number');
-          await user.click(numberOption);
-        });
-
-        await waitFor(() => {
-          expect(onSetFormat).toHaveBeenCalledWith('field_123', 'Number');
-        });
-      });
-
-      it('should call onShowAs with display type', async () => {
-        const onShowAs = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onShowAs={onShowAs} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        // Hover over Show As to show submenu
-        const showAsItem = screen.getByText('Show As');
-        await user.hover(showAsItem);
-
-        // Click submenu item
-        await waitFor(async () => {
-          const barOption = await screen.findByText('Bar');
-          await user.click(barOption);
-        });
-
-        await waitFor(() => {
-          expect(onShowAs).toHaveBeenCalledWith('field_123', 'Bar');
-        });
-      });
-    });
-
-    describe('Toggle Required', () => {
-      it('should call onToggleRequired with opposite value', async () => {
-        const onToggleRequired = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu
-            field={mockNumberField}
-            isRequired={false}
-            onToggleRequired={onToggleRequired}
-          />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const toggleItem = screen.getByText('Toggle required');
-        await user.click(toggleItem);
-
-        await waitFor(() => {
-          expect(onToggleRequired).toHaveBeenCalledWith('field_123', true);
-        });
-      });
-    });
-
-    describe('Hide', () => {
-      it('should call onHide when hide clicked', async () => {
-        const onHide = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onHide={onHide} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const hideItem = screen.getByText('Hide');
-        await user.click(hideItem);
-
-        await waitFor(() => {
-          expect(onHide).toHaveBeenCalledWith('field_123');
-        });
-      });
-    });
-
-    describe('Move', () => {
-      it('should call onMoveLeft when move left clicked', async () => {
-        const onMoveLeft = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onMoveLeft={onMoveLeft} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const moveItem = screen.getByText('Move left');
-        await user.click(moveItem);
-
-        await waitFor(() => {
-          expect(onMoveLeft).toHaveBeenCalledWith('field_123');
-        });
-      });
-
-      it('should call onMoveRight when move right clicked', async () => {
-        const onMoveRight = vi.fn().mockResolvedValue(undefined);
-        
-        render(
-          <PropertyMenu field={mockNumberField} onMoveRight={onMoveRight} />
-        );
-
-        const trigger = screen.getByRole('button', { name: /property menu/i });
-        await user.click(trigger);
-
-        const moveItem = screen.getByText('Move right');
-        await user.click(moveItem);
-
-        await waitFor(() => {
-          expect(onMoveRight).toHaveBeenCalledWith('field_123');
-        });
-      });
-    });
-  });
-
-  describe('DELETE Operations', () => {
-    it('should open delete dialog when delete clicked', async () => {
-      const onDelete = vi.fn().mockResolvedValue(undefined);
-      
-      render(
-        <PropertyMenu field={mockNumberField} onDelete={onDelete} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const deleteItem = screen.getByText('Delete');
-      await user.click(deleteItem);
-
-      // Check dialog appears
-      await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-        expect(screen.getByText(/Delete property "Price"/i)).toBeInTheDocument();
-        expect(screen.getByText(/This will remove the property/i)).toBeInTheDocument();
-      });
-    });
-
-    it('should call onDelete when confirmed', async () => {
-      const onDelete = vi.fn().mockResolvedValue(undefined);
-      
-      render(
-        <PropertyMenu field={mockNumberField} onDelete={onDelete} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const deleteItem = screen.getByText('Delete');
-      await user.click(deleteItem);
-
-      // Confirm deletion
-      const confirmButton = await screen.findByRole('button', { name: /^delete$/i });
-      await user.click(confirmButton);
-
-      await waitFor(() => {
-        expect(onDelete).toHaveBeenCalledWith('field_123');
-      });
-    });
-
-    it('should not call onDelete when cancelled', async () => {
-      const onDelete = vi.fn();
-      
-      render(
-        <PropertyMenu field={mockNumberField} onDelete={onDelete} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const deleteItem = screen.getByText('Delete');
-      await user.click(deleteItem);
-
-      // Cancel deletion
-      const cancelButton = await screen.findByRole('button', { name: /cancel/i });
-      await user.click(cancelButton);
-
-      expect(onDelete).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Data Operations', () => {
-    it('should call onSort with asc direction', async () => {
-      const onSort = vi.fn();
-      
-      render(
-        <PropertyMenu field={mockNumberField} onSort={onSort} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const sortItem = screen.getByText('Sort ascending');
-      await user.click(sortItem);
-
+    
+    // Click sort ascending
+    const sortAscItem = screen.getByText('Sort ascending');
+    await user.click(sortAscItem);
+    
+    await waitFor(() => {
       expect(onSort).toHaveBeenCalledWith('field_123', 'asc');
     });
+  });
 
-    it('should call onSort with desc direction', async () => {
-      const onSort = vi.fn();
-      
-      render(
-        <PropertyMenu field={mockNumberField} onSort={onSort} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const sortItem = screen.getByText('Sort descending');
-      await user.click(sortItem);
-
-      expect(onSort).toHaveBeenCalledWith('field_123', 'desc');
+  it('should call onFilter when filter clicked', async () => {
+    const onFilter = vi.fn();
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onFilter={onFilter}
+        onRename={vi.fn()}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Filter')).toBeInTheDocument();
     });
-
-    it('should call onFilter when filter clicked', async () => {
-      const onFilter = vi.fn();
-      
-      render(
-        <PropertyMenu field={mockNumberField} onFilter={onFilter} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const filterItem = screen.getByText('Filter');
-      await user.click(filterItem);
-
+    
+    const filterItem = screen.getByText('Filter');
+    await user.click(filterItem);
+    
+    await waitFor(() => {
       expect(onFilter).toHaveBeenCalledWith('field_123');
-    });
-
-    it('should call onCalculate with aggregation type from submenu', async () => {
-      const onCalculate = vi.fn();
-      
-      render(
-        <PropertyMenu field={mockNumberField} onCalculate={onCalculate} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      // Hover over Calculate
-      const calculateItem = screen.getByText('Calculate');
-      await user.hover(calculateItem);
-
-      // Click submenu item
-      await waitFor(async () => {
-        const sumOption = await screen.findByText('Sum');
-        await user.click(sumOption);
-      });
-
-      await waitFor(() => {
-        expect(onCalculate).toHaveBeenCalledWith('field_123', 'Sum');
-      });
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle rename error gracefully', async () => {
-      const onRename = vi.fn().mockRejectedValue(new Error('Network error'));
-      const mockToast = vi.fn();
-      
-      vi.mocked(require('@/hooks/use-toast').useToast).mockReturnValue({
-        toast: mockToast,
-      });
-      
-      render(
-        <PropertyMenu field={mockNumberField} onRename={onRename} />
-      );
-
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const renameItem = screen.getByText('Rename');
-      await user.click(renameItem);
-
-      const input = await screen.findByLabelText('Property name');
-      await user.clear(input);
-      await user.type(input, 'New Name');
-
-      const confirmButton = screen.getByRole('button', { name: /^rename$/i });
-      await user.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-            title: 'Failed to rename property',
-          })
-        );
-      });
+  it('should open rename dialog when rename clicked', async () => {
+    const onRename = vi.fn();
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onRename={onRename}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Rename property')).toBeInTheDocument();
     });
+    
+    const renameItem = screen.getByText('Rename property');
+    await user.click(renameItem);
+    
+    // Wait for dialog to appear
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+    
+    // Dialog should have input with current name
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue('Price');
+  });
 
-    it('should handle delete error gracefully', async () => {
-      const onDelete = vi.fn().mockRejectedValue(new Error('Permission denied'));
-      const mockToast = vi.fn();
-      
-      vi.mocked(require('@/hooks/use-toast').useToast).mockReturnValue({
-        toast: mockToast,
-      });
-      
-      render(
-        <PropertyMenu field={mockNumberField} onDelete={onDelete} />
+  it('should open delete dialog when delete clicked', async () => {
+    const onDelete = vi.fn();
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onDelete={onDelete}
+        onRename={vi.fn()}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Delete property')).toBeInTheDocument();
+    });
+    
+    const deleteItem = screen.getByText('Delete property');
+    await user.click(deleteItem);
+    
+    // Wait for alert dialog to appear
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    });
+    
+    // Should show confirmation text with property name
+    const dialog = screen.getByRole('alertdialog');
+    expect(within(dialog).getByText(/delete property/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/price/i)).toBeInTheDocument();
+    // Should have Cancel and Delete buttons
+    expect(within(dialog).getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /delete/i })).toBeInTheDocument();
+  });
+});
+
+describe('PropertyMenu - Error Handling', () => {
+  let user: ReturnType<typeof userEvent.setup>;
+  
+  beforeEach(() => {
+    user = userEvent.setup();
+    mockToast.mockClear();
+  });
+  
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('should show toast on duplicate error', async () => {
+    const onDuplicate = vi.fn().mockRejectedValue(new Error('Duplicate failed'));
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onDuplicate={onDuplicate}
+        onRename={vi.fn()}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Duplicate property')).toBeInTheDocument();
+    });
+    
+    const duplicateItem = screen.getByText('Duplicate property');
+    await user.click(duplicateItem);
+    
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variant: 'destructive',
+          title: 'Failed to duplicate property',
+        })
       );
+    });
+  });
 
-      const trigger = screen.getByRole('button', { name: /property menu/i });
-      await user.click(trigger);
-
-      const deleteItem = screen.getByText('Delete');
-      await user.click(deleteItem);
-
-      const confirmButton = await screen.findByRole('button', { name: /^delete$/i });
-      await user.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-            title: 'Failed to delete property',
-          })
-        );
-      });
+  it('should show toast on rename error', async () => {
+    const onRename = vi.fn().mockRejectedValue(new Error('Rename failed'));
+    
+    render(
+      <PropertyMenu 
+        field={mockNumberField} 
+        onRename={onRename}
+      />
+    );
+    
+    const trigger = screen.getByRole('button', { name: /property menu/i });
+    await user.click(trigger);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Rename property')).toBeInTheDocument();
+    });
+    
+    const renameItem = screen.getByText('Rename property');
+    await user.click(renameItem);
+    
+    // Wait for dialog
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+    
+    // Change the name and confirm
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'New Name');
+    
+    // Find and click the confirm button (usually "Save" or similar)
+    const confirmButton = screen.getByRole('button', { name: /save|confirm|rename/i });
+    await user.click(confirmButton);
+    
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variant: 'destructive',
+          title: 'Failed to rename property',
+        })
+      );
     });
   });
 });

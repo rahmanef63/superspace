@@ -30,7 +30,18 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
       return;
     }
 
+    // Allow intermediate states while typing (e.g., "-", ".", "-.")
+    // These are valid intermediate states but not complete numbers
+    const intermediatePattern = /^-?$|^-?\.$|^\.$/;
+    if (intermediatePattern.test(newValue)) {
+      console.log('⏳ [NumberEditor] Intermediate state:', newValue);
+      setLocalValue(newValue);
+      // Don't call onChange yet - wait for complete number
+      return;
+    }
+
     // Validate: only allow numbers, comma, dot, and minus sign
+    // Pattern allows: -123, 123.45, -123.45, 1,234.56, etc.
     const validPattern = /^-?[\d,]*\.?\d*$/;
     
     if (!validPattern.test(newValue)) {
@@ -50,10 +61,8 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
     if (!isNaN(numValue)) {
       console.log('💾 [NumberEditor] Saving value:', { raw: newValue, parsed: numValue });
       onChange(numValue);
-    } else {
-      setValidationMessage('Format angka tidak valid. Silakan coba lagi.');
-      setShowValidationDialog(true);
     }
+    // Don't show validation dialog for intermediate parsing states
   };
 
   const handleBlur = () => {

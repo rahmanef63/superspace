@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { 
   Search, 
   Clock, 
@@ -114,13 +115,15 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
               </div>
               <div className="grid grid-cols-8 gap-2">
                 {RECENT_EMOJIS.map((emoji, index) => (
-                  <button
+                  <Button
                     key={index}
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onEmojiSelect(emoji)}
-                    className="text-2xl p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="text-2xl p-2 h-auto"
                   >
                     {emoji}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -134,13 +137,15 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
                   </h3>
                   <div className="grid grid-cols-8 gap-2">
                     {category.emojis.map((emoji, index) => (
-                      <button
+                      <Button
                         key={index}
+                        variant="ghost"
+                        size="sm"
                         onClick={() => onEmojiSelect(emoji)}
-                        className="text-2xl p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+                        className="text-2xl p-2 h-auto"
                       >
                         {emoji}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -151,18 +156,18 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
           {/* Bottom Categories */}
           <div className="p-2 border-t border-border">
             <div className="flex justify-center gap-4">
-              <button className="p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors">
+              <Button variant="ghost" size="icon">
                 <Clock className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors">
+              </Button>
+              <Button variant="ghost" size="icon">
                 <Smile className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors">
+              </Button>
+              <Button variant="ghost" size="icon">
                 <Heart className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors">
+              </Button>
+              <Button variant="ghost" size="icon">
                 <Flag className="h-5 w-5 text-muted-foreground" />
-              </button>
+              </Button>
             </div>
           </div>
         </TabsContent>
@@ -209,12 +214,14 @@ function GifPicker({ onSelect }: { onSelect: (gif: string) => void }) {
           
           <div className="flex flex-wrap gap-2 mb-4">
             {TRENDING_CATEGORIES.map((category) => (
-              <button
+              <Button
                 key={category}
-                className="px-3 py-1 text-sm bg-muted text-foreground rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
+                variant="secondary"
+                size="sm"
+                className="rounded-full"
               >
                 {category}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

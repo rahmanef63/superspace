@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export interface PaginationProps {
   page: number;         // 1-based
@@ -31,42 +32,42 @@ export default function Pagination({ page, pageSize, total, onChange, className 
 
   return (
     <nav className={["flex items-center gap-1", className].filter(Boolean).join(" ")} aria-label="Pagination">
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         disabled={!canPrev}
         onClick={() => go(page - 1)}
-        className="rounded border px-2 py-1 text-sm disabled:opacity-50"
       >
         Prev
-      </button>
+      </Button>
 
       {seq.map((it, idx) =>
         it === "..." ? (
           <span key={`dots-${idx}`} className="px-2 py-1 text-sm opacity-60 select-none">…</span>
         ) : (
-          <button
+          <Button
             key={it}
             type="button"
+            variant={it === page ? "default" : "outline"}
+            size="sm"
             onClick={() => go(it)}
-            className={[
-              "rounded border px-2 py-1 text-sm",
-              it === page ? "bg-neutral-900 text-white" : "hover:bg-neutral-50",
-            ].join(" ")}
             aria-current={it === page ? "page" : undefined}
           >
             {it}
-          </button>
+          </Button>
         )
       )}
 
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         disabled={!canNext}
         onClick={() => go(page + 1)}
-        className="rounded border px-2 py-1 text-sm disabled:opacity-50"
       >
         Next
-      </button>
+      </Button>
     </nav>
   );
 }

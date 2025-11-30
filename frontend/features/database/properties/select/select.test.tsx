@@ -4,17 +4,32 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { selectPropertyConfig } from './config';
 import { SelectRenderer } from './SelectRenderer';
 import { SelectEditor } from './SelectEditor';
 import type { Property } from '@/frontend/shared/foundation/types/universal-database';
+import type { SelectOptions } from '@/frontend/shared/foundation/types/property-options';
 
 const mockProperty: Property = {
   name: 'Status',
   type: 'select',
   key: 'status',
+};
+
+const mockPropertyWithOptions: Property = {
+  name: 'Status',
+  type: 'select',
+  key: 'status',
+  options: {
+    choices: [
+      { id: 'opt1', name: 'In Progress', color: '#3b82f6' },
+      { id: 'opt2', name: 'Done', color: '#10b981' },
+      { id: 'opt3', name: 'Blocked', color: '#ef4444' },
+    ],
+    allowCreate: true,
+  } as SelectOptions,
 };
 
 describe('selectPropertyConfig', () => {
@@ -84,53 +99,92 @@ describe('SelectEditor', () => {
     mockOnChange = vi.fn();
   });
 
-  it('should render input with value', () => {
-    render(<SelectEditor value="In Progress" onChange={mockOnChange} property={mockProperty} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
-    expect(input.value).toBe('In Progress');
+  it('should render combobox trigger', () => {
+    render(<SelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
   });
 
-  it('should call onChange when typing', async () => {
-    const user = userEvent.setup();
-    render(<SelectEditor value="" onChange={mockOnChange} property={mockProperty} />);
-    
-    const input = screen.getByRole('textbox');
-    await user.type(input, 'Done');
-    
-    expect(mockOnChange).toHaveBeenCalled();
+  it('should show placeholder when no value selected', () => {
+    render(<SelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    expect(screen.getByText(/pilih opsi/i)).toBeInTheDocument();
   });
 
-  it('should call onChange with null for empty', async () => {
+  it('should display selected value as badge', () => {
+    render(<SelectEditor value="In Progress" onChange={mockOnChange} property={mockPropertyWithOptions} />);
+    expect(screen.getByText('In Progress')).toBeInTheDocument();
+  });
+
+  it('should open dropdown on click', async () => {
     const user = userEvent.setup();
-    render(<SelectEditor value="In Progress" onChange={mockOnChange} property={mockProperty} />);
-    
-    const input = screen.getByRole('textbox');
-    await user.clear(input);
-    
-    expect(mockOnChange).toHaveBeenCalledWith(null);
+    render(<SelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+
+    // Wait for popover content
+    await waitFor(() => {
+      expect(screen.getByText('In Progress')).toBeInTheDocument();
+      expect(screen.getByText('Done')).toBeInTheDocument();
+      expect(screen.getByText('Blocked')).toBeInTheDocument();
+    });
+  });
+
+  it('should call onChange when selecting an option', async () => {
+    const user = userEvent.setup();
+    render(<SelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    // Open dropdown
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+
+    // Wait for and click option
+    const option = await screen.findByText('Done');
+    await user.click(option);
+
+    expect(mockOnChange).toHaveBeenCalledWith('Done');
+  });
+
+  it('should show search input in dropdown', async () => {
+    const user = userEvent.setup();
+    render(<SelectEditor value={null} onChange={mockOnChange} property={mockPropertyWithOptions} />);
+
+    await user.click(screen.getByRole('combobox'));
+
+    // Command input should be visible
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/cari/i)).toBeInTheDocument();
+    });
   });
 });
 
 describe('Select Property Integration', () => {
   it('should work in read-edit-read cycle', async () => {
     const user = userEvent.setup();
-    let currentValue = 'In Progress';
+    let currentValue: string | null = 'In Progress';
     const onChange = (newValue: unknown) => {
-      currentValue = String(newValue || '');
+      currentValue = newValue as string | null;
     };
 
-    let result = render(<SelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
+    // Read mode
+    const { unmount } = render(<SelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
     expect(screen.getByText('In Progress')).toBeInTheDocument();
-    result.unmount();
+    unmount();
 
-    result = render(<SelectEditor value={currentValue} property={mockProperty} onChange={onChange} />);
-    const input = screen.getByRole('textbox');
-    await user.clear(input);
-    await user.type(input, 'Done');
+    // Edit mode - select different option
+    const { unmount: unmount2 } = render(
+      <SelectEditor value={currentValue} property={mockPropertyWithOptions} onChange={onChange} />
+    );
+    
+    await user.click(screen.getByRole('combobox'));
+    const doneOption = await screen.findByText('Done');
+    await user.click(doneOption);
+    
     expect(currentValue).toBe('Done');
-    result.unmount();
+    unmount2();
 
-    result = render(<SelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
+    // Read mode again - should show new value
+    render(<SelectRenderer value={currentValue} property={mockProperty} readOnly={true} />);
     expect(screen.getByText('Done')).toBeInTheDocument();
   });
 });

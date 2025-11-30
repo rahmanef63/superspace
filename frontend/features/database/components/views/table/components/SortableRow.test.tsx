@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { SortableRow } from './SortableRow';
 import { DndContext } from '@dnd-kit/core';
-import type { Row } from '@tanstack/react-table';
+import type { Row, Cell } from '@tanstack/react-table';
 
 // Mock @dnd-kit/sortable
 vi.mock('@dnd-kit/sortable', () => ({
@@ -20,19 +20,23 @@ vi.mock('@dnd-kit/sortable', () => ({
 }));
 
 describe('SortableRow', () => {
+  // Create properly typed mock cells with columnDef
+  const createMockCell = (id: string, columnId: string, content: string): Cell<any, unknown> => ({
+    id,
+    column: { 
+      id: columnId,
+      columnDef: {
+        cell: () => <span>{content}</span>,
+      },
+    },
+    getContext: () => ({} as any),
+  } as unknown as Cell<any, unknown>);
+
   const mockRow = {
     id: 'row-1',
     getVisibleCells: () => [
-      {
-        id: 'cell-drag',
-        column: { id: 'drag' },
-        getContext: () => ({}),
-      },
-      {
-        id: 'cell-name',
-        column: { id: 'name' },
-        getContext: () => ({}),
-      },
+      createMockCell('cell-drag', 'drag', '⋮⋮'),
+      createMockCell('cell-name', 'name', 'Test Name'),
     ],
     getIsSelected: () => false,
   } as unknown as Row<any>;

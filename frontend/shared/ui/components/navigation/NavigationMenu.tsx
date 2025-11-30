@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import type { LucideIcon } from 'lucide-react';
 import { getFeatureIcon } from '@/frontend/shared/ui';
 
@@ -36,14 +37,15 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     const Icon = deriveIcon(item);
     return (
       <div key={item.id} className={cn('', level > 0 && 'ml-4')}>
-        <button
+        <Button
+          variant={item.active ? 'default' : 'ghost'}
           onClick={() => onItemClick?.(item)}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all text-left hover:translate-x-0.5 active:scale-[0.98]',
-            item.active ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
+            'w-full justify-start h-auto px-3 py-2 text-sm',
+            item.active && 'bg-gray-900 hover:bg-gray-800'
           )}
         >
-          {Icon && <Icon size={16} className="text-current" />}
+          {Icon && <Icon size={16} className="mr-3" />}
           <span className="flex-1">{item.label}</span>
           {item.badge && (
             <span
@@ -55,7 +57,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
               {item.badge}
             </span>
           )}
-        </button>
+        </Button>
         {item.children && (
           <div className="mt-1 space-y-1">
             {item.children.map((child) => renderItem(child, level + 1))}

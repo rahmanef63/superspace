@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
 
 interface SearchModalProps {
   workspaceId: Id<"workspaces">;
@@ -36,20 +37,23 @@ export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: 
         <div className="flex-1 overflow-auto p-4">
           {query.trim() && searchResults ? (
             <div className="space-y-2">
-              {searchResults.map((doc) => (
-                <button
+              {searchResults.map((doc: { _id: Id<"documents">; title?: string; _creationTime: number }) => (
+                <Button
                   key={doc._id}
+                  variant="ghost"
                   onClick={() => {
                     onSelectDocument(doc._id);
                     onClose();
                   }}
-                  className="w-full text-left p-3 hover:bg-muted rounded-md"
+                  className="w-full justify-start h-auto p-3 text-left"
                 >
-                  <div className="font-medium">{doc.title}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Created {new Date(doc._creationTime).toLocaleDateString()}
+                  <div>
+                    <div className="font-medium">{doc.title}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Created {new Date(doc._creationTime).toLocaleDateString()}
+                    </div>
                   </div>
-                </button>
+                </Button>
               ))}
               {searchResults.length === 0 && (
                 <div className="text-center text-muted-foreground py-8">
@@ -63,14 +67,13 @@ export function SearchModal({ workspaceId, isOpen, onClose, onSelectDocument }: 
             </div>
           )}
         </div>
-
         <div className="p-4 border-t flex justify-end">
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
           >
             Close
-          </button>
+          </Button>
         </div>
       </div>
     </div>

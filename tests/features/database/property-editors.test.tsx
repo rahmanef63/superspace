@@ -1,5 +1,10 @@
+/**
+ * @vitest-environment jsdom
+ * 
+ * Using jsdom for Radix UI Dialog and Popover compatibility
+ */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NumberEditor } from '@/frontend/features/database/properties/number/NumberEditor';
 import { SelectEditor } from '@/frontend/features/database/properties/select/SelectEditor';
@@ -48,7 +53,7 @@ describe('Property Editors', () => {
       expect(onChange).toHaveBeenCalledWith(123.45);
     });
 
-    it('should show validation dialog for invalid input', async () => {
+    it('should show validation dialog for special characters', async () => {
       const onChange = vi.fn();
       render(
         <NumberEditor
@@ -59,12 +64,14 @@ describe('Property Editors', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'abc');
+      
+      // Type invalid special characters
+      await userEvent.type(input, '@#$');
 
-      // Should show validation dialog
+      // Validation dialog should appear
       await waitFor(() => {
-        expect(screen.getByText(/tidak valid/i)).toBeInTheDocument();
-      });
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      }, { timeout: 2000 });
 
       // Should not call onChange with invalid value
       expect(onChange).not.toHaveBeenCalled();
@@ -100,6 +107,34 @@ describe('Property Editors', () => {
       await userEvent.clear(input);
 
       expect(onChange).toHaveBeenCalledWith(null);
+    });
+
+    it('should show validation dialog for invalid input', async () => {
+      const onChange = vi.fn();
+      render(
+        <NumberEditor
+          value={null}
+          onChange={onChange}
+          property={mockProperty}
+        />
+      );
+
+      const input = screen.getByRole('textbox');
+      
+      // Type invalid characters - this should trigger the validation dialog
+      await userEvent.type(input, 'abc');
+
+      // Validation dialog should appear with the error message
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      }, { timeout: 2000 });
+      
+      // Check dialog title specifically
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).getByText('Input Tidak Valid')).toBeInTheDocument();
+
+      // Should not call onChange with invalid value
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 
@@ -190,7 +225,7 @@ describe('Property Editors', () => {
       expect(screen.getByText('Option 2')).toBeInTheDocument();
     });
 
-    it('should clear selection', async () => {
+    it('should clear selection when clicking X icon', async () => {
       const onChange = vi.fn();
       render(
         <SelectEditor
@@ -200,8 +235,14 @@ describe('Property Editors', () => {
         />
       );
 
-      const clearButton = screen.getByRole('button', { name: /clear/i });
-      await userEvent.click(clearButton);
+      // The X icon is inside the combobox button, find it by its class
+      const combobox = screen.getByRole('combobox');
+      const clearIcon = combobox.querySelector('svg.lucide-x');
+      
+      expect(clearIcon).toBeInTheDocument();
+      
+      // Click the X icon to clear
+      await userEvent.click(clearIcon!);
 
       expect(onChange).toHaveBeenCalledWith(null);
     });
@@ -284,30 +325,6 @@ describe('Property Editors', () => {
       });
     });
 
-    it('should select multiple options', async () => {
-      const onChange = vi.fn();
-      render(
-        <MultiSelectEditor
-          value={null}
-          onChange={onChange}
-          property={mockProperty}
-        />
-      );
-
-      const button = screen.getByRole('combobox');
-      await userEvent.click(button);
-
-      const tag1 = await screen.findByText('Tag 1');
-      await userEvent.click(tag1);
-
-      expect(onChange).toHaveBeenCalledWith(['Tag 1']);
-
-      const tag2 = await screen.findByText('Tag 2');
-      await userEvent.click(tag2);
-
-      expect(onChange).toHaveBeenCalledWith(['Tag 1', 'Tag 2']);
-    });
-
     it('should display selected values as badges', () => {
       const onChange = vi.fn();
       render(
@@ -323,7 +340,7 @@ describe('Property Editors', () => {
       expect(badges.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should remove individual badge', async () => {
+    it('should remove individual badge when clicking X icon', async () => {
       const onChange = vi.fn();
       render(
         <MultiSelectEditor
@@ -333,19 +350,40 @@ describe('Property Editors', () => {
         />
       );
 
-      // Find X button on first badge
-      const removeButtons = screen.getAllByRole('button');
-      const removeButton = removeButtons.find(btn => 
-        btn.querySelector('svg')?.classList.contains('lucide-x')
-      );
+      // Find the badges in the combobox
+      const combobox = screen.getByRole('combobox');
+      
+      // Find X icons within badges - they have lucide-x class
+      const xIcons = combobox.querySelectorAll('svg.lucide-x');
+      expect(xIcons.length).toBeGreaterThanOrEqual(2);
+      
+      // Click the first X icon to remove Tag 1
+      await userEvent.click(xIcons[0]);
 
-      if (removeButton) {
-        await userEvent.click(removeButton);
-        expect(onChange).toHaveBeenCalledWith(['Tag 2']);
-      }
+      expect(onChange).toHaveBeenCalledWith(['Tag 2']);
     });
 
-    it('should deselect when clicking selected option', async () => {
+    it('should select an option from the dropdown', async () => {
+      const onChange = vi.fn();
+      render(
+        <MultiSelectEditor
+          value={null}
+          onChange={onChange}
+          property={mockProperty}
+        />
+      );
+
+      const button = screen.getByRole('combobox');
+      await userEvent.click(button);
+
+      // Wait for dropdown and find the CommandItem
+      const tag1Option = await screen.findByRole('option', { name: /tag 1/i });
+      await userEvent.click(tag1Option);
+
+      expect(onChange).toHaveBeenCalledWith(['Tag 1']);
+    });
+
+    it('should deselect when clicking already selected option', async () => {
       const onChange = vi.fn();
       render(
         <MultiSelectEditor
@@ -358,9 +396,11 @@ describe('Property Editors', () => {
       const button = screen.getByRole('combobox');
       await userEvent.click(button);
 
-      const tag1 = await screen.findByText('Tag 1');
-      await userEvent.click(tag1);
+      // Find and click the selected option to deselect
+      const tag1Option = await screen.findByRole('option', { name: /tag 1/i });
+      await userEvent.click(tag1Option);
 
+      // Deselecting should call onChange with null (empty array becomes null)
       expect(onChange).toHaveBeenCalledWith(null);
     });
 

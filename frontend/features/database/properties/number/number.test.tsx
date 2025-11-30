@@ -212,7 +212,7 @@ describe('NumberEditor', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={42} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Masukkan angka...') as HTMLInputElement;
     expect(input.value).toBe('42');
   });
 
@@ -220,7 +220,7 @@ describe('NumberEditor', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={null} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Masukkan angka...') as HTMLInputElement;
     expect(input.value).toBe('');
   });
 
@@ -229,7 +229,7 @@ describe('NumberEditor', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={null} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...');
+    const input = screen.getByPlaceholderText('Masukkan angka...');
     await user.type(input, '123');
     
     expect(onChange).toHaveBeenCalled();
@@ -240,10 +240,11 @@ describe('NumberEditor', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={null} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...');
+    const input = screen.getByPlaceholderText('Masukkan angka...');
     await user.type(input, '-50');
     
-    expect(onChange).toHaveBeenCalled();
+    // onChange should be called with -50 after complete input
+    expect(onChange).toHaveBeenCalledWith(-50);
   });
 
   it('should accept decimal input', async () => {
@@ -251,18 +252,18 @@ describe('NumberEditor', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={null} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...');
+    const input = screen.getByPlaceholderText('Masukkan angka...');
     await user.type(input, '3.14');
     
     expect(onChange).toHaveBeenCalled();
   });
 
-  it('should have type="number" attribute', () => {
+  it('should have type="text" attribute for better formatting support', () => {
     const onChange = vi.fn();
     render(<NumberEditor value={42} property={mockProperty} onChange={onChange} />);
     
-    const input = screen.getByPlaceholderText('Enter number...') as HTMLInputElement;
-    expect(input.type).toBe('number');
+    const input = screen.getByPlaceholderText('Masukkan angka...') as HTMLInputElement;
+    expect(input.type).toBe('text');
   });
 });
 
@@ -294,7 +295,7 @@ describe('Number Property Integration', () => {
 
     // Edit mode
     render(<NumberEditor value={currentValue} property={mockProperty} onChange={onChange} />);
-    const input = screen.getByPlaceholderText('Enter number...');
+    const input = screen.getByPlaceholderText('Masukkan angka...');
     await user.clear(input);
     await user.type(input, '250');
     expect(currentValue).toBe(250);

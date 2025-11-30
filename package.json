@@ -41,6 +41,10 @@
         "validate:permissions": "tsx scripts/validate-permissions.ts",
         "validate:audit": "tsx scripts/validate-audit-logs.ts",
         "validate:dod": "tsx scripts/validate-dod.ts",
+        "analyze:crud": "tsx scripts/validation/analyze-crud-coverage.ts",
+        "audit:ui": "tsx scripts/validation/audit-ui-consistency.ts",
+        "analyze:tests": "tsx scripts/validation/analyze-test-gaps.ts",
+        "validate:complete": "pnpm run analyze:crud && pnpm run audit:ui && pnpm run analyze:tests",
         "precommit": "pnpm run lint && pnpm run validate:all && pnpm test"
     },
     "dependencies": {

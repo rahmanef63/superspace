@@ -78,6 +78,25 @@ Documentation for individual features and their isolation guides.
 
 ---
 
+### 📖 [guides/](guides/) - How-To Guides
+Practical guides for testing and using features.
+
+**Files:**
+- [PROPERTY_TEST_GUIDE.md](guides/PROPERTY_TEST_GUIDE.md) - Testing property type system
+- [UNIVERSAL_FILTER_SYSTEM_GUIDE.md](guides/UNIVERSAL_FILTER_SYSTEM_GUIDE.md) - Using the filter system
+
+---
+
+### 🔧 [technical/](technical/) - Technical Reference
+Deep technical documentation for specific implementations.
+
+**Files:**
+- [COLUMN_RESIZE_PERFORMANCE_OPTIMIZATION.md](technical/COLUMN_RESIZE_PERFORMANCE_OPTIMIZATION.md) - Column resize optimization
+- [DATABASE_IMPROVEMENTS_SKELETON_AND_COLUMNS.md](technical/DATABASE_IMPROVEMENTS_SKELETON_AND_COLUMNS.md) - Skeleton loading & columns
+- [PERFORMANCE_SOLUTIONS_COMPARISON.md](technical/PERFORMANCE_SOLUTIONS_COMPARISON.md) - Performance solution analysis
+
+---
+
 ## 🚀 Common Tasks
 
 ### I want to...
@@ -111,13 +130,21 @@ Documentation for individual features and their isolation guides.
 | **Rules** | 1 | 3 | Critical development rules |
 | **Universal DB** | 1 | 7 | Database implementation docs |
 | **Phase Reports** | 4 | 16 | Implementation phase reports |
-| **Features** | 1 | 2 | Feature-specific docs (cms-lite) |
+| **Features** | 1 | 2 | Feature-specific docs |
+| **Guides** | 1 | 2 | How-to guides |
+| **Technical** | 1 | 3 | Technical reference |
 | **Root** | - | 2 | README + Base Knowledge |
-| **TOTAL** | **8** | **37** | Well-organized documentation |
 
 ---
 
 ## 🔄 Recent Updates
+
+### 2025-11-29 - Documentation Cleanup
+- ✅ Removed 22 obsolete files from root
+- ✅ Created guides/ folder for how-to guides
+- ✅ Created technical/ folder for technical docs
+- ✅ Added PROJECT_STATUS.md for quick orientation
+- ✅ Cleaned up root directory to essentials only
 
 ### 2025-11-04 - Major Documentation Reorganization
 - ✅ Created organized folder structure (8 folders)
@@ -149,6 +176,6 @@ Documentation for individual features and their isolation guides.
 
 ---
 
-**Last Updated:** 2025-11-04
-**Documentation Version:** 2.0 (Organized)
+**Last Updated:** 2025-11-29
+**Documentation Version:** 2.1 (Cleaned)
 **Status:** Active Development

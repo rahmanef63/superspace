@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoadingSpinner } from './LoadingSpinner';
+import { LoadingSpinner, LoadingState } from './LoadingSpinner';
 import { ErrorAlert } from './ErrorAlert';
 
 interface AsyncWrapperProps {
@@ -30,7 +30,7 @@ export function AsyncWrapper({
   if (loading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
-        <LoadingSpinner text={loadingText} />
+        <LoadingState message={loadingText} />
       </div>
     );
   }

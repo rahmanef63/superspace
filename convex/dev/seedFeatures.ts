@@ -31,6 +31,36 @@ export const FEATURE_DEFINITIONS = {
       category: "communication",
     },
   },
+  "calls": {
+    name: "Calls",
+    slug: "calls",
+    type: "route" as const,
+    icon: "Phone",
+    path: "/calls",
+    component: "CallsPage",
+    order: 2.5,
+    version: "1.0.0",
+    metadata: {
+      description: "Voice and video calls",
+      category: "communication",
+      featureType: "optional" as const,
+    },
+  },
+  "status": {
+    name: "Status",
+    slug: "status",
+    type: "route" as const,
+    icon: "Camera",
+    path: "/status",
+    component: "StatusPage",
+    order: 2.7,
+    version: "1.0.0",
+    metadata: {
+      description: "Status updates and stories",
+      category: "communication",
+      featureType: "optional" as const,
+    },
+  },
   "documents": {
     name: "Documents",
     slug: "documents",
@@ -43,6 +73,21 @@ export const FEATURE_DEFINITIONS = {
     metadata: {
       description: "Collaborative documents",
       category: "productivity",
+    },
+  },
+  "builder": {
+    name: "Builder",
+    slug: "builder",
+    type: "route" as const,
+    icon: "Hammer",
+    path: "/builder",
+    component: "BuilderPage",
+    order: 3.5,
+    version: "1.0.0",
+    metadata: {
+      description: "Create content, automation, and interfaces with visual node canvas",
+      category: "creativity",
+      featureType: "optional" as const,
     },
   },
   "canvas": {

@@ -2,21 +2,16 @@
 
 import { useMemo } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { Plus, Clock, Calendar, FileType, LayoutGrid, List as ListIcon, Table2 } from "lucide-react";
+import { Plus, Clock, Calendar, FileType } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   UniversalToolbar,
   toolType,
-  viewMode as toolbarViewMode,
-  useViewMode as useToolbarViewMode,
   type SortToolParams,
 } from "@/frontend/shared/ui/layout/toolbar";
 import { SecondarySidebarTools } from "@/frontend/shared/ui";
-import { ViewSwitcher } from "@/frontend/shared/ui/layout/view-system";
 import type { DocumentRecord, DocumentSortOptions } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
-import { createDocumentViewConfig } from "../config";
 import { formatRelativeTime } from "../utils";
 import { DocumentsTree } from "./DocumentsTree";
 import { DocumentsBreadcrumbs } from "./DocumentsBreadcrumbs";
@@ -66,33 +61,9 @@ export function DocumentsListCompact({
   visibility,
   onVisibilityChange,
   stats,
-  storageKey,
-  onDelete,
-  onPin,
-  onStar,
   sortOptions = { field: "modified", order: "desc" },
   onSortChange,
-  workspaceId,
 }: DocumentsListCompactProps) {
-  const viewStorageKey = storageKey ?? "documents.view-compact";
-  const [viewMode, setViewMode] = useToolbarViewMode(viewStorageKey, toolbarViewMode.tiles);
-
-  // Map toolbar viewMode to legacy ViewSwitcher modes
-  const legacyViewMode = useMemo(() => {
-    if (viewMode === toolbarViewMode.list) return "table";
-    if (viewMode === toolbarViewMode.tiles) return "card";
-    if (viewMode === toolbarViewMode.detail) return "details";
-    return "card";
-  }, [viewMode]);
-
-  const config = createDocumentViewConfig({
-    onOpen: (doc) => onSelect?.(doc._id),
-    onDelete,
-    onPin,
-    onStar,
-    onShowDetails: undefined, // No detail sheets in 3-column mode
-  });
-
   const sortToolParams: SortToolParams = useMemo(
     () => ({
       options: [
@@ -176,31 +147,6 @@ export function DocumentsListCompact({
           </div>
         </div>
 
-        {/* View Mode Selector */}
-        <div className="rounded-lg border border-border bg-background p-2">
-          <UniversalToolbar
-            tools={[
-              {
-                id: "view-compact" as any,
-                type: toolType.view,
-                params: {
-                  options: [
-                    { label: "Tiles", value: toolbarViewMode.tiles, icon: LayoutGrid },
-                    { label: "List", value: toolbarViewMode.list, icon: ListIcon },
-                    { label: "Table", value: toolbarViewMode.table, icon: Table2 },
-                  ],
-                  currentView: viewMode,
-                  onChange: setViewMode,
-                  layout: "buttons",
-                  showLabels: false,
-                },
-              },
-            ]}
-            spacing="compact"
-            background="transparent"
-          />
-        </div>
-
         {/* Breadcrumbs */}
         <DocumentsBreadcrumbs
           documents={documents}
@@ -209,17 +155,8 @@ export function DocumentsListCompact({
         />
       </div>
 
-      {/* Sidebar Content - Document Tree */}
+      {/* Document Tree - Single source of document list */}
       <div className="flex-1 overflow-auto p-4">
-        <DocumentsTree
-          documents={documents}
-          selectedId={selectedDocumentId ?? null}
-          onSelect={(docId) => onSelect?.(docId)}
-        />
-      </div>
-
-      {/* Main Content - View Switcher */}
-      <div className="flex-1 overflow-auto">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
@@ -234,19 +171,10 @@ export function DocumentsListCompact({
             </p>
           </div>
         ) : (
-          <ViewSwitcher
-            storageKey={viewStorageKey}
-            initialMode="card"
-            mode={legacyViewMode as any}
-            onModeChange={(mode: any) => {
-              if (mode === "table") setViewMode(toolbarViewMode.list);
-              else if (mode === "card") setViewMode(toolbarViewMode.tiles);
-              else if (mode === "details") setViewMode(toolbarViewMode.detail);
-            }}
-            data={filteredDocuments}
-            config={config}
-            searchable={false}
-            showToolbar={false}
+          <DocumentsTree
+            documents={filteredDocuments}
+            selectedId={selectedDocumentId ?? null}
+            onSelect={(docId) => onSelect?.(docId)}
           />
         )}
       </div>

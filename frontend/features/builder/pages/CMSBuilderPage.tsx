@@ -445,7 +445,7 @@ const CMSBuilderPageInner: React.FC = () => {
       {/* Top Bar */}
       <div className="flex-shrink-0 flex items-center justify-between border-b border-gray-200 bg-white/70 px-4 py-2 backdrop-blur z-10">
         <div className="flex items-center gap-2">
-          <div className="text-sm font-semibold">CMS Builder</div>
+          <div className="text-sm font-semibold">Builder</div>
           <div className="text-[11px] text-gray-500">— Visual Content Management</div>
         </div>
         <div className="flex items-center gap-4">

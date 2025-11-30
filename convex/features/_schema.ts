@@ -36,6 +36,8 @@ import cmsLiteStorageTables from "./cms_lite/storage/api/schema";
 import cmsLiteUsersTables from "./cms_lite/users/api/schema";
 import cmsLiteWishlistTables from "./cms_lite/wishlist/api/schema";
 import { aiTables } from "./ai/api/schema";
+import { customFeaturesTables } from "./custom/schema";
+import { systemFeaturesTables } from "./system/schema";
 
 export const featureTables = {
   ...coreTables,
@@ -76,4 +78,6 @@ export const featureTables = {
   ...cmsLiteUsersTables,
   ...cmsLiteWishlistTables,
   ...aiTables,
+  ...customFeaturesTables,
+  ...systemFeaturesTables,
 };

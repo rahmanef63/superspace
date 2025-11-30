@@ -18,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/FeatureTag"
 
 interface NavItem {
   id: string
@@ -27,6 +28,8 @@ interface NavItem {
   isActive?: boolean
   url?: string
   children?: NavItem[]
+  metadata?: Record<string, any>
+  tag?: FeatureTagType
 }
 
 interface NavMainProps {
@@ -61,6 +64,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
   const renderNavItem = (item: NavItem, depth: number = 0): JSX.Element => {
     const hasChildren = item.children && item.children.length > 0
     const isActive = activeView === item.id
+    const featureTag = item.tag || getFeatureTagFromMetadata(item.metadata)
 
     if (hasChildren) {
       return (
@@ -74,13 +78,16 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
             <CollapsibleTrigger asChild>
               <SidebarMenuButton tooltip={item.description} isActive={isActive}>
                 {item.icon && <item.icon />}
-                <span>{item.title}</span>
+                <span className="flex-1">{item.title}</span>
+                {featureTag && <FeatureTag type={featureTag} compact showIcon={false} />}
                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenuSub>
-                {item.children?.map((subItem) => (
+                {item.children?.map((subItem) => {
+                  const subFeatureTag = (subItem as NavItem).tag || getFeatureTagFromMetadata((subItem as NavItem).metadata)
+                  return (
                   <SidebarMenuSubItem key={subItem.id}>
                     {subItem.children && subItem.children.length > 0 ? (
                       // Nested child with more children - render as collapsible
@@ -91,13 +98,16 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                         <CollapsibleTrigger asChild>
                           <SidebarMenuSubButton>
                             {subItem.icon && <subItem.icon className="w-4 h-4" />}
-                            <span>{subItem.title}</span>
+                            <span className="flex-1">{subItem.title}</span>
+                            {subFeatureTag && <FeatureTag type={subFeatureTag} compact showIcon={false} />}
                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/nested-collapsible:rotate-90" />
                           </SidebarMenuSubButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <div className="pl-4">
-                            {subItem.children?.map((nestedItem) => (
+                            {subItem.children?.map((nestedItem) => {
+                              const nestedFeatureTag = (nestedItem as NavItem).tag || getFeatureTagFromMetadata((nestedItem as NavItem).metadata)
+                              return (
                               <SidebarMenuSubButton key={nestedItem.id} asChild>
                                 <Link
                                   href={nestedItem.url || `/dashboard/${item.id}/${subItem.id}/${nestedItem.id}`}
@@ -105,10 +115,11 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                                   className={activeView === nestedItem.id ? "bg-accent" : ""}
                                 >
                                   {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
-                                  <span>{nestedItem.title}</span>
+                                  <span className="flex-1">{nestedItem.title}</span>
+                                  {nestedFeatureTag && <FeatureTag type={nestedFeatureTag} compact showIcon={false} />}
                                 </Link>
                               </SidebarMenuSubButton>
-                            ))}
+                            )})}
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
@@ -121,12 +132,13 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                           className={activeView === subItem.id ? "bg-accent" : ""}
                         >
                           {subItem.icon && <subItem.icon className="w-4 h-4" />}
-                          <span>{subItem.title}</span>
+                          <span className="flex-1">{subItem.title}</span>
+                          {subFeatureTag && <FeatureTag type={subFeatureTag} compact showIcon={false} />}
                         </Link>
                       </SidebarMenuSubButton>
                     )}
                   </SidebarMenuSubItem>
-                ))}
+                )})}
               </SidebarMenuSub>
             </CollapsibleContent>
           </SidebarMenuItem>
@@ -142,7 +154,8 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
             onClick={() => handleMenuClick(item.id)}
           >
             {item.icon && <item.icon />}
-            <span>{item.title}</span>
+            <span className="flex-1">{item.title}</span>
+            {featureTag && <FeatureTag type={featureTag} compact showIcon={false} />}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

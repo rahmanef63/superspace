@@ -3,7 +3,7 @@ import { defineFeature } from '@/lib/features/defineFeature'
 export default defineFeature({
   id: 'status',
   name: 'Status',
-  description: 'Status updates',
+  description: 'Share status updates with your team',
 
   ui: {
     icon: 'Camera',
@@ -14,7 +14,7 @@ export default defineFeature({
   },
 
   technical: {
-    featureType: 'default',
+    featureType: 'optional',
     hasUI: true,
     hasConvex: true,
     hasTests: true,
@@ -25,4 +25,6 @@ export default defineFeature({
     state: 'stable',
     isReady: true,
   },
+
+  tags: ['communication', 'status', 'updates', 'stories'],
 })

@@ -10,7 +10,7 @@ export interface MessagePageProps {
 
 export default function MessagePage({ workspaceId }: MessagePageProps) {
   return (
-    <PageContainer maxWidth="full" padding={false}>
+    <PageContainer maxWidth="full" padding={false} fullHeight>
       <Message workspaceId={workspaceId ?? null} />
     </PageContainer>
   );

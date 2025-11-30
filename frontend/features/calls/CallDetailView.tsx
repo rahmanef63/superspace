@@ -4,12 +4,9 @@ import { Phone, Video, MessageCircle, PhoneCall, Info, Menu } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { getInitials } from "../chat/utils";
-import type { CallDetail } from "./mockData";
-import { isMockData, getMockDataDisclaimer } from "./mockData";
-import { IconBurger } from "@tabler/icons-react";
+import type { CallDetail } from "./types";
 
 interface CallDetailViewProps {
   call?: CallDetail;
@@ -94,15 +91,6 @@ export function CallDetailView({ call, onBack, showMobileHeader = false }: CallD
 
       <div className="p-4 md:p-6">
         <div className="mx-auto max-w-2xl space-y-4 md:space-y-6">
-        {/* Mock Data Disclaimer */}
-        {isMockData() && (
-          <Alert className="text-xs md:text-sm">
-            <Info className="h-3 w-3 md:h-4 md:w-4" />
-            <AlertDescription>
-              {getMockDataDisclaimer()}
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Card>
           <CardHeader className="text-center pb-3 md:pb-4">
@@ -157,36 +145,42 @@ export function CallDetailView({ call, onBack, showMobileHeader = false }: CallD
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 md:space-y-4">
-            {call.history.map((day) => (
-              <div key={day.date}>
-                <h4 className="mb-2 text-xs md:text-sm font-medium text-muted-foreground">{day.date}</h4>
-                <div className="space-y-2">
-                  {day.entries.map((entry, index) => (
-                    <div
-                      key={`${day.date}-${index}`}
-                      className="flex items-center justify-between rounded-lg border p-2 md:p-3 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                        <div
-                          className={cn(
-                            "h-2 w-2 rounded-full flex-shrink-0",
-                            entry.status === "missed" ? "bg-red-500" : "bg-green-500",
-                          )}
-                        />
-                        <span className="text-xs md:text-sm truncate">
-                          {entry.direction === "incoming" ? "Incoming" : "Outgoing"}
-                          {entry.medium === "video" ? " video" : ""} call
-                        </span>
-                        <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0">{entry.time}</span>
+            {call.history.length === 0 ? (
+              <p className="text-xs md:text-sm text-muted-foreground text-center py-4">
+                No call history available yet
+              </p>
+            ) : (
+              call.history.map((day) => (
+                <div key={day.date}>
+                  <h4 className="mb-2 text-xs md:text-sm font-medium text-muted-foreground">{day.date}</h4>
+                  <div className="space-y-2">
+                    {day.entries.map((entry, index) => (
+                      <div
+                        key={`${day.date}-${index}`}
+                        className="flex items-center justify-between rounded-lg border p-2 md:p-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                          <div
+                            className={cn(
+                              "h-2 w-2 rounded-full flex-shrink-0",
+                              entry.status === "missed" ? "bg-red-500" : "bg-green-500",
+                            )}
+                          />
+                          <span className="text-xs md:text-sm truncate">
+                            {entry.direction === "incoming" ? "Incoming" : "Outgoing"}
+                            {entry.medium === "video" ? " video" : ""} call
+                          </span>
+                          <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0">{entry.time}</span>
+                        </div>
+                        {entry.duration && (
+                          <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0 ml-2">{entry.duration}</span>
+                        )}
                       </div>
-                      {entry.duration && (
-                        <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0 ml-2">{entry.duration}</span>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

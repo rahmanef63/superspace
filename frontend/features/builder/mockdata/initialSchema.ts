@@ -78,15 +78,15 @@ export const INITIAL_CMS_SCHEMA: Schema = {
         kind: "menu",
         label: "Main Menu",
       },
-      children: ["item-cms", "item-automation", "item-database", "item-analytics", "item-settings"]
+      children: ["item-builder", "item-automation", "item-database", "item-analytics", "item-settings"]
     },
-    "item-cms": {
+    "item-builder": {
       type: "navNode",
       props: {
         kind: "item",
-        label: "CMS Builder",
-        href: "/cms",
-        icon: "LayoutDashboard",
+        label: "Builder",
+        href: "/builder",
+        icon: "Hammer",
       },
       children: []
     },

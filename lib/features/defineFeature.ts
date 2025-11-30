@@ -84,13 +84,13 @@ const FeatureConfigSchema: z.ZodType<FeatureConfig> = BaseFeatureConfigSchema.ex
  * @example
  * ```ts
  * export default defineFeature({
- *   id: 'cms',
- *   name: 'CMS Builder',
- *   description: 'Build content management systems',
+ *   id: 'builder',
+ *   name: 'Builder',
+ *   description: 'Create content, automation, and interfaces with visual node canvas',
  *   ui: {
- *     icon: 'Layout',
- *     path: '/dashboard/cms',
- *     component: 'CMSBuilderPage',
+ *     icon: 'Hammer',
+ *     path: '/dashboard/builder',
+ *     component: 'BuilderPage',
  *     category: 'creativity',
  *     order: 20,
  *   },
@@ -105,7 +105,7 @@ const FeatureConfigSchema: z.ZodType<FeatureConfig> = BaseFeatureConfigSchema.ex
  *     state: 'stable',
  *     isReady: true,
  *   },
- *   tags: ['cms', 'content'],
+ *   tags: ['builder', 'content', 'automation', 'visual'],
  * })
  * ```
  */

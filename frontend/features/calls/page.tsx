@@ -13,7 +13,7 @@ export default function WACallsPage({ workspaceId }: WACallsPageProps) {
   useInitializeChat(workspaceId ?? null)
 
   return (
-    <PageContainer padding={false} maxWidth="full">
+    <PageContainer padding={false} maxWidth="full" fullHeight>
       <CallsView />
     </PageContainer>
   )

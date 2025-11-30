@@ -35,6 +35,7 @@ import {
   MessageCircle,
   Phone,
   Settings,
+  Shield,
   Star,
   User,
   Users,
@@ -61,7 +62,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Overview",
     description: "Dashboard overview with analytics and insights",
     icon: Home,
-    component: lazy(() => import("@/frontend/features/overview/Page")),
+    component: lazy(() => import("@/frontend/features/overview/page")),
   },
   {
     id: "chat",
@@ -69,7 +70,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Chat",
     description: "Chat conversations",
     icon: MessageCircle,
-    component: lazy(() => import("@/frontend/features/chat/Page")),
+    component: lazy(() => import("@/frontend/features/chat/page")),
   },
   {
     id: "calls",
@@ -254,6 +255,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Build apps, content, and interfaces with visual builder tools",
     icon: Hammer,
     component: lazy(() => import("@/frontend/features/builder/page")),
+  },
+  {
+    id: "platform-admin",
+    componentId: "PlatformAdminPage",
+    title: "Platform Admin",
+    description: "Super Admin panel for managing features, workspaces, and system configuration",
+    icon: Shield,
+    component: lazy(() => import("@/frontend/features/platform-admin/views/PlatformAdminPage")),
   }
 ]
 

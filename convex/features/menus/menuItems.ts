@@ -587,6 +587,7 @@ export const syncMenuMappings = action({
 })
 
 // Install or update feature menu items (like plugins) with version control
+// Now reads from systemFeatures table for dynamic control
 export const installFeatureMenus = mutation({
   args: {
     workspaceId: v.id("workspaces"),
@@ -598,15 +599,70 @@ export const installFeatureMenus = mutation({
     const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
     const userId = membership?.userId
 
-    // Build available features from OPTIONAL_FEATURES_CATALOG
-    // We need to match the catalog features with their full menu definitions
+    // First, try to get features from systemFeatures table (dynamic control)
+    const systemFeatures = await ctx.db
+      .query("systemFeatures")
+      .withIndex("by_enabled_public", (q) => q.eq("isEnabled", true).eq("isPublic", true))
+      .collect()
+
+    // Build feature catalog from systemFeatures or fallback to OPTIONAL_FEATURES_CATALOG
+    let catalogFeatures: Array<{
+      slug: string
+      name: string
+      description: string
+      icon: string
+      version: string
+      category: string
+      tags: string[]
+      status: string
+      isReady: boolean
+      expectedRelease?: string
+      featureType: string
+      requiresPermission?: string
+      originalRequiresPermission?: string
+    }> = []
+
+    if (systemFeatures.length > 0) {
+      catalogFeatures = systemFeatures.map((f) => ({
+        slug: f.featureId,
+        name: f.name,
+        description: f.description,
+        icon: f.icon,
+        version: f.version,
+        category: f.category,
+        tags: f.tags,
+        status: f.status,
+        isReady: f.isReady,
+        expectedRelease: f.expectedRelease,
+        featureType: f.featureType,
+        requiresPermission: f.settings?.requiresPermission,
+        originalRequiresPermission: f.settings?.originalRequiresPermission ?? f.settings?.requiresPermission,
+      }))
+    } else {
+      catalogFeatures = OPTIONAL_FEATURES_CATALOG.map((f) => ({
+        slug: f.slug,
+        name: f.name,
+        description: f.description,
+        icon: f.icon,
+        version: f.version,
+        category: f.category,
+        tags: f.tags,
+        status: f.status,
+        isReady: f.isReady,
+        expectedRelease: f.expectedRelease,
+        featureType: f.featureType,
+        requiresPermission: f.requiresPermission,
+        originalRequiresPermission: f.originalRequiresPermission ?? f.requiresPermission,
+      }))
+    }
+
     const catalogFeatureMap = new Map(
-      OPTIONAL_FEATURES_CATALOG.map((f) => [f.slug, f])
+      catalogFeatures.map((f) => [f.slug, f])
     )
 
     // Map catalog features to full menu item definitions
     // For features not in DEFAULT_MENU_ITEMS, derive from catalog
-    const availableFeatures = OPTIONAL_FEATURES_CATALOG.map((catalogFeature) => {
+    const availableFeatures = catalogFeatures.map((catalogFeature) => {
       // Try to find in DEFAULT_MENU_ITEMS for full definition
       const defaultFeature = DEFAULT_MENU_ITEMS.find((d) => d.slug === catalogFeature.slug)
 
@@ -633,8 +689,7 @@ export const installFeatureMenus = mutation({
             featureType: "optional" as const,
             originalFeatureType: "optional" as const,
             requiresPermission: catalogFeature.requiresPermission,
-            originalRequiresPermission:
-              catalogFeature.originalRequiresPermission ?? catalogFeature.requiresPermission,
+            originalRequiresPermission: catalogFeature.originalRequiresPermission,
           },
           requiresPermission: catalogFeature.requiresPermission,
         }
@@ -661,8 +716,7 @@ export const installFeatureMenus = mutation({
             featureType: "optional" as const,
             originalFeatureType: "optional" as const,
             requiresPermission: catalogFeature.requiresPermission,
-            originalRequiresPermission:
-              catalogFeature.originalRequiresPermission ?? catalogFeature.requiresPermission,
+            originalRequiresPermission: catalogFeature.originalRequiresPermission,
           },
           requiresPermission: catalogFeature.requiresPermission,
         }
@@ -930,6 +984,8 @@ export const seedMenuFeature = mutation({
 })
 
 // Get available feature menus that can be installed
+// Now reads from systemFeatures table (dynamically managed by Platform Admin)
+// Falls back to OPTIONAL_FEATURES_CATALOG if no system features exist
 export const getAvailableFeatureMenus = query({
   args: {
     workspaceId: v.id("workspaces"),
@@ -966,21 +1022,57 @@ export const getAvailableFeatureMenus = query({
 
     const installedSlugs = new Set(installedMenus.map((m) => m.slug))
 
-    // Use OPTIONAL_FEATURES_CATALOG as the source of truth
-    // This is auto-generated from features.config.ts via sync:features script
-    const availableFeatures = OPTIONAL_FEATURES_CATALOG.map((feature) => ({
-      slug: feature.slug,
-      name: feature.name,
-      description: feature.description,
-      icon: feature.icon,
-      version: feature.version,
-      category: feature.category,
-      tags: feature.tags,
-      status: normalizeFeatureStatus(feature.status),
-      isReady: feature.isReady,
-      expectedRelease: feature.expectedRelease,
-      featureType: feature.featureType,
-    }))
+    // First, try to get features from systemFeatures table (dynamic control)
+    const systemFeatures = await ctx.db
+      .query("systemFeatures")
+      .withIndex("by_enabled_public", (q) => q.eq("isEnabled", true).eq("isPublic", true))
+      .collect()
+
+    let availableFeatures: Array<{
+      slug: string
+      name: string
+      description: string
+      icon: string
+      version: string
+      category: string
+      tags?: string[]
+      status?: "stable" | "beta" | "development" | "experimental" | "deprecated"
+      isReady?: boolean
+      expectedRelease?: string
+      featureType?: string
+    }> = []
+
+    if (systemFeatures.length > 0) {
+      // Use systemFeatures table (Platform Admin controlled)
+      availableFeatures = systemFeatures.map((feature) => ({
+        slug: feature.featureId,
+        name: feature.name,
+        description: feature.description,
+        icon: feature.icon,
+        version: feature.version,
+        category: feature.category,
+        tags: feature.tags,
+        status: normalizeFeatureStatus(feature.status),
+        isReady: feature.isReady,
+        expectedRelease: feature.expectedRelease,
+        featureType: feature.featureType,
+      }))
+    } else {
+      // Fallback to OPTIONAL_FEATURES_CATALOG if no system features configured
+      availableFeatures = OPTIONAL_FEATURES_CATALOG.map((feature) => ({
+        slug: feature.slug,
+        name: feature.name,
+        description: feature.description,
+        icon: feature.icon,
+        version: feature.version,
+        category: feature.category,
+        tags: feature.tags,
+        status: normalizeFeatureStatus(feature.status),
+        isReady: feature.isReady,
+        expectedRelease: feature.expectedRelease,
+        featureType: feature.featureType,
+      }))
+    }
 
     // Return only features that aren't already installed
     return availableFeatures.filter((feature) => !installedSlugs.has(feature.slug))

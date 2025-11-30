@@ -3,10 +3,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ChatListView } from "./ChatListView";
 import { ChatDetailView } from "./ChatDetailView";
 import { SecondarySidebarLayout } from "@/frontend/shared/ui";
+import { ChatSkeleton } from "@/frontend/shared/ui/components/loading";
 
 export function ChatsView() {
-  const { selectedChatId } = useWhatsAppStore();
+  const { selectedChatId, isLoading } = useWhatsAppStore();
   const isMobile = useIsMobile();
+
+  // Show skeleton while initial data is loading
+  if (isLoading) {
+    return <ChatSkeleton />;
+  }
 
   if (isMobile) {
     // On mobile, show either chat list or chat detail, not both

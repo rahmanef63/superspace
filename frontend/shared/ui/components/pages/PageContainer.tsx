@@ -5,6 +5,7 @@ interface PageContainerProps {
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   padding?: boolean;
+  fullHeight?: boolean;
   className?: string;
 }
 
@@ -12,6 +13,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
   children,
   maxWidth = 'full',
   padding = true,
+  fullHeight = false,
   className
 }) => {
   const maxWidthClasses = {
@@ -28,6 +30,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
       "mx-auto",
       maxWidthClasses[maxWidth],
       padding && "p-6",
+      fullHeight && "h-full",
       className
     )}>
       {children}

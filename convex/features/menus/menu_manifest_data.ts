@@ -39,38 +39,6 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "Calls" as const,
-    slug: "calls" as const,
-    type: "route" as const,
-    icon: "Phone" as const,
-    path: "/dashboard/calls",
-    component: "CallsPage" as const,
-    order: 2,
-    metadata: {
-      description: "Voice and video calls",
-      version: "2.0.0",
-      category: "communication" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
-    name: "Status" as const,
-    slug: "status" as const,
-    type: "route" as const,
-    icon: "Camera" as const,
-    path: "/dashboard/status",
-    component: "StatusPage" as const,
-    order: 3,
-    metadata: {
-      description: "Status updates",
-      version: "2.0.0",
-      category: "communication" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
     name: "Members" as const,
     slug: "members" as const,
     type: "route" as const,
@@ -138,22 +106,6 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
-    name: "Pages" as const,
-    slug: "pages" as const,
-    type: "route" as const,
-    icon: "FileText" as const,
-    path: "/dashboard/pages",
-    component: "PagesPage" as const,
-    order: 6,
-    metadata: {
-      description: "Notion-like pages for documentation",
-      version: "1.0.0",
-      category: "productivity" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
     name: "Archived" as const,
     slug: "archived" as const,
     type: "route" as const,
@@ -187,22 +139,6 @@ export const DEFAULT_MENU_ITEMS = [
       originalRequiresPermission: "database.read"
     },
     requiresPermission: "database.read"
-  },
-  {
-    name: "Canvas" as const,
-    slug: "canvas" as const,
-    type: "route" as const,
-    icon: "Palette" as const,
-    path: "/dashboard/canvas",
-    component: "CanvasPage" as const,
-    order: 8,
-    metadata: {
-      description: "Visual collaboration and whiteboarding",
-      version: "1.0.0",
-      category: "creativity" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
   },
   {
     name: "Documents" as const,

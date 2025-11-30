@@ -4,6 +4,7 @@ import type {
   QueryCtx,
 } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
+import { isPlatformAdmin } from "../lib/platformAdmin";
 
 export type ActionCtxWithDb = ActionCtx & { db: MutationCtx["db"] };
 export type AnyConvexCtx = QueryCtx | MutationCtx | ActionCtxWithDb;
@@ -47,7 +48,39 @@ export async function getMembership(
   }
 
   const db = dbFromCtx(ctx);
+  const email = (identity.email ?? identity.emailVerified ?? "") as string;
 
+  // ========================================
+  // PLATFORM ADMIN CHECK (HIGHEST PRIORITY)
+  // ========================================
+  if (isPlatformAdmin(email)) {
+    console.log(`[auth] Platform admin membership granted for: ${email}`);
+    
+    // Platform admin has access to ALL workspaces with full permissions
+    const convexUser = await getUserByExternalId(ctx, identity.subject);
+    
+    // Normalize workspaceId
+    const normalizedWorkspaceId =
+      typeof workspaceId === "string"
+        ? (db as any).normalizeId?.("workspaces", workspaceId) ?? null
+        : workspaceId;
+    
+    if (!normalizedWorkspaceId) {
+      return null;
+    }
+    
+    return {
+      userId: identity.subject,
+      userDocId: convexUser?._id ?? ("platform_admin" as any),
+      workspaceId: normalizedWorkspaceId as Id<"workspaces">,
+      roleLevel: 0, // Owner level
+      permissions: ["*"], // All permissions
+    };
+  }
+
+  // ========================================
+  // NORMAL MEMBERSHIP LOOKUP
+  // ========================================
   const convexUser = await getUserByExternalId(ctx, identity.subject);
   if (!convexUser) {
     return null;
@@ -116,6 +149,11 @@ export async function requirePermission(
 ): Promise<MembershipInfo> {
   const membership = await requireMembership(ctx, workspaceId);
 
+  // Platform admin has wildcard permission
+  if (membership.permissions.includes("*")) {
+    return membership;
+  }
+
   if (!membership.permissions.includes(permission)) {
     throw new Error(`Missing required permission: ${permission}`);
   }
@@ -129,5 +167,12 @@ export async function hasPermission(
   permission: string,
 ): Promise<boolean> {
   const membership = await getMembership(ctx, workspaceId);
-  return membership?.permissions.includes(permission) ?? false;
+  if (!membership) return false;
+  
+  // Platform admin has all permissions
+  if (membership.permissions.includes("*")) {
+    return true;
+  }
+  
+  return membership.permissions.includes(permission);
 }

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
-import { Building, Folder, BookOpen, Calendar } from "lucide-react"
+import { Building, Folder, BookOpen, Calendar, Shield } from "lucide-react"
 
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
 import { NavMain } from "./NavMain"
@@ -75,6 +75,9 @@ export function AppSidebar({
     (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     effectiveWorkspaceId ? { workspaceId: effectiveWorkspaceId as Id<"workspaces"> } : "skip",
   ) as any[] | undefined
+  
+  // Check platform admin status to show admin features
+  const platformAdminStatus = useQuery(api.features.custom.admin.checkMyPlatformAdminStatus)
 
   const createDefaults = useMutation((api as any)["features/menus/menuItems"].syncWorkspaceDefaultMenus)
   const seededRef = useRef<string | null>(null)
@@ -174,6 +177,31 @@ export function AppSidebar({
     }
   }, [menuItems])
 
+  // Add platform admin to system items if user is a platform admin
+  const finalSystemItems = useMemo(() => {
+    const items = [...systemItems]
+    
+    if (platformAdminStatus?.isPlatformAdmin) {
+      // Check if platform-admin is not already in the list
+      const hasPlatformAdmin = items.some((item) => item.id === "platform-admin")
+      if (!hasPlatformAdmin) {
+        items.push({
+          id: "platform-admin",
+          name: "Platform Admin",
+          url: "/dashboard/platform-admin",
+          icon: Shield,
+          description: "Super Admin panel for managing features and workspaces",
+          tag: "admin" as const,
+          metadata: {
+            featureType: "system",
+          },
+        })
+      }
+    }
+    
+    return items
+  }, [systemItems, platformAdminStatus?.isPlatformAdmin])
+
   if (userWorkspaces === undefined) {
     return (
       <Sidebar collapsible={collapsible} side={side} variant={variant}>
@@ -267,7 +295,7 @@ export function AppSidebar({
               ))}
             </div>
           )}
-          <NavSystem system={systemItems} />
+          <NavSystem system={finalSystemItems} />
         </div>
         <NavSecondary />
       </SidebarContent>

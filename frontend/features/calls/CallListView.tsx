@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "../chat/components/ui/SearchBar";
 import { SecondaryList, itemVariant, registerBuiltInVariants } from "@/frontend/shared/ui/layout/sidebar/secondary";
-import type { CallSummary } from "./mockData";
+import type { CallSummary } from "./types";
 
 type CallListViewVariant = "standalone" | "layout";
 

@@ -7,19 +7,37 @@
 // Update via: pnpm run sync:features
 export const OPTIONAL_FEATURES_CATALOG = [
   {
-    "slug": "calendar",
-    "name": "Calendar",
-    "description": "Team calendar with event management",
-    "icon": "Calendar",
-    "version": "1.0.0",
-    "category": "productivity",
+    "slug": "calls",
+    "name": "Calls",
+    "description": "Voice and video calls with team members",
+    "icon": "Phone",
+    "version": "2.0.0",
+    "category": "communication",
     "tags": [
-      "scheduling",
-      "events"
+      "communication",
+      "calls",
+      "voice",
+      "video"
     ],
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q1 2025",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "status",
+    "name": "Status",
+    "description": "Share status updates with your team",
+    "icon": "Camera",
+    "version": "2.0.0",
+    "category": "communication",
+    "tags": [
+      "communication",
+      "status",
+      "updates",
+      "stories"
+    ],
+    "status": "stable",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -45,22 +63,6 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "tags": [
       "productivity",
       "project-management"
-    ],
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q2 2025",
-    "featureType": "optional"
-  },
-  {
-    "slug": "wiki",
-    "name": "Wiki",
-    "description": "Knowledge base and documentation",
-    "icon": "Book",
-    "version": "1.0.0",
-    "category": "productivity",
-    "tags": [
-      "documentation",
-      "knowledge-base"
     ],
     "status": "development",
     "isReady": false,
@@ -132,26 +134,10 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
-    "slug": "workflow",
-    "name": "Workflow",
-    "description": "Workflow automation with bot assistant",
-    "icon": "Workflow",
-    "version": "1.0.0",
-    "category": "productivity",
-    "tags": [
-      "automation",
-      "workflows",
-      "bot"
-    ],
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
-    "slug": "cms",
-    "name": "CMS Builder",
-    "description": "Build and manage your content management system with visual builder",
-    "icon": "Layout",
+    "slug": "builder",
+    "name": "Builder",
+    "description": "Build apps, content, and interfaces with visual builder tools",
+    "icon": "Hammer",
     "version": "1.0.0",
     "category": "creativity",
     "tags": [

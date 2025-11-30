@@ -1,27 +1,52 @@
-// frontend/features/cms/manifest.ts (Konten yang Diperbaiki)
+/**
+ * Builder Feature Manifest
+ * 
+ * Visual node canvas for building:
+ * - Content (pages, posts, templates)
+ * - Automation workflows
+ * - Custom interfaces
+ * - CMS-Lite templates
+ */
 
 import type { FeatureManifest } from '@/frontend/shared/foundation';
 
-const cmsManifest: FeatureManifest = {
-  id: 'cms',
-  name: 'CMS Builder',
-  description: 'Build and manage your content management system',
-  icon: '🏗️',
-  path: '/cms', // Path utama sekarang langsung ke builder
-  category: 'content',
-  order: 1,
+const builderManifest: FeatureManifest = {
+  id: 'builder',
+  name: 'Builder',
+  description: 'Create content, automation, and interfaces with visual node canvas',
+  icon: '🔨',
+  path: '/builder',
+  category: 'creativity',
+  order: 20,
   children: [
-    // Kita bisa menambahkan halaman preview di sini jika diperlukan nanti
     {
-      id: 'cms-preview',
+      id: 'builder-preview',
       name: 'Live Preview',
-      description: 'Preview your built interfaces',
+      description: 'Preview your built interfaces in real-time',
       icon: '👁️',
-      path: '/cms/preview', // Path yang jelas untuk preview
-      category: 'content',
+      path: '/builder/preview',
+      category: 'creativity',
+      order: 1
+    },
+    {
+      id: 'builder-content',
+      name: 'Content Builder',
+      description: 'Build content pages and templates',
+      icon: '📄',
+      path: '/builder/content',
+      category: 'creativity',
       order: 2
+    },
+    {
+      id: 'builder-automation',
+      name: 'Automation Builder',
+      description: 'Build automation workflows',
+      icon: '⚡',
+      path: '/builder/automation',
+      category: 'creativity',
+      order: 3
     }
   ]
 };
 
-export default cmsManifest;
+export default builderManifest;

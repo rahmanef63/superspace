@@ -24,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/FeatureTag";
 
 export interface SystemMenuItem {
   id: string;
@@ -31,8 +32,10 @@ export interface SystemMenuItem {
   url: string;
   icon: LucideIcon;
   description?: string;
+  tag?: FeatureTagType;
   metadata?: {
     featureType?: string;
+    state?: string;
     [key: string]: any;
   };
 }
@@ -61,12 +64,14 @@ export function NavSystem({ system }: NavSystemProps) {
       <SidebarMenu>
         {system.map((item) => {
           const IconComponent = item.icon;
+          const featureTag = item.tag || getFeatureTagFromMetadata(item.metadata) || "admin";
           return (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton asChild>
                 <Link href={item.url} onClick={handleMenuClick}>
                   <IconComponent />
-                  <span>{item.name}</span>
+                  <span className="flex-1">{item.name}</span>
+                  <FeatureTag type={featureTag} compact showIcon={false} />
                 </Link>
               </SidebarMenuButton>
               <DropdownMenu>

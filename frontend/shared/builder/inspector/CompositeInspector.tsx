@@ -125,8 +125,8 @@ export function CompositeInspector({
 
   if (!selectedNode) {
     return (
-      <div className="p-4 text-sm text-gray-500 text-center">
-        <Box className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+      <div className="p-4 text-sm text-muted-foreground text-center">
+        <Box className="w-8 h-8 mx-auto mb-2 text-muted-foreground/60" />
         <p>Select a component to view its properties</p>
       </div>
     )
@@ -134,7 +134,7 @@ export function CompositeInspector({
 
   if (!componentTree) {
     return (
-      <div className="p-4 text-sm text-gray-500">
+      <div className="p-4 text-sm text-muted-foreground">
         Could not load component structure
       </div>
     )
@@ -147,7 +147,7 @@ export function CompositeInspector({
       {/* Header */}
       <div className="p-4 border-b flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
-          <Layers className="w-4 h-4 text-gray-500" />
+          <Layers className="w-4 h-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold">Component Inspector</h3>
         </div>
         {hasChildren && (
@@ -228,14 +228,14 @@ function ComponentPropertiesSection({
       {/* Component Header */}
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted transition-colors"
         style={{ paddingLeft: `${16 + depthIndent}px` }}
       >
         <div className="flex items-center gap-2">
           {expanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           )}
           <div className="flex items-center gap-2">
             {!isRoot && index && (

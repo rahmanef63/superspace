@@ -214,12 +214,12 @@ export const Renderer: React.FC<RendererProps> = ({
     // Render only the subtree for rootId, no aside
     return (
       <div className="flex min-h-full h-full">
-        <main className="flex-1 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 bg-muted/30 overflow-y-auto">
           <div className="max-w-6xl mx-auto p-6">
             {activePageId ? (
               renderContentNode(activePageId)
             ) : (
-              <div className="text-sm text-gray-500">Nothing to render.</div>
+              <div className="text-sm text-muted-foreground">Nothing to render.</div>
             )}
           </div>
         </main>
@@ -230,12 +230,12 @@ export const Renderer: React.FC<RendererProps> = ({
   // Default full renderer with sidebar
   return (
     <div className="flex min-h-full h-full">
-      <main className="flex-1 bg-gray-50 overflow-y-auto">
+      <main className="flex-1 bg-muted/30 overflow-y-auto">
         <div className="max-w-6xl mx-auto p-6">
           {activePageId ? (
             renderContentNode(activePageId)
           ) : (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               Tambahkan <b>Section</b> dengan properti <b>path</b> dan hubungkan dari <b>Menu</b> untuk melihat preview.
             </div>
           )}

@@ -10,7 +10,7 @@ export const INITIAL_CMS_SCHEMA: Schema = {
         path: "/",
         display: "block",
         padding: "6",
-        className: "min-h-screen bg-gray-50"
+        className: "min-h-screen bg-muted"
       },
       children: ["hero-1", "section-2"]
     },

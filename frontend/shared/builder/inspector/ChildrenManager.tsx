@@ -7,13 +7,13 @@ export const ChildrenManager: React.FC = () => {
 
   return (
     <div className="mt-4 pt-4 border-t">
-      <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
         Children (ordered)
       </div>
       {childrenOrdered?.length ? (
         <div className="space-y-2">
           {childrenOrdered.map((c, idx) => (
-            <div key={c.id} className="flex items-center gap-2 rounded-xl border border-gray-200 p-2 text-xs">
+            <div key={c.id} className="flex items-center gap-2 rounded-xl border border-border p-2 text-xs">
               <div className="flex-1 truncate">{c.label}</div>
               <div className="flex items-center gap-1">
                 <Button 
@@ -47,7 +47,7 @@ export const ChildrenManager: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-muted-foreground">
           No children connected. Drag a connection from this node's bottom handle to another node.
         </div>
       )}

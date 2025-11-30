@@ -124,18 +124,18 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
   const renderItem = (key: string, source: 'builtin' | 'asset') => (
     <div
       key={`${source}:${key}`}
-      className="relative rounded-xl border p-3 hover:bg-gray-50 group cursor-default"
+      className="relative rounded-xl border p-3 hover:bg-muted group cursor-default"
       title={key}
     >
       <div className="text-sm font-medium truncate">{key}</div>
-      <div className="text-[11px] text-gray-500 mt-1">
+      <div className="text-[11px] text-muted-foreground mt-1">
         {source === 'builtin' ? 'Built-in template' : 'Saved template'}
       </div>
       <div className="mt-2 flex items-center gap-2">
         <div
           draggable
           onDragStart={(e) => onDragStart(e, key, source)}
-          className="text-[11px] rounded-lg border px-2 py-1 bg-white cursor-grab active:cursor-grabbing"
+          className="text-[11px] rounded-lg border px-2 py-1 bg-card cursor-grab active:cursor-grabbing"
         >
           Drag
         </div>
@@ -156,8 +156,8 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
     return (
       <div className="h-full flex items-center justify-center p-6 text-center">
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">No Template Provider</div>
-          <div className="text-xs text-gray-500">
+          <div className="text-sm font-medium text-foreground">No Template Provider</div>
+          <div className="text-xs text-muted-foreground">
             Connect a template provider to browse and manage templates
           </div>
         </div>
@@ -167,7 +167,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-3 border-b border-gray-200">
+      <div className="p-3 border-b border-border">
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -176,20 +176,20 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">Built-in</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Built-in</div>
           <div className="grid grid-cols-1 gap-2">
             {filteredBuiltins.map(key => renderItem(key, 'builtin'))}
             {filteredBuiltins.length === 0 && (
-              <div className="text-xs text-gray-500">No templates</div>
+              <div className="text-xs text-muted-foreground">No templates</div>
             )}
           </div>
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">Asset Templates</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Asset Templates</div>
           <div className="grid grid-cols-1 gap-2">
             {filteredAssets.map(key => renderItem(key, 'asset'))}
             {filteredAssets.length === 0 && (
-              <div className="text-xs text-gray-500">No saved templates yet</div>
+              <div className="text-xs text-muted-foreground">No saved templates yet</div>
             )}
           </div>
         </div>

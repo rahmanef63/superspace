@@ -29,8 +29,8 @@ export const DatabaseNode: React.FC<DatabaseNodeProps> = (props) => {
     render: (props) => (
       <div className="text-xs space-y-1">
         <div className="font-medium">{props.tableName}</div>
-        <div className="text-gray-500">{props.operation}</div>
-        <div className="text-gray-400 text-[10px]">
+        <div className="text-muted-foreground">{props.operation}</div>
+        <div className="text-muted-foreground/70 text-[10px]">
           {Array.isArray(props.fields) ? props.fields.join(', ') : props.fields}
         </div>
       </div>

@@ -14,7 +14,7 @@ const aspectRatioInspectorConfig: InspectorField[] = [
     key: 'backgroundColor',
     label: 'Background Color',
     type: 'text',
-    placeholder: '#f3f4f6',
+    placeholder: 'Custom color (optional)',
   },
 ];
 
@@ -26,7 +26,7 @@ export const aspectRatioManifest: WidgetConfig = {
   tags: ['ui', 'layout', 'container'],
   defaults: {
     ratio: 16/9,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: undefined,
   },
   render: (props, children) => <AspectRatioWidget {...props}>{children}</AspectRatioWidget>,
   inspector: {

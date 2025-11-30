@@ -26,11 +26,11 @@ export const QueryNode: React.FC<QueryNodeProps> = (props) => {
     ],
     render: (props) => (
       <div className="text-xs space-y-1">
-        <div className="font-mono text-[10px] bg-gray-50 p-1 rounded">
+        <div className="font-mono text-[10px] bg-muted p-1 rounded">
           {props.query?.slice(0, 30)}...
         </div>
         {props.parameters?.length > 0 && (
-          <div className="text-gray-500">
+          <div className="text-muted-foreground">
             {props.parameters.length} params
           </div>
         )}

@@ -27,29 +27,29 @@ export const BaseNode: React.FC<BaseNodeProps> = ({ id, data, selected, config }
   return (
     <div
       className={cn(
-        'min-w-[200px] rounded-2xl border bg-white shadow-sm transition-all',
-        selected ? 'border-black shadow-md' : 'border-gray-200',
+        'min-w-[200px] rounded-2xl border bg-card shadow-sm transition-all',
+        selected ? 'border-primary shadow-md' : 'border-border',
         'hover:shadow-md'
       )}
     >
       <div
         className={cn(
           'flex items-center justify-between gap-2 px-3 py-2 border-b rounded-t-2xl',
-          'bg-gray-50 border-gray-100'
+          'bg-muted border-border'
         )}
       >
         <div className="flex items-center gap-2">
           <Icon size={14} />
           <span className="text-xs font-medium">{config?.label || data.type}</span>
         </div>
-        <span className="text-[10px] text-gray-500">{id.slice(1, 5)}</span>
+        <span className="text-[10px] text-muted-foreground">{id.slice(1, 5)}</span>
       </div>
 
       <div className="p-3">
         {config?.render ? (
           config.render(data.props)
         ) : (
-          <div className="text-[11px] text-gray-600">
+          <div className="text-[11px] text-muted-foreground">
             <div className="truncate">Type: {data.type}</div>
             {Object.keys(data.props).length > 0 && (
               <div className="truncate mt-1">Props: {Object.keys(data.props).length}</div>
@@ -65,7 +65,7 @@ export const BaseNode: React.FC<BaseNodeProps> = ({ id, data, selected, config }
           position={Position.Top}
           id={input.id}
           style={{ left: `${20 + index * 30}px`, borderRadius: 0 }}
-          className={cn('w-3 h-3 border-2 border-white', 'bg-gray-500')}
+          className={cn('w-3 h-3 border-2 border-background', 'bg-muted-foreground')}
         />
       ))}
 
@@ -76,7 +76,7 @@ export const BaseNode: React.FC<BaseNodeProps> = ({ id, data, selected, config }
           position={Position.Bottom}
           id={output.id}
           style={{ left: `${20 + index * 30}px` }}
-          className={cn('w-3 h-3 border-2 border-white', 'bg-gray-500')}
+          className={cn('w-3 h-3 border-2 border-background', 'bg-muted-foreground')}
         />
       ))}
 

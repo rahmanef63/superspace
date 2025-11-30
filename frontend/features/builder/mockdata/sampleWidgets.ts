@@ -10,7 +10,7 @@ export const createSampleWidget = (type: string, position = { x: 150, y: 150 }):
       direction: "column",
       gap: "4",
       padding: "6",
-      className: "bg-white rounded-lg border"
+      className: "bg-card rounded-lg border"
     },
     section: {
       name: "New Section",

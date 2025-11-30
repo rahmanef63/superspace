@@ -44,7 +44,7 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
 
   if (!selectedNode) {
     return (
-      <div className="p-4 text-sm text-gray-500">
+      <div className="p-4 text-sm text-muted-foreground">
         Select a node on the canvas to edit its properties.
       </div>
     );
@@ -82,7 +82,7 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
         <div className="h-full overflow-y-auto">
           <div className="p-3 space-y-4">
             {/* Debug info */}
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Node ID: {selectedNode.id} | Props: {Object.keys(currentProps).length}
             </div>
 
@@ -105,7 +105,7 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
 
                   return (
                     <div key={category} className="space-y-3">
-                      <div className="text-xs uppercase tracking-wide text-gray-400">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">
                         {category.toUpperCase()}
                       </div>
                       
@@ -172,7 +172,7 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
               /* Legacy inspector fields fallback */
               widget?.inspector?.fields && (
                 <div className="space-y-3">
-                  <div className="text-xs uppercase tracking-wide text-gray-400">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
                     Properties
                   </div>
                   {widget.inspector.fields.map(field => (
@@ -197,10 +197,10 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
             {/* Fallback for widgets with inspectorFields */}
             {!controls.length && !widget?.inspector?.fields && widget?.inspectorFields && (
               <div className="space-y-3">
-                <div className="text-xs uppercase tracking-wide text-gray-400">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Properties
                 </div>
-                {widget.inspectorFields.map(field => (
+                {widget.inspector.fields.map(field => (
                   <DynamicInspectorControl
                     key={`${selectedNode.id}-${field.key}`}
                     control={{
@@ -224,15 +224,15 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
       {/* Children Section - Scrollable if has children */}
       {canvas.childrenOrdered && canvas.childrenOrdered.length > 0 && (
         <div className="border-t flex-shrink-0 max-h-48 flex flex-col">
-          <div className="p-3 pb-2 border-b bg-gray-50">
-            <div className="text-xs uppercase tracking-wide text-gray-400">
+          <div className="p-3 pb-2 border-b bg-muted">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">
               Children ({canvas.childrenOrdered.length})
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             <div className="p-3 pt-2 space-y-2">
               {canvas.childrenOrdered.map((child: any, idx: number) => (
-                <div key={child.id} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2 text-xs">
+                <div key={child.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-xs">
                   <div className="flex-1 truncate">
                     {child.label}
                   </div>

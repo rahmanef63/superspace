@@ -14,7 +14,7 @@ export const heroManifest: WidgetConfig = {
     ctaHref: "/dashboard",
     imageUrl: "https://picsum.photos/seed/hero/800/600",
     reverse: false,
-    className: "rounded-3xl bg-gradient-to-br from-gray-50 to-white border border-gray-200",
+    className: "rounded-3xl bg-gradient-to-br from-muted to-background border border-border",
   },
   render: (props) => <HeroWidget {...props} />,
   inspector: {

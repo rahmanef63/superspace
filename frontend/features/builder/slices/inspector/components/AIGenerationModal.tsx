@@ -45,13 +45,13 @@ export const AIGenerationModal: React.FC<AIGenerationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96 max-w-[90vw]">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-popover rounded-lg p-6 w-96 max-w-[90vw] border shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{getModalTitle()}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>
@@ -63,7 +63,7 @@ export const AIGenerationModal: React.FC<AIGenerationModalProps> = ({
             <select
               value={contentType}
               onChange={(e) => setContentType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background"
             >
               <option value="text">Text Content</option>
               <option value="image">Image</option>
@@ -82,13 +82,13 @@ export const AIGenerationModal: React.FC<AIGenerationModalProps> = ({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={getPromptPlaceholder()}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background"
               rows={4}
             />
           </div>
           
           {generationType === 'ai' && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               <p>💡 Tips:</p>
               <ul className="list-disc list-inside space-y-1 mt-1">
                 <li>Be specific about styling and layout</li>

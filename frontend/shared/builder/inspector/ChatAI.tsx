@@ -60,10 +60,10 @@ export function ChatAI({ selectedNode }: ChatAIProps) {
   return (
     <div className="h-full flex flex-col p-4">
       {selectedNode && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="text-xs text-gray-500 mb-1">Selected Component</div>
+        <div className="mb-4 p-3 bg-muted rounded-lg">
+          <div className="text-xs text-muted-foreground mb-1">Selected Component</div>
           <div className="text-sm font-medium">{selectedNode.type}</div>
-          <div className="text-xs text-gray-500">ID: {selectedNode.id}</div>
+          <div className="text-xs text-muted-foreground">ID: {selectedNode.id}</div>
         </div>
       )}
 
@@ -77,23 +77,23 @@ export function ChatAI({ selectedNode }: ChatAIProps) {
               }`}
             >
               {message.sender === 'ai' && (
-                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center flex-shrink-0">
-                  <Bot size={16} className="text-white" />
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <Bot size={16} className="text-primary-foreground" />
                 </div>
               )}
               
               <div
                 className={`max-w-[80%] p-3 rounded-lg text-sm ${
                   message.sender === 'user'
-                    ? "bg-black text-white"
-                    : "bg-gray-100"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
                 }`}
               >
                 {message.content}
               </div>
 
               {message.sender === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                   <User size={16} />
                 </div>
               )}

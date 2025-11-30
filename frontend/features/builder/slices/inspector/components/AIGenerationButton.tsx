@@ -30,14 +30,14 @@ export const AIGenerationButton: React.FC<AIGenerationButtonProps> = ({
             className="fixed inset-0 z-10" 
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-gray-200 shadow-lg z-20">
+          <div className="absolute right-0 top-full mt-1 w-48 bg-popover rounded-lg border border-border shadow-lg z-20">
             <div className="py-1">
               <button
                 onClick={() => {
                   onGenerate('ai');
                   setShowMenu(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors text-left"
               >
                 <span>🤖</span>
                 <span>Generate with AI</span>
@@ -47,7 +47,7 @@ export const AIGenerationButton: React.FC<AIGenerationButtonProps> = ({
                   onGenerate('custom');
                   setShowMenu(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors text-left"
               >
                 <span>🔧</span>
                 <span>Use Custom Node</span>

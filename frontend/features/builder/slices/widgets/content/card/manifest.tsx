@@ -33,7 +33,7 @@ export const cardManifest: WidgetConfig = {
     },
     description: {
       type: 'text',
-      props: { tag: 'p', content: 'Card description', className: 'text-gray-600' }
+      props: { tag: 'p', content: 'Card description', className: 'text-muted-foreground' }
     },
     image: {
       type: 'image',

@@ -42,7 +42,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
           const CatIcon = getCategoryIcon(category);
           return (
             <div key={category}>
-              <div className="text-[10px] uppercase tracking-wide text-gray-400 mb-2 flex items-center gap-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2">
                 <CatIcon size={14} />
                 <span>{category}</span>
               </div>
@@ -62,14 +62,14 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
                     >
                       <div
                         onClick={() => onAdd?.(component.key, component.category)}
-                        className="h-20 rounded-xl border border-gray-200 bg-white p-2 text-left hover:border-black transition group cursor-pointer"
+                        className="h-20 rounded-xl border border-border bg-card p-2 text-left hover:border-primary transition group cursor-pointer"
                       >
                         <div className="text-xs font-semibold truncate flex items-center gap-1">
-                          <FeatureIcon size={12} className="text-gray-500" />
-                          <CatIconI size={14} className="text-gray-900" />
+                          <FeatureIcon size={12} className="text-muted-foreground" />
+                          <CatIconI size={14} className="text-foreground" />
                           <span className="truncate">{component.label}</span>
                         </div>
-                        <div className="text-[10px] text-gray-500 mt-1 truncate">
+                        <div className="text-[10px] text-muted-foreground mt-1 truncate">
                           {component.description || component.key}
                         </div>
                       </div>
@@ -86,7 +86,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-3 border-b border-gray-200">
+      <div className="p-3 border-b border-border">
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}

@@ -8,7 +8,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       nodes: {
         'section-hero': { type: 'section', props: { path: '/', className: 'max-w-6xl mx-auto p-8' }, children: ['title', 'subtitle', 'cta', 'hero-img'] },
         'title': { type: 'text', props: { tag: 'h1', content: 'Build faster with your Super Workspace', className: 'text-3xl md:text-4xl font-bold' }, children: [] },
-        'subtitle': { type: 'text', props: { tag: 'p', content: 'Composable widgets, live JSON schema, and shadcn-style UI.', className: 'text-gray-600' }, children: [] },
+        'subtitle': { type: 'text', props: { tag: 'p', content: 'Composable widgets, live JSON schema, and shadcn-style UI.', className: 'text-muted-foreground' }, children: [] },
         'cta': { type: 'button', props: { text: 'Open Dashboard', size: 'lg', variant: 'primary', href: '/dashboard' }, children: [] },
         'hero-img': { type: 'image', props: { src: 'https://picsum.photos/seed/hero/800/600', className: 'w-full h-auto rounded-2xl shadow-sm' }, children: [] },
       }

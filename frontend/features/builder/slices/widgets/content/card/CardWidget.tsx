@@ -31,7 +31,7 @@ export const CardWidget: React.FC<CardWidgetProps> = ({
     {(title || description) && (
       <CardHeader>
         {title && <CardTitle>{title}</CardTitle>}
-        {description && <div className="text-xs text-gray-500 mt-1">{description}</div>}
+        {description && <div className="text-xs text-muted-foreground mt-1">{description}</div>}
       </CardHeader>
     )}
     <CardContent>{children}</CardContent>

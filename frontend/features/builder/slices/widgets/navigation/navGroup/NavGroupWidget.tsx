@@ -105,17 +105,17 @@ export const NavGroupWidget: React.FC<NavGroupProps> = ({
   const getBackgroundClasses = () => {
     switch (background) {
       case 'white':
-        return 'bg-white';
+        return 'bg-background';
       case 'gray':
-        return 'bg-gray-50';
+        return 'bg-muted';
       case 'dark':
-        return 'bg-gray-900 text-white';
+        return 'bg-foreground text-background';
       case 'transparent':
         return 'bg-transparent';
       case 'blur':
-        return 'bg-white/80 backdrop-blur-sm';
+        return 'bg-background/80 backdrop-blur-sm';
       default:
-        return 'bg-white';
+        return 'bg-background';
     }
   };
 
@@ -124,13 +124,13 @@ export const NavGroupWidget: React.FC<NavGroupProps> = ({
     
     switch (type) {
       case 'header':
-        return 'border-b border-gray-200';
+        return 'border-b border-border';
       case 'footer':
-        return 'border-t border-gray-200';
+        return 'border-t border-border';
       case 'sidebar':
-        return 'border-r border-gray-200';
+        return 'border-r border-border';
       default:
-        return 'border border-gray-200';
+        return 'border border-border';
     }
   };
 
@@ -148,12 +148,12 @@ export const NavGroupWidget: React.FC<NavGroupProps> = ({
       {title && (
         <div className={cn(
           "mb-3",
-          layout === 'horizontal' ? 'mr-4' : 'border-b border-gray-200 pb-2'
+          layout === 'horizontal' ? 'mr-4' : 'border-b border-border pb-2'
         )}>
           <h2 className={cn(
             "font-semibold",
             layout === 'horizontal' ? 'text-base' : 'text-sm',
-            background === 'dark' ? 'text-white' : 'text-gray-900'
+            background === 'dark' ? 'text-background' : 'text-foreground'
           )}>
             {title}
           </h2>

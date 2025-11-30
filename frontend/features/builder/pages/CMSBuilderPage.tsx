@@ -106,12 +106,12 @@ const LeftTabs = ({
         )}
         {active === 'settings' && (
           <div className="h-full p-3 space-y-3 overflow-auto">
-            <div className="text-xs font-semibold text-gray-900">Workspace</div>
+            <div className="text-xs font-semibold mb-2">Workspace</div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>Category</Label>
                 <select
-                  className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm shadow-sm"
+                  className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm shadow-sm"
                   value={activeWs.category || 'personal'}
                   onChange={(e) => setActiveWs({ ...activeWs, category: e.target.value, key: '' })}
                 >
@@ -132,14 +132,14 @@ const LeftTabs = ({
             <div>
               <Label>Menu (sidebar)</Label>
               <select
-                className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm shadow-sm"
+                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm shadow-sm"
                 value={menuOverride || ''}
                 onChange={(e) => setMenuOverride(e.target.value || null)}
               >
                 <option value="">Auto</option>
                 {/* Note: menu options available within right-side Renderer as well */}
               </select>
-              <div className="text-[10px] text-gray-500 mt-1">Kosongkan untuk Auto</div>
+              <div className="text-[10px] text-muted-foreground mt-1">Kosongkan untuk Auto</div>
             </div>
           </div>
         )}
@@ -344,7 +344,7 @@ const CMSBuilderPageInner: React.FC = () => {
     if (pinnedIds.length === 0) return null;
     return (
       <div className="p-3">
-        <div className="text-xs font-semibold text-gray-900 mb-2 flex items-center justify-between">
+        <div className="text-xs font-semibold mb-2 flex items-center justify-between">
           <span>Pinned Previews</span>
           <div className="flex gap-2">
             {pinnedIds.length > 0 && (
@@ -358,7 +358,7 @@ const CMSBuilderPageInner: React.FC = () => {
           {pinnedIds.map((id) => (
             <Card key={id} className="p-2">
               <div className="flex items-center justify-between mb-1">
-                <div className="text-[11px] text-gray-600">Node {id.slice(1,5)}</div>
+                <div className="text-[11px] text-muted-foreground">Node {id.slice(1,5)}</div>
                 <Button size="sm" variant="outline" onClick={() => unpin(id)}>Unpin</Button>
               </div>
               <Renderer
@@ -384,7 +384,7 @@ const CMSBuilderPageInner: React.FC = () => {
 
   const renderPreview = () => {
     if (contentTab === 'json') {
-      return <pre className="h-full w-full overflow-auto bg-gray-900 p-4 text-xs text-gray-100">{JSON.stringify(schema, null, 2)}</pre>;
+      return <pre className="h-full w-full overflow-auto bg-zinc-900 dark:bg-zinc-950 p-4 text-xs text-zinc-100">{JSON.stringify(schema, null, 2)}</pre>;
     }
 
     const rootIdForPreview = pinnedIds.length > 0 ? pinnedIds[0] : null;
@@ -419,7 +419,7 @@ const CMSBuilderPageInner: React.FC = () => {
     if (!openTemplateKey) return null;
     
     return (
-      <div className="h-full w-full bg-gray-100">
+      <div className="h-full w-full bg-muted">
         <ReactFlowProvider>
           <ReactFlow
             nodes={tplNodes}
@@ -441,25 +441,25 @@ const CMSBuilderPageInner: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full bg-gray-100 text-gray-900 flex flex-col">
+    <div className="h-full w-full bg-muted flex flex-col">
       {/* Top Bar */}
-      <div className="flex-shrink-0 flex items-center justify-between border-b border-gray-200 bg-white/70 px-4 py-2 backdrop-blur z-10">
+      <div className="flex-shrink-0 flex items-center justify-between border-b border-border bg-background/70 px-4 py-2 backdrop-blur z-10">
         <div className="flex items-center gap-2">
           <div className="text-sm font-semibold">Builder</div>
-          <div className="text-[11px] text-gray-500">— Visual Content Management</div>
+          <div className="text-[11px] text-muted-foreground">— Visual Content Management</div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
             <ViewModeToggle active={layoutTab === "split"} onClick={() => setLayoutTab("split")} title="Split View">Split</ViewModeToggle>
             <ViewModeToggle active={layoutTab === "canvas"} onClick={() => setLayoutTab("canvas")} title="Canvas Only">Canvas</ViewModeToggle>
             <ViewModeToggle active={layoutTab === "preview"} onClick={() => setLayoutTab("preview")} title="Preview Only">Preview</ViewModeToggle>
           </div>
-          <div className="h-6 w-px bg-gray-200" />
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="h-6 w-px bg-border" />
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
             <ViewModeToggle active={contentTab === "preview"} onClick={() => setContentTab("preview")} title="Visual Preview"><Eye size={14} /></ViewModeToggle>
             <ViewModeToggle active={contentTab === "json"} onClick={() => setContentTab("json")} title="JSON Schema"><Code size={14} /></ViewModeToggle>
           </div>
-          <div className="h-6 w-px bg-gray-200" />
+          <div className="h-6 w-px bg-border" />
           <div className="flex items-center gap-2">
             <TopBarButton onClick={importJSON} title="Import JSON"><Upload size={16} /></TopBarButton>
             <TopBarButton onClick={downloadJSON} title="Export JSON"><Download size={16} /></TopBarButton>
@@ -476,18 +476,18 @@ const CMSBuilderPageInner: React.FC = () => {
           onClick={() => setCtxMenu(s => ({ ...s, open: false }))}
         >
           <div
-            className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 text-sm"
+            className="absolute z-50 bg-popover border border-border rounded-lg shadow-lg w-56 text-sm"
             style={{ top: ctxMenu.y, left: ctxMenu.x }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2"
               onClick={handleAddSelectionToAssets}
             >
               <Plus size={14} /> Add to Asset Library
             </button>
             <button
-              className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2"
               onClick={handleOpenSelectionInNewTab}
             >
               <BookOpen size={14} /> Open in new canvas tab

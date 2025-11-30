@@ -16,8 +16,8 @@ export function InspectorTabs({ selectedNode }: InspectorTabsProps) {
         <button
           className={`px-3 py-2 text-xs rounded-l-lg ${
             activeTab === 'properties' 
-              ? 'bg-black text-white' 
-              : 'bg-white text-gray-600 hover:bg-gray-50'
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-card text-muted-foreground hover:bg-muted'
           }`}
           onClick={() => setActiveTab('properties')}
         >
@@ -26,8 +26,8 @@ export function InspectorTabs({ selectedNode }: InspectorTabsProps) {
         <button
           className={`px-3 py-2 text-xs rounded-r-lg ${
             activeTab === 'chat-ai' 
-              ? 'bg-black text-white' 
-              : 'bg-white text-gray-600 hover:bg-gray-50'
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-card text-muted-foreground hover:bg-muted'
           }`}
           onClick={() => setActiveTab('chat-ai')}
         >

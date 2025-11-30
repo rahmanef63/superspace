@@ -27,7 +27,7 @@ export const TransformNode: React.FC<TransformNodeProps> = (props) => {
     render: (props) => (
       <div className="text-xs space-y-1">
         <div className="font-medium">{props.operation}</div>
-        <div className="font-mono text-[10px] bg-gray-50 p-1 rounded">
+        <div className="font-mono text-[10px] bg-muted p-1 rounded">
           {props.expression}
         </div>
       </div>

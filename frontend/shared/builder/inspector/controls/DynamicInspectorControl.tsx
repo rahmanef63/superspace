@@ -39,7 +39,7 @@ export function DynamicInspectorControl({ control, value, onChange }: DynamicIns
       case 'textarea':
         return (
           <textarea
-            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black min-h-[60px]"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring min-h-[60px]"
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder={control.default}
@@ -132,7 +132,7 @@ export function DynamicInspectorControl({ control, value, onChange }: DynamicIns
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-xs">{control.label}</Label>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {Math.round(percentageValue * 100)}%
               </span>
             </div>

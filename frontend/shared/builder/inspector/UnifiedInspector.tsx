@@ -24,7 +24,7 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
   
   if (!selectedNode) {
     return (
-      <div className="p-4 text-sm text-gray-500">
+      <div className="p-4 text-sm text-muted-foreground">
         Select a node to edit its properties.
       </div>
     );
@@ -44,7 +44,7 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
     return (
       <div className="h-full overflow-y-auto p-4">
         <div className="mb-4">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Component</div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Component</div>
           <div className="text-sm font-semibold flex items-center gap-2">
             {getFeatureIcon(selectedNode.data.feature || feature)}
             {config?.label || nodeType}

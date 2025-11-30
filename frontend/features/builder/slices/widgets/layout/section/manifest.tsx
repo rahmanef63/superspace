@@ -45,7 +45,7 @@ export const sectionManifest: WidgetConfig = {
   autoConnect: {
     text: {
       type: 'text',
-      props: { tag: 'p', content: 'Section content', className: 'text-gray-600' }
+      props: { tag: 'p', content: 'Section content', className: 'text-muted-foreground' }
     },
     button: {
       type: 'button',

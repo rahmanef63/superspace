@@ -58,12 +58,12 @@ export function TabbedColorPicker({ label, value, onChange, tabs = ['Tailwind', 
                 className="fixed inset-0 z-10" 
                 onClick={() => setShowPicker(false)}
               />
-              <div className="absolute top-full left-0 mt-1 w-80 bg-white rounded-lg border border-gray-200 shadow-lg z-20">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-popover rounded-lg border border-border shadow-lg z-20">
                 <div className="flex border-b">
                   {tabs.map((tab) => (
                     <button
                       key={tab}
-                      className="flex-1 px-3 py-2 text-sm border-b-2 border-transparent hover:border-gray-300"
+                      className="flex-1 px-3 py-2 text-sm border-b-2 border-transparent hover:border-muted-foreground"
                     >
                       {tab}
                     </button>

@@ -19,7 +19,7 @@ export const HeroWidget: React.FC<HeroProps> = ({
   ctaHref = "/dashboard",
   imageUrl = "https://picsum.photos/seed/hero/800/600",
   reverse = false,
-  className = "rounded-3xl bg-gradient-to-br from-gray-50 to-white border border-gray-200"
+  className = "rounded-3xl bg-gradient-to-br from-muted to-background border border-border"
 }) => (
   <div className={cn("overflow-hidden p-8 md:p-10", className)}>
     <div className={cn(
@@ -27,10 +27,10 @@ export const HeroWidget: React.FC<HeroProps> = ({
       reverse ? "md:grid-cols-[1.1fr_1fr]" : "md:grid-cols-[1.1fr_1fr]"
     )}> 
       <div className={cn("space-y-4", reverse && "order-last md:order-first")}> 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
           {title}
         </h1>
-        <p className="text-gray-600 md:text-base text-sm">
+        <p className="text-muted-foreground md:text-base text-sm">
           {subtitle}
         </p>
         <div className="pt-2">

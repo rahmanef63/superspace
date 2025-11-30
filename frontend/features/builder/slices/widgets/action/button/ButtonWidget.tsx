@@ -51,21 +51,21 @@ export const ButtonWidget: React.FC<ButtonWidgetProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'default':
-        return 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50';
+        return 'bg-background text-foreground border-border hover:bg-muted';
       case 'primary':
-        return 'bg-black text-white border-black hover:bg-gray-800';
+        return 'bg-primary text-primary-foreground border-primary hover:bg-primary/90';
       case 'secondary':
-        return 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200';
+        return 'bg-secondary text-secondary-foreground border-border hover:bg-secondary/80';
       case 'destructive':
-        return 'bg-red-600 text-white border-red-600 hover:bg-red-700';
+        return 'bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90';
       case 'outline':
-        return 'bg-transparent text-gray-900 border-gray-300 hover:bg-gray-50';
+        return 'bg-transparent text-foreground border-border hover:bg-muted';
       case 'ghost':
-        return 'bg-transparent text-gray-900 border-transparent hover:bg-gray-100';
+        return 'bg-transparent text-foreground border-transparent hover:bg-muted';
       case 'link':
-        return 'bg-transparent text-blue-600 border-transparent hover:underline';
+        return 'bg-transparent text-primary border-transparent hover:underline';
       default:
-        return 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50';
+        return 'bg-background text-foreground border-border hover:bg-muted';
     }
   };
 
@@ -218,8 +218,8 @@ export const ButtonWidget: React.FC<ButtonWidgetProps> = ({
     getMarginClasses(),
     getTextClasses(),
     fullWidth && "w-full",
-    gradient && variant === 'primary' && "bg-gradient-to-r from-black to-gray-800",
-    gradient && variant === 'destructive' && "bg-gradient-to-r from-red-600 to-red-700",
+    gradient && variant === 'primary' && "bg-gradient-to-r from-primary to-primary/80",
+    gradient && variant === 'destructive' && "bg-gradient-to-r from-destructive to-destructive/80",
     `border-${borderWidth}`,
     className
   );

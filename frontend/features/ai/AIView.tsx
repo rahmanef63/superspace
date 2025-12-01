@@ -29,7 +29,6 @@ export function AIView() {
             showSearch={false}
             showActions={false}
             onMenuClick={handleBack}
-            settingsSlug="ai"
           />
           <AIDetailView chatId={selectedChatId} />
         </div>
@@ -43,7 +42,6 @@ export function AIView() {
           showSearch={true}
           showActions={false}
           onMenuClick={handleBack}
-          settingsSlug="ai"
         />
         <AIListView selectedChatId={selectedChatId} onChatSelect={setSelectedChatId} />
       </div>

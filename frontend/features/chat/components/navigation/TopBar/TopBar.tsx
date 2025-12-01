@@ -20,7 +20,6 @@ interface TopBarProps {
   showActions?: boolean;
   onMenuClick?: () => void;
   contact?: MemberSummary;
-  settingsSlug?: string;
 }
 
 export function TopBar({
@@ -31,7 +30,6 @@ export function TopBar({
   showActions = true,
   onMenuClick,
   contact,
-  settingsSlug,
 }: TopBarProps) {
   const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
   const hasMember = Boolean(contact);
@@ -56,7 +54,6 @@ export function TopBar({
           <TopBarActions
             showSearch={showSearch}
             onMemberInfoClick={hasMember ? handleMemberInfoClick : undefined}
-            settingsSlug={settingsSlug}
           />
         )}
       </div>

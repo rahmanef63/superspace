@@ -83,9 +83,11 @@ export function StatusListView({
             )}
             <h1 className="text-xl font-semibold text-foreground">Status</h1>
           </div>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Plus className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Plus className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         <SearchBar 
           placeholder="Search status updates" 

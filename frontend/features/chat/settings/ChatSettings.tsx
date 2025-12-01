@@ -1,100 +1,90 @@
 "use client";
 
-import { Bell, MessageSquare, Bot } from "lucide-react";
+import { Bell, MessageSquare, Bot, Shield, Image as ImageIcon } from "lucide-react";
 import { useFeatureSettings } from "@/frontend/shared/settings";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useChatSettingsStorage } from "./useChatSettings";
+import {
+  SettingsSection,
+  SettingsToggle,
+  SettingsSelect,
+  SettingsSlider,
+  SettingsRadioGroup,
+} from "@/frontend/shared/settings/primitives";
 
 /**
  * Chat Feature General Settings
- *
- * This component demonstrates how to create settings for a feature.
- * It auto-registers with the workspace settings when the chat feature is active.
+ * Persisted to localStorage via useChatSettingsStorage
  */
 export function ChatGeneralSettings() {
-  const [settings, setSettings] = useState({
-    enterToSend: true,
-    showTimestamps: true,
-    compactMode: false,
-    showAvatars: true,
-  });
+  const { settings, updateSetting, resetSettings, isLoaded } = useChatSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Chat Behavior</CardTitle>
-          <CardDescription>
-            Configure how the chat interface behaves
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Chat Behavior</CardTitle>
+              <CardDescription>
+                Configure how the chat interface behaves
+              </CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" onClick={resetSettings}>
+              Reset
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="enter-send" className="text-sm font-medium cursor-pointer">
-                Enter to Send
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Press Enter to send messages (Shift+Enter for new line)
-              </p>
-            </div>
-            <Switch
-              id="enter-send"
-              checked={settings.enterToSend}
-              onCheckedChange={(checked) => setSettings({ ...settings, enterToSend: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="enter-send"
+            label="Enter to Send"
+            description="Press Enter to send messages (Shift+Enter for new line)"
+            checked={settings.enterToSend}
+            onCheckedChange={(v) => updateSetting("enterToSend", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="timestamps" className="text-sm font-medium cursor-pointer">
-                Show Timestamps
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Display message timestamps in chat
-              </p>
-            </div>
-            <Switch
-              id="timestamps"
-              checked={settings.showTimestamps}
-              onCheckedChange={(checked) => setSettings({ ...settings, showTimestamps: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="timestamps"
+            label="Show Timestamps"
+            description="Display message timestamps in chat"
+            checked={settings.showTimestamps}
+            onCheckedChange={(v) => updateSetting("showTimestamps", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="compact" className="text-sm font-medium cursor-pointer">
-                Compact Mode
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Reduce spacing between messages
-              </p>
-            </div>
-            <Switch
-              id="compact"
-              checked={settings.compactMode}
-              onCheckedChange={(checked) => setSettings({ ...settings, compactMode: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="compact"
+            label="Compact Mode"
+            description="Reduce spacing between messages"
+            checked={settings.compactMode}
+            onCheckedChange={(v) => updateSetting("compactMode", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="avatars" className="text-sm font-medium cursor-pointer">
-                Show Avatars
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Display user avatars in chat messages
-              </p>
-            </div>
-            <Switch
-              id="avatars"
-              checked={settings.showAvatars}
-              onCheckedChange={(checked) => setSettings({ ...settings, showAvatars: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="avatars"
+            label="Show Avatars"
+            description="Display user avatars in chat messages"
+            checked={settings.showAvatars}
+            onCheckedChange={(v) => updateSetting("showAvatars", v)}
+          />
+
+          <SettingsSlider
+            id="grouping"
+            label="Message Grouping"
+            description="Group messages sent within this time interval"
+            value={settings.messageGroupingInterval}
+            onValueChange={(v) => updateSetting("messageGroupingInterval", v[0])}
+            min={0}
+            max={300}
+            step={30}
+            valueFormatter={(v) => v === 0 ? "Off" : `${v}s`}
+          />
         </CardContent>
       </Card>
     </div>
@@ -105,13 +95,11 @@ export function ChatGeneralSettings() {
  * Chat Feature Notifications Settings
  */
 export function ChatNotificationsSettings() {
-  const [settings, setSettings] = useState({
-    desktopNotifications: true,
-    soundEnabled: true,
-    showPreviews: true,
-    notifyMentions: true,
-    notifyDMs: true,
-  });
+  const { settings, updateSetting, isLoaded } = useChatSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -123,87 +111,132 @@ export function ChatNotificationsSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="desktop-notifs" className="text-sm font-medium cursor-pointer">
-                Desktop Notifications
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Show browser notifications for new messages
-              </p>
-            </div>
-            <Switch
-              id="desktop-notifs"
-              checked={settings.desktopNotifications}
-              onCheckedChange={(checked) => setSettings({ ...settings, desktopNotifications: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="desktop-notifs"
+            label="Desktop Notifications"
+            description="Show browser notifications for new messages"
+            checked={settings.desktopNotifications}
+            onCheckedChange={(v) => updateSetting("desktopNotifications", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="sound" className="text-sm font-medium cursor-pointer">
-                Sound Alerts
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Play a sound when receiving messages
-              </p>
-            </div>
-            <Switch
-              id="sound"
-              checked={settings.soundEnabled}
-              onCheckedChange={(checked) => setSettings({ ...settings, soundEnabled: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="sound"
+            label="Sound Alerts"
+            description="Play a sound when receiving messages"
+            checked={settings.soundEnabled}
+            onCheckedChange={(v) => updateSetting("soundEnabled", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="previews" className="text-sm font-medium cursor-pointer">
-                Message Previews
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Show message content in notifications
-              </p>
-            </div>
-            <Switch
-              id="previews"
-              checked={settings.showPreviews}
-              onCheckedChange={(checked) => setSettings({ ...settings, showPreviews: checked })}
-            />
-          </div>
+          <SettingsSelect
+            id="notification-sound"
+            label="Notification Sound"
+            description="Choose your notification sound"
+            value={settings.notificationSound}
+            onValueChange={(v) => updateSetting("notificationSound", v as "default" | "subtle" | "none")}
+            options={[
+              { value: "default", label: "Default" },
+              { value: "subtle", label: "Subtle" },
+              { value: "none", label: "None" },
+            ]}
+            disabled={!settings.soundEnabled}
+          />
+
+          <SettingsToggle
+            id="previews"
+            label="Message Previews"
+            description="Show message content in notifications"
+            checked={settings.showPreviews}
+            onCheckedChange={(v) => updateSetting("showPreviews", v)}
+          />
 
           <Separator />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="mentions" className="text-sm font-medium cursor-pointer">
-                Notify on Mentions
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Get notified when someone mentions you
-              </p>
-            </div>
-            <Switch
+          <SettingsSection title="Notification Triggers" description="Choose what triggers notifications">
+            <SettingsToggle
               id="mentions"
+              label="Notify on Mentions"
+              description="Get notified when someone mentions you"
               checked={settings.notifyMentions}
-              onCheckedChange={(checked) => setSettings({ ...settings, notifyMentions: checked })}
+              onCheckedChange={(v) => updateSetting("notifyMentions", v)}
             />
-          </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="dms" className="text-sm font-medium cursor-pointer">
-                Notify on Direct Messages
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Get notified for direct messages
-              </p>
-            </div>
-            <Switch
+            <SettingsToggle
               id="dms"
+              label="Notify on Direct Messages"
+              description="Get notified for direct messages"
               checked={settings.notifyDMs}
-              onCheckedChange={(checked) => setSettings({ ...settings, notifyDMs: checked })}
+              onCheckedChange={(v) => updateSetting("notifyDMs", v)}
             />
-          </div>
+          </SettingsSection>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Chat Feature Privacy Settings
+ */
+export function ChatPrivacySettings() {
+  const { settings, updateSetting, isLoaded } = useChatSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Privacy Settings</CardTitle>
+          <CardDescription>
+            Control your privacy in conversations
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingsToggle
+            id="read-receipts"
+            label="Read Receipts"
+            description="Let others know when you've read their messages"
+            checked={settings.readReceipts}
+            onCheckedChange={(v) => updateSetting("readReceipts", v)}
+          />
+
+          <SettingsToggle
+            id="typing-indicator"
+            label="Typing Indicator"
+            description="Show when you're typing a message"
+            checked={settings.typingIndicator}
+            onCheckedChange={(v) => updateSetting("typingIndicator", v)}
+          />
+
+          <Separator />
+
+          <SettingsRadioGroup
+            id="online-status"
+            label="Online Status Visibility"
+            description="Who can see when you're online"
+            value={settings.onlineStatus}
+            onValueChange={(v) => updateSetting("onlineStatus", v as "everyone" | "contacts" | "nobody")}
+            options={[
+              { value: "everyone", label: "Everyone" },
+              { value: "contacts", label: "My Contacts Only" },
+              { value: "nobody", label: "Nobody" },
+            ]}
+          />
+
+          <SettingsRadioGroup
+            id="last-seen"
+            label="Last Seen Visibility"
+            description="Who can see your last active time"
+            value={settings.lastSeen}
+            onValueChange={(v) => updateSetting("lastSeen", v as "everyone" | "contacts" | "nobody")}
+            options={[
+              { value: "everyone", label: "Everyone" },
+              { value: "contacts", label: "My Contacts Only" },
+              { value: "nobody", label: "Nobody" },
+            ]}
+          />
         </CardContent>
       </Card>
     </div>
@@ -214,12 +247,11 @@ export function ChatNotificationsSettings() {
  * Chat Feature AI Settings
  */
 export function ChatAISettings() {
-  const [settings, setSettings] = useState({
-    aiEnabled: true,
-    autoSuggestions: true,
-    smartReplies: true,
-    languageCorrection: false,
-  });
+  const { settings, updateSetting, isLoaded } = useChatSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -231,72 +263,119 @@ export function ChatAISettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="ai-enabled" className="text-sm font-medium cursor-pointer">
-                Enable AI Assistant
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Use AI to enhance your chat experience
-              </p>
-            </div>
-            <Switch
-              id="ai-enabled"
-              checked={settings.aiEnabled}
-              onCheckedChange={(checked) => setSettings({ ...settings, aiEnabled: checked })}
-            />
-          </div>
+          <SettingsToggle
+            id="ai-enabled"
+            label="Enable AI Assistant"
+            description="Use AI to enhance your chat experience"
+            checked={settings.aiEnabled}
+            onCheckedChange={(v) => updateSetting("aiEnabled", v)}
+          />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="suggestions" className="text-sm font-medium cursor-pointer">
-                Auto-Suggestions
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Get AI-powered message suggestions as you type
-              </p>
-            </div>
-            <Switch
+          <Separator />
+
+          <SettingsSection title="AI Features" description="These require AI to be enabled">
+            <SettingsToggle
               id="suggestions"
+              label="Auto-Suggestions"
+              description="Get AI-powered message suggestions as you type"
               checked={settings.autoSuggestions}
-              onCheckedChange={(checked) => setSettings({ ...settings, autoSuggestions: checked })}
+              onCheckedChange={(v) => updateSetting("autoSuggestions", v)}
               disabled={!settings.aiEnabled}
             />
-          </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="smart-replies" className="text-sm font-medium cursor-pointer">
-                Smart Replies
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Quick AI-generated responses to messages
-              </p>
-            </div>
-            <Switch
+            <SettingsToggle
               id="smart-replies"
+              label="Smart Replies"
+              description="Quick AI-generated responses to messages"
               checked={settings.smartReplies}
-              onCheckedChange={(checked) => setSettings({ ...settings, smartReplies: checked })}
+              onCheckedChange={(v) => updateSetting("smartReplies", v)}
               disabled={!settings.aiEnabled}
             />
-          </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="language" className="text-sm font-medium cursor-pointer">
-                Language Correction
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Automatically correct grammar and spelling
-              </p>
-            </div>
-            <Switch
+            <SettingsToggle
               id="language"
+              label="Language Correction"
+              description="Automatically correct grammar and spelling"
               checked={settings.languageCorrection}
-              onCheckedChange={(checked) => setSettings({ ...settings, languageCorrection: checked })}
+              onCheckedChange={(v) => updateSetting("languageCorrection", v)}
               disabled={!settings.aiEnabled}
             />
-          </div>
+          </SettingsSection>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Chat Feature Media Settings
+ */
+export function ChatMediaSettings() {
+  const { settings, updateSetting, isLoaded } = useChatSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Media & Downloads</CardTitle>
+          <CardDescription>
+            Configure how media is handled in chats
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingsSection title="Auto-Download" description="Automatically download media when received">
+            <SettingsToggle
+              id="auto-images"
+              label="Images"
+              description="Automatically download images"
+              checked={settings.autoDownloadImages}
+              onCheckedChange={(v) => updateSetting("autoDownloadImages", v)}
+            />
+
+            <SettingsToggle
+              id="auto-videos"
+              label="Videos"
+              description="Automatically download videos"
+              checked={settings.autoDownloadVideos}
+              onCheckedChange={(v) => updateSetting("autoDownloadVideos", v)}
+            />
+
+            <SettingsToggle
+              id="auto-docs"
+              label="Documents"
+              description="Automatically download documents"
+              checked={settings.autoDownloadDocuments}
+              onCheckedChange={(v) => updateSetting("autoDownloadDocuments", v)}
+            />
+          </SettingsSection>
+
+          <Separator />
+
+          <SettingsSelect
+            id="image-quality"
+            label="Image Quality"
+            description="Quality of uploaded images"
+            value={settings.imageQuality}
+            onValueChange={(v) => updateSetting("imageQuality", v as "original" | "high" | "medium" | "low")}
+            options={[
+              { value: "original", label: "Original" },
+              { value: "high", label: "High" },
+              { value: "medium", label: "Medium" },
+              { value: "low", label: "Low (saves data)" },
+            ]}
+          />
+
+          <SettingsToggle
+            id="link-previews"
+            label="Link Previews"
+            description="Show previews for shared links"
+            checked={settings.linkPreviews}
+            onCheckedChange={(v) => updateSetting("linkPreviews", v)}
+          />
         </CardContent>
       </Card>
     </div>
@@ -305,9 +384,6 @@ export function ChatAISettings() {
 
 /**
  * Auto-register chat settings with workspace settings
- *
- * This hook is called when the chat feature component mounts,
- * automatically adding chat settings to the workspace settings UI.
  */
 export function useChatSettings() {
   useFeatureSettings("chat", [
@@ -326,17 +402,30 @@ export function useChatSettings() {
       component: ChatNotificationsSettings,
     },
     {
+      id: "chat-privacy",
+      label: "Privacy",
+      icon: Shield,
+      order: 102,
+      component: ChatPrivacySettings,
+    },
+    {
       id: "chat-ai",
       label: "AI Features",
       icon: Bot,
-      order: 102,
+      order: 103,
       component: ChatAISettings,
+    },
+    {
+      id: "chat-media",
+      label: "Media",
+      icon: ImageIcon,
+      order: 104,
+      component: ChatMediaSettings,
     },
   ]);
 }
 
 /**
  * Default Chat Settings Component
- * Wrapper for ChatGeneralSettings for backward compatibility
  */
 export const ChatSettings = ChatGeneralSettings;

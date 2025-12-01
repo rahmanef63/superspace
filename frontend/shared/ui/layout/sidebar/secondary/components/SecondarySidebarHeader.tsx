@@ -21,6 +21,12 @@ export interface SecondarySidebarHeaderProps {
   toolbar?: ReactNode;
   primaryAction?: SecondaryHeaderAction | ReactNode;
   secondaryActions?: ReactNode;
+  /** Slot for settings button - placed in header right side */
+  settingsSlot?: ReactNode;
+  /** Feature slug for automatic settings button integration */
+  featureSlug?: string;
+  /** Feature name for settings button tooltip */
+  featureName?: string;
   children?: ReactNode;
   className?: string;
 }
@@ -58,6 +64,9 @@ export function SecondarySidebarHeader({
   toolbar,
   primaryAction,
   secondaryActions,
+  settingsSlot,
+  featureSlug,
+  featureName,
   children,
   className,
 }: SecondarySidebarHeaderProps) {
@@ -72,8 +81,9 @@ export function SecondarySidebarHeader({
           {meta ? <div className="text-xs text-muted-foreground">{meta}</div> : null}
         </div>
 
-        {secondaryActions || primaryAction ? (
+        {secondaryActions || primaryAction || settingsSlot ? (
           <div className="flex flex-wrap items-center justify-end gap-2">
+            {settingsSlot}
             {secondaryActions}
             {renderPrimaryAction(primaryAction)}
           </div>

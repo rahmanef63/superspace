@@ -12,8 +12,11 @@ import { useQuery } from "convex/react"
 import type { Id } from "@convex/_generated/dataModel"
 import { api } from "@/convex/_generated/api"
 import { useSettingsRegistry } from "../SettingsRegistry"
-import { getFeatureSettingsBuilder } from "../featureSettingsRegistry"
+import { getFeatureSettingsBuilder, getAllRegisteredFeatures } from "../featureSettingsRegistry"
 import type { SettingsCategory } from "../types"
+
+// Import feature settings initializers
+import "@/frontend/features/initFeatureSettings"
 
 type MenuItemRecord = {
   _id: Id<"menuItems">
@@ -72,11 +75,24 @@ export function FeatureSettingsSync({
     )
   }, [menuItems])
 
+  // Stable stringified slugs to prevent infinite re-renders
+  const featureSlugs = useMemo(
+    () => featureMenuItems.map((m) => m.slug).sort().join(","),
+    [featureMenuItems]
+  )
+
   useEffect(() => {
     if (!workspaceId || featureMenuItems.length === 0) {
       previouslyRegistered.current.forEach((slug) => unregisterSettings(slug))
       previouslyRegistered.current = new Set()
       return
+    }
+
+    // Debug: log available builders and menu items
+    if (process.env.NODE_ENV === "development") {
+      const registeredFeatures = getAllRegisteredFeatures()
+      console.log("[FeatureSettingsSync] Registered feature builders:", registeredFeatures)
+      console.log("[FeatureSettingsSync] Menu items:", featureMenuItems.map(m => m.slug))
     }
 
     const registeredThisRun = new Set<string>()
@@ -87,6 +103,10 @@ export function FeatureSettingsSync({
       // Fallback to static builders (legacy/placeholders)
       const builder = registryBuilder || staticBuilders[menuItem.slug]
       const categories = builder ? builder({ menuItem }) : []
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[FeatureSettingsSync] ${menuItem.slug}: builder=${!!registryBuilder}, categories=${categories.length}`)
+      }
 
       if (categories.length > 0) {
         registerSettings({
@@ -106,7 +126,8 @@ export function FeatureSettingsSync({
     })
 
     previouslyRegistered.current = registeredThisRun
-  }, [featureMenuItems, registerSettings, unregisterSettings, workspaceId, staticBuilders])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [featureSlugs, workspaceId])
 
   return null
 }

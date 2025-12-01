@@ -1,9 +1,13 @@
-// Re-export all settings components from their respective folders
-export { GeneralSettings } from './general';
-export { AccountSettings } from './account';  
-export { VideoVoiceSettings } from './video-voice';
-export { NotificationSettings } from './notifications';
-export { PersonalizationSettings } from './personalization';
-export { StorageSettings } from './storage';
-export { ShortcutsSettings } from './shortcuts';
-export { HelpSettings } from './help';
+// Re-export all settings components from personal folder
+// Note: Feature-specific settings (Chat, Calls, etc.) are in their respective
+// feature folders and accessed via Features tab or settings button
+export { 
+  GeneralSettings,
+  AccountSettings,
+  VideoVoiceSettings,
+  NotificationSettings,
+  PersonalizationSettings,
+  StorageSettings,
+  ShortcutsSettings,
+  HelpSettings,
+} from './personal';

@@ -69,6 +69,10 @@ export function DynamicSettingsView({
 
   // Set default category on mount
   const lastAppliedDefault = React.useRef<string | undefined>()
+  const categoryIds = React.useMemo(
+    () => allCategories.map((c) => c.id).join(","),
+    [allCategories]
+  )
 
   React.useEffect(() => {
     if (allCategories.length === 0) {
@@ -95,10 +99,11 @@ export function DynamicSettingsView({
       ? allCategories.some((cat) => cat.id === activeCategory)
       : false
 
-    if (!activeStillValid) {
+    if (!activeStillValid && allCategories[0]) {
       setActiveCategory(allCategories[0].id)
     }
-  }, [defaultCategory, allCategories, activeCategory, setActiveCategory])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCategory, categoryIds])
 
   // Sync sidebar visibility with mobile state
   React.useEffect(() => {
@@ -107,17 +112,7 @@ export function DynamicSettingsView({
 
   return (
     <div className={cn("flex flex-col w-full h-full bg-background", className)}>
-      {/* Header */}
-      {(title || description) && (
-        <div className="border-b border-border px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-            {description && (
-              <p className="mt-2 text-muted-foreground">{description}</p>
-            )}
-          </div>
-        </div>
-      )}
+      
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">

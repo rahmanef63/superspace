@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react"
 import type { Id } from "@convex/_generated/dataModel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, Settings, User } from "lucide-react"
-import { SettingsView } from "@/frontend/shared/settings"
+import { AlertTriangle, Settings, User, Puzzle } from "lucide-react"
+import { SettingsView, SettingsRegistryProvider } from "@/frontend/shared/settings"
+import { DynamicSettingsView } from "@/frontend/shared/settings/components/DynamicSettingsView"
+import { FeatureSettingsSync } from "@/frontend/shared/settings/components/FeatureSettingsSync"
 import { WorkspaceSettings } from "@/frontend/shared/settings/workspace"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
@@ -30,6 +32,13 @@ export default function WorkspaceSettingsPage({ workspaceId }: WorkspaceSettings
         label: "Personal",
         icon: User,
         description: "Configure your profile, preferences, and notifications.",
+      },
+      {
+        value: "features",
+        label: "Features",
+        icon: Puzzle,
+        description: "Configure settings for installed features.",
+        disabled: !hasWorkspace,
       },
       {
         value: "workspace",
@@ -77,6 +86,32 @@ export default function WorkspaceSettingsPage({ workspaceId }: WorkspaceSettings
           <div className="flex h-full w-full min-h-0 min-w-0 overflow-hidden">
             <SettingsView defaultCategory="general" />
           </div>
+        </TabsContent>
+
+        <TabsContent value="features" className="flex flex-1 overflow-hidden">
+          {hasWorkspace && workspaceId ? (
+            <div className="flex h-full w-full min-h-0 min-w-0 overflow-hidden">
+              <SettingsRegistryProvider>
+                <FeatureSettingsSync workspaceId={workspaceId} />
+                <DynamicSettingsView />
+              </SettingsRegistryProvider>
+            </div>
+          ) : (
+            <div className="flex flex-1 items-center justify-center p-6">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>No workspace selected</CardTitle>
+                  <CardDescription>
+                    Feature settings require an active workspace. Select or create a workspace to manage feature
+                    configuration.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Switch to a workspace from the sidebar to view settings for installed features.
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="workspace" className="flex flex-1 overflow-hidden">

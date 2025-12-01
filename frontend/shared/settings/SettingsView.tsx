@@ -11,7 +11,6 @@ import { useMemo } from "react"
 import {
   Settings,
   User,
-  MessageSquare,
   Video,
   Bell,
   Palette,
@@ -22,15 +21,16 @@ import {
 import { SettingsRegistryProvider } from "./SettingsRegistry"
 import { DynamicSettingsView } from "./components/DynamicSettingsView"
 import type { SettingsCategory } from "./types"
-import { GeneralSettings } from "./general"
-import { AccountSettings } from "./account"
-import { ChatsSettings } from "./chats"
-import { VideoVoiceSettings } from "./video-voice"
-import { NotificationSettings } from "./notifications"
-import { PersonalizationSettings } from "./personalization"
-import { StorageSettings } from "./storage"
-import { ShortcutsSettings } from "./shortcuts"
-import { HelpSettings } from "./help"
+import {
+  GeneralSettings,
+  AccountSettings,
+  VideoVoiceSettings,
+  NotificationSettings,
+  PersonalizationSettings,
+  StorageSettings,
+  ShortcutsSettings,
+  HelpSettings,
+} from "./personal"
 
 /**
  * User-level settings (account, preferences, etc.)
@@ -56,13 +56,6 @@ export function SettingsView({ defaultCategory = "general" }: SettingsViewProps 
         icon: User,
         order: 10,
         component: AccountSettings,
-      },
-      {
-        id: "chats",
-        label: "Chats",
-        icon: MessageSquare,
-        order: 20,
-        component: ChatsSettings,
       },
       {
         id: "video-voice",
@@ -115,12 +108,7 @@ export function SettingsView({ defaultCategory = "general" }: SettingsViewProps 
       coreSettings={userSettings}
       defaultCategory={defaultCategory}
     >
-      <DynamicSettingsView
-        title="Settings"
-        description="Manage your account, preferences, and workspace defaults."
-        groupByFeature={false}
-        defaultCategory={defaultCategory}
-      />
+      <DynamicSettingsView />
     </SettingsRegistryProvider>
   )
 }

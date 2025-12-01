@@ -23,10 +23,14 @@ export default function NotificationsPage({ workspaceId }: NotificationsPageProp
   return (
     <div className="flex h-full flex-col">
       <div className="border-b p-4">
-        <h1 className="text-2xl font-bold">Notifications</h1>
-        <p className="text-sm text-muted-foreground">
-          System notifications and activity feed
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Notifications</h1>
+            <p className="text-sm text-muted-foreground">
+              System notifications and activity feed
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4">

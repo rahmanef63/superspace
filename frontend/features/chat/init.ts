@@ -6,11 +6,13 @@
  */
 
 import { registerFeatureSettings } from "@/frontend/shared/settings"
-import { MessageSquare, Bell, Bot } from "lucide-react"
+import { MessageSquare, Bell, Bot, Shield, Image as ImageIcon } from "lucide-react"
 import {
   ChatGeneralSettings,
   ChatNotificationsSettings,
+  ChatPrivacySettings,
   ChatAISettings,
+  ChatMediaSettings,
 } from "./settings/ChatSettings"
 
 // ============================================================================
@@ -33,11 +35,25 @@ registerFeatureSettings("chat", () => [
     component: ChatNotificationsSettings,
   },
   {
+    id: "chat-privacy",
+    label: "Privacy",
+    icon: Shield,
+    order: 120,
+    component: ChatPrivacySettings,
+  },
+  {
     id: "chat-ai",
     label: "AI Features",
     icon: Bot,
-    order: 120,
+    order: 130,
     component: ChatAISettings,
+  },
+  {
+    id: "chat-media",
+    label: "Media",
+    icon: ImageIcon,
+    order: 140,
+    component: ChatMediaSettings,
   },
 ])
 

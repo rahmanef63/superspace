@@ -39,7 +39,6 @@ export function RefactoredAIView({ workspaceId }: RefactoredAIViewProps) {
             showSearch={false}
             showActions={false}
             onMenuClick={handleBack}
-            settingsSlug="ai"
           />
           <AIChatContainer
             workspaceId={workspaceId}
@@ -57,7 +56,6 @@ export function RefactoredAIView({ workspaceId }: RefactoredAIViewProps) {
           showSearch={true}
           showActions={false}
           onMenuClick={handleBack}
-          settingsSlug="ai"
         />
         <AIListView selectedChatId={selectedChatId} onChatSelect={setSelectedChatId} />
       </div>

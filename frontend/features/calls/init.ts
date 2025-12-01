@@ -6,10 +6,12 @@
  */
 
 import { registerFeatureSettings } from "@/frontend/shared/settings"
-import { Phone, Mic } from "lucide-react"
+import { Phone, Mic, PhoneCall, Circle } from "lucide-react"
 import {
   CallsQualitySettings,
   CallsDeviceSettings,
+  CallsBehaviorSettings,
+  CallsRecordingSettings,
 } from "./settings/CallsSettings"
 
 // ============================================================================
@@ -30,6 +32,20 @@ registerFeatureSettings("calls", () => [
     icon: Mic,
     order: 210,
     component: CallsDeviceSettings,
+  },
+  {
+    id: "calls-behavior",
+    label: "Behavior",
+    icon: PhoneCall,
+    order: 220,
+    component: CallsBehaviorSettings,
+  },
+  {
+    id: "calls-recording",
+    label: "Recording",
+    icon: Circle,
+    order: 230,
+    component: CallsRecordingSettings,
   },
 ])
 

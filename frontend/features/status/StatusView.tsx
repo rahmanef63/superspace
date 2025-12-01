@@ -29,7 +29,6 @@ export function StatusView() {
             showSearch={false}
             showActions={false}
             onMenuClick={handleBack}
-            settingsSlug="status"
           />
           <StatusDetailView statusId={selectedStatusId} />
         </div>
@@ -43,7 +42,6 @@ export function StatusView() {
           showSearch={true}
           showActions={false}
           onMenuClick={handleBack}
-          settingsSlug="status"
         />
         <StatusListView selectedStatusId={selectedStatusId} onStatusSelect={setSelectedStatusId} />
       </div>

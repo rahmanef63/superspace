@@ -138,7 +138,6 @@ export function ChatDetailView() {
           name: selectedChat.name,
           avatar: selectedChat.avatar,
         }}
-        settingsSlug="chats"
       />
       
       <div className="flex-1 overflow-y-auto p-4">

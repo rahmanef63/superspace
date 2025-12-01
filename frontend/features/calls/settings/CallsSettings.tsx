@@ -1,138 +1,99 @@
 "use client";
 
-import { Phone, Video, Mic, Speaker } from "lucide-react";
+import { Phone, Video, Mic, Speaker, PhoneCall, Circle } from "lucide-react";
 import { useFeatureSettings } from "@/frontend/shared/settings";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useCallsSettingsStorage } from "./useCallsSettings";
+import {
+  SettingsSection,
+  SettingsToggle,
+  SettingsSelect,
+  SettingsSlider,
+} from "@/frontend/shared/settings/primitives";
 
 /**
- * Calls Feature Settings
- *
- * Proof-of-concept showing how a feature can have its own settings
- * that auto-register with workspace settings.
- *
- * This demonstrates:
- * - Settings icon integration
- * - Multiple settings categories for one feature
- * - Conditional settings based on feature state
+ * Calls Quality Settings - Audio/Video quality controls
  */
 export function CallsQualitySettings() {
-  const [settings, setSettings] = useState({
-    videoQuality: "auto",
-    audioQuality: "high",
-    noiseSuppression: true,
-    echoCancellation: true,
-    autoAdjustQuality: true,
-  });
+  const { settings, updateSetting, resetSettings, isLoaded } = useCallsSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Call Quality</CardTitle>
-          <CardDescription>
-            Configure audio and video quality settings
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Call Quality</CardTitle>
+              <CardDescription>
+                Configure audio and video quality settings
+              </CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" onClick={resetSettings}>
+              Reset
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="video-quality" className="text-sm font-medium">
-              Video Quality
-            </Label>
-            <Select
-              value={settings.videoQuality}
-              onValueChange={(value) => setSettings({ ...settings, videoQuality: value })}
-            >
-              <SelectTrigger id="video-quality" className="max-w-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="auto">Auto (Recommended)</SelectItem>
-                <SelectItem value="high">High (720p)</SelectItem>
-                <SelectItem value="medium">Medium (480p)</SelectItem>
-                <SelectItem value="low">Low (360p)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Higher quality requires more bandwidth
-            </p>
-          </div>
+        <CardContent className="space-y-4">
+          <SettingsSelect
+            id="video-quality"
+            label="Video Quality"
+            description="Higher quality requires more bandwidth"
+            value={settings.videoQuality}
+            onValueChange={(v) => updateSetting("videoQuality", v as "auto" | "high" | "medium" | "low")}
+            options={[
+              { value: "auto", label: "Auto (Recommended)" },
+              { value: "high", label: "High (720p)" },
+              { value: "medium", label: "Medium (480p)" },
+              { value: "low", label: "Low (360p)" },
+            ]}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="audio-quality" className="text-sm font-medium">
-              Audio Quality
-            </Label>
-            <Select
-              value={settings.audioQuality}
-              onValueChange={(value) => setSettings({ ...settings, audioQuality: value })}
-            >
-              <SelectTrigger id="audio-quality" className="max-w-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="high">High (HD Voice)</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low (Save Data)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              High quality audio for clearer conversations
-            </p>
-          </div>
+          <SettingsSelect
+            id="audio-quality"
+            label="Audio Quality"
+            description="High quality audio for clearer conversations"
+            value={settings.audioQuality}
+            onValueChange={(v) => updateSetting("audioQuality", v as "high" | "medium" | "low")}
+            options={[
+              { value: "high", label: "High (HD Voice)" },
+              { value: "medium", label: "Medium" },
+              { value: "low", label: "Low (Save Data)" },
+            ]}
+          />
 
           <Separator />
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="noise" className="text-sm font-medium cursor-pointer">
-                Noise Suppression
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Reduce background noise during calls
-              </p>
-            </div>
-            <Switch
-              id="noise"
+          <SettingsSection title="Audio Processing" description="Improve call audio quality">
+            <SettingsToggle
+              id="noise-suppression"
+              label="Noise Suppression"
+              description="Reduce background noise during calls"
               checked={settings.noiseSuppression}
-              onCheckedChange={(checked) => setSettings({ ...settings, noiseSuppression: checked })}
+              onCheckedChange={(v) => updateSetting("noiseSuppression", v)}
             />
-          </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="echo" className="text-sm font-medium cursor-pointer">
-                Echo Cancellation
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Eliminate echo and feedback
-              </p>
-            </div>
-            <Switch
-              id="echo"
+            <SettingsToggle
+              id="echo-cancellation"
+              label="Echo Cancellation"
+              description="Eliminate echo and feedback"
               checked={settings.echoCancellation}
-              onCheckedChange={(checked) => setSettings({ ...settings, echoCancellation: checked })}
+              onCheckedChange={(v) => updateSetting("echoCancellation", v)}
             />
-          </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5 flex-1">
-              <Label htmlFor="auto-adjust" className="text-sm font-medium cursor-pointer">
-                Auto-Adjust Quality
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Automatically adjust quality based on connection
-              </p>
-            </div>
-            <Switch
+            <SettingsToggle
               id="auto-adjust"
+              label="Auto-Adjust Quality"
+              description="Automatically adjust quality based on connection"
               checked={settings.autoAdjustQuality}
-              onCheckedChange={(checked) => setSettings({ ...settings, autoAdjustQuality: checked })}
+              onCheckedChange={(v) => updateSetting("autoAdjustQuality", v)}
             />
-          </div>
+          </SettingsSection>
         </CardContent>
       </Card>
     </div>
@@ -140,15 +101,33 @@ export function CallsQualitySettings() {
 }
 
 /**
- * Calls Device Settings
+ * Calls Device Settings - Input/Output device selection
  */
 export function CallsDeviceSettings() {
-  const [settings, setSettings] = useState({
-    defaultMicrophone: "default",
-    defaultSpeaker: "default",
-    defaultCamera: "default",
-    testInProgress: false,
-  });
+  const { settings, updateSetting, isLoaded } = useCallsSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
+
+  // In a real implementation, these would be populated from navigator.mediaDevices.enumerateDevices()
+  const microphoneOptions = [
+    { value: "default", label: "Default Microphone" },
+    { value: "built-in", label: "Built-in Microphone" },
+    { value: "headset", label: "Headset Microphone" },
+  ];
+
+  const speakerOptions = [
+    { value: "default", label: "Default Speaker" },
+    { value: "built-in", label: "Built-in Speaker" },
+    { value: "headset", label: "Headset" },
+  ];
+
+  const cameraOptions = [
+    { value: "default", label: "Default Camera" },
+    { value: "built-in", label: "Built-in Camera" },
+    { value: "external", label: "External Camera" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -159,66 +138,186 @@ export function CallsDeviceSettings() {
             Select your preferred devices for calls
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="microphone" className="text-sm font-medium flex items-center gap-2">
-              <Mic className="w-4 h-4" />
-              Microphone
-            </Label>
-            <Select
-              value={settings.defaultMicrophone}
-              onValueChange={(value) => setSettings({ ...settings, defaultMicrophone: value })}
-            >
-              <SelectTrigger id="microphone">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default Microphone</SelectItem>
-                <SelectItem value="built-in">Built-in Microphone</SelectItem>
-                <SelectItem value="headset">Headset Microphone</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardContent className="space-y-4">
+          <SettingsSelect
+            id="microphone"
+            label="Microphone"
+            description="Select your preferred microphone"
+            value={settings.defaultMicrophone}
+            onValueChange={(v) => updateSetting("defaultMicrophone", v)}
+            options={microphoneOptions}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="speaker" className="text-sm font-medium flex items-center gap-2">
-              <Speaker className="w-4 h-4" />
-              Speaker
-            </Label>
-            <Select
-              value={settings.defaultSpeaker}
-              onValueChange={(value) => setSettings({ ...settings, defaultSpeaker: value })}
-            >
-              <SelectTrigger id="speaker">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default Speaker</SelectItem>
-                <SelectItem value="built-in">Built-in Speaker</SelectItem>
-                <SelectItem value="headset">Headset</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SettingsSelect
+            id="speaker"
+            label="Speaker"
+            description="Select your preferred speaker"
+            value={settings.defaultSpeaker}
+            onValueChange={(v) => updateSetting("defaultSpeaker", v)}
+            options={speakerOptions}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="camera" className="text-sm font-medium flex items-center gap-2">
-              <Video className="w-4 h-4" />
-              Camera
-            </Label>
-            <Select
-              value={settings.defaultCamera}
-              onValueChange={(value) => setSettings({ ...settings, defaultCamera: value })}
-            >
-              <SelectTrigger id="camera">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default Camera</SelectItem>
-                <SelectItem value="built-in">Built-in Camera</SelectItem>
-                <SelectItem value="external">External Camera</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SettingsSelect
+            id="camera"
+            label="Camera"
+            description="Select your preferred camera"
+            value={settings.defaultCamera}
+            onValueChange={(v) => updateSetting("defaultCamera", v)}
+            options={cameraOptions}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Calls Behavior Settings - Call handling preferences
+ */
+export function CallsBehaviorSettings() {
+  const { settings, updateSetting, isLoaded } = useCallsSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Call Behavior</CardTitle>
+          <CardDescription>
+            Configure how calls are handled
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingsToggle
+            id="auto-answer"
+            label="Auto-Answer Calls"
+            description="Automatically answer incoming calls"
+            checked={settings.autoAnswerCalls}
+            onCheckedChange={(v) => updateSetting("autoAnswerCalls", v)}
+          />
+
+          <SettingsToggle
+            id="answer-video"
+            label="Answer with Video"
+            description="Start video when answering calls"
+            checked={settings.answerWithVideo}
+            onCheckedChange={(v) => updateSetting("answerWithVideo", v)}
+          />
+
+          <SettingsToggle
+            id="call-waiting"
+            label="Call Waiting"
+            description="Allow incoming calls while on another call"
+            checked={settings.callWaiting}
+            onCheckedChange={(v) => updateSetting("callWaiting", v)}
+          />
+
+          <Separator />
+
+          <SettingsSelect
+            id="ringtone"
+            label="Ringtone"
+            description="Choose your ringtone"
+            value={settings.ringtone}
+            onValueChange={(v) => updateSetting("ringtone", v as "default" | "classic" | "digital" | "silent")}
+            options={[
+              { value: "default", label: "Default" },
+              { value: "classic", label: "Classic" },
+              { value: "digital", label: "Digital" },
+              { value: "silent", label: "Silent" },
+            ]}
+          />
+
+          <SettingsSlider
+            id="ring-duration"
+            label="Ring Duration"
+            description="How long to ring before declining"
+            value={settings.ringDuration}
+            onValueChange={(v) => updateSetting("ringDuration", v[0])}
+            min={10}
+            max={60}
+            step={5}
+            valueFormatter={(v) => `${v}s`}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Calls Recording Settings
+ */
+export function CallsRecordingSettings() {
+  const { settings, updateSetting, isLoaded } = useCallsSettingsStorage();
+
+  if (!isLoaded) {
+    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Recording</CardTitle>
+          <CardDescription>
+            Configure call recording options
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingsToggle
+            id="allow-recording"
+            label="Allow Recording"
+            description="Enable call recording feature"
+            checked={settings.allowRecording}
+            onCheckedChange={(v) => updateSetting("allowRecording", v)}
+          />
+
+          <SettingsSelect
+            id="recording-quality"
+            label="Recording Quality"
+            description="Quality of recorded calls"
+            value={settings.recordingQuality}
+            onValueChange={(v) => updateSetting("recordingQuality", v as "high" | "medium" | "low")}
+            options={[
+              { value: "high", label: "High" },
+              { value: "medium", label: "Medium" },
+              { value: "low", label: "Low (smaller files)" },
+            ]}
+            disabled={!settings.allowRecording}
+          />
+
+          <SettingsToggle
+            id="auto-save"
+            label="Auto-Save Recordings"
+            description="Automatically save call recordings"
+            checked={settings.autoSaveRecordings}
+            onCheckedChange={(v) => updateSetting("autoSaveRecordings", v)}
+            disabled={!settings.allowRecording}
+          />
+
+          <Separator />
+
+          <SettingsSection title="Bandwidth" description="Data usage settings">
+            <SettingsToggle
+              id="data-saver"
+              label="Data Saver Mode"
+              description="Reduce data usage during calls"
+              checked={settings.dataSaverMode}
+              onCheckedChange={(v) => updateSetting("dataSaverMode", v)}
+            />
+
+            <SettingsToggle
+              id="limit-mobile"
+              label="Limit Video on Mobile"
+              description="Reduce video quality when on mobile data"
+              checked={settings.limitVideoOnMobile}
+              onCheckedChange={(v) => updateSetting("limitVideoOnMobile", v)}
+            />
+          </SettingsSection>
         </CardContent>
       </Card>
     </div>
@@ -227,12 +326,9 @@ export function CallsDeviceSettings() {
 
 /**
  * Auto-register calls settings with workspace settings
- *
- * This is the key hook that makes the magic happen!
- * When this is called, the calls settings automatically appear in workspace settings.
  */
 export function useCallsSettings() {
-  useFeatureSettings("wa-calls", [
+  useFeatureSettings("calls", [
     {
       id: "calls-quality",
       label: "Call Quality",
@@ -246,6 +342,20 @@ export function useCallsSettings() {
       icon: Mic,
       order: 201,
       component: CallsDeviceSettings,
+    },
+    {
+      id: "calls-behavior",
+      label: "Behavior",
+      icon: PhoneCall,
+      order: 202,
+      component: CallsBehaviorSettings,
+    },
+    {
+      id: "calls-recording",
+      label: "Recording",
+      icon: Circle,
+      order: 203,
+      component: CallsRecordingSettings,
     },
   ]);
 }

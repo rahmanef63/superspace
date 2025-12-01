@@ -155,13 +155,7 @@ export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
         workspaceId={workspaceId}
         staticBuilders={LEGACY_FEATURE_BUILDERS}
       />
-      <DynamicSettingsView
-        title="Workspace Settings"
-        description="Manage your workspace configuration and installed feature settings"
-        groupByFeature
-      />
+      <DynamicSettingsView />
     </SettingsRegistryProvider>
   )
 }
-
-export { FEATURE_SETTINGS_DEFAULT_CATEGORY }

@@ -26,5 +26,16 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: ['project-management'],
+    recommended: [
+      'startup', 'business-pro', 'digital-agency',
+    ],
+    optional: [
+      'sales-crm', 'knowledge-base', 'education',
+    ],
+  },
+
   tags: ['projects', 'collaboration', 'discussions'],
 })

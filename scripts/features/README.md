@@ -114,20 +114,129 @@ pnpm run list:features --category analytics
 
 ### 3. `create.ts` - Create Feature
 
-Create a new feature with scaffolding.
+Create a new feature with scaffolding. Now includes bundle configuration!
 
 ```bash
-pnpm run create:feature
+pnpm run create:feature <slug> [options]
+
+# Example with bundles:
+pnpm run create:feature analytics --type optional --category analytics --icon BarChart \
+  --bundles-recommended startup,business-pro \
+  --bundles-optional custom
+
+# Available bundle options:
+# --bundles-core        Features that cannot be disabled
+# --bundles-recommended Features enabled by default (can be disabled)
+# --bundles-optional    Features disabled by default (can be enabled)
 ```
+
+**Available Bundle IDs:**
+- Business: `startup`, `business-pro`, `sales-crm`
+- Productivity: `project-management`, `knowledge-base`
+- Personal: `personal-minimal`, `personal-productivity`, `family`
+- Creative: `content-creator`, `digital-agency`
+- Other: `education`, `community`, `custom`
 
 ---
 
 ### 4. `sync.ts` - Sync Features
 
-Sync features with the registry.
+Sync features with the registry and validate bundle configurations.
 
 ```bash
 pnpm run sync:features
+```
+
+This script:
+- Validates all feature configurations
+- **Validates bundle configurations**
+- Syncs DEFAULT_MENU_ITEMS
+- Syncs optional features catalog
+- Generates bundle coverage report
+
+---
+
+### 5. `validate-bundles.ts` - Validate Bundles (NEW!)
+
+Comprehensive bundle validation script.
+
+```bash
+pnpm run validate:bundles
+```
+
+**Checks:**
+- All features have bundle configuration (except system features)
+- Bundle IDs are valid
+- No duplicate bundles across categories
+- All bundles have minimum required features
+- Bundle membership is consistent with feature type
+
+**Output includes:**
+- Error report for invalid configurations
+- Warning report for potential issues
+- Statistics on bundle coverage
+- Detailed feature breakdown per bundle
+
+---
+
+### 6. `test-registry.ts` - Test Registry
+
+Test the feature registry system including bundle configuration.
+
+```bash
+pnpm run test:registry
+```
+
+---
+
+### 7. `generate-registry.ts` - Generate Registry
+
+Auto-generate `lib/features/registry.ts` from feature configs.
+
+```bash
+pnpm run generate:registry
+```
+
+Now includes bundle-related functions:
+- `getFeaturesByBundle(bundleId, role?)`
+- `getBundleCoreFeatures(bundleId)`
+- `getBundleRecommendedFeatures(bundleId)`
+- `getBundleOptionalFeatures(bundleId)`
+
+---
+
+## 🎯 Bundle System
+
+The bundle system allows features to declare which workspace templates they belong to.
+
+### How it works:
+
+1. **Each feature declares its bundle membership** in `config.ts`:
+   ```typescript
+   bundles: {
+     core: ['startup', 'business-pro'],      // Cannot be disabled
+     recommended: ['project-management'],     // Enabled by default
+     optional: ['sales-crm', 'custom'],       // User can enable
+   }
+   ```
+
+2. **Bundles are built dynamically** from feature configs - NO HARDCODING!
+
+3. **The OnboardingFlow** reads bundle configuration to offer workspace templates.
+
+### Bundle Roles:
+
+| Role | Meaning | User Control |
+|------|---------|--------------|
+| `core` | Essential feature | Cannot disable |
+| `recommended` | Suggested feature | Can disable |
+| `optional` | Available feature | Must enable |
+
+### Running Full Sync:
+
+```bash
+pnpm run sync:all
+# Runs: sync:features → generate:registry → generate:manifest → validate:bundles
 ```
 
 ---
@@ -166,6 +275,10 @@ pnpm run analyze:feature --list
 # Verify output
 ls docs/features/
 cat docs/features/2025-10-27-cms.md
+
+# Test bundles
+pnpm run validate:bundles
+pnpm run test:registry
 ```
 
 ## 📚 Related Documentation
@@ -176,4 +289,4 @@ cat docs/features/2025-10-27-cms.md
 
 ---
 
-**Note:** Semua scripts menggunakan feature registry system yang auto-discover features dari `frontend/features/*/config.ts`.
+**Note:** Semua scripts menggunakan feature registry system yang auto-discover features dari `frontend/features/*/config.ts`. Bundle configuration juga 100% dynamic - features declare their own bundle membership!

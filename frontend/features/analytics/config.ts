@@ -30,6 +30,19 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'startup', 'business-pro', 'sales-crm',
+      'project-management', 'digital-agency',
+    ],
+    optional: [
+      'knowledge-base', 'personal-productivity',
+      'content-creator', 'education', 'community',
+    ],
+  },
+
   tags: ['analytics', 'insights', 'metrics', 'dashboard'],
 
   permissions: [

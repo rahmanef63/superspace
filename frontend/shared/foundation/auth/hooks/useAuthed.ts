@@ -7,19 +7,24 @@ export function useAuthed() {
   const { isAuthenticated, isLoading: convexLoading } = useConvexAuth()
   const { isSignedIn, isLoaded } = useAuth()
 
-  // Prioritize Clerk authentication to avoid redirect loops
-  // Convex auth might take a moment to sync
-  const isAuthed = Boolean(isSignedIn || isAuthenticated)
-  const isLoading = !isLoaded || (isSignedIn && convexLoading)
+  // Wait for Clerk to fully load first
+  // Only show "not authenticated" after Clerk has loaded
+  const isLoading = !isLoaded || convexLoading
+  
+  // User is authed if Clerk says signed in OR Convex says authenticated
+  // But only trust this after loading is complete
+  const isAuthed = isLoading ? false : Boolean(isSignedIn || isAuthenticated)
 
-  console.log('[useAuthed]', {
-    isSignedIn: Boolean(isSignedIn),
-    isAuthenticated: Boolean(isAuthenticated),
-    isAuthed,
-    isLoading,
-    clerkLoaded: isLoaded,
-    convexLoading
-  })
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[useAuthed]', {
+      isSignedIn: Boolean(isSignedIn),
+      isAuthenticated: Boolean(isAuthenticated),
+      isAuthed,
+      isLoading,
+      clerkLoaded: isLoaded,
+      convexLoading
+    })
+  }
 
   return {
     isAuthed,

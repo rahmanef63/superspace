@@ -70,7 +70,7 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
   const activeUsers = members?.length || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-bold text-primary-foreground">
       <PageHeader
         title={`Welcome back${workspace?.name ? ` to ${workspace.name}` : ""}!`}
         subtitle="Here's what's happening with your workspace today."

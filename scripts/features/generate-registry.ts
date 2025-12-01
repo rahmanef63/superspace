@@ -195,6 +195,55 @@ export function getAllFeatureIds(): string[] {
 }
 
 /**
+ * Get features by bundle ID and role
+ * @param bundleId - The bundle ID to filter by
+ * @param role - Optional: 'core' | 'recommended' | 'optional'
+ */
+export function getFeaturesByBundle(
+  bundleId: string,
+  role?: 'core' | 'recommended' | 'optional'
+): FeatureConfig[] {
+  const flattenFeatures = (features: FeatureConfig[]): FeatureConfig[] => {
+    return features.flatMap(f => [f, ...(f.children ? flattenFeatures(f.children) : [])])
+  }
+  
+  return flattenFeatures(DISCOVERED_FEATURES).filter(feature => {
+    if (!feature.bundles) return false
+    
+    if (role) {
+      return feature.bundles[role]?.includes(bundleId as any) ?? false
+    }
+    
+    return (
+      feature.bundles.core?.includes(bundleId as any) ||
+      feature.bundles.recommended?.includes(bundleId as any) ||
+      feature.bundles.optional?.includes(bundleId as any)
+    )
+  })
+}
+
+/**
+ * Get core features for a bundle (cannot be disabled)
+ */
+export function getBundleCoreFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'core')
+}
+
+/**
+ * Get recommended features for a bundle (enabled by default)
+ */
+export function getBundleRecommendedFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'recommended')
+}
+
+/**
+ * Get optional features for a bundle (disabled by default)
+ */
+export function getBundleOptionalFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'optional')
+}
+
+/**
  * Validate registry for duplicates and issues
  */
 export function validateRegistry(): { valid: boolean; errors: string[] } {

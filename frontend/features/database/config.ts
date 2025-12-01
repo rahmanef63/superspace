@@ -26,6 +26,21 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'knowledge-base', 'content-creator',
+      'personal-productivity',
+    ],
+    optional: [
+      'startup', 'business-pro', 'project-management',
+      'personal-minimal', 'digital-agency', 'education',
+    ],
+  },
+
+  tags: ['database', 'tables', 'data-management'],
+
   permissions: [
     'database.read',      // Read database tables, rows, fields, and views
     'database.create',    // Create new tables, rows, fields, and views

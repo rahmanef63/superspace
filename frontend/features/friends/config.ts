@@ -25,4 +25,16 @@ export default defineFeature({
     state: 'stable',
     isReady: true,
   },
+
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: ['community'],
+    optional: [
+      'startup', 'business-pro', 'project-management',
+      'personal-productivity', 'education',
+    ],
+  },
+
+  tags: ['social', 'connections', 'networking'],
 })

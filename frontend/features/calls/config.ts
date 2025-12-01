@@ -26,6 +26,16 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: ['business-pro'],
+    optional: [
+      'startup', 'sales-crm', 'project-management',
+      'digital-agency', 'education', 'community',
+    ],
+  },
+
   tags: ['communication', 'calls', 'voice', 'video'],
 
   hasSettings: true,

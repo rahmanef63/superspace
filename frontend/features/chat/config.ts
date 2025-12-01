@@ -26,6 +26,19 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'startup', 'business-pro', 'sales-crm',
+      'project-management', 'knowledge-base',
+      'personal-minimal', 'personal-productivity', 'family',
+      'content-creator', 'digital-agency',
+      'education', 'community',
+    ],
+    optional: [],
+  },
+
   hasSettings: true,
   settingsPath: 'features/chat/components/calls/settings',
 })

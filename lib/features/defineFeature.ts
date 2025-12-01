@@ -8,6 +8,39 @@
 import { z } from 'zod'
 
 // ============================================================================
+// BUNDLE IDS - All available workspace bundle templates
+// ============================================================================
+
+/**
+ * Available Bundle IDs
+ * Features declare which bundles they belong to via `bundles` config
+ */
+export const BUNDLE_IDS = [
+  // Business
+  'startup',
+  'business-pro',
+  'sales-crm',
+  // Productivity
+  'project-management',
+  'knowledge-base',
+  // Personal
+  'personal-minimal',
+  'personal-productivity',
+  'family',
+  // Creative
+  'content-creator',
+  'digital-agency',
+  // Education
+  'education',
+  // Community
+  'community',
+  // Special
+  'custom', // All optional features available
+] as const
+
+export type BundleId = typeof BUNDLE_IDS[number]
+
+// ============================================================================
 // SCHEMA
 // ============================================================================
 
@@ -42,6 +75,23 @@ const StatusConfigSchema = z.object({
   expectedRelease: z.string().optional(),
 })
 
+/**
+ * Bundle Configuration Schema
+ * 
+ * Each feature declares which bundles it belongs to and its role in each bundle:
+ * - core: Feature is always enabled and cannot be disabled
+ * - recommended: Feature is enabled by default but can be disabled
+ * - optional: Feature is disabled by default but can be enabled
+ */
+const BundleConfigSchema = z.object({
+  // Bundles where this feature is CORE (cannot be disabled)
+  core: z.array(z.enum(BUNDLE_IDS)).default([]),
+  // Bundles where this feature is RECOMMENDED (enabled by default)
+  recommended: z.array(z.enum(BUNDLE_IDS)).default([]),
+  // Bundles where this feature is OPTIONAL (disabled by default)
+  optional: z.array(z.enum(BUNDLE_IDS)).default([]),
+}).optional()
+
 // Base schema without children
 const BaseFeatureConfigSchema = z.object({
   // Identity
@@ -53,6 +103,9 @@ const BaseFeatureConfigSchema = z.object({
   ui: UIConfigSchema,
   technical: TechnicalConfigSchema,
   status: StatusConfigSchema,
+
+  // Bundle membership - REQUIRED for non-system features
+  bundles: BundleConfigSchema,
 
   // Optional metadata
   tags: z.array(z.string()).optional(),
@@ -105,6 +158,11 @@ const FeatureConfigSchema: z.ZodType<FeatureConfig> = BaseFeatureConfigSchema.ex
  *     state: 'stable',
  *     isReady: true,
  *   },
+ *   bundles: {
+ *     core: [],
+ *     recommended: ['content-creator', 'digital-agency'],
+ *     optional: ['startup', 'business-pro', 'personal-productivity'],
+ *   },
  *   tags: ['builder', 'content', 'automation', 'visual'],
  * })
  * ```
@@ -112,6 +170,20 @@ const FeatureConfigSchema: z.ZodType<FeatureConfig> = BaseFeatureConfigSchema.ex
 export function defineFeature(config: FeatureConfig): FeatureConfig {
   // Validate at definition time
   const validated = FeatureConfigSchema.parse(config)
+
+  // Warn if non-system feature has no bundle configuration
+  if (
+    validated.technical.featureType !== 'system' &&
+    (!validated.bundles || 
+      (validated.bundles.core.length === 0 && 
+       validated.bundles.recommended.length === 0 && 
+       validated.bundles.optional.length === 0))
+  ) {
+    console.warn(
+      `[defineFeature] Feature "${validated.id}" has no bundle configuration. ` +
+      `It won't appear in any workspace template.`
+    )
+  }
 
   return validated
 }
@@ -128,4 +200,3 @@ export function isFeatureConfig(value: unknown): value is FeatureConfig {
 // ============================================================================
 
 export { FeatureConfigSchema }
-export type { FeatureConfig }

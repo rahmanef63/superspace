@@ -40,6 +40,15 @@ export default defineFeature({
     expectedRelease: undefined,         // Optional: 'Q1 2025'
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: ['content-creator', 'digital-agency'],
+    optional: [
+      'startup', 'business-pro', 'personal-productivity',
+    ],
+  },
+
   // Metadata
   tags: [
     "cms-lite",

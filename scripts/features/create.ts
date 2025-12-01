@@ -21,6 +21,31 @@ import { join } from "path"
 // TYPES
 // ============================================================================
 
+// Bundle IDs (should match lib/features/defineFeature.ts)
+const BUNDLE_IDS = [
+  'startup',
+  'business-pro',
+  'sales-crm',
+  'project-management',
+  'knowledge-base',
+  'personal-minimal',
+  'personal-productivity',
+  'family',
+  'content-creator',
+  'digital-agency',
+  'education',
+  'community',
+  'custom',
+] as const
+
+type BundleId = typeof BUNDLE_IDS[number]
+
+interface BundleMembership {
+  core: BundleId[]
+  recommended: BundleId[]
+  optional: BundleId[]
+}
+
 interface CreateFeatureOptions {
   slug: string
   name?: string
@@ -41,6 +66,7 @@ interface CreateFeatureOptions {
   permissions?: string[]
   tags?: string[]
   order?: number
+  bundles?: BundleMembership
 }
 
 // ============================================================================
@@ -68,14 +94,24 @@ Options:
   --order             Menu order number (default: 100)
   --permissions       Comma-separated permissions (e.g., VIEW_ANALYTICS,MANAGE_ANALYTICS)
   --tags              Comma-separated tags (e.g., analytics,reports,data)
+  --bundles-core      Comma-separated bundle IDs where this feature is CORE (e.g., startup,business-pro)
+  --bundles-recommended  Comma-separated bundle IDs where this feature is RECOMMENDED
+  --bundles-optional  Comma-separated bundle IDs where this feature is OPTIONAL
   --no-ui             Skip frontend UI generation
   --no-convex         Skip Convex handlers generation
   --no-tests          Skip test files generation
 
+Available Bundle IDs:
+  Business:  startup, business-pro, sales-crm
+  Productivity: project-management, knowledge-base
+  Personal: personal-minimal, personal-productivity, family
+  Creative: content-creator, digital-agency
+  Other: education, community, custom
+
 Examples:
-  pnpm run create:feature analytics --type optional --category analytics --icon BarChart
-  pnpm run create:feature admin-panel --type default --category administration --permissions MANAGE_ADMIN
-  pnpm run create:feature beta-feature --type experimental --category productivity
+  pnpm run create:feature analytics --type optional --category analytics --icon BarChart --bundles-recommended startup,business-pro
+  pnpm run create:feature admin-panel --type default --category administration --permissions MANAGE_ADMIN --bundles-core startup,business-pro
+  pnpm run create:feature beta-feature --type experimental --category productivity --bundles-optional custom
     `)
     process.exit(0)
   }
@@ -124,6 +160,31 @@ Examples:
   const hasConvex = !hasFlag("--no-convex")
   const hasTests = !hasFlag("--no-tests")
 
+  // Parse bundle membership
+  const bundlesCoreArg = getArg("--bundles-core")
+  const bundlesRecommendedArg = getArg("--bundles-recommended")
+  const bundlesOptionalArg = getArg("--bundles-optional")
+
+  const parseBundleIds = (arg: string | undefined): BundleId[] => {
+    if (!arg) return []
+    const ids = arg.split(",").map(id => id.trim()) as BundleId[]
+    // Validate bundle IDs
+    ids.forEach(id => {
+      if (!BUNDLE_IDS.includes(id)) {
+        console.error(`❌ Error: Invalid bundle ID "${id}"`)
+        console.error(`   Valid bundle IDs: ${BUNDLE_IDS.join(", ")}`)
+        process.exit(1)
+      }
+    })
+    return ids
+  }
+
+  const bundles: BundleMembership = {
+    core: parseBundleIds(bundlesCoreArg),
+    recommended: parseBundleIds(bundlesRecommendedArg),
+    optional: parseBundleIds(bundlesOptionalArg),
+  }
+
   // Validate category (REQUIRED)
   const validCategories = [
     "communication",
@@ -166,6 +227,7 @@ Examples:
     permissions,
     tags,
     order,
+    bundles,
   }
 }
 
@@ -187,6 +249,7 @@ function generateFeatureConfig(options: CreateFeatureOptions): string {
     hasUI,
     hasConvex,
     hasTests,
+    bundles,
   } = options
 
   const componentName = slug
@@ -196,6 +259,17 @@ function generateFeatureConfig(options: CreateFeatureOptions): string {
 
   const permissionsStr = permissions ? JSON.stringify(permissions, null, 4) : undefined
   const tagsStr = tags ? JSON.stringify(tags, null, 4) : JSON.stringify([slug, category], null, 4)
+  
+  // Format bundles configuration
+  const bundlesStr = bundles ? `{
+    core: ${JSON.stringify(bundles.core)},
+    recommended: ${JSON.stringify(bundles.recommended)},
+    optional: ${JSON.stringify(bundles.optional)},
+  }` : `{
+    core: [],
+    recommended: [],
+    optional: ['custom'], // Default: available in custom bundle only
+  }`
 
   return `import { defineFeature } from '@/lib/features/defineFeature'
 
@@ -238,6 +312,11 @@ export default defineFeature({
     isReady: false,                     // Set to true when ready for production
     expectedRelease: undefined,         // Optional: 'Q1 2025'
   },
+
+  // Bundle Membership
+  // Defines which workspace templates include this feature
+  // core: Cannot be disabled | recommended: Enabled by default | optional: User can enable
+  bundles: ${bundlesStr},
 
   // Metadata
   tags: ${tagsStr},${permissions ? `\n\n  // Permissions (optional)\n  permissions: ${permissionsStr},` : ""}
@@ -500,6 +579,10 @@ async function main() {
   console.log(`   Type: ${options.featureType}`)
   console.log(`   Category: ${options.category}`)
   console.log(`   Icon: ${options.icon}`)
+  console.log(`   Bundles:`)
+  console.log(`     - Core: ${options.bundles?.core.length ? options.bundles.core.join(', ') : 'none'}`)
+  console.log(`     - Recommended: ${options.bundles?.recommended.length ? options.bundles.recommended.join(', ') : 'none'}`)
+  console.log(`     - Optional: ${options.bundles?.optional.length ? options.bundles.optional.join(', ') : 'custom (default)'}`)
   console.log(`   Location: frontend/features/${slug}/\n`)
 
   // Create feature directory

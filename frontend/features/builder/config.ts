@@ -46,6 +46,17 @@ export default defineFeature({
   },
 
   // ============================================================================
+  // BUNDLE MEMBERSHIP
+  // ============================================================================
+  bundles: {
+    core: [],
+    recommended: ['content-creator', 'digital-agency'],
+    optional: [
+      'startup', 'business-pro', 'personal-productivity',
+    ],
+  },
+
+  // ============================================================================
   // METADATA
   // ============================================================================
   tags: ['cms', 'content', 'builder', 'visual'],

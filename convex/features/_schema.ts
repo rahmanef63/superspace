@@ -38,6 +38,7 @@ import cmsLiteWishlistTables from "./cms_lite/wishlist/api/schema";
 import { aiTables } from "./ai/api/schema";
 import { customFeaturesTables } from "./custom/schema";
 import { systemFeaturesTables } from "./system/schema";
+import { bundleTables } from "./bundles/schema";
 
 export const featureTables = {
   ...coreTables,
@@ -80,4 +81,5 @@ export const featureTables = {
   ...aiTables,
   ...customFeaturesTables,
   ...systemFeaturesTables,
+  ...bundleTables,
 };

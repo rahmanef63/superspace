@@ -26,5 +26,15 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: ['community'],
+    optional: [
+      'startup', 'project-management', 'family',
+      'education',
+    ],
+  },
+
   tags: ['communication', 'status', 'updates', 'stories'],
 })

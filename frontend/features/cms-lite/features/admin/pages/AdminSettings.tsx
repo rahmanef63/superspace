@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createFileInput, importFromJSON } from "../../../shared/utils/exportImport";
 import { ImageUrlInput } from "../../../shared/components/ImageUrlInput";
 import { logger } from "../../../shared/utils/logger";
+import { ColorPickerSimple } from "@/components/ui/shadcn-io/color-picker/ColorPickerSimple";
 
 export default function AdminSettings() {
   const backend = useBackend();
@@ -203,40 +204,24 @@ export default function AdminSettings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">Primary Color</label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="color"
-                  value={form.primaryColor}
-                  onChange={(e) => setForm({ ...form, primaryColor: e.target.value })}
-                  className="h-10 w-20 border rounded cursor-pointer"
-                />
-                <Input
-                  value={form.primaryColor}
-                  onChange={(value) => setForm({ ...form, primaryColor: value })}
-                  placeholder="#3b82f6"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
+              <ColorPickerSimple
+                value={form.primaryColor}
+                onChange={(color) => setForm({ ...form, primaryColor: color })}
+                placeholder="#3b82f6"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
                 Used for: Buttons, Links, Active states, Hero CTA
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">Secondary Color</label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="color"
-                  value={form.secondaryColor}
-                  onChange={(e) => setForm({ ...form, secondaryColor: e.target.value })}
-                  className="h-10 w-20 border rounded cursor-pointer"
-                />
-                <Input
-                  value={form.secondaryColor}
-                  onChange={(value) => setForm({ ...form, secondaryColor: value })}
-                  placeholder="#8b5cf6"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
+              <ColorPickerSimple
+                value={form.secondaryColor}
+                onChange={(color) => setForm({ ...form, secondaryColor: color })}
+                placeholder="#8b5cf6"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
                 Used for: Service icons, Feature highlights, Accents
               </p>
             </div>

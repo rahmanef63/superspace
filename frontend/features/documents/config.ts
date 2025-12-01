@@ -26,5 +26,16 @@ export default defineFeature({
     isReady: true,
   },
 
-  tags: ['collaboration', 'real-time'],
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'startup', 'business-pro', 'project-management',
+      'knowledge-base', 'personal-minimal', 'personal-productivity',
+      'family', 'content-creator', 'digital-agency', 'education',
+    ],
+    optional: ['sales-crm', 'community'],
+  },
+
+  tags: ['collaboration', 'real-time', 'documents', 'editor'],
 })

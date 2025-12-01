@@ -26,5 +26,15 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership - SYSTEM feature, not included in bundles
+  // Menu store is accessed from workspace settings
+  bundles: {
+    core: [],
+    recommended: [],
+    optional: [],
+  },
+
+  tags: ['menus', 'navigation', 'system'],
+
   permissions: ['MANAGE_MENUS'],
 })

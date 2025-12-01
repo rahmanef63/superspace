@@ -5,10 +5,12 @@ import CallToAction from "../../components/route-group/marketing/call-to-action"
 import FAQs from "../../components/route-group/marketing/faqs";
 import Footer from "../../components/route-group/marketing/footer";
 import CustomClerkPricing from "@/components/custom-clerk-pricing";
+import { AuthRedirect } from "../../components/route-group/marketing/AuthRedirect";
 
 export default function Home() {
   return (
     <div>
+      <AuthRedirect />
       <HeroSection />
       <FeaturesOne />
       <section className="bg-muted/50 py-16 md:py-32">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Check } from "lucide-react";
+import Color from "color";
 import { cn } from "@/lib/utils";
 import { COLOR_PRESETS, BACKGROUND_PRESETS, ColorOption, getColorValue } from "./icon-data";
 import {
@@ -13,6 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ColorPicker as ShadcnColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerEyeDropper,
+  ColorPickerFormat,
+  ColorPickerOutput,
+} from "@/components/ui/shadcn-io/color-picker";
 
 interface ColorPickerProps {
   value: string;
@@ -52,6 +61,24 @@ export function ColorPicker({
     setCustomColor(hexColor);
     onChange(hexColor);
   };
+
+  // Handle color picker change from shadcn color picker
+  const handleColorPickerChange = useCallback(
+    (colorValue: Parameters<typeof Color.rgb>[0]) => {
+      try {
+        if (Array.isArray(colorValue)) {
+          const [r, g, b] = colorValue as number[];
+          const color = Color.rgb(r, g, b);
+          const hex = color.hex();
+          setCustomColor(hex);
+          onChange(hex);
+        }
+      } catch {
+        // Ignore invalid colors
+      }
+    },
+    [onChange]
+  );
 
   const getDisplayColor = (colorValue: string): string => {
     if (colorValue === "default" || colorValue === "primary" || colorValue === "secondary" || colorValue === "accent") {
@@ -132,38 +159,34 @@ export function ColorPicker({
           </TabsContent>
 
           {showCustom && (
-            <TabsContent value="custom" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="custom-color">Custom Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="custom-color"
-                    type="color"
-                    value={customColor}
-                    onChange={(e) => handleCustomColorChange(e.target.value)}
-                    className="h-10 w-20"
-                  />
-                  <Input
-                    type="text"
-                    value={customColor}
-                    onChange={(e) => handleCustomColorChange(e.target.value)}
-                    placeholder="#000000"
-                    className="flex-1 font-mono"
-                  />
+            <TabsContent value="custom" className="space-y-4 pt-2">
+              <ShadcnColorPicker
+                value={customColor}
+                onChange={handleColorPickerChange}
+                className="gap-3"
+              >
+                <ColorPickerSelection className="h-32 rounded-md" />
+                <ColorPickerHue />
+                <div className="flex items-center gap-2">
+                  <ColorPickerOutput />
+                  <ColorPickerEyeDropper />
                 </div>
-              </div>
+                <ColorPickerFormat />
+              </ShadcnColorPicker>
 
-              <div className="space-y-2">
-                <Label>Preview</Label>
-                <div className="flex items-center gap-2 rounded-md border p-4">
-                  <div
-                    className="size-16 rounded-md border"
-                    style={{ backgroundColor: customColor }}
-                  />
-                  <div className="flex-1 text-sm text-muted-foreground">
-                    {customColor}
-                  </div>
-                </div>
+              {/* Hex input for manual entry */}
+              <div className="flex gap-2 pt-2 border-t">
+                <Input
+                  type="text"
+                  value={customColor}
+                  onChange={(e) => handleCustomColorChange(e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 font-mono h-9"
+                />
+                <div
+                  className="size-9 rounded-md border shrink-0"
+                  style={{ backgroundColor: customColor }}
+                />
               </div>
             </TabsContent>
           )}

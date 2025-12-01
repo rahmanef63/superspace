@@ -79,7 +79,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
               <SidebarMenuButton tooltip={item.description} isActive={isActive}>
                 {item.icon && <item.icon />}
                 <span className="flex-1">{item.title}</span>
-                {featureTag && <FeatureTag type={featureTag} compact showIcon={false} />}
+                {featureTag && <FeatureTag type={featureTag} compact />}
                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -99,7 +99,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                           <SidebarMenuSubButton>
                             {subItem.icon && <subItem.icon className="w-4 h-4" />}
                             <span className="flex-1">{subItem.title}</span>
-                            {subFeatureTag && <FeatureTag type={subFeatureTag} compact showIcon={false} />}
+                            {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/nested-collapsible:rotate-90" />
                           </SidebarMenuSubButton>
                         </CollapsibleTrigger>
@@ -116,7 +116,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                                 >
                                   {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
                                   <span className="flex-1">{nestedItem.title}</span>
-                                  {nestedFeatureTag && <FeatureTag type={nestedFeatureTag} compact showIcon={false} />}
+                                  {nestedFeatureTag && <FeatureTag type={nestedFeatureTag} compact />}
                                 </Link>
                               </SidebarMenuSubButton>
                             )})}
@@ -133,7 +133,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                         >
                           {subItem.icon && <subItem.icon className="w-4 h-4" />}
                           <span className="flex-1">{subItem.title}</span>
-                          {subFeatureTag && <FeatureTag type={subFeatureTag} compact showIcon={false} />}
+                          {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
                         </Link>
                       </SidebarMenuSubButton>
                     )}
@@ -155,7 +155,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
           >
             {item.icon && <item.icon />}
             <span className="flex-1">{item.title}</span>
-            {featureTag && <FeatureTag type={featureTag} compact showIcon={false} />}
+            {featureTag && <FeatureTag type={featureTag} compact />}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

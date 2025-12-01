@@ -5,6 +5,7 @@
  * Synchronizes feature configs with:
  * - convex/features/menus/menu_manifest_data.ts (DEFAULT_MENU_ITEMS)
  * - Menu Store catalog (optional features)
+ * - Bundle configuration validation
  *
  * Usage: pnpm run sync:features
  *
@@ -12,11 +13,31 @@
  * 1. All default features from auto-discovered configs are in DEFAULT_MENU_ITEMS
  * 2. All optional features are available in the catalog
  * 3. No divergence between config and manifest
+ * 4. Bundle configurations are valid and consistent
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs"
 import { join } from "path"
 import { getAllFeatures, getFeatureSlug, getFeaturesByType } from "../../lib/features/registry.server"
+
+// Bundle IDs (should match lib/features/defineFeature.ts)
+const BUNDLE_IDS = [
+  'startup',
+  'business-pro',
+  'sales-crm',
+  'project-management',
+  'knowledge-base',
+  'personal-minimal',
+  'personal-productivity',
+  'family',
+  'content-creator',
+  'digital-agency',
+  'education',
+  'community',
+  'custom',
+] as const
+
+type BundleId = typeof BUNDLE_IDS[number]
 
 const rootDir = process.cwd()
 
@@ -71,6 +92,127 @@ function getOptionalFeaturesCatalog() {
 }
 
 const FEATURES_REGISTRY = getAllFeatures()
+
+// ============================================================================
+// VALIDATE BUNDLE CONFIGURATIONS
+// ============================================================================
+
+interface BundleError {
+  featureId: string
+  bundleId?: string
+  error: string
+}
+
+function validateBundles(): BundleError[] {
+  console.log("\n🎯 Validating bundle configurations...")
+  
+  const errors: BundleError[] = []
+  
+  const flattenFeatures = (features: any[]): any[] => {
+    return features.flatMap(f => [f, ...(f.children ? flattenFeatures(f.children) : [])])
+  }
+  
+  const allFeatures = flattenFeatures(FEATURES_REGISTRY)
+  
+  // Track features per bundle for reporting
+  const bundleFeatures: Record<string, { core: string[], recommended: string[], optional: string[] }> = {}
+  BUNDLE_IDS.forEach(id => {
+    bundleFeatures[id] = { core: [], recommended: [], optional: [] }
+  })
+  
+  allFeatures.forEach(feature => {
+    const bundles = feature.bundles
+    
+    // System features don't need bundle configuration
+    if (feature.technical?.featureType === 'system') {
+      return
+    }
+    
+    // Check if feature has any bundle configuration
+    if (!bundles || (bundles.core?.length === 0 && bundles.recommended?.length === 0 && bundles.optional?.length === 0)) {
+      errors.push({
+        featureId: feature.id,
+        error: `Feature has no bundle configuration - it won't appear in any workspace template`
+      })
+      return
+    }
+    
+    // Validate bundle IDs
+    const allBundleIds = [
+      ...(bundles.core || []),
+      ...(bundles.recommended || []),
+      ...(bundles.optional || []),
+    ]
+    
+    allBundleIds.forEach((bundleId: string) => {
+      if (!BUNDLE_IDS.includes(bundleId as BundleId)) {
+        errors.push({
+          featureId: feature.id,
+          bundleId,
+          error: `Invalid bundle ID "${bundleId}". Valid IDs: ${BUNDLE_IDS.join(', ')}`
+        })
+      }
+    })
+    
+    // Check for bundle conflicts (same bundle in multiple categories)
+    const bundleSet = new Set<string>()
+    bundles.core?.forEach((id: string) => {
+      if (bundleSet.has(id)) {
+        errors.push({
+          featureId: feature.id,
+          bundleId: id,
+          error: `Bundle "${id}" appears in multiple categories (core, recommended, or optional)`
+        })
+      }
+      bundleSet.add(id)
+      if (BUNDLE_IDS.includes(id as BundleId)) {
+        bundleFeatures[id].core.push(feature.id)
+      }
+    })
+    
+    bundles.recommended?.forEach((id: string) => {
+      if (bundleSet.has(id)) {
+        errors.push({
+          featureId: feature.id,
+          bundleId: id,
+          error: `Bundle "${id}" appears in multiple categories (core, recommended, or optional)`
+        })
+      }
+      bundleSet.add(id)
+      if (BUNDLE_IDS.includes(id as BundleId)) {
+        bundleFeatures[id].recommended.push(feature.id)
+      }
+    })
+    
+    bundles.optional?.forEach((id: string) => {
+      if (bundleSet.has(id)) {
+        errors.push({
+          featureId: feature.id,
+          bundleId: id,
+          error: `Bundle "${id}" appears in multiple categories (core, recommended, or optional)`
+        })
+      }
+      bundleSet.add(id)
+      if (BUNDLE_IDS.includes(id as BundleId)) {
+        bundleFeatures[id].optional.push(feature.id)
+      }
+    })
+  })
+  
+  // Report bundle coverage
+  console.log("\n  Bundle Coverage Report:")
+  BUNDLE_IDS.forEach(bundleId => {
+    const features = bundleFeatures[bundleId]
+    const total = features.core.length + features.recommended.length + features.optional.length
+    console.log(`  📦 ${bundleId}: ${total} features (${features.core.length} core, ${features.recommended.length} recommended, ${features.optional.length} optional)`)
+  })
+  
+  if (errors.length === 0) {
+    console.log(`\n  ✓ All bundle configurations are valid`)
+  }
+  
+  return errors
+}
 
 // ============================================================================
 // SYNC DEFAULT MENU ITEMS
@@ -316,6 +458,24 @@ function validateFeatures() {
     process.exit(1)
   }
 
+  // Validate bundles
+  const bundleErrors = validateBundles()
+  if (bundleErrors.length > 0) {
+    console.error("\n❌ Bundle validation errors:\n")
+    bundleErrors.forEach(err => {
+      console.error(`  📁 Feature: ${err.featureId}`)
+      if (err.bundleId) {
+        console.error(`     Bundle: ${err.bundleId}`)
+      }
+      console.error(`     Error: ${err.error}`)
+      console.error('')
+    })
+    console.error(`Total bundle errors: ${bundleErrors.length}`)
+    console.error(`\n💡 Fix bundle configurations in feature config.ts files.\n`)
+    // Don't exit, just warn (bundles might be WIP)
+    console.warn("⚠️  Continuing with bundle warnings...")
+  }
+
   console.log(`  ✓ Validated ${FEATURES_REGISTRY.length} features`)
 }
 
@@ -324,7 +484,7 @@ function validateFeatures() {
 // ============================================================================
 
 function generateReport() {
-  console.log("\n Feature Report:")
+  console.log("\n📊 Feature Report:")
   console.log("==================")
 
   const defaultCount = FEATURES_REGISTRY.filter(f => f.technical.featureType === "default").length
@@ -350,6 +510,34 @@ function generateReport() {
   categories.forEach((count, category) => {
     console.log(`    - ${category}: ${count}`)
   })
+
+  // Bundle membership summary
+  console.log("\n  Bundle membership summary:")
+  const bundleCounts: Record<string, number> = {}
+  BUNDLE_IDS.forEach(id => { bundleCounts[id] = 0 })
+  
+  FEATURES_REGISTRY.forEach(f => {
+    const bundles = f.bundles
+    if (!bundles) return
+    
+    const allBundles = new Set([
+      ...(bundles.core || []),
+      ...(bundles.recommended || []),
+      ...(bundles.optional || []),
+    ])
+    
+    allBundles.forEach(bundleId => {
+      if (bundleCounts[bundleId] !== undefined) {
+        bundleCounts[bundleId]++
+      }
+    })
+  })
+  
+  Object.entries(bundleCounts)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([bundleId, count]) => {
+      console.log(`    - ${bundleId}: ${count} features`)
+    })
 
   console.log("\n  Optional features catalog:")
   getOptionalFeaturesCatalog().forEach(f => {

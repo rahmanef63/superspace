@@ -19,3 +19,6 @@ export * from "./hooks"
 
 // Services
 export * from "./lib"
+
+// AI Wiki / Knowledge Base
+export * from "./wiki"

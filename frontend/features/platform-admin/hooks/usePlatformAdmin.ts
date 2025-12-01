@@ -169,6 +169,114 @@ export function usePlatformAdminMutations() {
   }
 }
 
+// ============================================================================
+// BUNDLE CATEGORY HOOKS
+// ============================================================================
+
+/**
+ * Hook to manage bundle categories (platform admin only)
+ */
+export function useBundleCategories() {
+  const { isPlatformAdmin } = usePlatformAdminStatus()
+  const bundles = useQuery(
+    api.features.bundles.mutations.list,
+    isPlatformAdmin ? {} : "skip"
+  )
+  
+  return {
+    bundles: bundles ?? [],
+    isLoading: bundles === undefined,
+    isEmpty: bundles?.length === 0,
+  }
+}
+
+/**
+ * Hook to get feature bundle memberships
+ */
+export function useFeatureBundles(featureId: string | null) {
+  const { isPlatformAdmin } = usePlatformAdminStatus()
+  const memberships = useQuery(
+    api.features.bundles.mutations.getFeatureBundles,
+    isPlatformAdmin && featureId ? { featureId } : "skip"
+  )
+  
+  return {
+    memberships: memberships ?? [],
+    isLoading: memberships === undefined,
+  }
+}
+
+/**
+ * Hook for bundle category mutations
+ */
+export function useBundleCategoryMutations() {
+  const createBundle = useMutation(api.features.bundles.mutations.create)
+  const updateBundle = useMutation(api.features.bundles.mutations.update)
+  const removeBundle = useMutation(api.features.bundles.mutations.remove)
+  const seedBundles = useMutation(api.features.bundles.mutations.seedBundleCategories)
+  const setFeatureBundles = useMutation(api.features.bundles.mutations.setFeatureBundles)
+  const setFeatureBundleMembership = useMutation(api.features.bundles.mutations.setFeatureBundleMembership)
+  const removeFeatureFromBundle = useMutation(api.features.bundles.mutations.removeFeatureFromBundle)
+  
+  return {
+    createBundle: async (data: {
+      bundleId: string
+      name: string
+      description: string
+      icon: string
+      category: "productivity" | "business" | "personal" | "creative" | "education" | "community"
+      primaryColor?: string
+      accentColor?: string
+      recommendedFor: Array<"personal" | "family" | "group" | "organization" | "institution">
+      tags: string[]
+      isEnabled?: boolean
+      isPublic?: boolean
+    }) => {
+      return await createBundle(data)
+    },
+    updateBundle: async (
+      id: Id<"bundleCategories">,
+      data: Partial<{
+        name: string
+        description: string
+        icon: string
+        category: "productivity" | "business" | "personal" | "creative" | "education" | "community"
+        primaryColor: string
+        accentColor: string
+        recommendedFor: Array<"personal" | "family" | "group" | "organization" | "institution">
+        tags: string[]
+        isEnabled: boolean
+        isPublic: boolean
+        order: number
+      }>
+    ) => {
+      return await updateBundle({ id, ...data })
+    },
+    removeBundle: async (id: Id<"bundleCategories">) => {
+      return await removeBundle({ id })
+    },
+    seedBundles: async () => {
+      return await seedBundles({})
+    },
+    setFeatureBundles: async (
+      featureId: string,
+      bundles: Array<{ bundleId: string; role: "core" | "recommended" | "optional" }>
+    ) => {
+      return await setFeatureBundles({ featureId, bundles })
+    },
+    setFeatureBundleMembership: async (
+      featureId: string,
+      bundleId: string,
+      role: "core" | "recommended" | "optional"
+    ) => {
+      return await setFeatureBundleMembership({ featureId, bundleId, role })
+    },
+    removeFeatureFromBundle: async (featureId: string, bundleId: string) => {
+      return await removeFeatureFromBundle({ featureId, bundleId })
+    },
+  }
+}
+
 /**
  * Combined hook for full platform admin functionality
  */
@@ -177,18 +285,23 @@ export function usePlatformAdmin() {
   const customFeatures = useCustomFeatures()
   const systemFeatures = useSystemFeatures()
   const workspaces = useAllWorkspaces()
+  const bundleCategories = useBundleCategories()
   const mutations = usePlatformAdminMutations()
   const systemMutations = useSystemFeatureMutations()
+  const bundleMutations = useBundleCategoryMutations()
   
   return {
     ...status,
     features: customFeatures.features,
     systemFeatures: systemFeatures.features,
     workspaces: workspaces.workspaces,
+    bundleCategories: bundleCategories.bundles,
     isLoadingFeatures: customFeatures.isLoading,
     isLoadingSystemFeatures: systemFeatures.isLoading,
     isLoadingWorkspaces: workspaces.isLoading,
+    isLoadingBundles: bundleCategories.isLoading,
     ...mutations,
     ...systemMutations,
+    ...bundleMutations,
   }
 }

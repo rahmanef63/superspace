@@ -207,7 +207,20 @@ export default function CatchAllPage() {
       return <div className="min-h-dvh" />
     }
 
-    // If unauthenticated in dev, avoid rendering components that assume a user
+    // Show loading state while authentication is being determined
+    if (isLoading) {
+      logDecision("auth-loading", { reason: "Waiting for auth to load" })
+      return (
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      )
+    }
+
+    // If unauthenticated after loading completes, show sign in message
     if (!isAuthed) {
       logDecision("unauthenticated", { reason: "No auth context" })
       return (

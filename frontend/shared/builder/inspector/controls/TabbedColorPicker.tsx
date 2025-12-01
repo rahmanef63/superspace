@@ -74,7 +74,7 @@ export function TabbedColorPicker({ label, value, onChange, tabs = ['Tailwind', 
                   <Input
                     placeholder="Search for a color..."
                     value={searchTerm}
-                    onChange={(newValue) => setSearchTerm(newValue)}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="h-8"
                   />
                   <div className="max-h-40 overflow-y-auto space-y-1">
@@ -120,7 +120,7 @@ export function TabbedColorPicker({ label, value, onChange, tabs = ['Tailwind', 
         <Input
           type="text"
           value={value || ''}
-          onChange={(newValue) => onChange(newValue)}
+          onChange={(e) => onChange(e.target.value)}
           className="h-8 flex-1"
           placeholder="Default"
         />

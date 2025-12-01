@@ -1,18 +1,23 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { OnboardingFlow } from "@/frontend/shared/foundation/workspaces"
+import { RobustOnboardingFlow } from "@/frontend/shared/foundation/workspaces"
 
 export default function WorkspaceOnboardingPage() {
   const router = useRouter()
 
   return (
-    <OnboardingFlow
-      onComplete={async (workspaceId) => {
+    <RobustOnboardingFlow
+      onComplete={async (workspaceId, enabledFeatures) => {
         if (process.env.NODE_ENV !== 'production') {
-          console.log('[OnboardingPage] onComplete', { workspaceId, redirectTo: '/dashboard?onboarded=1' })
+          console.log('[OnboardingPage] onComplete', { 
+            workspaceId, 
+            enabledFeatures,
+            redirectTo: '/dashboard/overview?onboarded=1' 
+          })
         }
-        router.replace("/dashboard?onboarded=1")
+        // TODO: Save enabled features to workspace settings/database
+        router.replace("/dashboard/overview?onboarded=1")
       }}
     />
   )

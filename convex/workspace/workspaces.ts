@@ -268,6 +268,10 @@ export const createWorkspace = mutation({
     organizationId: v.optional(v.id("organizations")),
     // Allow user to pick which default menus to include (free selection)
     selectedMenuSlugs: v.optional(v.array(v.string())),
+    // NEW: Allow user to specify which features to enable (bundle selection)
+    enabledFeatures: v.optional(v.array(v.string())),
+    // NEW: Selected bundle ID for workspace template
+    bundleId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     let maybeAuthUserId = await getAuthUserId(ctx)
@@ -368,6 +372,9 @@ export const createWorkspace = mutation({
       settings: {
         allowInvites: true,
         requireApproval: false,
+        // Store bundle configuration
+        bundleId: args.bundleId,
+        enabledFeatures: args.enabledFeatures,
       },
       createdBy: userId,
     })

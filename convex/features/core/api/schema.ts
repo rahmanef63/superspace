@@ -73,6 +73,9 @@ export const workspaces = defineTable({
       defaultRoleId: v.optional(v.id("roles")),
       allowPublicDocuments: v.optional(v.boolean()),
       theme: v.optional(v.string()),
+      // Bundle configuration
+      bundleId: v.optional(v.string()),
+      enabledFeatures: v.optional(v.array(v.string())),
     }),
   ),
   createdBy: v.id("users"),

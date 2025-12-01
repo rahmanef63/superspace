@@ -31,13 +31,16 @@ import {
   Copy,
   ExternalLink,
   Zap,
+  Package,
 } from "lucide-react"
-import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations } from "../hooks/usePlatformAdmin"
+import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useFeatureBundles, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import BundleMultiSelect, { BundleBadges, type SelectedBundle, type BundleOption } from "../components/BundleMultiSelect"
+import BundleCategoriesTable from "../components/BundleCategoriesTable"
 import {
   Table,
   TableBody,
@@ -85,6 +88,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
 
 // Feature categories available
 const FEATURE_CATEGORIES = [
@@ -117,16 +121,7 @@ const FEATURE_TYPES = [
   { value: "premium", label: "Premium" },
 ] as const
 
-// Common icons for features
-const FEATURE_ICONS = [
-  "Box", "MessageSquare", "FileText", "Calendar", "Users", "Settings",
-  "BarChart3", "Mail", "Video", "Phone", "Globe", "Database",
-  "Shield", "Lock", "Key", "Star", "Heart", "Bookmark",
-  "Folder", "File", "Image", "Music", "Film", "Mic",
-  "Search", "Filter", "Tag", "Hash", "Link", "Share",
-  "Download", "Upload", "Cloud", "Server", "Cpu", "Zap",
-  "Activity", "AlertTriangle", "Bell", "Clock", "Target", "Compass",
-] as const
+// Icons are loaded from IconPicker component
 
 function StatusBadge({ status }: { status: FeatureStatus }) {
   const statusConfig: Record<FeatureStatus, { icon: React.ElementType; class: string }> = {
@@ -355,6 +350,8 @@ function WorkspacesTable({ workspaces }: { workspaces: any[] }) {
 function SystemFeaturesTable() {
   const { features, isLoading } = useSystemFeatures()
   const { updateFeature, setVisibility, deleteFeature, seedFeatures, createFeature } = useSystemFeatureMutations()
+  const { bundles: bundleCategories, isLoading: isBundlesLoading } = useBundleCategories()
+  const { setFeatureBundles, createBundle } = useBundleCategoryMutations()
   
   // State for editing
   const [editingFeature, setEditingFeature] = useState<any | null>(null)
@@ -368,6 +365,21 @@ function SystemFeaturesTable() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // Bundle selection state for editing
+  const [selectedBundles, setSelectedBundles] = useState<SelectedBundle[]>([])
+
+  // Convert bundle categories to options format
+  const bundleOptions: BundleOption[] = useMemo(() => {
+    return bundleCategories.map((b: any) => ({
+      bundleId: b.bundleId,
+      name: b.name,
+      description: b.description,
+      icon: b.icon,
+      primaryColor: b.primaryColor,
+      category: b.category,
+    }))
+  }, [bundleCategories])
 
   // Form state for editing
   const [editForm, setEditForm] = useState({
@@ -438,6 +450,8 @@ function SystemFeaturesTable() {
       isPublic: feature.isPublic ?? true,
       isEnabled: feature.isEnabled ?? true,
     })
+    // Reset bundle selection (will be loaded from the edit sheet)
+    setSelectedBundles([])
     setIsEditSheetOpen(true)
   }
 
@@ -445,13 +459,21 @@ function SystemFeaturesTable() {
     if (!editingFeature) return
     setIsSaving(true)
     try {
+      // Update feature details
       await updateFeature(editingFeature._id, {
         ...editForm,
         status: editForm.status as FeatureStatus,
       })
+      
+      // Update bundle memberships
+      if (selectedBundles.length > 0) {
+        await setFeatureBundles(editingFeature.featureId, selectedBundles)
+      }
+      
       toast.success("Feature updated successfully")
       setIsEditSheetOpen(false)
       setEditingFeature(null)
+      setSelectedBundles([])
     } catch (error) {
       toast.error("Failed to update feature")
       console.error(error)
@@ -814,15 +836,15 @@ function SystemFeaturesTable() {
 
       {/* Edit Feature Sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="sm:max-w-[480px] overflow-y-auto p-0">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b sticky top-0 bg-background z-10">
+        <SheetContent className="w-full sm:max-w-[480px] p-0 gap-0 [&>button]:top-5 [&>button]:right-5">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
             <SheetTitle className="text-xl">Edit Feature</SheetTitle>
             <SheetDescription>
               Update feature details for Menu Store
             </SheetDescription>
           </SheetHeader>
           
-          <div className="px-6 py-6 space-y-6">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-6">
             {/* Feature ID - Read Only */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Feature ID</Label>
@@ -875,16 +897,21 @@ function SystemFeaturesTable() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="edit-icon" className="text-sm font-medium">Icon</Label>
-                  <Select value={editForm.icon} onValueChange={(v) => setEditForm({ ...editForm, icon: v })}>
-                    <SelectTrigger id="edit-icon" className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FEATURE_ICONS.map((icon) => (
-                        <SelectItem key={icon} value={icon}>{icon}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <IconPicker
+                    icon={editForm.icon}
+                    onIconChange={(icon) => setEditForm({ ...editForm, icon })}
+                    showColor={false}
+                    className="w-full"
+                    trigger={
+                      <Button variant="outline" className="w-full h-10 justify-start gap-2">
+                        {(() => {
+                          const IconComp = getIconComponent(editForm.icon)
+                          return <IconComp className="h-4 w-4" />
+                        })()}
+                        <span>{editForm.icon}</span>
+                      </Button>
+                    }
+                  />
                 </div>
               </div>
             </div>
@@ -965,6 +992,34 @@ function SystemFeaturesTable() {
                 <p className="text-xs text-muted-foreground">Separate tags with commas</p>
               </div>
             </div>
+
+            {/* Bundle Categories Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Bundle Categories</h4>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Assign this feature to workspace bundles. Each bundle can have this feature as core (always on), recommended (default on), or optional (default off).
+              </p>
+              
+              <BundleMultiSelect
+                options={bundleOptions}
+                value={selectedBundles}
+                onChange={setSelectedBundles}
+                placeholder="Select bundle categories..."
+                allowCreate={true}
+                onCreateBundle={async (bundleId, name) => {
+                  await createBundle({
+                    bundleId,
+                    name,
+                    description: `Created for ${editForm.name}`,
+                    icon: "Package",
+                    category: "productivity",
+                    recommendedFor: ["personal"],
+                    tags: [],
+                  })
+                }}
+                isLoading={isBundlesLoading}
+              />
+            </div>
             
             {/* Visibility Settings */}
             <div className="space-y-4">
@@ -1011,7 +1066,7 @@ function SystemFeaturesTable() {
             </div>
           </div>
           
-          <SheetFooter className="px-6 py-4 border-t sticky bottom-0 bg-background">
+          <SheetFooter className="px-6 py-4 border-t flex-shrink-0">
             <div className="flex w-full gap-3">
               <Button variant="outline" onClick={() => setIsEditSheetOpen(false)} className="flex-1">
                 Cancel
@@ -1100,16 +1155,21 @@ function SystemFeaturesTable() {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Icon</Label>
-                <Select value={newFeature.icon} onValueChange={(v) => setNewFeature({ ...newFeature, icon: v })}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FEATURE_ICONS.map((icon) => (
-                      <SelectItem key={icon} value={icon}>{icon}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <IconPicker
+                  icon={newFeature.icon}
+                  onIconChange={(icon) => setNewFeature({ ...newFeature, icon })}
+                  showColor={false}
+                  className="w-full"
+                  trigger={
+                    <Button variant="outline" className="w-full h-10 justify-start gap-2">
+                      {(() => {
+                        const IconComp = getIconComponent(newFeature.icon)
+                        return <IconComp className="h-4 w-4" />
+                      })()}
+                      <span>{newFeature.icon}</span>
+                    </Button>
+                  }
+                />
               </div>
             </div>
             
@@ -1261,6 +1321,10 @@ export default function PlatformAdminPage() {
             <Store className="h-4 w-4" />
             Menu Store Features
           </TabsTrigger>
+          <TabsTrigger value="bundle-categories" className="gap-2">
+            <Package className="h-4 w-4" />
+            Bundle Categories
+          </TabsTrigger>
           <TabsTrigger value="features" className="gap-2">
             <Blocks className="h-4 w-4" />
             Custom Features
@@ -1294,6 +1358,25 @@ export default function PlatformAdminPage() {
             </CardHeader>
             <CardContent>
               <SystemFeaturesTable />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bundle-categories" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Bundle Categories</CardTitle>
+                  <CardDescription>
+                    Configure workspace bundle templates with custom names, icons, and colors.
+                    Features can be assigned to multiple bundles with different roles.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BundleCategoriesTable />
             </CardContent>
           </Card>
         </TabsContent>

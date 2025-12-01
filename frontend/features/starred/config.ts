@@ -25,4 +25,19 @@ export default defineFeature({
     state: 'stable',
     isReady: true,
   },
+
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'knowledge-base', 'personal-minimal', 'personal-productivity',
+      'family', 'content-creator',
+    ],
+    optional: [
+      'startup', 'business-pro', 'project-management',
+      'digital-agency', 'education', 'community',
+    ],
+  },
+
+  tags: ['starred', 'bookmarks', 'favorites'],
 })

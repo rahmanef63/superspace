@@ -25,4 +25,17 @@ export default defineFeature({
     state: 'stable',
     isReady: true,
   },
+
+  // Bundle membership - Overview is CORE for all bundles
+  bundles: {
+    core: [
+      'startup', 'business-pro', 'sales-crm',
+      'project-management', 'knowledge-base',
+      'personal-minimal', 'personal-productivity', 'family',
+      'content-creator', 'digital-agency',
+      'education', 'community',
+    ],
+    recommended: [],
+    optional: [],
+  },
 })

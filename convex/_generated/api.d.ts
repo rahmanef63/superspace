@@ -20,6 +20,7 @@ import type * as features__schema from "../features/_schema.js";
 import type * as features_ai_actions from "../features/ai/actions.js";
 import type * as features_ai_mutations from "../features/ai/mutations.js";
 import type * as features_ai_queries from "../features/ai/queries.js";
+import type * as features_bundles_mutations from "../features/bundles/mutations.js";
 import type * as features_calendar_index from "../features/calendar/index.js";
 import type * as features_calendar_mutations from "../features/calendar/mutations.js";
 import type * as features_calendar_queries from "../features/calendar/queries.js";
@@ -213,6 +214,7 @@ declare const fullApi: ApiFromModules<{
   "features/ai/actions": typeof features_ai_actions;
   "features/ai/mutations": typeof features_ai_mutations;
   "features/ai/queries": typeof features_ai_queries;
+  "features/bundles/mutations": typeof features_bundles_mutations;
   "features/calendar/index": typeof features_calendar_index;
   "features/calendar/mutations": typeof features_calendar_mutations;
   "features/calendar/queries": typeof features_calendar_queries;

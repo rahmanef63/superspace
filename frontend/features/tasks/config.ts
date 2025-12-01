@@ -22,9 +22,22 @@ export default defineFeature({
   },
 
   status: {
-    state: 'development',
-    isReady: false,
-    expectedRelease: 'Q2 2025',
+    state: 'beta',
+    isReady: true,
+    expectedRelease: 'Q1 2025',
+  },
+
+  // Bundle membership
+  bundles: {
+    core: [],
+    recommended: [
+      'startup', 'business-pro', 'project-management',
+      'personal-productivity', 'digital-agency', 'education',
+    ],
+    optional: [
+      'sales-crm', 'knowledge-base', 'personal-minimal',
+      'family', 'content-creator', 'community',
+    ],
   },
 
   tags: ['productivity', 'project-management'],

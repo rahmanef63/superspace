@@ -18,6 +18,15 @@ import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/fr
 import { iconFromName } from "@/frontend/shared/ui/components/icons"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
+// Type for system feature visibility data
+interface SystemFeatureVisibility {
+  featureId: string
+  isEnabled: boolean
+  isPublic: boolean
+  isReady: boolean
+  status: string
+}
+
 const REQUIRED_MENU_SLUGS = [
   "overview",
   "chat",
@@ -78,6 +87,22 @@ export function AppSidebar({
   
   // Check platform admin status to show admin features
   const platformAdminStatus = useQuery(api.features.custom.admin.checkMyPlatformAdminStatus)
+  
+  // Get system features for visibility/status info (for platform admins to see disabled features)
+  const systemFeatures = useQuery(
+    api.features.system.admin.getSystemFeatures
+  ) as SystemFeatureVisibility[] | undefined
+  
+  // Build a map of feature visibility by slug/featureId
+  const featureVisibilityMap = useMemo(() => {
+    const map = new Map<string, SystemFeatureVisibility>()
+    if (systemFeatures) {
+      for (const feature of systemFeatures) {
+        map.set(feature.featureId, feature)
+      }
+    }
+    return map
+  }, [systemFeatures])
 
   const createDefaults = useMutation((api as any)["features/menus/menuItems"].syncWorkspaceDefaultMenus)
   const seededRef = useRef<string | null>(null)
@@ -117,6 +142,21 @@ export function AppSidebar({
           const fallbackBySlug = PAGE_MANIFEST_MAP[mi.slug as string]
           const fallback = fallbackByComponent ?? fallbackBySlug
 
+          // Get visibility info from systemFeatures if available
+          const featureVisibility = featureVisibilityMap.get(mi.slug as string)
+          
+          // Merge metadata with system feature visibility info
+          const mergedMetadata = {
+            ...mi.metadata,
+            // Override with system feature visibility if available (platform admin controlled)
+            ...(featureVisibility ? {
+              isEnabled: featureVisibility.isEnabled,
+              isPublic: featureVisibility.isPublic,
+              isReady: featureVisibility.isReady,
+              status: featureVisibility.status,
+            } : {}),
+          }
+
           const navItem = {
             id: mi.slug as string,
             title: (mi.name as string) || fallback?.title || mi.slug,
@@ -125,7 +165,7 @@ export function AppSidebar({
             type: mi.type,
             parentId: mi.parentId,
             children: [] as any[],
-            metadata: mi.metadata,
+            metadata: mergedMetadata,
           }
 
           itemsMap.set(mi._id, navItem)
@@ -141,7 +181,7 @@ export function AppSidebar({
                 url: mi.path || `/dashboard/${navItem.id}`,
                 icon: navItem.icon || Building,
                 description: navItem.description,
-                metadata: mi.metadata,
+                metadata: mergedMetadata,
               })
             } else {
               rootItems.push(navItem)
@@ -158,6 +198,7 @@ export function AppSidebar({
               id: child.id,
               title: child.title,
               url: `/dashboard/${child.id}`,
+              metadata: child.metadata,
             })
           }
         }
@@ -175,7 +216,7 @@ export function AppSidebar({
       })),
       systemItems: [],
     }
-  }, [menuItems])
+  }, [menuItems, featureVisibilityMap])
 
   // Add platform admin to system items if user is a platform admin
   const finalSystemItems = useMemo(() => {

@@ -71,7 +71,7 @@ export function NavSystem({ system }: NavSystemProps) {
                 <Link href={item.url} onClick={handleMenuClick}>
                   <IconComponent />
                   <span className="flex-1">{item.name}</span>
-                  <FeatureTag type={featureTag} compact showIcon={false} />
+                  <FeatureTag type={featureTag} compact />
                 </Link>
               </SidebarMenuButton>
               <DropdownMenu>

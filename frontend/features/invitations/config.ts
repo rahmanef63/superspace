@@ -26,5 +26,18 @@ export default defineFeature({
     isReady: true,
   },
 
+  // Bundle membership - SYSTEM feature, core for team workspaces
+  bundles: {
+    core: [
+      'startup', 'business-pro', 'sales-crm',
+      'project-management', 'knowledge-base',
+      'family', 'digital-agency', 'education', 'community',
+    ],
+    recommended: [],
+    optional: [],
+  },
+
+  tags: ['invitations', 'team', 'onboarding'],
+
   permissions: ['MANAGE_INVITATIONS'],
 })

@@ -1,122 +1,108 @@
-import {
-  Box,
-  Component,
-  Database,
-  FileText,
-  Image as ImageIcon,
-  LayoutDashboard,
-  LayoutTemplate,
-  ListTree,
-  Megaphone,
-  MessageSquare,
-  MousePointerClick,
-  Navigation,
-  PanelsTopLeft,
-  Puzzle,
-  Sparkles,
-  Table,
-  Workflow,
-  type LucideIcon,
-} from 'lucide-react';
+/**
+ * Unified Icon System
+ *
+ * This module provides a comprehensive icon system with:
+ * - Dynamic icon rendering (no static imports needed)
+ * - Icon picker with categories and search
+ * - Color picker with presets and custom colors
+ * - Utility functions for icons and colors
+ *
+ * @example
+ * // Import dynamic icon component
+ * import { DynamicIcon } from "@/frontend/shared/ui/icons";
+ * <DynamicIcon name="Home" className="h-4 w-4" />
+ *
+ * @example
+ * // Import icon picker
+ * import { IconPicker } from "@/frontend/shared/ui/icons";
+ * <IconPicker icon={icon} onIconChange={setIcon} showColor showBackground />
+ *
+ * @example
+ * // Import utilities
+ * import { searchIcons, hexToRgb } from "@/frontend/shared/ui/icons";
+ */
 
-type IconLookup = Record<string, LucideIcon>;
+// Types
+export type {
+  IconName,
+  IconData,
+  IconCategory,
+  ColorOption,
+  DynamicIconProps,
+  IconPickerProps,
+  ColorPickerProps,
+  IconGridProps,
+  IconLookup,
+} from "./types";
 
-const defaultFeatureIcon: LucideIcon = LayoutDashboard;
-const featureIcons: IconLookup = {
-  cms: LayoutDashboard,
-  automation: Workflow,
-  database: Database,
-  data: Database,
-  menu: Navigation,
-  menus: Navigation,
-  navigation: Navigation,
-  workflow: Workflow,
-  chat: MessageSquare,
-  messaging: MessageSquare,
-  marketing: Megaphone,
-};
+export { ICON_CATEGORIES } from "./types";
 
-const defaultCategoryIcon: LucideIcon = Component;
-const categoryIcons: IconLookup = {
-  layout: PanelsTopLeft,
-  content: FileText,
-  media: ImageIcon,
-  navigation: Navigation,
-  action: MousePointerClick,
-  actions: MousePointerClick,
-  ui: Component,
-  templates: LayoutTemplate,
-  template: LayoutTemplate,
-  automation: Workflow,
-  database: Database,
-  data: Database,
-  form: FileText,
-  forms: FileText,
-  table: Table,
-  tables: Table,
-  list: ListTree,
-  menu: Navigation,
-  menus: Navigation,
-  integration: Puzzle,
-  integrations: Puzzle,
-  analytics: Sparkles,
-  insights: Sparkles,
-  marketing: Megaphone,
-};
+// Constants
+export {
+  ICONS_BY_CATEGORY,
+  COMMON_ICONS,
+  COLOR_PRESETS,
+  BACKGROUND_PRESETS,
+  FEATURE_ICONS,
+  CATEGORY_ICONS,
+  DEFAULT_ICON,
+  DEFAULT_FEATURE_ICON,
+  DEFAULT_CATEGORY_ICON,
+} from "./constants";
 
-const featureOverrides = new Map<string, LucideIcon>();
-const categoryOverrides = new Map<string, LucideIcon>();
+// Dynamic Icon Component and utilities
+export {
+  DynamicIcon,
+  FeatureIcon,
+  CategoryIcon,
+  getIconComponent,
+  normalizeIconName,
+  iconExists,
+  getAllIconNames,
+  getFeatureIconName,
+  getCategoryIconName,
+  // Legacy exports
+  iconFromName,
+  getFeatureIcon,
+  getCategoryIcon,
+} from "./dynamic-icon";
 
-function normalizeKey(value?: string): string | undefined {
-  return value?.trim().toLowerCase();
-}
+// Search utilities
+export {
+  searchIcons,
+  getIconsByCategory,
+  getAllIcons,
+  getIconCategory,
+  isIconInCategory,
+  getRandomIcons,
+  getSuggestedIcons,
+  searchIconsInCategory,
+} from "./search";
 
-export function registerFeatureIcon(feature: string, icon: LucideIcon) {
-  const key = normalizeKey(feature);
-  if (!key) return;
-  featureOverrides.set(key, icon);
-}
+// Color utilities
+export {
+  getColorValue,
+  isThemeColor,
+  hexToRgb,
+  rgbToHex,
+  hexToHsl,
+  hslToHex,
+  lightenColor,
+  darkenColor,
+  getContrastColor,
+  getColorsByGroup,
+  isValidHexColor,
+  ensureHexPrefix,
+} from "./colors";
 
-export function registerCategoryIcon(category: string, icon: LucideIcon) {
-  const key = normalizeKey(category);
-  if (!key) return;
-  categoryOverrides.set(key, icon);
-}
+// Components
+export { IconPicker } from "./components/icon-picker";
+export { ColorPicker } from "./components/color-picker";
+export { IconGrid } from "./components/icon-grid";
 
-export function getFeatureIcon(feature?: string): LucideIcon {
-  const key = normalizeKey(feature);
-  if (!key) return defaultFeatureIcon;
-  if (featureOverrides.has(key)) {
-    return featureOverrides.get(key)!;
-  }
-  if (featureIcons[key]) {
-    return featureIcons[key];
-  }
-  for (const [mapKey, icon] of Object.entries(featureIcons)) {
-    if (key.includes(mapKey)) {
-      return icon;
-    }
-  }
-  return defaultFeatureIcon;
-}
-
-export function getCategoryIcon(category?: string): LucideIcon {
-  const key = normalizeKey(category);
-  if (!key) return defaultCategoryIcon;
-  if (categoryOverrides.has(key)) {
-    return categoryOverrides.get(key)!;
-  }
-  const normalizedKey = key.replace(/[^a-z0-9]/g, '');
-  if (categoryIcons[key]) {
-    return categoryIcons[key];
-  }
-  if (normalizedKey && categoryIcons[normalizedKey]) {
-    return categoryIcons[normalizedKey];
-  }
-  for (const [mapKey, icon] of Object.entries(categoryIcons)) {
-    if (key.includes(mapKey)) {
-      return icon;
-    }
-  }
-  return defaultCategoryIcon;
-}
+// Re-export component props types
+export type {
+  IconPickerProps as IconPickerComponentProps,
+  ColorPickerProps as ColorPickerComponentProps,
+  IconGridProps as IconGridComponentProps,
+} from "./components";

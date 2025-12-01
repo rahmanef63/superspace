@@ -1,66 +1,13 @@
 import { useCallback, useMemo, useState } from "react"
-import type { ComponentType } from "react"
 import { Button } from "@/components/ui/button"
 import {
   GripVertical,
   ChevronRight,
   ChevronDown,
-  Folder,
-  FileText,
-  Hash,
   MoreVertical,
   Copy,
   ArrowUpCircle,
-  Home,
-  Settings,
-  Users,
-  Mail,
-  Calendar,
-  BarChart,
-  Package,
-  ShoppingCart,
-  MessageSquare,
-  Bell,
-  Search,
-  Star,
-  Heart,
-  BookOpen,
-  Briefcase,
-  Camera,
-  Clock,
-  Code,
-  Database,
-  Download,
-  Edit,
-  Eye,
-  Film,
-  Gift,
-  Globe,
-  Image,
-  Key,
-  Layers,
-  Lock,
-  Map as MapIcon,
-  Music,
-  Phone,
-  Play,
-  Printer,
-  Radio,
-  Save,
-  Send,
-  Share2,
   Shield,
-  Smile,
-  Tag,
-  Target,
-  Trash,
-  TrendingUp,
-  Tv,
-  Upload,
-  User,
-  Video,
-  Wifi,
-  Zap
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -68,11 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import {
   DragDropMenuTreeProps,
   MenuTreeNode,
@@ -91,6 +33,7 @@ import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
 import { useQuery } from "convex/react"
 import { api } from "@convex/_generated/api"
+import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
 
 export function DragDropMenuTree({
   workspaceId,
@@ -168,129 +111,6 @@ export function DragDropMenuTree({
       next.add(itemId)
     }
     setExpandedItems(next)
-  }
-
-  const AVAILABLE_ICONS = [
-    { name: "Folder", icon: Folder },
-    { name: "FileText", icon: FileText },
-    { name: "Hash", icon: Hash },
-    { name: "Home", icon: Home },
-    { name: "Settings", icon: Settings },
-    { name: "Users", icon: Users },
-    { name: "Mail", icon: Mail },
-    { name: "Calendar", icon: Calendar },
-    { name: "BarChart", icon: BarChart },
-    { name: "Package", icon: Package },
-    { name: "ShoppingCart", icon: ShoppingCart },
-    { name: "MessageSquare", icon: MessageSquare },
-    { name: "Bell", icon: Bell },
-    { name: "Search", icon: Search },
-    { name: "Star", icon: Star },
-    { name: "Heart", icon: Heart },
-    { name: "BookOpen", icon: BookOpen },
-    { name: "Briefcase", icon: Briefcase },
-    { name: "Camera", icon: Camera },
-    { name: "Clock", icon: Clock },
-    { name: "Code", icon: Code },
-    { name: "Database", icon: Database },
-    { name: "Download", icon: Download },
-    { name: "Edit", icon: Edit },
-    { name: "Eye", icon: Eye },
-    { name: "Film", icon: Film },
-    { name: "Gift", icon: Gift },
-    { name: "Globe", icon: Globe },
-    { name: "Image", icon: Image },
-    { name: "Key", icon: Key },
-    { name: "Layers", icon: Layers },
-    { name: "Lock", icon: Lock },
-    { name: "Map", icon: MapIcon },
-    { name: "Music", icon: Music },
-    { name: "Phone", icon: Phone },
-    { name: "Play", icon: Play },
-    { name: "Printer", icon: Printer },
-    { name: "Radio", icon: Radio },
-    { name: "Save", icon: Save },
-    { name: "Send", icon: Send },
-    { name: "Share2", icon: Share2 },
-    { name: "Shield", icon: Shield },
-    { name: "Smile", icon: Smile },
-    { name: "Tag", icon: Tag },
-    { name: "Target", icon: Target },
-    { name: "Trash", icon: Trash },
-    { name: "TrendingUp", icon: TrendingUp },
-    { name: "Tv", icon: Tv },
-    { name: "Upload", icon: Upload },
-    { name: "User", icon: User },
-    { name: "Video", icon: Video },
-    { name: "Wifi", icon: Wifi },
-    { name: "Zap", icon: Zap },
-  ]
-
-  const iconMap: Record<string, ComponentType<{ className?: string }>> = {
-    Folder,
-    FileText,
-    Hash,
-    Home,
-    Settings,
-    Users,
-    Mail,
-    Calendar,
-    BarChart,
-    Package,
-    ShoppingCart,
-    MessageSquare,
-    Bell,
-    Search,
-    Star,
-    Heart,
-    BookOpen,
-    Briefcase,
-    Camera,
-    Clock,
-    Code,
-    Database,
-    Download,
-    Edit,
-    Eye,
-    Film,
-    Gift,
-    Globe,
-    Image,
-    Key,
-    Layers,
-    Lock,
-    Map: MapIcon,
-    Music,
-    Phone,
-    Play,
-    Printer,
-    Radio,
-    Save,
-    Send,
-    Share2,
-    Shield,
-    Smile,
-    Tag,
-    Target,
-    Trash,
-    TrendingUp,
-    Tv,
-    Upload,
-    User,
-    Video,
-    Wifi,
-    Zap,
-  }
-
-  const getIcon = (iconName?: string, fallbackType?: string) => {
-    // Try to match icon name (case-insensitive)
-    const searchKey = (iconName || fallbackType || 'hash')
-    const IconComponent = iconMap[searchKey] ||
-                         Object.entries(iconMap).find(([key]) =>
-                           key.toLowerCase() === searchKey.toLowerCase()
-                         )?.[1] ||
-                         Hash
-    return <IconComponent className="w-4 h-4" />
   }
 
   const handleIconChange = async (itemId: Id<"menuItems">, newIcon: string) => {
@@ -550,35 +370,23 @@ export function DragDropMenuTree({
           )}
 
           {canChangeAppearance ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="z-10 hover:bg-accent rounded p-0.5 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {getIcon(item.icon, item.type)}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-3 max-h-96 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="text-xs font-medium mb-2">Choose Icon</div>
-                <div className="grid grid-cols-6 gap-1">
-                  {AVAILABLE_ICONS.map(({ name, icon: Icon }) => (
-                    <button
-                      key={name}
-                      className="p-2 hover:bg-accent rounded transition-colors flex items-center justify-center"
-                      onClick={() => {
-                        handleIconChange(item._id, name)
-                      }}
-                      title={name}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+            <div className="z-10" onClick={(e) => e.stopPropagation()}>
+              <IconPicker
+                icon={item.icon || "Hash"}
+                onIconChange={(newIcon) => handleIconChange(item._id, newIcon)}
+                showColor={false}
+                showBackground={false}
+                trigger={
+                  <button className="hover:bg-accent rounded p-0.5 transition-colors">
+                    <DynamicIcon name={item.icon || "Hash"} className="w-4 h-4" />
+                  </button>
+                }
+              />
+            </div>
           ) : (
-            <span className="z-10">{getIcon(item.icon, item.type)}</span>
+            <span className="z-10">
+              <DynamicIcon name={item.icon || "Hash"} className="w-4 h-4" />
+            </span>
           )}
 
           {isRenaming && canRename ? (

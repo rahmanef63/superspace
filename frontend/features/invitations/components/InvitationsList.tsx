@@ -7,14 +7,16 @@ import { Button } from "@/components/ui/button";
 import { 
   Mail, 
   Send,
-  Inbox
+  Inbox,
+  Users,
+  UserPlus
 } from "lucide-react";
 import { InvitationCard } from "./InvitationCard";
 import type { InvitationsListProps } from "../types";
 
 export function InvitationsList({ onInvite }: InvitationsListProps) {
   const [filter, setFilter] = useState<"all" | "sent" | "received">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "accepted" | "declined">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "accepted" | "declined" | "expired">("all");
   const [kindFilter, setKindFilter] = useState<"all" | "workspace" | "personal">("all");
 
   const invitations = useQuery(api.workspace.invitations.getUserInvitations, {
@@ -76,6 +78,7 @@ export function InvitationsList({ onInvite }: InvitationsListProps) {
             { key: "pending", label: "Pending" },
             { key: "accepted", label: "Accepted" },
             { key: "declined", label: "Declined" },
+            { key: "expired", label: "Expired" },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -93,19 +96,20 @@ export function InvitationsList({ onInvite }: InvitationsListProps) {
 
         <div className="flex gap-1">
           {[
-            { key: "all", label: "All Types" },
-            { key: "workspace", label: "Workspace" },
-            { key: "personal", label: "Friends" },
-          ].map(({ key, label }) => (
+            { key: "all", label: "All Types", icon: Mail },
+            { key: "workspace", label: "Workspace", icon: Users },
+            { key: "personal", label: "Friends", icon: UserPlus },
+          ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => setKindFilter(key as any)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 kindFilter === key
                   ? "bg-gray-100 text-gray-700"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
+              <Icon className="w-3 h-3" />
               {label}
             </button>
           ))}

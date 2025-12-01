@@ -945,3 +945,157 @@ export const resetWorkspace = mutation({
     return true as const
   },
 })
+
+// Search workspace members by name or email
+export const searchWorkspaceMembers = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    query: v.string(),
+    status: v.optional(v.union(
+      v.literal("active"),
+      v.literal("inactive"),
+      v.literal("pending")
+    )),
+    roleId: v.optional(v.id("roles")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    if (candidateIds.length === 0) return [] as any
+
+    // Check if user is a member
+    let userMembership: any = null
+    for (const idStr of candidateIds) {
+      const m = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_user_workspace", (q) => q.eq("userId", idStr as any).eq("workspaceId", args.workspaceId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .unique()
+      if (m) {
+        userMembership = m
+        break
+      }
+    }
+
+    if (!userMembership) {
+      const workspace = await ctx.db.get(args.workspaceId)
+      if (!workspace) return [] as any
+      const isCreator = candidateIds.includes(String(workspace.createdBy))
+      if (!isCreator) return [] as any
+    }
+
+    // Get all memberships for the workspace
+    let memberships = await ctx.db
+      .query("workspaceMemberships")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Filter by status
+    if (args.status) {
+      memberships = memberships.filter((m) => m.status === args.status)
+    } else {
+      memberships = memberships.filter((m) => m.status === "active")
+    }
+
+    // Filter by role
+    if (args.roleId) {
+      memberships = memberships.filter((m) => m.roleId === args.roleId)
+    }
+
+    // Hydrate with user and role data
+    const searchQuery = args.query.toLowerCase().trim()
+    const results = await Promise.all(
+      memberships.map(async (membership) => {
+        const user = await ctx.db.get(membership.userId)
+        const role = await ctx.db.get(membership.roleId)
+        
+        if (!user) return null
+
+        // Search matching
+        const nameMatch = user.name?.toLowerCase().includes(searchQuery) ?? false
+        const emailMatch = user.email?.toLowerCase().includes(searchQuery) ?? false
+        
+        if (!searchQuery || nameMatch || emailMatch) {
+          return {
+            ...membership,
+            user,
+            role,
+            name: user.name || "Unknown User",
+            email: user.email,
+            image: user.avatarUrl,
+          }
+        }
+        return null
+      })
+    )
+
+    const filtered = results.filter(Boolean)
+    const limit = args.limit || 50
+    
+    return filtered.slice(0, limit).sort((a: any, b: any) => {
+      // Sort by name
+      const nameA = a.name?.toLowerCase() || ""
+      const nameB = b.name?.toLowerCase() || ""
+      return nameA.localeCompare(nameB)
+    })
+  },
+})
+
+// Get member by user ID
+export const getWorkspaceMember = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    if (candidateIds.length === 0) return null
+
+    // Check if requester has access
+    let hasAccess = false
+    for (const idStr of candidateIds) {
+      const m = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_user_workspace", (q) => q.eq("userId", idStr as any).eq("workspaceId", args.workspaceId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .unique()
+      if (m) {
+        hasAccess = true
+        break
+      }
+    }
+
+    if (!hasAccess) {
+      const workspace = await ctx.db.get(args.workspaceId)
+      if (workspace && candidateIds.includes(String(workspace.createdBy))) {
+        hasAccess = true
+      }
+    }
+
+    if (!hasAccess) return null
+
+    const membership = await ctx.db
+      .query("workspaceMemberships")
+      .withIndex("by_user_workspace", (q) => q.eq("userId", args.userId).eq("workspaceId", args.workspaceId))
+      .unique()
+
+    if (!membership) return null
+
+    const user = await ctx.db.get(membership.userId)
+    const role = await ctx.db.get(membership.roleId)
+    let invitedBy = null
+    if (membership.invitedBy) {
+      invitedBy = await ctx.db.get(membership.invitedBy)
+    }
+
+    return {
+      ...membership,
+      user,
+      role,
+      invitedBy,
+      name: user?.name || "Unknown User",
+      email: user?.email,
+      image: user?.avatarUrl,
+    }
+  },
+})

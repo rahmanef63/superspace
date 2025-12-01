@@ -3,7 +3,7 @@ import { useCanInviteMembers, useCanManageMembers, useCanManageRoles } from "../
 
 export function useMemberGuards(workspaceId: Id<"workspaces">) {
   const canInvite = useCanInviteMembers(workspaceId);
-  const canManage = useCanManageMembers(workspaceId);
+  const canManageMembers = useCanManageMembers(workspaceId);
   const canManageRoles = useCanManageRoles(workspaceId);
-  return { canInvite, canManage, canManageRoles };
+  return { canInvite, canManage: canManageMembers, canManageMembers, canManageRoles };
 }

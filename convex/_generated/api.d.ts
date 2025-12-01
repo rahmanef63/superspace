@@ -15,6 +15,7 @@ import type * as auth_api_queries from "../auth/api/queries.js";
 import type * as auth_auth from "../auth/auth.js";
 import type * as auth_helpers from "../auth/helpers.js";
 import type * as components_registry from "../components/registry.js";
+import type * as dev_platformAdmin from "../dev/platformAdmin.js";
 import type * as dev_seedFeatures from "../dev/seedFeatures.js";
 import type * as features__schema from "../features/_schema.js";
 import type * as features_ai_actions from "../features/ai/actions.js";
@@ -209,6 +210,7 @@ declare const fullApi: ApiFromModules<{
   "auth/auth": typeof auth_auth;
   "auth/helpers": typeof auth_helpers;
   "components/registry": typeof components_registry;
+  "dev/platformAdmin": typeof dev_platformAdmin;
   "dev/seedFeatures": typeof dev_seedFeatures;
   "features/_schema": typeof features__schema;
   "features/ai/actions": typeof features_ai_actions;

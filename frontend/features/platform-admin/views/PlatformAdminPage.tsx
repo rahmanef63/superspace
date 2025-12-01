@@ -32,6 +32,7 @@ import {
   ExternalLink,
   Zap,
   Package,
+  Mail,
 } from "lucide-react"
 import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useFeatureBundles, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
@@ -41,6 +42,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BundleMultiSelect, { BundleBadges, type SelectedBundle, type BundleOption } from "../components/BundleMultiSelect"
 import BundleCategoriesTable from "../components/BundleCategoriesTable"
+import { PlatformUsersTable } from "../components/PlatformUsersTable"
+import { PlatformInvitationsTable } from "../components/PlatformInvitationsTable"
 import {
   Table,
   TableBody,
@@ -1333,6 +1336,14 @@ export default function PlatformAdminPage() {
             <Building2 className="h-4 w-4" />
             Workspaces
           </TabsTrigger>
+          <TabsTrigger value="users" className="gap-2">
+            <Users className="h-4 w-4" />
+            Users
+          </TabsTrigger>
+          <TabsTrigger value="invitations" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Invitations
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Analytics
@@ -1442,6 +1453,14 @@ export default function PlatformAdminPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="mt-4">
+          <PlatformUsersTable />
+        </TabsContent>
+
+        <TabsContent value="invitations" className="mt-4">
+          <PlatformInvitationsTable />
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4">

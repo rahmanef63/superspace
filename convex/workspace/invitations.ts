@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
-import { ensureUser, resolveCandidateUserIds, requireActiveMembership, hasPermission, requirePermission, canPermission } from "../auth/helpers";
+import { ensureUser, requireActiveMembership, hasPermission, canPermission } from "../auth/helpers";
 import { PERMS } from "./permissions";
 
 // Generate unique invitation token
@@ -173,39 +173,71 @@ export const sendPersonalInvitation = mutation({
 export const getUserInvitations = query({
   args: {
     type: v.optional(v.union(v.literal("sent"), v.literal("received"))),
-    status: v.optional(v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined"))),
+    status: v.optional(v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined"),
+      v.literal("expired")
+    )),
     kind: v.optional(v.union(v.literal("workspace"), v.literal("personal"))),
   },
   handler: async (ctx, args) => {
-    const candidateIds = await resolveCandidateUserIds(ctx);
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity && candidateIds.length === 0) return [] as any;
+    if (!identity) return [] as any;
 
-    const inviteeEmail = identity?.email ?? null;
+    const inviteeEmail = identity.email ?? null;
     let invitations: any[] = [];
 
-    // Sent invitations by any candidate user id
+    // Try to find current user by email (most reliable for Clerk auth)
+    let currentUserId: any = null;
+    if (inviteeEmail) {
+      const userByEmail = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q: any) => q.eq("email", inviteeEmail))
+        .first();
+      if (userByEmail) currentUserId = userByEmail._id;
+    }
+
+    // Fallback: try authAccounts link
+    if (!currentUserId) {
+      try {
+        const account = await ctx.db
+          .query("authAccounts")
+          .withIndex("providerAndAccountId", (q: any) =>
+            q.eq("provider", "clerk").eq("providerAccountId", String(identity.subject))
+          )
+          .unique();
+        if (account) currentUserId = account.userId;
+      } catch (_err) {
+        // Table may not exist
+      }
+    }
+
+    if (!currentUserId && !inviteeEmail) return [] as any;
+
+    // Sent invitations by current user
     if (!args.type || args.type === "sent") {
-      for (const idStr of candidateIds) {
+      if (currentUserId) {
         const sent = await ctx.db
           .query("invitations")
-          .withIndex("by_inviter", (q) => q.eq("inviterId", idStr as any))
+          .withIndex("by_inviter", (q) => q.eq("inviterId", currentUserId))
           .collect();
         invitations.push(
           ...(await Promise.all(
             sent.map(async (invitation) => {
               let workspace = null;
               let role = null;
+              const invitee = invitation.inviteeId ? await ctx.db.get(invitation.inviteeId) : null;
               if (invitation.workspaceId) workspace = await ctx.db.get(invitation.workspaceId);
               if (invitation.roleId) role = await ctx.db.get(invitation.roleId);
-              return { ...invitation, direction: "sent" as const, workspace, role };
+              return { ...invitation, direction: "sent" as const, workspace, role, invitee };
             })
           ))
         );
       }
     }
 
-    // Received invitations by email and by inviteeId (after account exists)
+    // Received invitations by email and by inviteeId
     if (!args.type || args.type === "received") {
       const byEmail = inviteeEmail
         ? await ctx.db
@@ -213,16 +245,16 @@ export const getUserInvitations = query({
             .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", inviteeEmail))
             .collect()
         : [];
-      const byIds: any[] = [];
-      for (const idStr of candidateIds) {
-        const rows = await ctx.db
-          .query("invitations")
-          .withIndex("by_invitee_id", (q) => q.eq("inviteeId", idStr as any))
-          .collect();
-        byIds.push(...rows);
-      }
+      const byId = currentUserId
+        ? await ctx.db
+            .query("invitations")
+            .withIndex("by_invitee_id", (q) => q.eq("inviteeId", currentUserId))
+            .collect()
+        : [];
+
+      // Merge and dedupe
       const mergedMap = new Map<string, any>();
-      for (const inv of [...byEmail, ...byIds]) mergedMap.set(String(inv._id), inv);
+      for (const inv of [...byEmail, ...byId]) mergedMap.set(String(inv._id), inv);
 
       const receivedWithDetails = await Promise.all(
         Array.from(mergedMap.values()).map(async (invitation) => {
@@ -483,5 +515,294 @@ export const acceptInvitationByToken = mutation({
     }
 
     return invitation;
+  },
+});
+
+// Resend invitation (reset expiration and optionally update role/message)
+export const resendInvitation = mutation({
+  args: {
+    invitationId: v.id("invitations"),
+    roleId: v.optional(v.id("roles")),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
+
+    const invitation = await ctx.db.get(args.invitationId);
+    if (!invitation) throw new Error("Invitation not found");
+
+    // Only the inviter can resend
+    if (String(invitation.inviterId) !== String(currentUserId)) {
+      throw new Error("Not authorized to resend this invitation");
+    }
+
+    // Can only resend pending or expired invitations
+    if (invitation.status !== "pending" && invitation.status !== "expired") {
+      throw new Error("Can only resend pending or expired invitations");
+    }
+
+    // Generate new token and expiration
+    const newToken = generateInvitationToken();
+    const newExpiresAt = invitation.type === "workspace" 
+      ? Date.now() + (7 * 24 * 60 * 60 * 1000)  // 7 days for workspace
+      : Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days for personal
+
+    const updates: any = {
+      status: "pending",
+      token: newToken,
+      expiresAt: newExpiresAt,
+    };
+
+    if (args.roleId !== undefined) updates.roleId = args.roleId;
+    if (args.message !== undefined) updates.message = args.message;
+
+    await ctx.db.patch(args.invitationId, updates);
+
+    return { invitationId: args.invitationId, token: newToken };
+  },
+});
+
+// Bulk send workspace invitations
+export const sendBulkInvitations = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    invitations: v.array(v.object({
+      email: v.string(),
+      roleId: v.id("roles"),
+      message: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
+
+    // Check permission
+    const { membership, role } = await requireActiveMembership(ctx, args.workspaceId);
+    if (!membership && !role) throw new Error("Not authorized");
+    if (!hasPermission(role, "invite_members")) throw new Error("Insufficient permissions");
+
+    const results: Array<{
+      email: string;
+      success: boolean;
+      invitationId?: string;
+      token?: string;
+      error?: string;
+    }> = [];
+
+    for (const inv of args.invitations) {
+      try {
+        // Check if user is already a member
+        const inviteeUser = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("email"), inv.email))
+          .unique();
+
+        if (inviteeUser) {
+          const existingMembership = await ctx.db
+            .query("workspaceMemberships")
+            .withIndex("by_user_workspace", (q) => 
+              q.eq("userId", inviteeUser._id).eq("workspaceId", args.workspaceId)
+            )
+            .unique();
+
+          if (existingMembership && existingMembership.status === "active") {
+            results.push({ email: inv.email, success: false, error: "Already a member" });
+            continue;
+          }
+        }
+
+        // Check for existing pending invitation
+        const existingInvitation = await ctx.db
+          .query("invitations")
+          .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", inv.email))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("workspaceId"), args.workspaceId),
+              q.eq(q.field("status"), "pending")
+            )
+          )
+          .unique();
+
+        if (existingInvitation) {
+          results.push({ email: inv.email, success: false, error: "Invitation already sent" });
+          continue;
+        }
+
+        const token = generateInvitationToken();
+        const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000);
+
+        const invitationId = await ctx.db.insert("invitations", {
+          type: "workspace",
+          workspaceId: args.workspaceId,
+          inviterId: currentUserId,
+          inviteeEmail: inv.email,
+          inviteeId: inviteeUser?._id,
+          roleId: inv.roleId,
+          status: "pending",
+          message: inv.message,
+          expiresAt,
+          token,
+        });
+
+        results.push({
+          email: inv.email,
+          success: true,
+          invitationId: invitationId as unknown as string,
+          token,
+        });
+      } catch (err) {
+        results.push({
+          email: inv.email,
+          success: false,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+    }
+
+    return results;
+  },
+});
+
+// Get invitation statistics for a workspace
+export const getInvitationStats = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const allowed = await canPermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
+    if (!allowed) return null;
+
+    const invitations = await ctx.db
+      .query("invitations")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+
+    const now = Date.now();
+    const stats = {
+      total: invitations.length,
+      pending: 0,
+      accepted: 0,
+      declined: 0,
+      expired: 0,
+      expiringSoon: 0, // Within 24 hours
+    };
+
+    for (const inv of invitations) {
+      switch (inv.status) {
+        case "pending":
+          stats.pending++;
+          if (inv.expiresAt - now < 24 * 60 * 60 * 1000 && inv.expiresAt > now) {
+            stats.expiringSoon++;
+          }
+          break;
+        case "accepted":
+          stats.accepted++;
+          break;
+        case "declined":
+          stats.declined++;
+          break;
+        case "expired":
+          stats.expired++;
+          break;
+      }
+    }
+
+    return stats;
+  },
+});
+
+// Clean up expired invitations (mark as expired)
+export const cleanupExpiredInvitations = mutation({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
+
+    let invitations;
+    if (args.workspaceId) {
+      // Check permission for specific workspace
+      const allowed = await canPermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
+      if (!allowed) throw new Error("Not authorized");
+
+      invitations = await ctx.db
+        .query("invitations")
+        .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .collect();
+    } else {
+      // Only clean up invitations sent by current user
+      invitations = await ctx.db
+        .query("invitations")
+        .withIndex("by_inviter", (q) => q.eq("inviterId", currentUserId))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .collect();
+    }
+
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    for (const inv of invitations) {
+      if (inv.expiresAt < now) {
+        await ctx.db.patch(inv._id, { status: "expired" });
+        cleanedCount++;
+      }
+    }
+
+    return { cleanedCount };
+  },
+});
+
+// Search invitations
+export const searchInvitations = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    query: v.string(),
+    status: v.optional(v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined"),
+      v.literal("expired")
+    )),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const allowed = await canPermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
+    if (!allowed) return [];
+
+    let invitations = await ctx.db
+      .query("invitations")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+
+    // Filter by status
+    if (args.status) {
+      invitations = invitations.filter((i) => i.status === args.status);
+    }
+
+    // Search by email
+    const searchQuery = args.query.toLowerCase().trim();
+    if (searchQuery) {
+      invitations = invitations.filter((i) =>
+        i.inviteeEmail.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    // Hydrate
+    const enriched = await Promise.all(
+      invitations.map(async (inv) => {
+        const inviter = await ctx.db.get(inv.inviterId);
+        const role = inv.roleId ? await ctx.db.get(inv.roleId) : null;
+        const invitee = inv.inviteeId ? await ctx.db.get(inv.inviteeId) : null;
+        return { ...inv, inviter, role, invitee };
+      })
+    );
+
+    const limit = args.limit || 50;
+    return enriched
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, limit);
   },
 });

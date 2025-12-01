@@ -15,28 +15,29 @@ import {
   MessageSquare,
   Mail,
   Building,
-  User
+  User,
+  RefreshCw
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useNotification } from "./NotificationToast";
+import { toast } from "sonner";
 import type { InvitationCardProps } from "../types";
 
 export function InvitationCard({ invitation }: InvitationCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { showNotification } = useNotification();
 
   const acceptInvitation = useMutation(api.workspace.invitations.acceptInvitation);
   const declineInvitation = useMutation(api.workspace.invitations.declineInvitation);
   const cancelInvitation = useMutation(api.workspace.invitations.cancelInvitation);
+  const resendInvitation = useMutation(api.workspace.invitations.resendInvitation);
 
   const handleAccept = async () => {
     setIsProcessing(true);
     try {
       await acceptInvitation({ invitationId: invitation._id });
-      showNotification("Invitation accepted successfully!", "success");
+      toast.success("Invitation accepted successfully!");
     } catch (error) {
       console.error("Failed to accept invitation:", error);
-      showNotification(error instanceof Error ? error.message : "Failed to accept invitation", "error");
+      toast.error(error instanceof Error ? error.message : "Failed to accept invitation");
     } finally {
       setIsProcessing(false);
     }
@@ -46,10 +47,10 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
     setIsProcessing(true);
     try {
       await declineInvitation({ invitationId: invitation._id });
-      showNotification("Invitation declined", "warning");
+      toast.warning("Invitation declined");
     } catch (error) {
       console.error("Failed to decline invitation:", error);
-      showNotification(error instanceof Error ? error.message : "Failed to decline invitation", "error");
+      toast.error(error instanceof Error ? error.message : "Failed to decline invitation");
     } finally {
       setIsProcessing(false);
     }
@@ -60,13 +61,26 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
       setIsProcessing(true);
       try {
         await cancelInvitation({ invitationId: invitation._id });
-        showNotification("Invitation cancelled", "info");
+        toast.info("Invitation cancelled");
       } catch (error) {
         console.error("Failed to cancel invitation:", error);
-        showNotification(error instanceof Error ? error.message : "Failed to cancel invitation", "error");
+        toast.error(error instanceof Error ? error.message : "Failed to cancel invitation");
       } finally {
         setIsProcessing(false);
       }
+    }
+  };
+
+  const handleResend = async () => {
+    setIsProcessing(true);
+    try {
+      await resendInvitation({ invitationId: invitation._id });
+      toast.success("Invitation resent!");
+    } catch (error) {
+      console.error("Failed to resend invitation:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to resend invitation");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -201,15 +215,40 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
           )}
 
           {invitation.direction === "sent" && invitation.status === "pending" && (
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleResend}
+                disabled={isProcessing}
+                className="border-border hover:bg-muted"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Resend
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isProcessing}
+                className="border-border hover:bg-muted text-destructive hover:text-destructive"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {invitation.direction === "sent" && invitation.status === "expired" && (
             <Button
               size="sm"
               variant="outline"
-              onClick={handleCancel}
+              onClick={handleResend}
               disabled={isProcessing}
               className="border-border hover:bg-muted"
             >
-              <X className="w-4 h-4 mr-1" />
-              Cancel
+              <RefreshCw className="w-4 h-4 mr-1" />
+              Resend
             </Button>
           )}
         </div>

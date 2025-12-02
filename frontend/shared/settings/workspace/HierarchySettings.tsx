@@ -67,6 +67,9 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+// Import from SSOT
+import { WORKSPACE_COLORS } from "@/frontend/shared/constants/colors"
+
 // Workspace type icons
 const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
   personal: Home,
@@ -75,20 +78,6 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
   group: Users,
   family: Heart,
 }
-
-// Color palette for workspaces
-const WORKSPACE_COLORS = [
-  "#6366f1", // Indigo
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
-  "#ef4444", // Red
-  "#f97316", // Orange
-  "#eab308", // Yellow
-  "#22c55e", // Green
-  "#14b8a6", // Teal
-  "#06b6d4", // Cyan
-  "#3b82f6", // Blue
-]
 
 interface HierarchySettingsProps {
   workspaceId: Id<"workspaces">
@@ -466,19 +455,20 @@ export function HierarchySettings({ workspaceId }: HierarchySettingsProps) {
               Choose a color to identify this workspace in the sidebar.
             </p>
             <div className="flex flex-wrap gap-2">
-              {WORKSPACE_COLORS.map((color) => (
+              {WORKSPACE_COLORS.map((colorItem) => (
                 <button
-                  key={color}
+                  key={colorItem.value}
                   className={cn(
                     "h-8 w-8 rounded-full border-2 transition-all hover:scale-110",
-                    color === ((currentWorkspace as any)?.color ?? "#6366f1")
+                    colorItem.value === ((currentWorkspace as any)?.color ?? "#6366f1")
                       ? "border-foreground ring-2 ring-offset-2 ring-offset-background"
                       : "border-transparent"
                   )}
-                  style={{ backgroundColor: color }}
-                  onClick={() => handleColorChange(workspaceId, color)}
+                  style={{ backgroundColor: colorItem.value }}
+                  onClick={() => handleColorChange(workspaceId, colorItem.value)}
+                  title={colorItem.name}
                 >
-                  {color === ((currentWorkspace as any)?.color ?? "#6366f1") && (
+                  {colorItem.value === ((currentWorkspace as any)?.color ?? "#6366f1") && (
                     <Check className="h-4 w-4 text-white mx-auto" />
                   )}
                 </button>
@@ -712,15 +702,16 @@ function ChildWorkspaceCard({
           <div className="p-2">
             <div className="text-xs font-medium mb-2">Color</div>
             <div className="flex flex-wrap gap-1">
-              {WORKSPACE_COLORS.map((c) => (
+              {WORKSPACE_COLORS.map((colorItem) => (
                 <button
-                  key={c}
+                  key={colorItem.value}
                   className={cn(
                     "h-5 w-5 rounded-full border-2 transition-all",
-                    c === color ? "border-foreground" : "border-transparent"
+                    colorItem.value === color ? "border-foreground" : "border-transparent"
                   )}
-                  style={{ backgroundColor: c }}
-                  onClick={() => onColorChange(c)}
+                  style={{ backgroundColor: colorItem.value }}
+                  onClick={() => onColorChange(colorItem.value)}
+                  title={colorItem.name}
                 />
               ))}
             </div>

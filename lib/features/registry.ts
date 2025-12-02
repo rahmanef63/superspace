@@ -35,6 +35,7 @@ import builderConfig from '@/frontend/features/builder/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
+import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
 import platformAdminConfig from '@/frontend/features/platform-admin/config'
 
@@ -64,6 +65,7 @@ const featureConfigs: FeatureConfig[] = [
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
+  workspaceStoreConfig,
   cmsLiteConfig,
   platformAdminConfig,
 ]

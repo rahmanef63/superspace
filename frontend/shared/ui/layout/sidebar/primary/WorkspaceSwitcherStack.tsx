@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -27,6 +29,11 @@ import {
   Briefcase,
   Crown,
   Loader2,
+  Plus,
+  Check,
+  Settings,
+  Pencil,
+  Trash2,
 } from "lucide-react"
 import type { Id, Doc } from "@convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
@@ -43,6 +50,9 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
 
 interface WorkspaceSwitcherStackProps {
   onWorkspaceSelect?: (workspaceId: Id<"workspaces">) => void
+  onCreateWorkspace?: (parentId?: Id<"workspaces">) => void
+  onEditWorkspace?: (workspaceId: Id<"workspaces">) => void
+  onDeleteWorkspace?: (workspaceId: Id<"workspaces">) => void
   isLoading?: boolean
 }
 
@@ -57,9 +67,13 @@ interface WorkspaceSwitcherStackProps {
  * - Visual hierarchy with colors
  * - Navigate to parent (up) or children (down)
  * - Switch between siblings at same level
+ * - CRUD operations (create, edit, delete)
  */
 export function WorkspaceSwitcherStack({
   onWorkspaceSelect,
+  onCreateWorkspace,
+  onEditWorkspace,
+  onDeleteWorkspace,
   isLoading = false,
 }: WorkspaceSwitcherStackProps) {
   const router = useRouter()
@@ -119,9 +133,11 @@ export function WorkspaceSwitcherStack({
           workspace={level.workspace}
           depth={level.depth}
           isActive={level.isActive}
-          siblings={index === stackLevels.length - 1 ? siblingWorkspaces : []}
-          children={level.isActive ? childWorkspaces : []}
+          currentWorkspaceId={workspaceId}
           onSelect={handleWorkspaceSelect}
+          onCreateWorkspace={onCreateWorkspace}
+          onEditWorkspace={onEditWorkspace}
+          onDeleteWorkspace={onDeleteWorkspace}
           isMobile={isMobile}
         />
       ))}
@@ -132,9 +148,11 @@ export function WorkspaceSwitcherStack({
           workspace={currentWorkspace}
           depth={0}
           isActive={true}
-          siblings={siblingWorkspaces}
-          children={childWorkspaces}
+          currentWorkspaceId={workspaceId}
           onSelect={handleWorkspaceSelect}
+          onCreateWorkspace={onCreateWorkspace}
+          onEditWorkspace={onEditWorkspace}
+          onDeleteWorkspace={onDeleteWorkspace}
           isMobile={isMobile}
         />
       )}
@@ -146,9 +164,11 @@ interface WorkspaceLevelSwitcherProps {
   workspace: Doc<"workspaces">
   depth: number
   isActive: boolean
-  siblings: Doc<"workspaces">[]
-  children: Doc<"workspaces">[]
+  currentWorkspaceId: Id<"workspaces"> | null
   onSelect: (id: Id<"workspaces">) => void
+  onCreateWorkspace?: (parentId?: Id<"workspaces">) => void
+  onEditWorkspace?: (workspaceId: Id<"workspaces">) => void
+  onDeleteWorkspace?: (workspaceId: Id<"workspaces">) => void
   isMobile: boolean
 }
 
@@ -156,21 +176,41 @@ function WorkspaceLevelSwitcher({
   workspace,
   depth,
   isActive,
-  siblings,
-  children,
+  currentWorkspaceId,
   onSelect,
+  onCreateWorkspace,
+  onEditWorkspace,
+  onDeleteWorkspace,
   isMobile,
 }: WorkspaceLevelSwitcherProps) {
+  // Fetch siblings for THIS workspace (not the current selected)
+  const siblings = useQuery(
+    api.workspace.hierarchy.getSiblingWorkspaces,
+    { workspaceId: workspace._id }
+  )
+  
+  // Fetch children for THIS workspace (only if it's the active/current one)
+  const children = useQuery(
+    api.workspace.hierarchy.getChildWorkspaces,
+    isActive ? { workspaceId: workspace._id, includeLinked: true } : "skip"
+  )
+
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
   const color = (workspace as any).color ?? "#6366f1"
   const isMainWorkspace = (workspace as any).isMainWorkspace
   
-  // Calculate size based on depth (parent levels are smaller)
-  const size = isActive ? "lg" : "default"
-  const opacity = isActive ? 1 : 0.7
+  const siblingsArray = siblings ?? []
+  const childrenArray = children ?? []
   
-  // Combined options: siblings + children
-  const hasOptions = siblings.length > 0 || children.length > 0
+  // Always use consistent sizing - only differentiate by color accent
+  const hasCrudActions = isActive && (onCreateWorkspace || onEditWorkspace || onDeleteWorkspace)
+  
+  // Combined options: siblings + children + CRUD actions
+  // Always show dropdown if there's any interaction available
+  const hasOptions = siblingsArray.length > 0 || childrenArray.length > 0 || hasCrudActions
+  
+  // Is this workspace the currently selected one?
+  const isCurrentSelection = String(workspace._id) === String(currentWorkspaceId)
 
   return (
     <SidebarMenu>
@@ -178,34 +218,23 @@ function WorkspaceLevelSwitcher({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              size={size}
-              className={cn(
-                "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
-                !isActive && "h-8"
-              )}
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               style={{ 
-                opacity,
-                borderLeftWidth: isActive ? "3px" : "0",
-                borderLeftColor: color,
+                borderLeftWidth: "3px",
+                borderLeftColor: isActive ? color : "transparent",
                 borderLeftStyle: "solid",
-                paddingLeft: isActive ? undefined : `${(depth * 8) + 8}px`,
               }}
             >
               <div
-                className={cn(
-                  "flex items-center justify-center rounded text-white",
-                  isActive ? "aspect-square size-8 rounded-lg" : "size-5 rounded-sm"
-                )}
+                className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
                 style={{ backgroundColor: color }}
               >
-                <Icon className={isActive ? "size-4" : "size-3"} />
+                <Icon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className={cn(
-                    "truncate",
-                    isActive ? "font-semibold" : "text-xs"
-                  )}>
+                  <span className="truncate font-semibold">
                     {workspace.name}
                   </span>
                   {isMainWorkspace && (
@@ -214,62 +243,110 @@ function WorkspaceLevelSwitcher({
                     </Badge>
                   )}
                 </div>
-                {isActive && (
-                  <span className="truncate text-xs text-muted-foreground">
-                    {workspace.type}
-                  </span>
-                )}
+                <span className="truncate text-xs text-muted-foreground">
+                  {workspace.type}
+                  {!isActive && " (parent)"}
+                </span>
               </div>
-              {hasOptions && (
-                <ChevronDown className={cn(
-                  "ml-auto transition-transform",
-                  isActive ? "size-4" : "size-3"
-                )} />
-              )}
+              <ChevronDown className="ml-auto size-4 transition-transform" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           
-          {hasOptions && (
-            <DropdownMenuContent
-              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-              align="start"
-              side={isMobile ? "bottom" : "right"}
-              sideOffset={4}
-            >
-              {/* Siblings */}
-              {siblings.length > 0 && (
-                <>
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Same Level
-                  </DropdownMenuLabel>
-                  {siblings.map((sibling) => (
-                    <WorkspaceMenuItem
-                      key={sibling._id}
-                      workspace={sibling}
-                      onSelect={() => onSelect(sibling._id)}
-                    />
-                  ))}
-                </>
-              )}
-              
-              {/* Children */}
-              {children.length > 0 && (
-                <>
-                  {siblings.length > 0 && <DropdownMenuSeparator />}
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Child Workspaces
-                  </DropdownMenuLabel>
-                  {children.map((child) => (
-                    <WorkspaceMenuItem
-                      key={child._id}
-                      workspace={child}
-                      onSelect={() => onSelect(child._id)}
-                    />
-                  ))}
-                </>
-              )}
-            </DropdownMenuContent>
-          )}
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
+            side={isMobile ? "bottom" : "right"}
+            sideOffset={4}
+          >
+            {/* CRUD Actions for active workspace */}
+            {hasCrudActions && (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Actions
+                </DropdownMenuLabel>
+                {onCreateWorkspace && (
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer"
+                    onClick={() => onCreateWorkspace(workspace._id)}
+                  >
+                    <Plus className="size-4" />
+                    <span>Create Child Workspace</span>
+                  </DropdownMenuItem>
+                )}
+                {onEditWorkspace && (
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer"
+                    onClick={() => onEditWorkspace(workspace._id)}
+                  >
+                    <Pencil className="size-4" />
+                    <span>Edit Workspace</span>
+                  </DropdownMenuItem>
+                )}
+                {onDeleteWorkspace && !isMainWorkspace && (
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+                    onClick={() => onDeleteWorkspace(workspace._id)}
+                  >
+                    <Trash2 className="size-4" />
+                    <span>Delete Workspace</span>
+                  </DropdownMenuItem>
+                )}
+                {(siblingsArray.length > 0 || childrenArray.length > 0) && (
+                  <DropdownMenuSeparator />
+                )}
+              </>
+            )}
+
+            {/* Siblings - always include current workspace */}
+            {siblingsArray.length > 0 && (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Same Level ({siblingsArray.length + 1})
+                </DropdownMenuLabel>
+                {/* Current workspace first */}
+                <WorkspaceMenuItem
+                  key={workspace._id}
+                  workspace={workspace}
+                  isSelected={isCurrentSelection}
+                  onSelect={() => onSelect(workspace._id)}
+                />
+                {/* Then siblings */}
+                {siblingsArray.map((sibling) => (
+                  <WorkspaceMenuItem
+                    key={sibling._id}
+                    workspace={sibling}
+                    isSelected={String(sibling._id) === String(currentWorkspaceId)}
+                    onSelect={() => onSelect(sibling._id)}
+                  />
+                ))}
+              </>
+            )}
+            
+            {/* Children */}
+            {childrenArray.length > 0 && (
+              <>
+                {siblingsArray.length > 0 && <DropdownMenuSeparator />}
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Child Workspaces ({childrenArray.length})
+                </DropdownMenuLabel>
+                {childrenArray.map((child) => (
+                  <WorkspaceMenuItem
+                    key={child._id}
+                    workspace={child}
+                    isSelected={String(child._id) === String(currentWorkspaceId)}
+                    onSelect={() => onSelect(child._id)}
+                  />
+                ))}
+              </>
+            )}
+            
+            {/* Empty state with create option */}
+            {!hasCrudActions && siblingsArray.length === 0 && childrenArray.length === 0 && (
+              <DropdownMenuItem disabled className="text-muted-foreground">
+                No workspaces available
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
@@ -278,9 +355,11 @@ function WorkspaceLevelSwitcher({
 
 function WorkspaceMenuItem({
   workspace,
+  isSelected,
   onSelect,
 }: {
   workspace: Doc<"workspaces">
+  isSelected?: boolean
   onSelect: () => void
 }) {
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
@@ -312,6 +391,9 @@ function WorkspaceMenuItem({
           {workspace.type}
         </span>
       </div>
+      {isSelected && (
+        <Check className="size-4 text-primary" />
+      )}
     </DropdownMenuItem>
   )
 }

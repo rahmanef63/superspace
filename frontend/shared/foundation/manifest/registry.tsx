@@ -23,6 +23,7 @@ import {
   BookOpen,
   Bot,
   Box,
+  Building2,
   Camera,
   CheckSquare,
   Database,
@@ -307,6 +308,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Super Admin panel for managing features, workspaces, and system configuration",
     icon: Shield,
     component: lazy(() => import("@/frontend/features/platform-admin/views/PlatformAdminPage")),
+  },
+  {
+    id: "workspace-store",
+    componentId: "WorkspaceStorePage",
+    title: "Workspace Store",
+    description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
+    icon: Building2,
+    component: lazy(() => import("@/frontend/features/workspace-store/WorkspaceStorePage")),
   }
 ]
 

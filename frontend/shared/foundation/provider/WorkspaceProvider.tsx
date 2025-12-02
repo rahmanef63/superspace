@@ -173,9 +173,21 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       : null;
     
     // Build workspace path (ancestors + current)
-    const workspacePath: Doc<"workspaces">[] = ancestorsQuery ?? [];
+    // IMPORTANT: Deduplicate to prevent corrupted data from causing infinite loops
+    const rawPath: Doc<"workspaces">[] = ancestorsQuery ?? [];
     if (currentWorkspace) {
-      workspacePath.push(currentWorkspace as Doc<"workspaces">);
+      rawPath.push(currentWorkspace as Doc<"workspaces">);
+    }
+    
+    // Deduplicate by _id, keeping only first occurrence
+    const seenIds = new Set<string>();
+    const workspacePath: Doc<"workspaces">[] = [];
+    for (const ws of rawPath) {
+      const idStr = String(ws._id);
+      if (!seenIds.has(idStr)) {
+        seenIds.add(idStr);
+        workspacePath.push(ws);
+      }
     }
     
     return {

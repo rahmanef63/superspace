@@ -1300,3 +1300,15 @@ export const CATEGORY_ICONS: Record<string, string> = {
 export const DEFAULT_ICON = "HelpCircle";
 export const DEFAULT_FEATURE_ICON = "LayoutDashboard";
 export const DEFAULT_CATEGORY_ICON = "Component";
+
+// ============================================================================
+// Re-exports from SSOT (for backward compatibility)
+// NOTE: Prefer importing directly from @/frontend/shared/constants/colors
+// ============================================================================
+export {
+  ICON_COLOR_PRESETS as COLOR_PRESETS_SSOT,
+  BACKGROUND_COLOR_PRESETS as BACKGROUND_PRESETS_SSOT,
+  isValidHexColor,
+  ensureHexPrefix,
+  groupColorsByGroup as getColorsByGroup,
+} from "@/frontend/shared/constants/colors";

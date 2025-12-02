@@ -1,14 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
-import { Building, Folder, BookOpen, Calendar, Shield } from "lucide-react"
+import { Building, Folder, BookOpen, Calendar, Shield, Building2 } from "lucide-react"
 
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
 import { EnhancedWorkspaceSwitcher } from "./EnhancedWorkspaceSwitcher"
+import { WorkspaceSwitcherStack } from "./WorkspaceSwitcherStack"
 import { NavMain } from "./NavMain"
 import { usePathname, useRouter } from "next/navigation"
 import { NavUser } from "./NavUser"
@@ -18,6 +19,12 @@ import { NavSecondary } from "./NavSecondary"
 import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/frontend/shared/foundation/manifest"
 import { iconFromName } from "@/frontend/shared/ui/components/icons"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
+import { 
+  CreateWorkspaceDialog, 
+  EditWorkspaceDialog, 
+  DeleteWorkspaceDialog 
+} from "@/frontend/features/workspace-store/components/WorkspaceDialogs"
+import type { WorkspaceStoreItem, WorkspaceType } from "@/frontend/features/workspace-store/types"
 
 // Type for system feature visibility data
 interface SystemFeatureVisibility {
@@ -219,9 +226,24 @@ export function AppSidebar({
     }
   }, [menuItems, featureVisibilityMap])
 
-  // Add platform admin to system items if user is a platform admin
+  // Add platform admin and workspace-store to system items
   const finalSystemItems = useMemo(() => {
     const items = [...systemItems]
+    
+    // Always add workspace-store as system feature
+    const hasWorkspaceStore = items.some((item) => item.id === "workspace-store")
+    if (!hasWorkspaceStore) {
+      items.push({
+        id: "workspace-store",
+        name: "Workspaces",
+        url: "/dashboard/workspace-store",
+        icon: Building2,
+        description: "Manage workspace hierarchy with nested workspaces",
+        metadata: {
+          featureType: "system",
+        },
+      })
+    }
     
     if (platformAdminStatus?.isPlatformAdmin) {
       // Check if platform-admin is not already in the list
@@ -243,6 +265,90 @@ export function AppSidebar({
     
     return items
   }, [systemItems, platformAdminStatus?.isPlatformAdmin])
+  
+  // ============================================================================
+  // Workspace CRUD Dialog State
+  // ============================================================================
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createParentId, setCreateParentId] = useState<Id<"workspaces"> | undefined>()
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editWorkspaceId, setEditWorkspaceId] = useState<Id<"workspaces"> | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteWorkspaceId, setDeleteWorkspaceId] = useState<Id<"workspaces"> | null>(null)
+  
+  // Mutations for workspace CRUD
+  const createWorkspace = useMutation(api.workspace.workspaces.createWorkspace)
+  const updateWorkspace = useMutation(api.workspace.workspaces.updateWorkspace)
+  const deleteWorkspaceMutation = useMutation(api.workspace.workspaces.deleteWorkspace)
+  
+  // Get workspace for edit dialog
+  const editWorkspace = useQuery(
+    api.workspace.workspaces.getWorkspace,
+    editWorkspaceId ? { workspaceId: editWorkspaceId } : "skip"
+  )
+  
+  // Get workspace for delete dialog
+  const deleteWorkspace = useQuery(
+    api.workspace.workspaces.getWorkspace,
+    deleteWorkspaceId ? { workspaceId: deleteWorkspaceId } : "skip"
+  )
+  
+  // CRUD Handlers
+  const handleCreateWorkspace = useCallback((parentId?: Id<"workspaces">) => {
+    setCreateParentId(parentId)
+    setCreateDialogOpen(true)
+  }, [])
+  
+  const handleEditWorkspace = useCallback((workspaceId: Id<"workspaces">) => {
+    setEditWorkspaceId(workspaceId)
+    setEditDialogOpen(true)
+  }, [])
+  
+  const handleDeleteWorkspace = useCallback((workspaceId: Id<"workspaces">) => {
+    setDeleteWorkspaceId(workspaceId)
+    setDeleteDialogOpen(true)
+  }, [])
+  
+  const handleCreateSubmit = useCallback(async (data: {
+    name: string
+    description?: string
+    type: WorkspaceType
+    icon?: string
+    color?: string
+    parentId?: string
+  }) => {
+    await createWorkspace({
+      name: data.name,
+      description: data.description,
+      type: data.type,
+      icon: data.icon,
+      color: data.color,
+      parentId: data.parentId as Id<"workspaces"> | undefined,
+    })
+  }, [createWorkspace])
+  
+  const handleEditSubmit = useCallback(async (data: {
+    name: string
+    description?: string
+    type: WorkspaceType
+    icon?: string
+    color?: string
+  }) => {
+    if (!editWorkspaceId) return
+    await updateWorkspace({
+      workspaceId: editWorkspaceId,
+      name: data.name,
+      description: data.description,
+      type: data.type,
+      icon: data.icon,
+      color: data.color,
+    })
+  }, [editWorkspaceId, updateWorkspace])
+  
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteWorkspaceId) return
+    await deleteWorkspaceMutation({ workspaceId: deleteWorkspaceId })
+  }, [deleteWorkspaceId, deleteWorkspaceMutation])
 
   if (userWorkspaces === undefined) {
     return (
@@ -308,7 +414,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible={collapsible} side={side} variant={variant}>
       <SidebarHeader>
-        <EnhancedWorkspaceSwitcher
+        <WorkspaceSwitcherStack
           onWorkspaceSelect={(wsId) => {
             if (onWorkspaceChange) {
               onWorkspaceChange(wsId)
@@ -316,6 +422,9 @@ export function AppSidebar({
               setWorkspaceId(wsId)
             }
           }}
+          onCreateWorkspace={handleCreateWorkspace}
+          onEditWorkspace={handleEditWorkspace}
+          onDeleteWorkspace={handleDeleteWorkspace}
           isLoading={userWorkspaces === undefined}
         />
       </SidebarHeader>
@@ -344,6 +453,41 @@ export function AppSidebar({
         <NavUser onSettingsClick={() => handleViewChange('settings')} />
       </SidebarFooter>
       <SidebarRail />
+      
+      {/* Workspace CRUD Dialogs */}
+      <CreateWorkspaceDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateSubmit}
+        parentWorkspace={createParentId ? {
+          id: createParentId as unknown as string,
+          name: userWorkspaces?.find((ws: any) => ws._id === createParentId)?.name || "Parent",
+        } as WorkspaceStoreItem : null}
+      />
+      
+      <EditWorkspaceDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        workspace={editWorkspace ? {
+          id: editWorkspace._id as unknown as string,
+          name: editWorkspace.name,
+          description: editWorkspace.description,
+          type: (editWorkspace.type || "group") as WorkspaceType,
+          icon: (editWorkspace as any).icon,
+          color: (editWorkspace as any).color,
+        } as WorkspaceStoreItem : null}
+        onSubmit={handleEditSubmit}
+      />
+      
+      <DeleteWorkspaceDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        workspace={deleteWorkspace ? {
+          id: deleteWorkspace._id as unknown as string,
+          name: deleteWorkspace.name,
+        } as WorkspaceStoreItem : null}
+        onConfirm={handleDeleteConfirm}
+      />
     </Sidebar>
   )
 }

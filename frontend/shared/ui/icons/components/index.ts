@@ -1,14 +1,15 @@
 /**
  * Icon Components
  *
- * Re-export all icon picker and color picker components
+ * Re-export all icon picker components.
+ * Note: ColorPicker has been moved to frontend/shared/ui/color-picker
  */
 
 export { IconPicker } from "./icon-picker";
 export type { IconPickerProps } from "./icon-picker";
 
-export { ColorPicker } from "./color-picker";
-export type { ColorPickerProps } from "./color-picker";
-
 export { IconGrid } from "./icon-grid";
 export type { IconGridProps } from "./icon-grid";
+
+// Color picker is now at a separate location
+// import { InlineColorPicker, PresetColorPicker } from "@/frontend/shared/ui/color-picker";

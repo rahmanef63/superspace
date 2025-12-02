@@ -97,12 +97,13 @@ export {
 
 // Components
 export { IconPicker } from "./components/icon-picker";
-export { ColorPicker } from "./components/color-picker";
 export { IconGrid } from "./components/icon-grid";
+
+// Color picker has been moved to frontend/shared/ui/color-picker
+// import { InlineColorPicker, PresetColorPicker } from "@/frontend/shared/ui/color-picker";
 
 // Re-export component props types
 export type {
   IconPickerProps as IconPickerComponentProps,
-  ColorPickerProps as ColorPickerComponentProps,
   IconGridProps as IconGridComponentProps,
 } from "./components";

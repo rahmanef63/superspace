@@ -8,23 +8,16 @@ import {
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Notion-like color palette
-export const COLOR_PALETTE = [
-  { name: 'Gray', value: '#6b7280', light: '#f3f4f6' },
-  { name: 'Brown', value: '#92400e', light: '#fef3c7' },
-  { name: 'Orange', value: '#ea580c', light: '#fed7aa' },
-  { name: 'Yellow', value: '#ca8a04', light: '#fef08a' },
-  { name: 'Green', value: '#16a34a', light: '#bbf7d0' },
-  { name: 'Blue', value: '#2563eb', light: '#bfdbfe' },
-  { name: 'Purple', value: '#9333ea', light: '#e9d5ff' },
-  { name: 'Pink', value: '#db2777', light: '#fbcfe8' },
-  { name: 'Red', value: '#dc2626', light: '#fecaca' },
-];
+// Import from SSOT
+import { 
+  NOTION_COLORS, 
+  getRandomNotionColor,
+  type NotionColorOption 
+} from '@/frontend/shared/constants/colors';
 
-export function getRandomColor(): string {
-  const randomIndex = Math.floor(Math.random() * COLOR_PALETTE.length);
-  return COLOR_PALETTE[randomIndex].value;
-}
+// Re-export for backward compatibility
+export const COLOR_PALETTE = NOTION_COLORS;
+export const getRandomColor = getRandomNotionColor;
 
 interface ColorPickerProps {
   value?: string;

@@ -33,6 +33,7 @@ import {
   Zap,
   Package,
   Mail,
+  Box,
 } from "lucide-react"
 import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useFeatureBundles, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
@@ -92,6 +93,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { WorkspaceStorePage } from "@/frontend/features/workspace-store"
 
 // Feature categories available
 const FEATURE_CATEGORIES = [
@@ -909,7 +911,7 @@ function SystemFeaturesTable() {
                       <Button variant="outline" className="w-full h-10 justify-start gap-2">
                         {(() => {
                           const IconComp = getIconComponent(editForm.icon)
-                          return <IconComp className="h-4 w-4" />
+                          return IconComp ? <IconComp className="h-4 w-4" /> : <Box className="h-4 w-4" />
                         })()}
                         <span>{editForm.icon}</span>
                       </Button>
@@ -1167,7 +1169,7 @@ function SystemFeaturesTable() {
                     <Button variant="outline" className="w-full h-10 justify-start gap-2">
                       {(() => {
                         const IconComp = getIconComponent(newFeature.icon)
-                        return <IconComp className="h-4 w-4" />
+                        return IconComp ? <IconComp className="h-4 w-4" /> : <Box className="h-4 w-4" />
                       })()}
                       <span>{newFeature.icon}</span>
                     </Button>
@@ -1328,6 +1330,10 @@ export default function PlatformAdminPage() {
             <Package className="h-4 w-4" />
             Bundle Categories
           </TabsTrigger>
+          <TabsTrigger value="workspace-hierarchy" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            Workspace Hierarchy
+          </TabsTrigger>
           <TabsTrigger value="features" className="gap-2">
             <Blocks className="h-4 w-4" />
             Custom Features
@@ -1390,6 +1396,10 @@ export default function PlatformAdminPage() {
               <BundleCategoriesTable />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="workspace-hierarchy" className="mt-4 -mx-6 -mb-6">
+          <WorkspaceStorePage />
         </TabsContent>
 
         <TabsContent value="features" className="mt-4">

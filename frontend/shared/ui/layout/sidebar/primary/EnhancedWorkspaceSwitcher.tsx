@@ -55,6 +55,9 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
+// Import from SSOT
+import { WORKSPACE_COLORS } from "@/frontend/shared/constants/colors";
+
 // Workspace type icons
 const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
   personal: Home,
@@ -63,20 +66,6 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
   group: Users,
   family: Heart,
 };
-
-// Default workspace colors palette
-const WORKSPACE_COLORS = [
-  "#6366f1", // Indigo
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
-  "#ef4444", // Red
-  "#f97316", // Orange
-  "#eab308", // Yellow
-  "#22c55e", // Green
-  "#14b8a6", // Teal
-  "#06b6d4", // Cyan
-  "#3b82f6", // Blue
-];
 
 interface HierarchicalWorkspace extends Doc<"workspaces"> {
   isLinked?: boolean;
@@ -536,15 +525,16 @@ function WorkspaceMenuItem({
               <div className="p-2">
                 <div className="text-xs font-medium mb-2">Color</div>
                 <div className="flex flex-wrap gap-1">
-                  {WORKSPACE_COLORS.map((c) => (
+                  {WORKSPACE_COLORS.map((colorItem) => (
                     <button
-                      key={c}
+                      key={colorItem.value}
                       className={cn(
                         "size-5 rounded-full border-2 transition-all",
-                        c === color ? "border-foreground scale-110" : "border-transparent"
+                        colorItem.value === color ? "border-foreground scale-110" : "border-transparent"
                       )}
-                      style={{ backgroundColor: c }}
-                      onClick={() => onColorChange(c)}
+                      style={{ backgroundColor: colorItem.value }}
+                      onClick={() => onColorChange(colorItem.value)}
+                      title={colorItem.name}
                     />
                   ))}
                 </div>

@@ -95,10 +95,16 @@ export const getChildWorkspaces = query({
       ).then(arr => arr.filter(Boolean) as any)
     }
     
+    // Deduplicate: if workspace is both direct child AND linked, prefer direct
+    const directChildIds = new Set(directChildren.map(c => String(c._id)))
+    const dedupedLinkedChildren = linkedChildren.filter(
+      lc => !directChildIds.has(String(lc._id))
+    )
+    
     // Combine and sort by sortOrder or creation time
     const allChildren = [
       ...directChildren.map(ws => ({ ...ws, isLinked: false })),
-      ...linkedChildren,
+      ...dedupedLinkedChildren,
     ].sort((a, b) => {
       const aOrder = (a as any).link?.sortOrder ?? 0
       const bOrder = (b as any).link?.sortOrder ?? 0
@@ -249,6 +255,7 @@ export const getWorkspaceTree = query({
 
 /**
  * Get siblings of a workspace (same parent)
+ * IMPORTANT: Excludes ancestors, descendants, and Main Workspace to prevent hierarchy confusion
  */
 export const getSiblingWorkspaces = query({
   args: {
@@ -258,14 +265,48 @@ export const getSiblingWorkspaces = query({
     const workspace = await ctx.db.get(args.workspaceId)
     if (!workspace) return []
     
+    // Build set of ancestor IDs to exclude
+    const ancestorIds = new Set<string>()
+    if (workspace.path && workspace.path.length > 0) {
+      workspace.path.forEach(id => ancestorIds.add(String(id)))
+    }
+    // Also traverse up to be safe (in case path is not materialized)
+    let currentParentId = workspace.parentWorkspaceId
+    const MAX_DEPTH = 20
+    let depth = 0
+    while (currentParentId && depth < MAX_DEPTH) {
+      ancestorIds.add(String(currentParentId))
+      const parent = await ctx.db.get(currentParentId)
+      if (!parent) break
+      currentParentId = parent.parentWorkspaceId
+      depth++
+    }
+    
+    // Build set of descendant IDs to exclude (children, grandchildren, etc.)
+    const descendantIds = new Set<string>()
+    async function collectDescendants(wsId: Id<"workspaces">, d: number) {
+      if (d > MAX_DEPTH) return
+      const children = await ctx.db
+        .query("workspaces")
+        .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", wsId))
+        .collect()
+      for (const child of children) {
+        descendantIds.add(String(child._id))
+        await collectDescendants(child._id, d + 1)
+      }
+    }
+    await collectDescendants(args.workspaceId, 0)
+    
     if (!workspace.parentWorkspaceId) {
       // Root level - return other root workspaces by same creator
+      // EXCLUDE: Main Workspace, ancestors, descendants
       const siblings = await ctx.db
         .query("workspaces")
         .withIndex("by_creator", (q) => q.eq("createdBy", workspace.createdBy))
         .filter((q) => 
           q.and(
             q.neq(q.field("_id"), args.workspaceId),
+            q.neq(q.field("isMainWorkspace"), true), // Exclude Main Workspace
             q.or(
               q.eq(q.field("parentWorkspaceId"), undefined),
               q.eq(q.field("parentWorkspaceId"), null as any)
@@ -273,7 +314,12 @@ export const getSiblingWorkspaces = query({
           )
         )
         .collect()
-      return siblings
+      
+      // Filter out ancestors and descendants
+      return siblings.filter(s => 
+        !ancestorIds.has(String(s._id)) && 
+        !descendantIds.has(String(s._id))
+      )
     }
     
     // Get siblings with same parent
@@ -283,7 +329,11 @@ export const getSiblingWorkspaces = query({
       .filter((q) => q.neq(q.field("_id"), args.workspaceId))
       .collect()
     
-    return siblings
+    // Filter out ancestors and descendants (shouldn't happen but just in case of corrupted data)
+    return siblings.filter(s => 
+      !ancestorIds.has(String(s._id)) && 
+      !descendantIds.has(String(s._id))
+    )
   },
 })
 

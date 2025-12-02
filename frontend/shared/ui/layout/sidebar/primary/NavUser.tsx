@@ -3,7 +3,8 @@
 import React from "react"
 import { IconDotsVertical } from "@tabler/icons-react"
 import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs"
-import { LogOut, Settings, User } from "lucide-react"
+import { LogOut, Settings, User, Sun, Moon, Monitor } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -12,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SafeSignOutButton } from "@/frontend/shared/foundation"
 
@@ -49,6 +50,7 @@ function SignedInNavUserContent({
 }: SignedInNavUserContentProps) {
   const { user: clerkUser } = useUser()
   const { setOpenMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
   const [showProfileDialog, setShowProfileDialog] = React.useState(false)
 
   // Handler to close mobile sidebar when menu is clicked
@@ -58,6 +60,8 @@ function SignedInNavUserContent({
     }
     onSettingsClick?.()
   }
+
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor
 
   return (
     <>
@@ -99,6 +103,33 @@ function SignedInNavUserContent({
                 Settings
               </DropdownMenuItem>
             )}
+            
+            {/* Theme Toggle */}
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ThemeIcon className="mr-2 h-4 w-4" />
+                Theme
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                  <DropdownMenuRadioItem value="light">
+                    <Sun className="mr-2 h-4 w-4" />
+                    Light
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dark">
+                    <Moon className="mr-2 h-4 w-4" />
+                    Dark
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="system">
+                    <Monitor className="mr-2 h-4 w-4" />
+                    System
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            
+            <DropdownMenuSeparator />
             <SafeSignOutButton>
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />

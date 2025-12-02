@@ -86,7 +86,7 @@ export function useAIKnowledgeContext() {
 
   // Calculate combined document count
   const totalDocs = documentCounts 
-    ? Object.values(documentCounts as Record<string, number>).reduce((a: number, b: number) => a + b, 0)
+    ? Object.values(documentCounts).reduce((a: number, b: number) => a + b, 0)
     : 0
   const knowledgeFeatureDocCount = knowledgeFeatureDocs?.documents?.length ?? 0
   const combinedCount = totalDocs + knowledgeFeatureDocCount

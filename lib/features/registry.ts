@@ -10,7 +10,6 @@
 
 import type { FeatureConfig } from './defineFeature'
 
-// Active features only (archived features moved to frontend/features/archived/)
 import overviewConfig from '@/frontend/features/overview/config'
 import chatConfig from '@/frontend/features/chat/config'
 import callsConfig from '@/frontend/features/calls/config'
@@ -18,6 +17,7 @@ import statusConfig from '@/frontend/features/status/config'
 import membersConfig from '@/frontend/features/members/config'
 import aiConfig from '@/frontend/features/ai/config'
 import starredConfig from '@/frontend/features/starred/config'
+import knowledgeConfig from '@/frontend/features/knowledge/config'
 import friendsConfig from '@/frontend/features/friends/config'
 import archivedConfig from '@/frontend/features/archived/config'
 import databaseConfig from '@/frontend/features/database/config'
@@ -31,11 +31,12 @@ import projectsConfig from '@/frontend/features/projects/config'
 import crmConfig from '@/frontend/features/crm/config'
 import notificationsConfig from '@/frontend/features/notifications/config'
 import userSettingsConfig from '@/frontend/features/user-settings/config'
+import builderConfig from '@/frontend/features/builder/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
-import builderConfig from '@/frontend/features/builder/config'
+import platformAdminConfig from '@/frontend/features/platform-admin/config'
 
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
@@ -45,6 +46,7 @@ const featureConfigs: FeatureConfig[] = [
   membersConfig,
   aiConfig,
   starredConfig,
+  knowledgeConfig,
   friendsConfig,
   archivedConfig,
   databaseConfig,
@@ -58,11 +60,12 @@ const featureConfigs: FeatureConfig[] = [
   crmConfig,
   notificationsConfig,
   userSettingsConfig,
+  builderConfig,
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
   cmsLiteConfig,
-  builderConfig,
+  platformAdminConfig,
 ]
 /**
  * Extract and validate all discovered features
@@ -135,6 +138,55 @@ export function getAllFeatureIds(): string[] {
     return features.flatMap(f => [f.id, ...(f.children ? collectIds(f.children) : [])])
   }
   return collectIds(DISCOVERED_FEATURES)
+}
+
+/**
+ * Get features by bundle ID and role
+ * @param bundleId - The bundle ID to filter by
+ * @param role - Optional: 'core' | 'recommended' | 'optional'
+ */
+export function getFeaturesByBundle(
+  bundleId: string,
+  role?: 'core' | 'recommended' | 'optional'
+): FeatureConfig[] {
+  const flattenFeatures = (features: FeatureConfig[]): FeatureConfig[] => {
+    return features.flatMap(f => [f, ...(f.children ? flattenFeatures(f.children) : [])])
+  }
+  
+  return flattenFeatures(DISCOVERED_FEATURES).filter(feature => {
+    if (!feature.bundles) return false
+    
+    if (role) {
+      return feature.bundles[role]?.includes(bundleId as any) ?? false
+    }
+    
+    return (
+      feature.bundles.core?.includes(bundleId as any) ||
+      feature.bundles.recommended?.includes(bundleId as any) ||
+      feature.bundles.optional?.includes(bundleId as any)
+    )
+  })
+}
+
+/**
+ * Get core features for a bundle (cannot be disabled)
+ */
+export function getBundleCoreFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'core')
+}
+
+/**
+ * Get recommended features for a bundle (enabled by default)
+ */
+export function getBundleRecommendedFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'recommended')
+}
+
+/**
+ * Get optional features for a bundle (disabled by default)
+ */
+export function getBundleOptionalFeatures(bundleId: string): FeatureConfig[] {
+  return getFeaturesByBundle(bundleId, 'optional')
 }
 
 /**

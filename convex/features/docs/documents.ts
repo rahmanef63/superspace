@@ -111,6 +111,12 @@ export const create = mutation({
     workspaceId: v.id("workspaces"),
     content: v.optional(v.string()),
     parentId: v.optional(v.union(v.id("documents"), v.null())),
+    metadata: v.optional(
+      v.object({
+        description: v.optional(v.string()),
+        tags: v.optional(v.array(v.string())),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
@@ -142,6 +148,7 @@ export const create = mutation({
       content: args.content,
       parentId,
       lastModified: Date.now(),
+      metadata: args.metadata,
     });
   },
 });

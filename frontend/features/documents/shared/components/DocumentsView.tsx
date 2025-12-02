@@ -10,7 +10,7 @@ import { DocumentsThreeColumnLayout } from "./DocumentsThreeColumnLayout";
 import { useDeleteDocument } from "../../api/documents";
 import { useDocumentsManager } from "../hooks";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
-import type { DocumentEditorMode, DocumentRecord, DocumentSortOptions } from "../types";
+import type { DocumentCategory, DocumentEditorMode, DocumentRecord, DocumentSortOptions } from "../types";
 import { sortDocuments } from "../utils";
 
 export interface DocumentsViewProps {
@@ -18,6 +18,7 @@ export interface DocumentsViewProps {
   editorMode?: DocumentEditorMode;
   storageKey?: string;
   workspaceId: Id<"workspaces">;
+  category?: DocumentCategory;
 }
 
 export function DocumentsViewContent({
@@ -25,6 +26,7 @@ export function DocumentsViewContent({
   editorMode = "block",
   storageKey,
   workspaceId,
+  category,
 }: DocumentsViewProps) {
   const deleteDocument = useDeleteDocument();
   const [isMobile, setIsMobile] = useState(false);
@@ -129,6 +131,7 @@ export function DocumentsViewContent({
           open={manager.state.createOpen}
           onOpenChange={manager.toggleCreateDialog}
           workspaceId={workspaceId}
+          category={category}
           onCreated={(documentId) => {
             manager.toggleCreateDialog(false);
             manager.selectDocument(documentId);
@@ -151,6 +154,7 @@ export function DocumentsViewContent({
       sortOptions={sortOptions}
       onSortChange={handleSortChange}
       sortedDocuments={sortedDocuments}
+      category={category}
     />
   );
 }
@@ -160,6 +164,8 @@ export interface DocumentsViewWrapperProps {
   editorMode?: DocumentEditorMode;
   storageKey?: string;
   initialDocumentId?: Id<"documents"> | null;
+  /** Filter documents by category (article or document) */
+  category?: DocumentCategory;
 }
 
 export function DocumentsView({
@@ -167,8 +173,9 @@ export function DocumentsView({
   editorMode = "block",
   storageKey,
   initialDocumentId = null,
+  category,
 }: DocumentsViewWrapperProps) {
-  const manager = useDocumentsManager({ workspaceId, initialDocumentId, editorMode });
+  const manager = useDocumentsManager({ workspaceId, initialDocumentId, editorMode, category });
 
   return (
     <DocumentsViewContent
@@ -176,6 +183,7 @@ export function DocumentsView({
       editorMode={editorMode}
       storageKey={storageKey}
       workspaceId={workspaceId}
+      category={category}
     />
   );
 }

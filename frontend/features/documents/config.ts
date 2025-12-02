@@ -1,13 +1,18 @@
 import { defineFeature } from '@/lib/features/defineFeature'
 
+/**
+ * @deprecated This feature has been moved to frontend/features/knowledge/features/docs
+ * The documents feature is now part of the knowledge base umbrella.
+ * This config is kept for backward compatibility and will redirect to the knowledge feature.
+ */
 export default defineFeature({
   id: 'documents',
   name: 'Documents',
-  description: 'Collaborative document editor with real-time sync',
+  description: 'Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)',
 
   ui: {
     icon: 'FileText',
-    path: '/dashboard/documents',
+    path: '/dashboard/documents', // Keep original path for backward compatibility
     component: 'DocumentsPage',
     category: 'productivity',
     order: 9,
@@ -22,20 +27,16 @@ export default defineFeature({
   },
 
   status: {
-    state: 'stable',
+    state: 'deprecated',
     isReady: true,
   },
 
-  // Bundle membership
+  // Bundle membership - empty as deprecated
   bundles: {
     core: [],
-    recommended: [
-      'startup', 'business-pro', 'project-management',
-      'knowledge-base', 'personal-minimal', 'personal-productivity',
-      'family', 'content-creator', 'digital-agency', 'education',
-    ],
-    optional: ['sales-crm', 'community'],
+    recommended: [],
+    optional: [],
   },
 
-  tags: ['collaboration', 'real-time', 'documents', 'editor'],
+  tags: ['collaboration', 'real-time', 'documents', 'editor', 'deprecated'],
 })

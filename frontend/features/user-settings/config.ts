@@ -1,13 +1,20 @@
 import { defineFeature } from '@/lib/features/defineFeature'
 
+/**
+ * @deprecated This feature has been moved:
+ * - Profile data for AI → frontend/features/knowledge/features/profile
+ * - Account settings → frontend/shared/settings/personal
+ * 
+ * This config is kept for backward compatibility.
+ */
 export default defineFeature({
   id: 'user-settings',
   name: 'Profile',
-  description: 'Manage your user profile and preferences',
+  description: 'Manage your user profile and preferences (Deprecated - use Knowledge > Profile or Settings)',
 
   ui: {
     icon: 'User',
-    path: '/dashboard/user-settings',
+    path: '/dashboard/user-settings', // Keep original path for backward compatibility
     component: 'ProfilePage',
     category: 'administration',
     order: 20,
@@ -22,22 +29,16 @@ export default defineFeature({
   },
 
   status: {
-    state: 'stable',
+    state: 'deprecated',
     isReady: true,
   },
 
-  // Bundle membership - CORE for all bundles (essential system feature)
+  // Bundle membership - empty as deprecated
   bundles: {
-    core: [
-      'startup', 'business-pro', 'sales-crm',
-      'project-management', 'knowledge-base',
-      'personal-minimal', 'personal-productivity', 'family',
-      'content-creator', 'digital-agency',
-      'education', 'community',
-    ],
+    core: [],
     recommended: [],
     optional: [],
   },
 
-  tags: ['profile', 'settings', 'user'],
+  tags: ['profile', 'settings', 'user', 'deprecated'],
 })

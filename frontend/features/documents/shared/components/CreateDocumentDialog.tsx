@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { useCreateDocument } from "../../api";
 import { ensureTitle } from "../utils";
+import type { DocumentCategory } from "../types";
+import { getCategoryTag } from "../types";
 
 export interface CreateDocumentDialogProps {
   open: boolean;
@@ -23,6 +25,8 @@ export interface CreateDocumentDialogProps {
   workspaceId: Id<"workspaces">;
   onCreated?: (documentId: Id<"documents">) => void;
   defaultVisibility?: "public" | "private";
+  /** Document category - affects how the document is categorized */
+  category?: DocumentCategory;
 }
 
 export function CreateDocumentDialog({
@@ -31,6 +35,7 @@ export function CreateDocumentDialog({
   workspaceId,
   onCreated,
   defaultVisibility = "private",
+  category = "document",
 }: CreateDocumentDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -63,6 +68,9 @@ export function CreateDocumentDialog({
         title: ensureTitle(title),
         isPublic: defaultVisibility === "public",
         content: description.trim() ? description.trim() : undefined,
+        metadata: {
+          tags: [getCategoryTag(category)],
+        },
       });
 
       onCreated?.(documentId);
@@ -72,27 +80,33 @@ export function CreateDocumentDialog({
     }
   };
 
+  const isArticle = category === "article";
+  const Icon = isArticle ? BookOpen : FileText;
+  const typeLabel = isArticle ? "Article" : "Document";
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            Create New Document
+            <Icon className="w-5 h-5 text-primary" />
+            Create New {typeLabel}
           </DialogTitle>
           <DialogDescription>
-            Spin up a collaborative document for your workspace.
+            {isArticle
+              ? "Create a knowledge base article for AI context and team documentation."
+              : "Spin up a collaborative document for your workspace."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="document-title">Document title *</Label>
+            <Label htmlFor="document-title">{typeLabel} title *</Label>
             <Input
               id="document-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Daily standup notes"
+              placeholder={isArticle ? "Getting Started Guide" : "Daily standup notes"}
               disabled={isSubmitting}
               required
             />
@@ -104,7 +118,11 @@ export function CreateDocumentDialog({
               id="document-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Jot down a quick agenda or leave empty to start fresh."
+              placeholder={
+                isArticle
+                  ? "Start with an overview of what this article covers..."
+                  : "Jot down a quick agenda or leave empty to start fresh."
+              }
               rows={4}
               disabled={isSubmitting}
             />
@@ -132,8 +150,8 @@ export function CreateDocumentDialog({
                 </>
               ) : (
                 <>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Create document
+                  <Icon className="w-4 h-4 mr-2" />
+                  Create {typeLabel.toLowerCase()}
                 </>
               )}
             </Button>

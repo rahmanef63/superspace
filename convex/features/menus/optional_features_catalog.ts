@@ -47,6 +47,11 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "icon": "BarChart",
     "version": "1.0.0",
     "category": "analytics",
+    "tags": [
+      "reports",
+      "analytics",
+      "dashboard"
+    ],
     "requiresPermission": "VIEW_REPORTS",
     "originalRequiresPermission": "VIEW_REPORTS",
     "status": "stable",
@@ -64,9 +69,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
       "productivity",
       "project-management"
     ],
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q2 2025",
+    "status": "beta",
+    "isReady": true,
+    "expectedRelease": "Q1 2025",
     "featureType": "optional"
   },
   {

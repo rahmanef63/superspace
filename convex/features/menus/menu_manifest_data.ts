@@ -50,6 +50,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Manage workspace members and permissions",
       version: "1.1.0",
       category: "administration" as const,
+      tags: [
+        "members",
+        "team",
+        "permissions"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const,
       requiresPermission: "MANAGE_MEMBERS",
@@ -69,6 +74,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "AI assistant",
       version: "2.0.0",
       category: "communication" as const,
+      tags: [
+        "ai",
+        "assistant",
+        "automation"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
@@ -85,9 +95,41 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Starred messages",
       version: "2.0.0",
       category: "communication" as const,
+      tags: [
+        "starred",
+        "bookmarks",
+        "favorites"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
+  },
+  {
+    name: "Knowledge" as const,
+    slug: "knowledge" as const,
+    type: "route" as const,
+    icon: "BookOpen" as const,
+    path: "/dashboard/knowledge",
+    component: "KnowledgePage" as const,
+    order: 5,
+    metadata: {
+      description: "Centralized knowledge base with documents, articles, and AI-consumable data",
+      version: "1.0.0",
+      category: "productivity" as const,
+      tags: [
+        "knowledge",
+        "documents",
+        "ai",
+        "wiki",
+        "articles",
+        "profile"
+      ],
+      featureType: "default" as const,
+      originalFeatureType: "default" as const,
+      requiresPermission: "knowledge.view",
+      originalRequiresPermission: "knowledge.view"
+    },
+    requiresPermission: "knowledge.view"
   },
   {
     name: "Friends" as const,
@@ -101,6 +143,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Manage your friends and connections",
       version: "1.0.0",
       category: "social" as const,
+      tags: [
+        "social",
+        "connections",
+        "networking"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
@@ -117,6 +164,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Archived chats",
       version: "2.0.0",
       category: "communication" as const,
+      tags: [
+        "archive",
+        "history",
+        "storage"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
@@ -133,6 +185,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Notion-style database views and management",
       version: "1.0.0",
       category: "productivity" as const,
+      tags: [
+        "database",
+        "tables",
+        "data-management"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const,
       requiresPermission: "database.read",
@@ -149,12 +206,15 @@ export const DEFAULT_MENU_ITEMS = [
     component: "DocumentsPage" as const,
     order: 9,
     metadata: {
-      description: "Collaborative document editor with real-time sync",
+      description: "Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)",
       version: "1.2.0",
       category: "productivity" as const,
       tags: [
         "collaboration",
-        "real-time"
+        "real-time",
+        "documents",
+        "editor",
+        "deprecated"
       ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
@@ -172,6 +232,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Install and manage navigation menus",
       version: "1.0.0",
       category: "administration" as const,
+      tags: [
+        "menus",
+        "navigation",
+        "system"
+      ],
       featureType: "system" as const,
       originalFeatureType: "system" as const,
       requiresPermission: "MANAGE_MENUS",
@@ -191,6 +256,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Manage workspace invitations",
       version: "1.0.0",
       category: "administration" as const,
+      tags: [
+        "invitations",
+        "team",
+        "onboarding"
+      ],
       featureType: "system" as const,
       originalFeatureType: "system" as const,
       requiresPermission: "MANAGE_INVITATIONS",
@@ -207,9 +277,15 @@ export const DEFAULT_MENU_ITEMS = [
     component: "ProfilePage" as const,
     order: 20,
     metadata: {
-      description: "Manage your user profile and preferences",
+      description: "Manage your user profile and preferences (Deprecated - use Knowledge > Profile or Settings)",
       version: "1.0.0",
       category: "administration" as const,
+      tags: [
+        "profile",
+        "settings",
+        "user",
+        "deprecated"
+      ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
@@ -226,6 +302,11 @@ export const DEFAULT_MENU_ITEMS = [
       description: "Workspace configuration and settings",
       version: "1.0.0",
       category: "administration" as const,
+      tags: [
+        "workspace",
+        "settings",
+        "configuration"
+      ],
       featureType: "system" as const,
       originalFeatureType: "system" as const,
       requiresPermission: "MANAGE_WORKSPACE",
@@ -252,5 +333,31 @@ export const DEFAULT_MENU_ITEMS = [
       featureType: "default" as const,
       originalFeatureType: "default" as const
     }
+  },
+  {
+    name: "Platform Admin",
+    slug: "platform-admin",
+    type: "route" as const,
+    icon: "Shield" as const,
+    path: "/dashboard/platform-admin",
+    component: "PlatformAdminPage" as const,
+    order: 999,
+    metadata: {
+      description: "Super Admin panel for managing features, workspaces, and system configuration",
+      version: "1.0.0",
+      category: "administration" as const,
+      tags: [
+        "admin",
+        "system",
+        "platform",
+        "management",
+        "superadmin"
+      ],
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "PLATFORM_ADMIN",
+      originalRequiresPermission: "PLATFORM_ADMIN"
+    },
+    requiresPermission: "PLATFORM_ADMIN"
   }
 ]

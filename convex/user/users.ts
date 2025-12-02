@@ -101,13 +101,34 @@ export const updateUserProfile = mutation({
     name: v.optional(v.string()),
     bio: v.optional(v.string()),
     image: v.optional(v.string()),
+    // Extended profile data stored in metadata
+    metadata: v.optional(v.object({
+      role: v.optional(v.string()),
+      skills: v.optional(v.string()),
+      interests: v.optional(v.string()),
+      expertise: v.optional(v.string()),
+      workingStyle: v.optional(v.string()),
+      communicationPreferences: v.optional(v.string()),
+      timezone: v.optional(v.string()),
+      availability: v.optional(v.string()),
+      aiAccessEnabled: v.optional(v.boolean()),
+      includeInAIContext: v.optional(v.boolean()),
+    })),
   },
   async handler(ctx, args) {
     const user = await getCurrentUserOrThrow(ctx);
     const patch: any = {};
     if (typeof args.name !== "undefined") patch.name = args.name;
-    if (typeof args.bio !== "undefined") patch.bio = args.bio;
+    if (typeof args.bio !== "undefined") {
+      // Store bio in metadata since users table doesn't have bio field
+      const existingMetadata = user.metadata || {};
+      patch.metadata = { ...existingMetadata, bio: args.bio };
+    }
     if (typeof args.image !== "undefined") patch.avatarUrl = args.image;
+    if (typeof args.metadata !== "undefined") {
+      const existingMetadata = user.metadata || {};
+      patch.metadata = { ...existingMetadata, ...args.metadata };
+    }
     if (Object.keys(patch).length === 0) return;
     await ctx.db.patch(user._id as any, patch);
   },

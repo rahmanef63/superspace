@@ -39,6 +39,7 @@ import { aiTables } from "./ai/api/schema";
 import { customFeaturesTables } from "./custom/schema";
 import { systemFeaturesTables } from "./system/schema";
 import { bundleTables } from "./bundles/schema";
+import { knowledgeTables } from "./knowledge/api/schema";
 
 export const featureTables = {
   ...coreTables,
@@ -82,4 +83,5 @@ export const featureTables = {
   ...customFeaturesTables,
   ...systemFeaturesTables,
   ...bundleTables,
+  ...knowledgeTables,
 };

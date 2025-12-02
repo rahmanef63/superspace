@@ -3,7 +3,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { DocumentEditorMode, DocumentRecord, DocumentSortOptions } from "../types";
+import type { DocumentCategory, DocumentEditorMode, DocumentRecord, DocumentSortOptions } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
 import { CreateDocumentDialog } from "./CreateDocumentDialog";
 import { DocumentsListCompact } from "./DocumentsListCompact";
@@ -25,6 +25,8 @@ export interface DocumentsThreeColumnLayoutProps {
   sortOptions?: DocumentSortOptions;
   onSortChange?: (options: DocumentSortOptions) => void;
   sortedDocuments: DocumentRecord[];
+  /** Document category for filtering and creation */
+  category?: DocumentCategory;
 }
 
 /**
@@ -51,6 +53,7 @@ export function DocumentsThreeColumnLayout({
   sortOptions,
   onSortChange,
   sortedDocuments,
+  category,
 }: DocumentsThreeColumnLayoutProps) {
   const [showInspector, setShowInspector] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -146,6 +149,7 @@ export function DocumentsThreeColumnLayout({
         open={manager.state.createOpen}
         onOpenChange={manager.toggleCreateDialog}
         workspaceId={workspaceId}
+        category={category}
         onCreated={(documentId) => {
           manager.toggleCreateDialog(false);
           manager.selectDocument(documentId);

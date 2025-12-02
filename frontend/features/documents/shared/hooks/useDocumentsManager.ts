@@ -3,11 +3,13 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useWorkspaceDocuments } from "../../api/documents";
 import type {
   DocumentBrowserFilters,
+  DocumentCategory,
   DocumentManagerOptions,
   DocumentManagerState,
   DocumentRecord,
   DocumentStats,
 } from "../types";
+import { getDocumentCategory } from "../types";
 import { formatRelativeTime, stripHtml } from "../utils";
 
 type VisibilityFilter = NonNullable<DocumentBrowserFilters["visibility"]>;
@@ -16,6 +18,12 @@ const matchesVisibility = (document: DocumentRecord, visibility: VisibilityFilte
   if (visibility === "all") return true;
   if (visibility === "public") return document.isPublic;
   return !document.isPublic;
+};
+
+const matchesCategory = (document: DocumentRecord, category?: DocumentCategory) => {
+  if (!category) return true;
+  const docCategory = getDocumentCategory(document.metadata?.tags);
+  return docCategory === category;
 };
 
 export interface DocumentsManagerHook {
@@ -33,10 +41,11 @@ export interface DocumentsManagerHook {
   setVisibility: (value: VisibilityFilter) => void;
   stats: DocumentStats;
   lastUpdatedHumanized: string;
+  category?: DocumentCategory;
 }
 
 export function useDocumentsManager(options: DocumentManagerOptions = {}): DocumentsManagerHook {
-  const { workspaceId, initialDocumentId = null } = options;
+  const { workspaceId, initialDocumentId = null, category } = options;
 
   const [state, setState] = useState<DocumentManagerState>({
     selectedDocumentId: initialDocumentId,
@@ -57,10 +66,10 @@ export function useDocumentsManager(options: DocumentManagerOptions = {}): Docum
           (document.content ? stripHtml(document.content).toLowerCase().includes(loweredQuery) : false)
         : true;
 
-      const matches = matchesQuery && matchesVisibility(document, visibility);
+      const matches = matchesQuery && matchesVisibility(document, visibility) && matchesCategory(document, category);
       return matches;
     });
-  }, [availableDocuments, search, visibility]);
+  }, [availableDocuments, search, visibility, category]);
 
   const stats = useMemo<DocumentStats>(() => {
     const total = availableDocuments.length;
@@ -112,5 +121,6 @@ export function useDocumentsManager(options: DocumentManagerOptions = {}): Docum
     setVisibility,
     stats,
     lastUpdatedHumanized,
+    category,
   };
 }

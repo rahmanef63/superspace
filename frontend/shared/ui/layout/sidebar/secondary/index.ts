@@ -4,6 +4,9 @@ export * from "./components/SecondarySidebarHeader";
 export * from "./components/SecondarySidebar";
 export * from "./components/SecondarySidebarTools";
 
+// Secondary Sidebar Utilities
+export * from "./utils";
+
 // Secondary List Component (NEW - Registry-based)
 export { SecondaryList } from "./components/SecondaryList";
 export type { SecondaryListProps } from "./components/SecondaryList";

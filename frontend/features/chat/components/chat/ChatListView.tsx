@@ -16,7 +16,7 @@ import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { CreateConversationModal } from "./CreateConversationModal" // Updated import path to use local CreateConversationModal
-import { Switch } from "@/components/ui/switch"
+import { GlobalModeToggle } from "@/frontend/shared/ui/components/controls"
 import { toast } from "sonner"
 type ChatListViewVariant = "standalone" | "layout"
 
@@ -60,16 +60,15 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
           </div>
           {!showArchived && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Global</span>
-                <Switch
-                  checked={Boolean(globalMode)}
-                  onCheckedChange={(v) => {
-                    setGlobalMode(Boolean(v))
-                    loadChats()
-                  }}
-                />
-              </div>
+              <GlobalModeToggle
+                isGlobal={Boolean(globalMode)}
+                onToggle={(v) => {
+                  setGlobalMode(Boolean(v))
+                  loadChats()
+                }}
+                label="Global"
+                size="sm"
+              />
               <Button
                 onClick={() => setOpenNewChat(true)}
                 variant="ghost"

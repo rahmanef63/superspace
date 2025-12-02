@@ -1,49 +1,19 @@
 import { useState } from "react";
-import { Bot, Plus, Sparkles } from "lucide-react";
+import { Bot, Plus, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
-import { useUser } from "@clerk/nextjs";
-
-// Sample preview data - shown to help users understand the feature
-// Will be replaced with real AI conversations once user starts using the feature
-const SAMPLE_PREVIEW_CHATS = [
-  { 
-    id: 'sample-1', 
-    title: 'Ask about anything...', 
-    lastMessage: 'Get help with writing, coding, learning...', 
-    timestamp: '',
-    topic: 'Example',
-    isSample: true,
-  },
-];
-
-// Hook to fetch AI chat sessions from Convex
-const useAIConversations = () => {
-  const { workspaceId } = useWorkspaceContext();
-  const { user } = useUser();
-  
-  const sessions = useQuery(
-    api.features.ai.queries.listChatSessions,
-    workspaceId && user?.id ? { workspaceId, userId: user.id } : "skip"
-  );
-
-  const conversations = (sessions ?? []).map(session => ({
-    id: session._id,
-    title: session.title,
-    lastMessage: session.messages[session.messages.length - 1]?.content ?? "No messages yet",
-    timestamp: new Date(session.updatedAt).toLocaleDateString(),
-    topic: session.status === "active" ? "Active" : "Archived",
-  }));
-
-  return { conversations, isLoading: sessions === undefined };
-};
+import { useAIStore } from "./stores";
+import { useAIActions } from "./hooks";
+import { GlobalModeToggle } from "@/frontend/shared/ui/components/controls";
+import { AIChatListCard } from "./components/AIChatListCard";
+import { 
+  truncateMessage, 
+  formatSidebarTimestamp 
+} from "@/frontend/shared/ui/layout/sidebar/secondary/utils";
 
 type AIListViewVariant = "standalone" | "layout";
 
@@ -54,22 +24,63 @@ interface AIListViewProps {
 }
 
 export function AIListView({
-  selectedChatId,
+  selectedChatId: externalSelectedChatId,
   onChatSelect,
   variant = "standalone",
 }: AIListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
   const isMobile = useIsMobile();
-  const { conversations, isLoading } = useAIConversations();
+  
+  // Use Zustand store
+  const sessions = useAIStore((s) => s.sessions);
+  const isLoading = useAIStore((s) => s.isLoading);
+  const storeSelectedSessionId = useAIStore((s) => s.selectedSessionId);
+  const globalMode = useAIStore((s) => s.globalMode);
+  const setGlobalMode = useAIStore((s) => s.setGlobalMode);
+  const { createSession, selectSession } = useAIActions();
 
-  // Show sample preview if no real conversations exist
+  // Use external or store selectedChatId
+  const selectedChatId = externalSelectedChatId ?? storeSelectedSessionId;
+
+  // Transform sessions to display format
+  const conversations = sessions.map(session => ({
+    id: session._id,
+    title: session.title,
+    lastMessage: truncateMessage(
+      session.messages[session.messages.length - 1]?.content ?? "No messages yet"
+    ),
+    timestamp: formatSidebarTimestamp(session.updatedAt),
+    messageCount: session.messages.length,
+  }));
+
   const hasRealData = conversations.length > 0;
-  const displayChats = hasRealData ? conversations : SAMPLE_PREVIEW_CHATS;
 
-  const filteredChats = displayChats.filter(chat =>
+  const filteredChats = conversations.filter(chat =>
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.topic.toLowerCase().includes(searchQuery.toLowerCase())
+    chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleNewChat = async () => {
+    setIsCreating(true);
+    try {
+      const session = await createSession("New Chat");
+      if (session && onChatSelect) {
+        onChatSelect(session._id);
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleChatSelect = (chatId: string) => {
+    selectSession(chatId as any);
+    onChatSelect?.(chatId);
+  };
+
+  const handleGlobalModeToggle = (isGlobal: boolean) => {
+    setGlobalMode(isGlobal);
+  };
 
   const containerClasses = cn(
     "flex h-full flex-col",
@@ -89,9 +100,27 @@ export function AIListView({
             )}
             <h1 className="text-xl font-semibold text-foreground">AI</h1>
           </div>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Plus className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <GlobalModeToggle
+              isGlobal={globalMode}
+              onToggle={handleGlobalModeToggle}
+              label="Global"
+              size="sm"
+            />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground hover:text-foreground"
+              onClick={handleNewChat}
+              disabled={isCreating}
+            >
+              {isCreating ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Plus className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
         </div>
         <SearchBar 
           placeholder="Search AI conversations" 
@@ -104,57 +133,64 @@ export function AIListView({
       <div className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full">
           <div className="space-y-1 p-2">
+            {/* Loading State */}
+            {isLoading && (
+              <div className="p-6 text-center">
+                <Loader2 className="h-8 w-8 mx-auto animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mt-2">Loading conversations...</p>
+              </div>
+            )}
+
             {/* Empty State */}
-            {!hasRealData && !searchQuery && (
+            {!isLoading && !hasRealData && !searchQuery && (
               <div className="p-6 text-center">
                 <div className="h-16 w-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="font-medium text-foreground mb-2">Start a conversation with AI</h3>
+                <h3 className="font-medium text-foreground mb-2">
+                  {globalMode ? "Start a private AI conversation" : "Start a conversation with AI"}
+                </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Get help with writing, coding, learning, and more.
+                  {globalMode 
+                    ? "Personal AI chats that aren't tied to any workspace."
+                    : "Get help with writing, coding, learning, and more."}
                 </p>
-                <Button size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
+                <Button 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={handleNewChat}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
                   New Chat
                 </Button>
               </div>
             )}
             
-            {searchQuery && filteredChats.length === 0 ? (
+            {!isLoading && searchQuery && filteredChats.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">
                 No AI conversations found
               </div>
-            ) : hasRealData && (
-              filteredChats.map((chat) => (
-                <div 
-                  key={chat.id} 
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer ${
-                    chat.id === selectedChatId ? 'bg-accent' : 'hover:bg-muted'
-                  }`}
-                  onClick={() => onChatSelect?.(chat.id)}
-                >
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-6 w-6 text-white" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-foreground truncate">{chat.title}</h3>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">{chat.timestamp}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground truncate pr-2">
-                        {chat.lastMessage}
-                      </p>
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full flex-shrink-0">
-                        {chat.topic}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))
+            ) : !isLoading && hasRealData && (
+              <div className="space-y-2">
+                {filteredChats.map((chat) => (
+                  <AIChatListCard
+                    key={chat.id}
+                    id={chat.id}
+                    title={chat.title}
+                    lastMessage={chat.lastMessage}
+                    timestamp={chat.timestamp}
+                    messageCount={chat.messageCount}
+                    isActive={chat.id === selectedChatId}
+                    isGlobal={globalMode}
+                    onClick={() => handleChatSelect(chat.id)}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </ScrollArea>

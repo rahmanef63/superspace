@@ -1,27 +1,34 @@
-import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
 import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
 import { AIListView } from "./AIListView";
 import { AIDetailView } from "./AIDetailView";
 import { SecondarySidebarLayout } from "@/frontend/shared/ui";
+import { useAIStore } from "./stores";
+import { useInitializeAI, useAIActions } from "./hooks";
 
 export function AIView() {
-  const [selectedChatId, setSelectedChatId] = useState<string>();
   const isMobile = useIsMobile();
-  const { setActiveTab } = useWhatsAppStore();
+  
+  // Initialize AI store with workspace context
+  useInitializeAI();
+  
+  // Use store state and actions
+  const selectedSessionId = useAIStore((s) => s.selectedSessionId);
+  const { selectSession } = useAIActions();
+
+  const handleChatSelect = (chatId: string) => {
+    selectSession(chatId as any);
+  };
 
   const handleBack = () => {
-    if (selectedChatId) {
-      setSelectedChatId(undefined);
-    } else {
-      setActiveTab('chats');
+    if (selectedSessionId) {
+      selectSession(null);
     }
   };
 
   if (isMobile) {
     // On mobile, show either AI chat list or AI chat detail, not both
-    if (selectedChatId) {
+    if (selectedSessionId) {
       return (
         <div className="flex flex-col h-screen bg-background">
           <TopBar
@@ -30,7 +37,7 @@ export function AIView() {
             showActions={false}
             onMenuClick={handleBack}
           />
-          <AIDetailView chatId={selectedChatId} />
+          <AIDetailView chatId={selectedSessionId} />
         </div>
       );
     }
@@ -43,7 +50,10 @@ export function AIView() {
           showActions={false}
           onMenuClick={handleBack}
         />
-        <AIListView selectedChatId={selectedChatId} onChatSelect={setSelectedChatId} />
+        <AIListView 
+          selectedChatId={selectedSessionId ?? undefined} 
+          onChatSelect={handleChatSelect} 
+        />
       </div>
     );
   }
@@ -53,14 +63,14 @@ export function AIView() {
       className="h-full bg-background"
       sidebar={
         <AIListView
-          selectedChatId={selectedChatId}
-          onChatSelect={setSelectedChatId}
+          selectedChatId={selectedSessionId ?? undefined}
+          onChatSelect={handleChatSelect}
           variant="layout"
         />
       }
       contentClassName="flex h-full flex-col bg-background"
     >
-      <AIDetailView chatId={selectedChatId} />
+      <AIDetailView chatId={selectedSessionId ?? undefined} />
     </SecondarySidebarLayout>
   );
 }

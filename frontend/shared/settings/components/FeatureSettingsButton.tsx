@@ -125,6 +125,11 @@ export function FeatureSettingsButton({
 
   const categories = getFeatureCategories()
 
+  if (process.env.NODE_ENV === "development") {
+    console.log("[FeatureSettingsButton] featureSlug:", featureSlug)
+    console.log("[FeatureSettingsButton] categories:", categories.length, categories.map(c => c.id))
+  }
+
   return (
     <>
       <TooltipProvider>

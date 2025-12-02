@@ -41,17 +41,19 @@ export const updateSettings = mutation({
  */
 export const createChatSession = mutation({
   args: {
-    workspaceId: v.string(),
+    workspaceId: v.optional(v.string()), // Optional for global sessions
     userId: v.string(),
     title: v.string(),
+    isGlobal: v.optional(v.boolean()), // true for global/private sessions
   },
   handler: async (ctx, args) => {
     const now = Date.now();
 
     const session = await ctx.db.insert("aiChatSessions", {
-      workspaceId: args.workspaceId,
+      workspaceId: args.isGlobal ? undefined : args.workspaceId,
       userId: args.userId,
       title: args.title,
+      isGlobal: args.isGlobal ?? false,
       messages: [],
       status: "active",
       createdAt: now,
@@ -191,5 +193,38 @@ export const appendChatMessage = mutation({
     });
 
     return messageEntry;
+  },
+});
+
+/**
+ * Update chat session (title, status, etc.)
+ */
+export const updateChatSession = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+    title: v.optional(v.string()),
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new Error("Chat session not found");
+    }
+
+    const updates: Record<string, any> = {
+      updatedAt: Date.now(),
+    };
+
+    if (args.title !== undefined) {
+      updates.title = args.title;
+    }
+
+    if (args.status !== undefined) {
+      updates.status = args.status;
+    }
+
+    await ctx.db.patch(args.sessionId, updates);
+
+    return await ctx.db.get(args.sessionId);
   },
 });

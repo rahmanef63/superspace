@@ -41,9 +41,10 @@ export const knowledgeBaseDocuments = defineTable({
   .index("by_status", ["workspaceId", "status"]);
 
 export const aiChatSessions = defineTable({
-  workspaceId: v.string(),
+  workspaceId: v.optional(v.string()), // Optional: null for global/private sessions
   userId: v.string(),
   title: v.string(),
+  isGlobal: v.optional(v.boolean()), // true for global/private sessions
   messages: v.array(v.object({
     role: v.string(), // system, user, assistant
     content: v.string(),
@@ -58,7 +59,9 @@ export const aiChatSessions = defineTable({
   updatedAt: v.number(),
 })
   .index("by_workspace_user", ["workspaceId", "userId"])
-  .index("by_status", ["workspaceId", "status"]);
+  .index("by_user", ["userId"]) // For global sessions (no workspaceId)
+  .index("by_status", ["workspaceId", "status"])
+  .index("by_global", ["isGlobal", "userId"]); // For querying global sessions
 
 export const aiUsageStats = defineTable({
   workspaceId: v.string(),

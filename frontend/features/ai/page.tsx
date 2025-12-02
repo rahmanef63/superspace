@@ -1,7 +1,6 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { useInitializeChat } from "@/frontend/features/chat/shared/hooks"
 import { AIView } from "./AIView"
 
 interface AIPageProps {
@@ -9,7 +8,7 @@ interface AIPageProps {
 }
 
 export default function WAAIPage({ workspaceId }: AIPageProps) {
-  useInitializeChat(workspaceId ?? null)
+  // AIView now handles its own initialization via useInitializeAI hook
 
   return (
     <div className="h-full">

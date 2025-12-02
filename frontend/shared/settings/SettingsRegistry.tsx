@@ -33,6 +33,29 @@ export function SettingsRegistryProvider({
     defaultCategory || coreSettings[0]?.id || null
   )
 
+  // Create a stable key based on coreSettings to detect changes
+  const coreSettingsKey = useMemo(
+    () => coreSettings.map((s) => s.id).join(","),
+    [coreSettings]
+  )
+
+  // Sync categories with coreSettings when they change
+  // This is needed for cases like FeatureSettingsButton where coreSettings
+  // are computed at render time and may change
+  React.useEffect(() => {
+    if (coreSettings.length > 0) {
+      setCategories(coreSettings)
+      // Set active category if not already set
+      setActiveCategory((current) => {
+        if (!current && coreSettings[0]?.id) {
+          return coreSettings[0].id
+        }
+        return current
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coreSettingsKey])
+
   /**
    * Register settings from a feature
    */

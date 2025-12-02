@@ -1,57 +1,118 @@
-import { useState } from "react";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Bot, Send, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useAIStore } from "./stores";
+import { useAIActions } from "./hooks";
+import { useAIKnowledgeContext } from "./hooks/useAIKnowledgeContext";
+import { WikiSelector } from "./components/WikiSelector";
 
 interface AIDetailViewProps {
   chatId?: string;
 }
 
-// Hook to fetch a single AI chat session from Convex
-const useAIConversation = (chatId?: string) => {
-  const session = useQuery(
-    api.features.ai.queries.getChatSession,
-    chatId ? { sessionId: chatId as Id<"aiChatSessions"> } : "skip"
-  );
-
-  const messages = (session?.messages ?? []).map((msg, idx) => ({
-    id: `${chatId}-${idx}`,
-    sender: msg.role === "user" ? "user" : "assistant",
-    text: msg.content,
-    timestamp: new Date(msg.timestamp).toLocaleTimeString(),
-  }));
-
-  return {
-    conversation: session ? { title: session.title, topic: session.status } : null,
-    messages,
-    isLoading: chatId !== undefined && session === undefined,
-  };
-};
-
-export function AIDetailView({ chatId }: AIDetailViewProps) {
+export function AIDetailView({ chatId: externalChatId }: AIDetailViewProps) {
   const [message, setMessage] = useState("");
-  const { conversation, messages, isLoading } = useAIConversation(chatId);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Use Zustand store
+  const selectedSession = useAIStore((s) => s.selectedSession);
+  const storeSelectedSessionId = useAIStore((s) => s.selectedSessionId);
+  const isSending = useAIStore((s) => s.isSending);
+  const isLoading = useAIStore((s) => s.isLoading);
+  const globalMode = useAIStore((s) => s.globalMode);
+  const knowledgeEnabled = useAIStore((s) => s.knowledgeEnabled);
+  const setKnowledgeEnabled = useAIStore((s) => s.setKnowledgeEnabled);
+  const selectedKnowledgeSources = useAIStore((s) => s.selectedKnowledgeSources);
+  const setKnowledgeSources = useAIStore((s) => s.setKnowledgeSources);
+  const { sendMessage, createSession, selectSession } = useAIActions();
+  
+  // Get knowledge context for AI
+  const { knowledgeContext, hasKnowledge } = useAIKnowledgeContext();
 
-  // Empty state - no conversation selected or no chatId
+  // Use external or store chatId
+  const chatId = externalChatId ?? storeSelectedSessionId;
+
+  // Get messages from selected session
+  const messages = selectedSession?.messages ?? [];
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
+    // Only include knowledge context if knowledge is enabled
+    const contextToUse = knowledgeEnabled ? knowledgeContext : undefined;
+
+    // If no session, create one first
+    if (!chatId) {
+      const session = await createSession(message.slice(0, 50));
+      if (session) {
+        selectSession(session._id);
+        // Wait a bit for state to sync, then send
+        setTimeout(() => {
+          sendMessage(message, contextToUse);
+          setMessage("");
+        }, 100);
+      }
+      return;
+    }
+
+    await sendMessage(message, contextToUse);
+    setMessage("");
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Empty state - no conversation selected
   if (!chatId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="text-center max-w-md">
-          <div className="h-64 w-64 mx-auto mb-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-            <Bot className="h-24 w-24 text-white" />
+      <div className="flex-1 flex flex-col bg-background">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="h-64 w-64 mx-auto mb-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+              <Bot className="h-24 w-24 text-white" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Ask AI anything</h2>
+            <p className="text-muted-foreground mb-6">
+              Get help with writing, learning, brainstorming and more.
+            </p>
+            <div className="text-xs text-muted-foreground">
+              Messages are generated by AI. Some may be inaccurate or inappropriate.
+            </div>
           </div>
-          <h2 className="text-xl font-semibold text-foreground mb-2">Ask AI anything</h2>
-          <p className="text-muted-foreground mb-6">
-            Get help with writing, learning, brainstorming and more. AI is built with Llama.
-          </p>
-          <div className="text-xs text-muted-foreground">
-            Messages are generated by AI. Some may be inaccurate or inappropriate.
-            You can improve the quality by sending feedback.
+        </div>
+
+        {/* Input - can start a new chat directly */}
+        <div className="p-4 border-t border-border bg-card">
+          <div className="flex gap-2 max-w-4xl mx-auto">
+            <Input
+              placeholder="Start a new conversation..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="flex-1"
+              disabled={isSending}
+            />
+            <Button onClick={handleSendMessage} disabled={!message.trim() || isSending}>
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
       </div>
@@ -59,28 +120,40 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
   }
 
   // Loading state
-  if (isLoading) {
+  if (isLoading && !selectedSession) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading conversation...</div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading conversation...</span>
+        </div>
       </div>
     );
   }
 
   // No messages yet - new conversation
-  if (!messages || messages.length === 0) {
+  if (messages.length === 0) {
     return (
       <div className="flex-1 flex flex-col bg-background">
         {/* Header */}
         <div className="p-4 border-b border-border bg-card">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <Bot className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-medium text-foreground">{selectedSession?.title || 'New Conversation'}</h3>
+                <p className="text-sm text-muted-foreground">Ask me anything</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-medium text-foreground">New Conversation</h3>
-              <p className="text-sm text-muted-foreground">Ask me anything</p>
-            </div>
+            {/* Wiki Selector */}
+            <WikiSelector
+              isEnabled={knowledgeEnabled}
+              onEnabledChange={setKnowledgeEnabled}
+              selectedSources={selectedKnowledgeSources}
+              onSourcesChange={setKnowledgeSources}
+            />
           </div>
         </div>
 
@@ -102,17 +175,16 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
               placeholder="Ask AI anything..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && message.trim()) {
-                  e.preventDefault();
-                  console.log('Sending AI message:', message);
-                  setMessage("");
-                }
-              }}
+              onKeyPress={handleKeyPress}
               className="flex-1"
+              disabled={isSending}
             />
-            <Button disabled={!message.trim()}>
-              <Send className="h-4 w-4" />
+            <Button onClick={handleSendMessage} disabled={!message.trim() || isSending}>
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -120,71 +192,96 @@ export function AIDetailView({ chatId }: AIDetailViewProps) {
     );
   }
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log('Sending AI message:', message);
-      setMessage("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-background">
       {/* Header */}
       <div className="p-4 border-b border-border bg-card">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <Bot className="h-5 w-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">{selectedSession?.title || 'AI Chat'}</h3>
+              <p className="text-sm text-muted-foreground">
+                {messages.length} message{messages.length !== 1 ? 's' : ''}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-foreground">{conversation?.title || 'AI Chat'}</h3>
-            <p className="text-sm text-muted-foreground">Topic: {conversation?.topic || 'General'}</p>
-          </div>
+          {/* Wiki Selector */}
+          <WikiSelector
+            isEnabled={knowledgeEnabled}
+            onEnabledChange={setKnowledgeEnabled}
+            selectedSources={selectedKnowledgeSources}
+            onSourcesChange={setKnowledgeSources}
+          />
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Empty conversation area */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4 max-w-4xl mx-auto">
-          {messages.map((msg: any) => (
-            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <Card className={`max-w-[80%] p-3 ${
-                msg.sender === 'user' 
+                msg.role === 'user' 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
               }`}>
-                <div className="whitespace-pre-wrap">{msg.text}</div>
+                <div className="whitespace-pre-wrap">{msg.content}</div>
                 <div className={`text-xs mt-2 ${
-                  msg.sender === 'user' 
+                  msg.role === 'user' 
                     ? 'text-primary-foreground/70' 
                     : 'text-muted-foreground'
                 }`}>
-                  {msg.timestamp}
+                  {new Date(msg.timestamp).toLocaleTimeString()}
                 </div>
               </Card>
             </div>
           ))}
+          
+          {/* Typing indicator */}
+          {isSending && (
+            <div className="flex justify-start">
+              <Card className="p-3 bg-muted">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                </div>
+              </Card>
+            </div>
+          )}
+          
+          <div ref={scrollRef} />
         </div>
       </ScrollArea>
 
       {/* Input */}
       <div className="p-4 border-t border-border bg-card">
+        {/* Knowledge context indicator */}
+        {knowledgeEnabled && hasKnowledge && selectedKnowledgeSources.length > 0 && (
+          <div className="max-w-4xl mx-auto mb-2">
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              AI has access to {selectedKnowledgeSources.length} knowledge source{selectedKnowledgeSources.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+        )}
         <div className="flex gap-2 max-w-4xl mx-auto">
           <Input
-            placeholder="Ask AI anything..."
+            placeholder={knowledgeEnabled && hasKnowledge ? "Ask about your workspace knowledge..." : "Ask AI anything..."}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1"
+            disabled={isSending}
           />
-          <Button onClick={handleSendMessage} disabled={!message.trim()}>
-            <Send className="h-4 w-4" />
+          <Button onClick={handleSendMessage} disabled={!message.trim() || isSending}>
+            {isSending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

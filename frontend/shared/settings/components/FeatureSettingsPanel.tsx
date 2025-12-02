@@ -50,13 +50,37 @@ export function FeatureSettingsPanel({
   showBackButton = true,
   defaultCategory,
 }: FeatureSettingsPanelProps) {
-  const { getFeatureSettings } = useSettingsRegistry()
+  const { categories, getFeatureSettings } = useSettingsRegistry()
   const [activeCategory, setActiveCategory] = React.useState<string | null>(null)
 
   // Get settings for this feature only
+  // First try to get feature-specific settings, if empty use all categories
+  // (for when panel is used inside a provider pre-loaded with feature settings)
   const featureSettings = React.useMemo(() => {
-    return getFeatureSettings(featureSlug)
-  }, [getFeatureSettings, featureSlug])
+    const filtered = getFeatureSettings(featureSlug)
+    
+    if (process.env.NODE_ENV === "development") {
+      console.log("[FeatureSettingsPanel] featureSlug:", featureSlug)
+      console.log("[FeatureSettingsPanel] all categories:", categories.length, categories.map(c => ({ id: c.id, featureSlug: c.featureSlug })))
+      console.log("[FeatureSettingsPanel] filtered by getFeatureSettings:", filtered.length)
+    }
+    
+    // If no feature-specific settings found, the provider might have
+    // been initialized with pre-loaded settings (e.g., from FeatureSettingsButton)
+    if (filtered.length === 0 && categories.length > 0) {
+      // Check if all categories belong to this feature or no feature
+      const allMatch = categories.every(
+        (cat) => !cat.featureSlug || cat.featureSlug === featureSlug
+      )
+      if (allMatch) {
+        if (process.env.NODE_ENV === "development") {
+          console.log("[FeatureSettingsPanel] Using all categories (pre-loaded)")
+        }
+        return categories
+      }
+    }
+    return filtered
+  }, [getFeatureSettings, featureSlug, categories])
 
   // Set default active category
   React.useEffect(() => {

@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Pin } from "lucide-react";
-import { getInitials, truncateText, waClasses } from "../../utils";
-import type { Chat } from "@/frontend/shared/foundation";
+import { getInitials, waClasses } from "../../utils";
+import { truncateMessage } from "@/frontend/shared/ui/layout/sidebar/secondary/utils";
+import type { Chat } from "@/frontend/features/chat/shared/types/core";
 
 interface ChatListItemProps extends Chat {
   isActive?: boolean;
@@ -69,7 +70,7 @@ export function ChatListItem({
         
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground truncate pr-2">
-            {truncateText(lastMessage, 40)}
+            {truncateMessage(lastMessage)}
           </p>
           <div className="flex items-center gap-1">
             {isArchived && (

@@ -66,6 +66,21 @@ export const workspaces = defineTable({
   organizationId: v.optional(v.id("organizations")),
   logo: v.optional(v.string()),
   isPublic: v.boolean(),
+  
+  // === Nested Workspace Hierarchy Fields ===
+  // Parent workspace for hierarchy (null = root level)
+  parentWorkspaceId: v.optional(v.id("workspaces")),
+  // True if this is the user's main/hub workspace (one per user)
+  isMainWorkspace: v.optional(v.boolean()),
+  // Display color for sidebar menu differentiation (hex color)
+  color: v.optional(v.string()),
+  // Hierarchy depth (0 = root/main, 1 = first child, etc.)
+  depth: v.optional(v.number()),
+  // Materialized path for efficient ancestor/descendant queries
+  path: v.optional(v.array(v.id("workspaces"))),
+  // Whether this workspace shares data (knowledge, activity) to parent workspace
+  shareDataToParent: v.optional(v.boolean()),
+  
   settings: v.optional(
     v.object({
       allowInvites: v.optional(v.boolean()),
@@ -76,6 +91,10 @@ export const workspaces = defineTable({
       // Bundle configuration
       bundleId: v.optional(v.string()),
       enabledFeatures: v.optional(v.array(v.string())),
+      // Main workspace specific: restrict invitations
+      allowGuestOnly: v.optional(v.boolean()),
+      // Guest access duration in milliseconds (for time-limited access)
+      guestAccessDuration: v.optional(v.number()),
     }),
   ),
   createdBy: v.id("users"),
@@ -83,7 +102,12 @@ export const workspaces = defineTable({
   .index("by_slug", ["slug"])
   .index("by_organization", ["organizationId"])
   .index("by_creator", ["createdBy"])
-  .index("by_type", ["type"]);
+  .index("by_type", ["type"])
+  // New indexes for hierarchy
+  .index("by_parent", ["parentWorkspaceId"])
+  .index("by_main", ["isMainWorkspace"])
+  .index("by_creator_main", ["createdBy", "isMainWorkspace"])
+  .index("by_depth", ["depth"]);
 
 export const roles = defineTable({
   name: v.string(),
@@ -150,11 +174,42 @@ export const invitations = defineTable({
   .index("by_token", ["token"])
   .index("by_status", ["status"]);
 
+/**
+ * Workspace Links - Junction table for linking workspaces as children
+ * This allows a workspace to appear in multiple users' hierarchies
+ * without duplicating the workspace itself.
+ * 
+ * Example: Company A workspace can be linked as a child of:
+ * - User 1's "Works" workspace
+ * - User 2's "Freelance" workspace
+ */
+export const workspaceLinks = defineTable({
+  // The parent workspace that contains the link
+  parentWorkspaceId: v.id("workspaces"),
+  // The child workspace being linked
+  childWorkspaceId: v.id("workspaces"),
+  // User who created this link
+  linkedBy: v.id("users"),
+  // Display order within parent
+  sortOrder: v.optional(v.number()),
+  // Optional custom display name for this link
+  displayName: v.optional(v.string()),
+  // Optional custom color override for this link
+  colorOverride: v.optional(v.string()),
+  // When the link was created
+  linkedAt: v.number(),
+})
+  .index("by_parent", ["parentWorkspaceId"])
+  .index("by_child", ["childWorkspaceId"])
+  .index("by_parent_child", ["parentWorkspaceId", "childWorkspaceId"])
+  .index("by_linked_by", ["linkedBy"]);
+
 export const coreTables = {
   userPrivacySettings,
   organizations,
   organizationMemberships,
   workspaces,
+  workspaceLinks,
   roles,
   workspaceMemberships,
   invitations,

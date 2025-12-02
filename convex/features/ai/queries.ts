@@ -545,3 +545,198 @@ export const getFeatureContent = query({
     return content;
   },
 });
+
+/**
+ * Get aggregated knowledge context from main workspace and all child workspaces
+ * Used for AI Overview mode in the Main Workspace
+ */
+export const getAggregatedKnowledgeContext = query({
+  args: {
+    mainWorkspaceId: v.id("workspaces"),
+    includeChildren: v.optional(v.boolean()),
+    documentLimit: v.optional(v.number()),
+    sourceTypes: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const includeChildren = args.includeChildren ?? true;
+    const documentLimit = args.documentLimit ?? 30;
+    
+    // Verify this is a main workspace
+    const mainWorkspace = await ctx.db.get(args.mainWorkspaceId);
+    if (!mainWorkspace) {
+      return { formattedContext: null, workspaces: [], totalDocuments: 0 };
+    }
+    
+    // Collect all workspace IDs to query
+    const workspaceIds: Id<"workspaces">[] = [args.mainWorkspaceId];
+    const workspaceInfo: Array<{ id: Id<"workspaces">; name: string; color?: string }> = [
+      { id: args.mainWorkspaceId, name: mainWorkspace.name, color: mainWorkspace.color }
+    ];
+    
+    if (includeChildren && mainWorkspace.isMainWorkspace) {
+      // Get direct children
+      const directChildren = await ctx.db
+        .query("workspaces")
+        .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.mainWorkspaceId))
+        .collect();
+      
+      // Get linked children
+      const links = await ctx.db
+        .query("workspaceLinks")
+        .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.mainWorkspaceId))
+        .collect();
+      
+      const linkedWorkspaces = await Promise.all(
+        links.map(l => ctx.db.get(l.childWorkspaceId))
+      ).then(arr => arr.filter(Boolean) as Doc<"workspaces">[]);
+      
+      // Add children that share data to parent
+      for (const child of [...directChildren, ...linkedWorkspaces]) {
+        if (child.shareDataToParent !== false) {
+          workspaceIds.push(child._id);
+          workspaceInfo.push({ id: child._id, name: child.name, color: child.color });
+        }
+      }
+    }
+    
+    // Aggregate knowledge from all workspaces
+    const allDocuments: Array<{
+      workspaceId: Id<"workspaces">;
+      workspaceName: string;
+      title: string;
+      content: string;
+      sourceType: string;
+    }> = [];
+    
+    const limitPerWorkspace = Math.ceil(documentLimit / workspaceIds.length);
+    
+    for (const wsId of workspaceIds) {
+      const wsInfo = workspaceInfo.find(w => String(w.id) === String(wsId));
+      const wsName = wsInfo?.name ?? "Unknown";
+      
+      // Get knowledge base documents
+      try {
+        const kbDocs = await ctx.db
+          .query("knowledgeBaseDocuments")
+          .withIndex("by_workspace", (q: any) => q.eq("workspaceId", wsId))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .take(limitPerWorkspace);
+        
+        for (const doc of kbDocs) {
+          allDocuments.push({
+            workspaceId: wsId,
+            workspaceName: wsName,
+            title: doc.title,
+            content: doc.content,
+            sourceType: doc.sourceType,
+          });
+        }
+      } catch {
+        // Table might not exist or have different structure
+      }
+      
+      // Get documents from documents table
+      try {
+        const docs = await ctx.db
+          .query("documents")
+          .withIndex("by_workspace", (q: any) => q.eq("workspaceId", wsId))
+          .filter((q) => 
+            // Only include public documents for aggregation
+            q.eq(q.field("isPublic"), true)
+          )
+          .take(limitPerWorkspace);
+        
+        for (const doc of docs) {
+          allDocuments.push({
+            workspaceId: wsId,
+            workspaceName: wsName,
+            title: doc.title,
+            content: typeof doc.content === "string" ? doc.content : JSON.stringify(doc.content),
+            sourceType: "document",
+          });
+        }
+      } catch {
+        // Table might not exist or have different structure
+      }
+    }
+    
+    // Format into context string grouped by workspace
+    const sections: string[] = [];
+    
+    // Group documents by workspace
+    const byWorkspace = new Map<string, typeof allDocuments>();
+    for (const doc of allDocuments) {
+      const key = String(doc.workspaceId);
+      if (!byWorkspace.has(key)) {
+        byWorkspace.set(key, []);
+      }
+      byWorkspace.get(key)!.push(doc);
+    }
+    
+    for (const [wsIdStr, docs] of byWorkspace.entries()) {
+      const wsInfo = workspaceInfo.find(w => String(w.id) === wsIdStr);
+      const wsName = wsInfo?.name ?? "Workspace";
+      
+      const docContent = docs
+        .map(d => `### ${d.title}\n${d.content}`)
+        .join("\n\n");
+      
+      sections.push(`## ${wsName}\n\n${docContent}`);
+    }
+    
+    const formattedContext = sections.length > 0
+      ? `# Aggregated Knowledge Context\n\n${sections.join("\n\n---\n\n")}`
+      : null;
+    
+    return {
+      formattedContext,
+      workspaces: workspaceInfo,
+      totalDocuments: allDocuments.length,
+      documents: allDocuments.slice(0, documentLimit),
+    };
+  },
+});
+
+/**
+ * Get child workspace IDs that share data to parent (for knowledge aggregation)
+ */
+export const getKnowledgeSharingChildren = query({
+  args: {
+    parentWorkspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const parentWorkspace = await ctx.db.get(args.parentWorkspaceId);
+    if (!parentWorkspace || !parentWorkspace.isMainWorkspace) {
+      return [];
+    }
+    
+    // Get direct children
+    const directChildren = await ctx.db
+      .query("workspaces")
+      .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.parentWorkspaceId))
+      .collect();
+    
+    // Get linked children
+    const links = await ctx.db
+      .query("workspaceLinks")
+      .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.parentWorkspaceId))
+      .collect();
+    
+    const linkedWorkspaces = await Promise.all(
+      links.map(l => ctx.db.get(l.childWorkspaceId))
+    ).then(arr => arr.filter(Boolean) as Doc<"workspaces">[]);
+    
+    // Filter to those that share data
+    const sharingChildren = [...directChildren, ...linkedWorkspaces]
+      .filter(ws => ws.shareDataToParent !== false)
+      .map(ws => ({
+        _id: ws._id,
+        name: ws.name,
+        type: ws.type,
+        color: ws.color,
+      }));
+    
+    return sharingChildren;
+  },
+});
+

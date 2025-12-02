@@ -1,4 +1,5 @@
 import { internalMutation } from "../../_generated/server";
+import { internal } from "../../_generated/api";
 import { ConvexError } from "convex/values";
 import { v } from "convex/values";
 import { getUserByExternalId } from "../helpers";
@@ -288,65 +289,26 @@ export const initializeCurrentUserAsAdmin = internalMutation({
       }
     }
 
-    // If user has no workspace or is not an owner, create a default personal workspace
+    // If user has no workspace or is not an owner, create Main Workspace
     if (!ownerMembership || !isOwner) {
       if (ownerMembership && !isOwner) {
-        console.log(`[initializeCurrentUserAsAdmin] User has workspace but is not owner, creating new personal workspace`);
+        console.log(`[initializeCurrentUserAsAdmin] User has workspace but is not owner, creating Main Workspace`);
       } else {
-        console.log(`[initializeCurrentUserAsAdmin] Creating default workspace for user ${guaranteedUser.email}`);
+        console.log(`[initializeCurrentUserAsAdmin] Creating Main Workspace for user ${guaranteedUser.email}`);
       }
       
-      const email = (identity.email ?? identity.emailVerified ?? guaranteedUser.email ?? "no-email@example.com") as string;
       const name = (identity.name ?? identity.nickname ?? guaranteedUser.name ?? "User") as string;
       const userName = name.split(" ")[0] || "My";
       
-      // Create default personal workspace
-      const workspaceId = await ctx.db.insert("workspaces", {
-        name: `${userName}'s Workspace`,
-        slug: `${userName.toLowerCase()}-workspace-${Date.now()}`,
-        description: "My personal workspace",
-        type: "personal",
-        isPublic: false,
-        settings: {
-          allowInvites: true,
-          requireApproval: false,
-        },
-        createdBy: guaranteedUser._id,
-      });
-
-      // Create system roles for the workspace
-      const ownerRoleId = await ctx.db.insert("roles", {
-        workspaceId,
-        name: "Owner",
-        slug: "owner",
-        description: "Full access to workspace",
-        level: 0,
-        permissions: ["*"],
-        isDefault: true,
-        isSystemRole: true,
-        createdBy: guaranteedUser._id,
-        updatedBy: guaranteedUser._id,
-      });
-
-      // Create owner membership
-      await ctx.db.insert("workspaceMemberships", {
-        workspaceId,
-        userId: guaranteedUser._id,
-        roleId: ownerRoleId,
-        roleLevel: 0,
-        status: "active",
-        additionalPermissions: [],
-        joinedAt: Date.now(),
-      });
-
-      // Update workspace settings with default role
-      await ctx.db.patch(workspaceId, {
-        settings: {
-          allowInvites: true,
-          requireApproval: false,
-          defaultRoleId: ownerRoleId,
-        },
-      });
+      // Create Main Workspace via hierarchy mutation
+      // This is the user's personal hub workspace with special settings
+      const workspaceId = await ctx.runMutation(
+        internal.workspace.hierarchy.createMainWorkspace,
+        {
+          userId: guaranteedUser._id,
+          userName,
+        }
+      );
 
       console.log(`[initializeCurrentUserAsAdmin] Created workspace ${workspaceId} for user ${guaranteedUser.email}`);
       

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/FeatureTag"
+import { cn } from "@/lib/utils"
 
 interface NavItem {
   id: string
@@ -37,9 +38,11 @@ interface NavMainProps {
   activeView: string
   onViewChange?: (view: string) => void
   items?: NavItem[]
+  /** Workspace color for accent styling (hex color) */
+  workspaceColor?: string
 }
 
-export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMainProps) {
+export function NavMain({ workspaceId, activeView, onViewChange, items, workspaceColor }: NavMainProps) {
   const { isMobile, setOpenMobile } = useSidebar()
   const fallback = getDefaultPages().map((p) => ({
     id: p.id,
@@ -60,11 +63,23 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
     onViewChange?.(viewId)
   }
 
+  // Generate CSS custom properties for workspace color
+  const colorStyles = workspaceColor ? {
+    "--workspace-color": workspaceColor,
+    "--workspace-color-light": `${workspaceColor}20`, // 12% opacity
+  } as React.CSSProperties : undefined
+
   // Recursive function to render nested menu items
   const renderNavItem = (item: NavItem, depth: number = 0): JSX.Element => {
     const hasChildren = item.children && item.children.length > 0
     const isActive = activeView === item.id
     const featureTag = item.tag || getFeatureTagFromMetadata(item.metadata)
+
+    // Active item styles with workspace color
+    const activeStyles = isActive && workspaceColor ? {
+      backgroundColor: `${workspaceColor}15`,
+      borderLeft: `3px solid ${workspaceColor}`,
+    } : undefined
 
     if (hasChildren) {
       return (
@@ -76,7 +91,14 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
         >
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton tooltip={item.description} isActive={isActive}>
+              <SidebarMenuButton 
+                tooltip={item.description} 
+                isActive={isActive}
+                style={activeStyles}
+                className={cn(
+                  isActive && workspaceColor && "border-l-0 ml-[-3px] pl-[calc(0.5rem+3px)]"
+                )}
+              >
                 {item.icon && <item.icon />}
                 <span className="flex-1">{item.title}</span>
                 {featureTag && <FeatureTag type={featureTag} compact />}
@@ -87,6 +109,12 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
               <SidebarMenuSub>
                 {item.children?.map((subItem) => {
                   const subFeatureTag = (subItem as NavItem).tag || getFeatureTagFromMetadata((subItem as NavItem).metadata)
+                  const subIsActive = activeView === subItem.id
+                  const subActiveStyles = subIsActive && workspaceColor ? {
+                    backgroundColor: `${workspaceColor}15`,
+                    borderLeft: `2px solid ${workspaceColor}`,
+                  } : undefined
+                  
                   return (
                   <SidebarMenuSubItem key={subItem.id}>
                     {subItem.children && subItem.children.length > 0 ? (
@@ -96,7 +124,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                         className="group/nested-collapsible"
                       >
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuSubButton>
+                          <SidebarMenuSubButton style={subActiveStyles}>
                             {subItem.icon && <subItem.icon className="w-4 h-4" />}
                             <span className="flex-1">{subItem.title}</span>
                             {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
@@ -107,12 +135,19 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                           <div className="pl-4">
                             {subItem.children?.map((nestedItem) => {
                               const nestedFeatureTag = (nestedItem as NavItem).tag || getFeatureTagFromMetadata((nestedItem as NavItem).metadata)
+                              const nestedIsActive = activeView === nestedItem.id
+                              const nestedActiveStyles = nestedIsActive && workspaceColor ? {
+                                backgroundColor: `${workspaceColor}15`,
+                                borderLeft: `2px solid ${workspaceColor}`,
+                              } : undefined
+                              
                               return (
                               <SidebarMenuSubButton key={nestedItem.id} asChild>
                                 <Link
                                   href={nestedItem.url || `/dashboard/${item.id}/${subItem.id}/${nestedItem.id}`}
                                   onClick={() => handleMenuClick(nestedItem.id)}
-                                  className={activeView === nestedItem.id ? "bg-accent" : ""}
+                                  className={nestedIsActive && !workspaceColor ? "bg-accent" : ""}
+                                  style={nestedActiveStyles}
                                 >
                                   {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
                                   <span className="flex-1">{nestedItem.title}</span>
@@ -129,7 +164,8 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
                         <Link
                           href={subItem.url || `/dashboard/${item.id}/${subItem.id}`}
                           onClick={() => handleMenuClick(subItem.id)}
-                          className={activeView === subItem.id ? "bg-accent" : ""}
+                          className={subIsActive && !workspaceColor ? "bg-accent" : ""}
+                          style={subActiveStyles}
                         >
                           {subItem.icon && <subItem.icon className="w-4 h-4" />}
                           <span className="flex-1">{subItem.title}</span>
@@ -148,7 +184,15 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
 
     return (
       <SidebarMenuItem key={item.id}>
-        <SidebarMenuButton asChild tooltip={item.description} isActive={isActive}>
+        <SidebarMenuButton 
+          asChild 
+          tooltip={item.description} 
+          isActive={isActive}
+          style={activeStyles}
+          className={cn(
+            isActive && workspaceColor && "border-l-0 ml-[-3px] pl-[calc(0.5rem+3px)]"
+          )}
+        >
           <Link
             href={item.url || `/dashboard/${item.id}`}
             onClick={() => handleMenuClick(item.id)}
@@ -163,7 +207,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items }: NavMai
   }
 
   return (
-    <SidebarGroup>
+    <SidebarGroup style={colorStyles}>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {navItems.map((item) => renderNavItem(item))}

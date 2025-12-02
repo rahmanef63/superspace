@@ -8,6 +8,7 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { Building, Folder, BookOpen, Calendar, Shield } from "lucide-react"
 
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
+import { EnhancedWorkspaceSwitcher } from "./EnhancedWorkspaceSwitcher"
 import { NavMain } from "./NavMain"
 import { usePathname, useRouter } from "next/navigation"
 import { NavUser } from "./NavUser"
@@ -68,7 +69,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { workspaceId: ctxWorkspaceId, setWorkspaceId } = useWorkspaceContext()
+  const { workspaceId: ctxWorkspaceId, setWorkspaceId, currentWorkspace: contextWorkspace } = useWorkspaceContext()
   const derivedActiveView = React.useMemo(() => {
     if (!pathname) return "overview"
     const parts = pathname.split("?")[0].split("#")[0].split("/").filter(Boolean)
@@ -307,14 +308,12 @@ export function AppSidebar({
   return (
     <Sidebar collapsible={collapsible} side={side} variant={variant}>
       <SidebarHeader>
-        <WorkspaceSwitcher
-          workspaces={workspaces}
-          currentWorkspace={currentWorkspace}
-          onWorkspaceSelect={(ws) => {
+        <EnhancedWorkspaceSwitcher
+          onWorkspaceSelect={(wsId) => {
             if (onWorkspaceChange) {
-              onWorkspaceChange(ws.id)
+              onWorkspaceChange(wsId)
             } else {
-              setWorkspaceId(ws.id)
+              setWorkspaceId(wsId)
             }
           }}
           isLoading={userWorkspaces === undefined}
@@ -328,6 +327,7 @@ export function AppSidebar({
               activeView={effectiveActiveView}
               onViewChange={handleViewChange}
               items={navItems}
+              workspaceColor={contextWorkspace?.color}
             />
           ) : (
             <div className="space-y-2 p-4">

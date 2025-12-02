@@ -13,6 +13,7 @@ import {
   Settings2,
   Bot,
   Camera,
+  GitBranch,
 } from "lucide-react"
 import type { Id } from "@convex/_generated/dataModel"
 import {
@@ -27,6 +28,7 @@ import { SettingsRegistryProvider } from "../SettingsRegistry"
 import type { SettingsCategory } from "../types"
 import { GeneralSettings } from "./GeneralSettings"
 import { DangerZoneSettings } from "./DangerZoneSettings"
+import { HierarchySettings } from "./HierarchySettings"
 
 type StaticFeatureBuilders = NonNullable<FeatureSettingsSyncProps["staticBuilders"]>
 
@@ -134,6 +136,13 @@ export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
         icon: Settings2,
         order: 0,
         component: () => <GeneralSettings workspaceId={workspaceId} />,
+      },
+      {
+        id: "hierarchy",
+        label: "Hierarchy",
+        icon: GitBranch,
+        order: 10,
+        component: () => <HierarchySettings workspaceId={workspaceId} />,
       },
       {
         id: "danger-zone",

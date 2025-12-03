@@ -1,8 +1,8 @@
 # Menu Store Feature
 
 > **Modular, scalable menu management system for SuperSpace**
-> **Last Updated:** 2025-01-19
-> **Version:** 2.0.0 (Modular Refactoring)
+> **Last Updated:** 2025-12-03
+> **Version:** 3.0.0 (Three-Column Layout - Following WorkspaceStorePage Pattern)
 
 ---
 
@@ -22,54 +22,67 @@
 
 ## Overview
 
-The Menu Store is a **feature-based module** that provides comprehensive menu management functionality for SuperSpace workspaces. It follows **modular architecture** principles with clear separation of concerns.
+The Menu Store is a **feature-based module** that provides comprehensive menu management functionality for SuperSpace workspaces. It follows the **WorkspaceStorePage pattern** with a **Three-Column Layout** for better UX.
 
 ### Key Features
 
+- ✅ **Three-Column Layout**: Left (Tree), Center (Inspector/Features/Import), Right (Preview)
 - ✅ **Modular & Scalable**: Components, hooks, and utilities organized by concern
 - ✅ **DRY Principle**: Reusable components and logic
 - ✅ **Type-Safe**: Full TypeScript coverage
 - ✅ **Access Control**: Requires `MANAGE_MENUS` permission (Owner & Admin only)
-- ✅ **3 Tab System**: Installed, Available, Import
-- ✅ **2 View Modes**: Tree (with preview), Grid
+- ✅ **Tabbed Center Panel**: Inspector, Available Features, Import
+- ✅ **View Mode Toggle**: Tree & Grid views in left panel
 - ✅ **CRUD Operations**: Create, read, update, delete menu items
 - ✅ **Feature Management**: Install/uninstall optional features
 - ✅ **Import/Export**: Share menus across workspaces
+- ✅ **Feature Preview**: Preview features before installing
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Menu Store Page                     │
-│                      (page.tsx)                         │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-        ┌──────────┴──────────┬──────────────┬─────────────┐
-        │                     │              │             │
-   ┌────▼────┐         ┌──────▼─────┐  ┌────▼────┐  ┌─────▼─────┐
-   │ Hooks   │         │ Components │  │ Sections│  │  Dialogs  │
-   │         │         │            │  │         │  │           │
-   │ • State │         │ • Cards    │  │ • Tabs  │  │ • Rename  │
-   │ • Data  │         │ • Items    │  │ Content │  │ • Share   │
-   │ • Mut   │         └────────────┘  └─────────┘  └───────────┘
-   └────┬────┘                 │
-        │                      │
-   ┌────▼────┐            ┌────▼────┐
-   │   API   │            │   Lib   │
-   │         │            │         │
-   │ Convex  │            │ Helpers │
-   └─────────┘            └─────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Menu Store Page (3-Column Layout)            │
+│                      (MenuStorePage.tsx)                        │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+┌────────────────────────────┼────────────────────────────────────┐
+│ Left Panel      │  Center Panel    │  Right Panel               │
+│ (Menu Tree)     │  (Details)       │  (Preview)                 │
+├─────────────────┼──────────────────┼────────────────────────────┤
+│ • Search        │  • Inspector Tab │  • Feature Preview         │
+│ • Tree/Grid     │  • Available Tab │  • Close Button            │
+│ • View Toggle   │  • Import Tab    │                            │
+│ • Sync Button   │                  │                            │
+└─────────────────┴──────────────────┴────────────────────────────┘
+                             │
+        ┌────────────────────┼────────────────────────────────────┐
+        │                    │               │                    │
+   ┌────▼────┐         ┌─────▼────┐   ┌─────▼────┐         ┌─────▼─────┐
+   │ Hooks   │         │Components│   │ Dialogs  │         │  Sections │
+   │         │         │          │   │          │         │  (Legacy) │
+   │ • State │         │ • Cards  │   │ • Rename │         └───────────┘
+   │ • Data  │         │          │   │ • Share  │
+   │ • Mut   │         └──────────┘   └──────────┘
+   └────┬────┘                 
+        │                      
+   ┌────▼────┐            
+   │   API   │            
+   │         │            
+   │ Convex  │            
+   └─────────┘            
 ```
 
 ### Design Principles
 
-1. **Separation of Concerns**: Each folder has a specific responsibility
-2. **Single Responsibility**: Each file does one thing well
-3. **Dependency Inversion**: Components depend on abstractions (hooks), not implementations
-4. **Composition**: Small, reusable components composed into larger features
-5. **Co-location**: Related code stays together
+1. **Three-Column Layout**: Follows WorkspaceStorePage pattern for consistency
+2. **Separation of Concerns**: Each folder has a specific responsibility
+3. **Single Responsibility**: Each file does one thing well
+4. **Dependency Inversion**: Components depend on abstractions (hooks), not implementations
+5. **Composition**: Small, reusable components composed into larger features
+6. **Co-location**: Related code stays together
 
 ---
 
@@ -77,7 +90,8 @@ The Menu Store is a **feature-based module** that provides comprehensive menu ma
 
 ```
 frontend/features/menu-store/
-├── page.tsx                    # Main page component (orchestrates everything)
+├── MenuStorePage.tsx           # NEW: Main 3-column page (follows WorkspaceStorePage)
+├── page.tsx                    # Legacy SecondarySidebarLayout page
 ├── page.old.tsx                # Backup of original monolithic implementation
 ├── index.ts                    # Public API exports
 ├── README.md                   # This file
@@ -107,7 +121,7 @@ frontend/features/menu-store/
 │   ├── FeatureCard.tsx         # Available feature card
 │   └── index.ts                # Component exports
 │
-├── sections/                   # Tab content components
+├── sections/                   # LEGACY: Tab content components (for old layout)
 │   ├── InstalledSection.tsx    # Installed menus tab
 │   ├── AvailableSection.tsx    # Available features tab
 │   ├── ImportSection.tsx       # Import menu tab
@@ -123,7 +137,17 @@ frontend/features/menu-store/
 
 ## Core Concepts
 
-### 1. Feature Types
+### 1. Three-Column Layout (NEW)
+
+The new layout follows WorkspaceStorePage pattern:
+
+| Panel | Content | Features |
+|-------|---------|----------|
+| **Left** | Menu Tree | Tree/Grid toggle, Search, Sync |
+| **Center** | Inspector/Available/Import | Tabbed interface, Menu details |
+| **Right** | Feature Preview | Collapsible, Shows feature preview |
+
+### 2. Feature Types
 
 | Type | Description | Access | Badge Color |
 |------|-------------|--------|-------------|
@@ -132,18 +156,18 @@ frontend/features/menu-store/
 | **optional** | Installable features | Based on permission | Secondary |
 | **custom** | User-created menus | All members | Outline |
 
-### 2. View Modes
+### 3. View Modes
 
-- **Tree View**: Hierarchical structure with drag-drop + preview panel
-- **Grid View**: Card-based layout for quick browsing
+- **Tree View**: Hierarchical structure with drag-drop
+- **Grid View**: Compact card-based layout
 
-### 3. Tabs
+### 4. Center Panel Tabs
 
-- **Installed**: Manage existing menu items (CRUD operations)
-- **Available**: Browse and install optional features from catalog
+- **Inspector**: View/edit selected menu item details
+- **Available**: Browse and install optional features
 - **Import**: Import shared menus from other workspaces
 
-### 4. Access Control
+### 5. Access Control
 
 Menu Store is wrapped in `MenuStoreMenuWrapper` which:
 - Checks `MANAGE_MENUS` permission
@@ -154,13 +178,22 @@ Menu Store is wrapped in `MenuStoreMenuWrapper` which:
 
 ## Usage Guide
 
-### Basic Usage
+### Basic Usage (New 3-Column Layout)
 
 ```typescript
-import MenuStorePage from "@/frontend/features/menu-store/page";
+import { MenuStorePage } from "@/frontend/features/menu-store";
 
 // In your route page
 <MenuStorePage workspaceId={workspaceId} />
+```
+
+### Legacy Usage (SecondarySidebarLayout)
+
+```typescript
+import { MenuStorePageLegacy } from "@/frontend/features/menu-store";
+
+// In your route page
+<MenuStorePageLegacy workspaceId={workspaceId} />
 ```
 
 ### Using Individual Components

@@ -31,6 +31,7 @@ interface NavItem {
   children?: NavItem[]
   metadata?: Record<string, any>
   tag?: FeatureTagType
+  isGroup?: boolean  // true if type is "group" - indicates non-navigable container
 }
 
 interface NavMainProps {

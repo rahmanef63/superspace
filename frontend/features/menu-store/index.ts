@@ -1,6 +1,9 @@
-// Main page component
-export { default as MenuStorePage } from "./page";
-export type { MenuStorePageProps } from "./page";
+// Main page component - New 3-column layout (following WorkspaceStorePage pattern)
+export { default as MenuStorePage, MenuStorePage as MenuStorePageNew } from "./MenuStorePage";
+export type { MenuStorePageProps } from "./MenuStorePage";
+
+// Legacy page component (for backward compatibility)
+export { default as MenuStorePageLegacy } from "./page";
 
 // Hooks
 export * from "./hooks";

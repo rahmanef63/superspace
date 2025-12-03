@@ -27,6 +27,7 @@ interface NavItem {
   parentId?: string
   children: NavItem[]
   metadata?: Record<string, unknown>
+  isGroup?: boolean  // true if type is "group" - indicates non-navigable container
 }
 
 /**
@@ -94,6 +95,7 @@ export function useNavItems(workspaceId: Id<"workspaces"> | null) {
             parentId: mi.parentId,
             children: [],
             metadata: mergedMetadata,
+            isGroup: mi.type === "group", // Mark as group for special rendering
           }
 
           itemsMap.set(mi._id, navItem)

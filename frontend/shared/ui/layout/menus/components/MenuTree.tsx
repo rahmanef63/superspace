@@ -23,6 +23,7 @@ import {
   Pencil,
   Trash2,
   Copy,
+  Layers,
 } from "lucide-react";
 
 import {
@@ -100,6 +101,7 @@ interface DialogState {
 
 const MENU_ITEM_TYPES = [
   { value: "folder", label: "Folder" },
+  { value: "group", label: "Group" },
   { value: "route", label: "Route" },
   { value: "document", label: "Document" },
   { value: "chat", label: "Chat" },
@@ -183,7 +185,12 @@ export function MenuTree({
     indent,
     rootItemId: "root",
     getItemName: (item) => item.getItemData().name,
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0 || item.getItemData()?.type === "folder",
+    isItemFolder: (item) => {
+      const data = item.getItemData();
+      const hasChildren = (data?.children?.length ?? 0) > 0;
+      const isContainerType = data?.type === "folder" || data?.type === "group";
+      return hasChildren || isContainerType;
+    },
     canReorder: showActions,
     onDrop: showActions ? createOnDropHandler(async (parentItem, newChildrenIds) => {
       // Update order for all children
@@ -337,6 +344,11 @@ export function MenuTree({
   const renderIcon = (type: string, iconName?: string, isFolder?: boolean, isExpanded?: boolean, color?: string) => {
     const className = `size-4 ${color ? '' : 'text-muted-foreground'}`;
     const style = color ? { color } : undefined;
+
+    // Handle group type - use Layers icon
+    if (type === 'group') {
+      return <Layers className={className} style={style} />;
+    }
 
     if (isFolder) {
       return isExpanded ? (

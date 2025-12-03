@@ -10,6 +10,8 @@ export const menuStoreApi = {
   getAvailableFeatureMenus: (api as any)["features/menus/menuItems"].getAvailableFeatureMenus,
 
   // Mutations
+  createMenuItem: (api as any)["features/menus/menuItems"].createMenuItem,
+  updateMenuItem: (api as any)["features/menus/menuItems"].updateMenuItem,
   deleteMenuItem: (api as any)["features/menus/menuItems"].deleteMenuItem,
   installFeatureMenus: (api as any)["features/menus/menuItems"].installFeatureMenus,
   renameMenuItem: (api as any)["features/menus/menuItems"].renameMenuItem,

@@ -9,6 +9,7 @@ export const menuItems = defineTable({
   slug: v.string(),
   type: v.union(
     v.literal("folder"),
+    v.literal("group"),
     v.literal("route"),
     v.literal("divider"),
     v.literal("action"),

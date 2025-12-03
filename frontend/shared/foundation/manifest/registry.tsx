@@ -163,7 +163,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Menu Store",
     description: "Install and manage navigation menus",
     icon: Menu,
-    component: lazy(() => import("@/frontend/features/menu-store/page")),
+    component: lazy(() => import("@/frontend/features/menu-store/MenuStorePage")),
   },
   {
     id: "invitations",

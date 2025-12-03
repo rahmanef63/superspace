@@ -8,6 +8,8 @@ import type { MenuItem } from "../types";
  * Hook to manage menu store mutations
  */
 export function useMenuStoreMutations() {
+  const createMenuItemMutation = useMutation(menuStoreApi.createMenuItem);
+  const updateMenuItemMutation = useMutation(menuStoreApi.updateMenuItem);
   const deleteMenuItemMutation = useMutation(menuStoreApi.deleteMenuItem);
   const installFeatureMenusMutation = useMutation(menuStoreApi.installFeatureMenus);
   const renameMenuItemMutation = useMutation(menuStoreApi.renameMenuItem);
@@ -16,6 +18,62 @@ export function useMenuStoreMutations() {
   const importMenuFromShareableIdMutation = useMutation(menuStoreApi.importMenuFromShareableId);
   const setMenuItemFeatureTypeMutation = useMutation(menuStoreApi.setMenuItemFeatureType);
   const syncDefaultMenusMutation = useMutation(menuStoreApi.syncWorkspaceDefaultMenus);
+
+  const createMenuItem = async (
+    workspaceId: Id<"workspaces">,
+    data: {
+      name: string;
+      slug: string;
+      type: "folder" | "group" | "route" | "divider" | "action" | "chat" | "document";
+      parentId?: Id<"menuItems"> | null;
+      icon?: string;
+      path?: string;
+      metadata?: { description?: string; color?: string };
+    },
+    onSuccess?: (menuItemId: Id<"menuItems">) => void
+  ) => {
+    try {
+      const menuItemId = await createMenuItemMutation({
+        workspaceId,
+        parentId: data.parentId,
+        name: data.name,
+        slug: data.slug,
+        type: data.type,
+        icon: data.icon,
+        path: data.path,
+        metadata: data.metadata,
+      });
+      toast.success(`${data.type === "folder" ? "Folder" : data.type === "group" ? "Group" : "Menu item"} created successfully`);
+      onSuccess?.(menuItemId);
+      return menuItemId;
+    } catch (error) {
+      console.error("Failed to create menu item:", error);
+      toast.error("Failed to create menu item");
+      throw error;
+    }
+  };
+
+  const updateMenuItem = async (
+    menuItemId: Id<"menuItems">,
+    data: Partial<MenuItem>,
+    onSuccess?: () => void
+  ) => {
+    try {
+      await updateMenuItemMutation({
+        menuItemId,
+        name: data.name,
+        slug: data.slug,
+        icon: (data as any).icon,
+        path: data.path,
+        metadata: data.metadata,
+      });
+      onSuccess?.();
+    } catch (error) {
+      console.error("Failed to update menu item:", error);
+      toast.error("Failed to update menu item");
+      throw error;
+    }
+  };
 
   const deleteMenuItem = async (menuItemId: Id<"menuItems">, onSuccess?: () => void) => {
     if (!confirm("Are you sure you want to delete this menu item?")) return;
@@ -140,6 +198,8 @@ export function useMenuStoreMutations() {
   };
 
   return {
+    createMenuItem,
+    updateMenuItem,
     deleteMenuItem,
     installFeature,
     renameMenuItem,

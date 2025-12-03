@@ -35,6 +35,7 @@ export interface MenuItemRecord {
 // Menu item types
 export type MenuItemType =
   | "folder"
+  | "group"
   | "route"
   | "document"
   | "chat"
@@ -170,6 +171,7 @@ export interface BreadcrumbNavigationProps {
 // Menu item type options for forms
 export const MENU_ITEM_TYPES: Array<{ value: MenuItemType; label: string }> = [
   { value: 'folder', label: 'Folder' },
+  { value: 'group', label: 'Group' },
   { value: 'route', label: 'Route' },
   { value: 'document', label: 'Document' },
   { value: 'chat', label: 'Chat' },

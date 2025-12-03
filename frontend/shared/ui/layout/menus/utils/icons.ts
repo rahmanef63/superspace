@@ -1,4 +1,4 @@
-import { Folder, FileText, Hash } from "lucide-react";
+import { Folder, FileText, Hash, Layers } from "lucide-react";
 import { MenuItemType } from "../types";
 
 /**
@@ -8,6 +8,8 @@ export function getDefaultIconForType(type: MenuItemType) {
   switch (type) {
     case "folder":
       return Folder;
+    case "group":
+      return Layers;
     case "document":
       return FileText;
     default:

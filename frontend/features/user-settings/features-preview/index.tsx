@@ -16,8 +16,8 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { defineFeaturePreview } from '@/frontend/shared/features/preview'
-import type { FeaturePreviewProps } from '@/frontend/shared/features/preview'
+import { defineFeaturePreview } from '@/frontend/shared/preview'
+import type { FeaturePreviewProps } from '@/frontend/shared/preview'
 
 interface UserProfile {
   name: string

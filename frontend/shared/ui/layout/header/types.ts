@@ -473,12 +473,7 @@ export type HeaderPresetName =
   | "sidebar"       // Sidebar header
   | "container"     // Container/panel header
   | "page"          // Full page header
-  | "modal"         // Modal/dialog header
-  | "card"          // Card header
-  | "section"       // Section header
-  | "toolbar"       // Toolbar style header
   | "minimal"       // Minimal header
-  | "chat"          // Chat/conversation header
 
 export interface HeaderPreset {
   /** Preset variant */
@@ -543,46 +538,6 @@ export const HEADER_PRESETS: Record<HeaderPresetName, HeaderPreset> = {
     sticky: false,
     fullWidth: true,
   },
-  modal: {
-    variant: "minimal",
-    size: "md",
-    layout: "standard",
-    background: false,
-    border: true,
-    shadow: false,
-    sticky: false,
-    fullWidth: true,
-  },
-  card: {
-    variant: "minimal",
-    size: "sm",
-    layout: "standard",
-    background: false,
-    border: false,
-    shadow: false,
-    sticky: false,
-    fullWidth: true,
-  },
-  section: {
-    variant: "minimal",
-    size: "md",
-    layout: "standard",
-    background: false,
-    border: false,
-    shadow: false,
-    sticky: false,
-    fullWidth: true,
-  },
-  toolbar: {
-    variant: "compact",
-    size: "sm",
-    layout: "split",
-    background: true,
-    border: true,
-    shadow: false,
-    sticky: true,
-    fullWidth: true,
-  },
   minimal: {
     variant: "transparent",
     size: "sm",
@@ -591,16 +546,6 @@ export const HEADER_PRESETS: Record<HeaderPresetName, HeaderPreset> = {
     border: false,
     shadow: false,
     sticky: false,
-    fullWidth: true,
-  },
-  chat: {
-    variant: "default",
-    size: "md",
-    layout: "split",
-    background: true,
-    border: true,
-    shadow: false,
-    sticky: true,
     fullWidth: true,
   },
 }

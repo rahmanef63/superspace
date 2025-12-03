@@ -25,6 +25,7 @@ import {
   FolderPlus,
   Unlink,
   Copy,
+  Layers,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -40,6 +41,13 @@ import {
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
 import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // ============================================================================
 // Types
@@ -90,6 +98,7 @@ export interface WorkspaceDnDTreeProps {
   onColorChange?: (workspace: WorkspaceDnDItem, newColor: string) => Promise<void> | void
   onUnlink?: (workspace: WorkspaceDnDItem) => void
   onDuplicate?: (workspace: WorkspaceDnDItem) => void
+  onShowFeatures?: (workspace: WorkspaceDnDItem) => void
 }
 
 // ============================================================================
@@ -133,6 +142,7 @@ export function WorkspaceDnDTree({
   onColorChange,
   onUnlink,
   onDuplicate,
+  onShowFeatures,
 }: WorkspaceDnDTreeProps) {
   // Convert workspace items to base tree items format
   const items = React.useMemo(() => {
@@ -183,7 +193,7 @@ export function WorkspaceDnDTree({
     onDelete?.(workspace)
   }, [onDelete])
 
-  // Custom actions for workspace dropdown
+  // Custom actions for workspace dropdown (removed show-features, now it's a separate button)
   const customActions: TreeItemAction<WorkspaceDnDItem>[] = React.useMemo(() => {
     const actions: TreeItemAction<WorkspaceDnDItem>[] = []
 
@@ -328,7 +338,36 @@ export function WorkspaceDnDTree({
       }
       return null
     },
-  }), [workspaceMap, onIconChange, onColorChange])
+
+    // Show Features button before action dropdown (appears on hover)
+    renderBeforeActions: ({ item }) => {
+      if (!onShowFeatures) return null
+      const workspace = workspaceMap.get(item.id) || item
+      
+      return (
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onShowFeatures(workspace)
+                }}
+              >
+                <Layers className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              Show Features
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
+    },
+  }), [workspaceMap, onIconChange, onColorChange, onShowFeatures])
 
   return (
     <ScrollableUnifiedDnDTree<WorkspaceDnDItem>

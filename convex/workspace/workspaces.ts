@@ -436,6 +436,8 @@ export const updateWorkspace = mutation({
     name: v.optional(v.string()),
     description: v.optional(v.string()),
     isPublic: v.optional(v.boolean()),
+    icon: v.optional(v.string()),
+    color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx)
@@ -445,6 +447,8 @@ export const updateWorkspace = mutation({
     if (args.name !== undefined) updates.name = args.name
     if (args.description !== undefined) updates.description = args.description
     if (args.isPublic !== undefined) updates.isPublic = args.isPublic
+    if (args.icon !== undefined) updates.icon = args.icon
+    if (args.color !== undefined) updates.color = args.color
 
     await ctx.db.patch(args.workspaceId, updates)
     return args.workspaceId

@@ -16,8 +16,8 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { defineFeaturePreview } from '@/frontend/shared/features/preview'
-import type { FeaturePreviewProps } from '@/frontend/shared/features/preview'
+import { defineFeaturePreview } from '@/frontend/shared/preview'
+import type { FeaturePreviewProps } from '@/frontend/shared/preview'
 
 interface Task {
   id: string

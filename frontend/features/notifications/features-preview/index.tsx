@@ -15,8 +15,8 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { defineFeaturePreview } from '@/frontend/shared/features/preview'
-import type { FeaturePreviewProps } from '@/frontend/shared/features/preview'
+import { defineFeaturePreview } from '@/frontend/shared/preview'
+import type { FeaturePreviewProps } from '@/frontend/shared/preview'
 
 interface Notification {
   id: string

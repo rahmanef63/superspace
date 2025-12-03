@@ -15,6 +15,7 @@ import type { Doc } from "@/convex/_generated/dataModel"
 
 type ConvexWorkspace = Doc<"workspaces"> & {
   color?: string
+  icon?: string
   isMainWorkspace?: boolean
   isLinked?: boolean
   shareDataToParent?: boolean
@@ -48,7 +49,8 @@ export function useWorkspaceStoreData() {
       slug: ws.slug,
       description: ws.description,
       type: ws.type as WorkspaceStoreItem["type"],
-      icon: (ws.settings as Record<string, unknown>)?.icon as string | undefined,
+      // Icon is stored directly on workspace, not in settings
+      icon: ws.icon,
       color: ws.color ?? "#6366f1",
       isPublic: ws.isPublic,
       isMainWorkspace: ws.isMainWorkspace,

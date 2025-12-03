@@ -90,16 +90,28 @@ export type { ResizeHandleProps } from "./ResizeHandle"
 export { CollapsiblePanel } from "./CollapsiblePanel"
 export type { CollapsiblePanelProps, CollapseDirection } from "./CollapsiblePanel"
 
-// Three Column Layout (Advanced)
+// Three Column Layout (Advanced) - Modular structure in ./three-column/
 export {
   ThreeColumnLayoutAdvanced,
   ThreeColumnLayoutAdvanced as ThreeColumnLayout, // Alias for backward compatibility
   useThreeColumnLayout,
+  useThreeColumnLayoutSafe,
   LeftPanel,
   CenterPanel,
   RightPanel,
-} from "./ThreeColumnLayout"
-export type { ThreeColumnLayoutAdvancedProps } from "./ThreeColumnLayout"
+  // Sub-components for custom compositions
+  CollapseButton,
+  PanelHeader as ThreeColumnPanelHeader,
+  CollapsedPanel as ThreeColumnCollapsedPanel,
+  // Hooks for custom implementations
+  usePersistedState,
+  useResponsiveCollapse,
+  useStackedLayout,
+} from "./three-column"
+export type { 
+  ThreeColumnLayoutAdvancedProps,
+  ThreeColumnContextValue,
+} from "./three-column"
 
 // Page Container
 export { PageContainer } from "./PageContainer"

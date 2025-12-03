@@ -153,11 +153,6 @@ export {
   SidebarHeader,
   ContainerHeader,
   PageHeader,
-  ModalHeader,
-  CardHeader,
-  SectionHeader,
-  ToolbarHeader,
-  ChatHeader,
   MinimalHeader,
 } from "./presets"
 
@@ -166,11 +161,6 @@ export type {
   SidebarHeaderProps,
   ContainerHeaderProps,
   PageHeaderProps,
-  ModalHeaderProps,
-  CardHeaderProps,
-  SectionHeaderProps,
-  ToolbarHeaderProps,
-  ChatHeaderProps,
   MinimalHeaderProps,
 } from "./presets"
 
@@ -200,3 +190,30 @@ export {
   getToolbarClasses,
   getBackButtonClasses,
 } from "./styles"
+
+// ============================================================================
+// Controls (Search, Filter, Sort, DateRange, Pagination)
+// ============================================================================
+
+export {
+  HeaderControls,
+  SearchControl,
+  FilterControl,
+  SortControl,
+  DateRangeControl,
+  PaginationControl,
+} from "./components"
+
+// Note: Types are exported without SortOption to avoid conflict with sidebar/secondary
+// Import SortOption from "./components/HeaderControls" directly if needed
+export type {
+  HeaderControlsProps,
+  SearchControlProps,
+  FilterControlProps,
+  FilterChip,
+  SortControlProps,
+  // SortOption - conflicts with sidebar/secondary, import directly if needed
+  DateRangeControlProps,
+  DateRange,
+  PaginationControlProps,
+} from "./components"

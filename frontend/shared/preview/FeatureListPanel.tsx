@@ -44,6 +44,8 @@ interface FeatureListPanelProps {
   emptyMessage?: string
   /** Title for the panel */
   title?: string
+  /** Hide the internal header (use when parent provides header) */
+  hideHeader?: boolean
 }
 
 const CATEGORY_OPTIONS: { value: FeaturePreviewCategory | 'all'; label: string }[] = [
@@ -69,6 +71,7 @@ export function FeatureListPanel({
   isLoading = false,
   emptyMessage = 'No features found',
   title = 'Features',
+  hideHeader = false,
 }: FeatureListPanelProps) {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [categoryFilter, setCategoryFilter] = React.useState<FeaturePreviewCategory | 'all'>('all')
@@ -107,9 +110,11 @@ export function FeatureListPanel({
   if (isLoading) {
     return (
       <div className="flex flex-col h-full bg-muted/20">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold">{title}</h3>
-        </div>
+        {!hideHeader && (
+          <div className="p-4 border-b">
+            <h3 className="font-semibold">{title}</h3>
+          </div>
+        )}
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -119,43 +124,90 @@ export function FeatureListPanel({
 
   return (
     <div className="flex flex-col h-full bg-muted/20">
-      {/* Header */}
-      <div className="p-4 border-b space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">{title}</h3>
-          <Badge variant="secondary" className="text-xs">
-            {filteredFeatures.length} features
-          </Badge>
-        </div>
+      {/* Header - only show if not hidden */}
+      {!hideHeader && (
+        <div className="p-4 border-b space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">{title}</h3>
+            <Badge variant="secondary" className="text-xs">
+              {filteredFeatures.length} features
+            </Badge>
+          </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search features..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search features..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
 
-        {/* Category filter */}
-        <Select
-          value={categoryFilter}
-          onValueChange={(value) => setCategoryFilter(value as FeaturePreviewCategory | 'all')}
-        >
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORY_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          {/* Category filter */}
+          <Select
+            value={categoryFilter}
+            onValueChange={(value) => setCategoryFilter(value as FeaturePreviewCategory | 'all')}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
+      {/* Compact controls when header is hidden */}
+      {hideHeader && (
+        <div className="p-3 border-b space-y-2 bg-background/50">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-8 text-sm"
+              />
+            </div>
+            <Select
+              value={categoryFilter}
+              onValueChange={(value) => setCategoryFilter(value as FeaturePreviewCategory | 'all')}
+            >
+              <SelectTrigger className="h-8 w-[130px] text-xs">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="text-xs">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{filteredFeatures.length} features</span>
+            {categoryFilter !== 'all' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto py-0.5 px-1.5 text-xs"
+                onClick={() => setCategoryFilter('all')}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Feature list */}
       <ScrollArea className="flex-1">

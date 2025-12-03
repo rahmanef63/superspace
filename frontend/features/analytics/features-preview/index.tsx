@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { defineFeaturePreview } from '@/frontend/shared/features/preview'
-import type { FeaturePreviewProps } from '@/frontend/shared/features/preview'
+import { defineFeaturePreview } from '@/frontend/shared/preview'
+import type { FeaturePreviewProps } from '@/frontend/shared/preview'
 
 interface MetricData {
   label: string

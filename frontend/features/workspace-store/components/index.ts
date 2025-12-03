@@ -13,3 +13,4 @@ export {
   MoveWorkspaceDialog,
 } from "./WorkspaceDialogs"
 export { WorkspaceToolbar } from "./WorkspaceToolbar"
+export { WorkspaceInspector } from "./WorkspaceInspector"

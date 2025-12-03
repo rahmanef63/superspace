@@ -65,6 +65,8 @@ export const workspaces = defineTable({
   ),
   organizationId: v.optional(v.id("organizations")),
   logo: v.optional(v.string()),
+  // Icon name (from lucide-react icon set)
+  icon: v.optional(v.string()),
   isPublic: v.boolean(),
   
   // === Nested Workspace Hierarchy Fields ===

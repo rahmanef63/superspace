@@ -97,6 +97,8 @@ export function useWorkspaceStoreMutations() {
         name: data.name,
         description: data.description,
         isPublic: data.isPublic,
+        icon: data.icon,
+        color: data.color,
       })
       
       toast.success("Workspace updated successfully")
@@ -194,11 +196,11 @@ export function useWorkspaceStoreMutations() {
    */
   const setIcon = useCallback(async (workspaceId: string, icon: string) => {
     try {
-      // Update workspace settings with new icon
+      // Update workspace with new icon
       await updateWorkspaceMutation({
         workspaceId: workspaceId as Id<"workspaces">,
-        settings: { icon },
-      } as any)
+        icon,
+      })
       
       toast.success("Icon updated")
       closeIconPicker()

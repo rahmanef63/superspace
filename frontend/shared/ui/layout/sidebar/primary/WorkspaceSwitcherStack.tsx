@@ -125,6 +125,10 @@ export function WorkspaceSwitcherStack({
     depth: index,
   }))
 
+  // Always show child placeholder if current workspace has children
+  // This allows immediate selection without clicking parent dropdown first
+  const showChildPlaceholder = childWorkspaces && childWorkspaces.length > 0
+
   return (
     <div className="space-y-1">
       {stackLevels.map((level, index) => (
@@ -153,6 +157,17 @@ export function WorkspaceSwitcherStack({
           onCreateWorkspace={onCreateWorkspace}
           onEditWorkspace={onEditWorkspace}
           onDeleteWorkspace={onDeleteWorkspace}
+          isMobile={isMobile}
+        />
+      )}
+      
+      {/* Show child workspace selector when current workspace has children */}
+      {showChildPlaceholder && currentWorkspace && (
+        <ChildWorkspacePlaceholder
+          parentWorkspace={currentWorkspace}
+          children={childWorkspaces}
+          onSelect={handleWorkspaceSelect}
+          onCreateWorkspace={onCreateWorkspace}
           isMobile={isMobile}
         />
       )}
@@ -267,7 +282,10 @@ function WorkspaceLevelSwitcher({
                 {onCreateWorkspace && (
                   <DropdownMenuItem
                     className="gap-2 cursor-pointer"
-                    onClick={() => onCreateWorkspace(workspace._id)}
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      onCreateWorkspace(workspace._id)
+                    }}
                   >
                     <Plus className="size-4" />
                     <span>Create Child Workspace</span>
@@ -276,7 +294,10 @@ function WorkspaceLevelSwitcher({
                 {onEditWorkspace && (
                   <DropdownMenuItem
                     className="gap-2 cursor-pointer"
-                    onClick={() => onEditWorkspace(workspace._id)}
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      onEditWorkspace(workspace._id)
+                    }}
                   >
                     <Pencil className="size-4" />
                     <span>Edit Workspace</span>
@@ -285,7 +306,10 @@ function WorkspaceLevelSwitcher({
                 {onDeleteWorkspace && !isMainWorkspace && (
                   <DropdownMenuItem
                     className="gap-2 cursor-pointer text-destructive focus:text-destructive"
-                    onClick={() => onDeleteWorkspace(workspace._id)}
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      onDeleteWorkspace(workspace._id)
+                    }}
                   >
                     <Trash2 className="size-4" />
                     <span>Delete Workspace</span>
@@ -395,6 +419,100 @@ function WorkspaceMenuItem({
         <Check className="size-4 text-primary" />
       )}
     </DropdownMenuItem>
+  )
+}
+
+/**
+ * Placeholder component that appears when parent workspace has children
+ * Allows user to immediately select a child workspace without clicking parent dropdown
+ */
+interface ChildWorkspacePlaceholderProps {
+  parentWorkspace: Doc<"workspaces">
+  children: Doc<"workspaces">[]
+  onSelect: (id: Id<"workspaces">) => void
+  onCreateWorkspace?: (parentId?: Id<"workspaces">) => void
+  isMobile: boolean
+}
+
+function ChildWorkspacePlaceholder({
+  parentWorkspace,
+  children,
+  onSelect,
+  onCreateWorkspace,
+  isMobile,
+}: ChildWorkspacePlaceholderProps) {
+  const parentColor = (parentWorkspace as any).color ?? "#6366f1"
+  
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border border-dashed border-muted-foreground/30 bg-muted/30 hover:bg-muted/50"
+              style={{ 
+                borderLeftWidth: "3px",
+                borderLeftColor: "transparent",
+                borderLeftStyle: "solid",
+              }}
+            >
+              <div
+                className="flex aspect-square size-8 items-center justify-center rounded-lg border-2 border-dashed"
+                style={{ borderColor: parentColor, color: parentColor }}
+              >
+                <ChevronDown className="size-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium text-muted-foreground">
+                  Select sub-workspace
+                </span>
+                <span className="truncate text-xs text-muted-foreground/70">
+                  {children.length} available
+                </span>
+              </div>
+              <ChevronDown className="ml-auto size-4 text-muted-foreground" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
+            side={isMobile ? "bottom" : "right"}
+            sideOffset={4}
+          >
+            {/* Create new child option */}
+            {onCreateWorkspace && (
+              <>
+                <DropdownMenuItem
+                  className="gap-2 cursor-pointer"
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    onCreateWorkspace(parentWorkspace._id)
+                  }}
+                >
+                  <Plus className="size-4" />
+                  <span>Create New Sub-Workspace</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Sub-Workspaces ({children.length})
+            </DropdownMenuLabel>
+            {children.map((child) => (
+              <WorkspaceMenuItem
+                key={child._id}
+                workspace={child}
+                isSelected={false}
+                onSelect={() => onSelect(child._id)}
+              />
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
 

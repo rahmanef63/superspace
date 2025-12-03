@@ -159,6 +159,41 @@ export * as HeaderSystem from "./header";
 export * from "./header";
 
 // ============================================================================
+// IDE Layout System (VS Code-style)
+// ============================================================================
+
+export * as IDE from "./ide";
+export {
+  IDELayout,
+  IDEActivityBar,
+  IDEEditorTabs,
+  IDEPanel,
+  IDEPanelHeader,
+  IDEPanelSection,
+  IDEPanelTabs,
+  IDEEditorArea,
+  IDELayoutProvider,
+  useIDEContext,
+  useIDEContextSafe,
+  usePersistedLayoutState,
+  usePanelVisibility,
+  useEditorTabs,
+  useIDEKeyboardShortcuts,
+  type PanelPosition,
+  type PanelState,
+  type ActivityBarItem,
+  type EditorTab,
+  type PanelConfig,
+  type IDELayoutConfig,
+  type IDELayoutState,
+  type IDELayoutProps,
+  type IDEPanelProps,
+  type IDEActivityBarProps,
+  type IDEEditorTabsProps,
+  type IDEPanelHeaderProps,
+} from "./ide";
+
+// ============================================================================
 // Notifications
 // ============================================================================
 

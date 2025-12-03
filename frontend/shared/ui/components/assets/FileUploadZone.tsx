@@ -4,9 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Upload, X, File, Image, Video, FileText } from 'lucide-react';
-import { useUploadAsset } from '@/frontend/shared/foundation/hooks/assets/useUploadAsset';
+import { useUploadAsset } from '@/frontend/shared/foundation/hooks/assets';
 import { ConvexErrorAlert } from '../error/ConvexErrorAlert';
-import { useConvexWorkspaceContext } from '@/frontend/shared/context';
+import { useWorkspaceContext } from '@/frontend/shared/foundation/provider/WorkspaceProvider';
 
 interface FileUploadZoneProps {
   onUploadComplete?: (assetId: string) => void;
@@ -31,7 +31,7 @@ export function FileUploadZone({
   maxSize = 10 * 1024 * 1024,
   multiple = true
 }: FileUploadZoneProps) {
-  const { currentWorkspace } = useConvexWorkspaceContext();
+  const { currentWorkspace } = useWorkspaceContext();
   const { upload } = useUploadAsset();
   
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);

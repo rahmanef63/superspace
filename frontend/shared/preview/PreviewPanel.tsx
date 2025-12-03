@@ -23,6 +23,8 @@ interface PreviewPanelProps {
   onClose: () => void
   /** Additional class names */
   className?: string
+  /** Hide the internal header (use when parent provides header) */
+  hideHeader?: boolean
 }
 
 export function PreviewPanel({
@@ -30,6 +32,7 @@ export function PreviewPanel({
   visible,
   onClose,
   className,
+  hideHeader = false,
 }: PreviewPanelProps) {
   const [currentMockDataId, setCurrentMockDataId] = React.useState<string | null>(null)
   const [previewConfig, setPreviewConfig] = React.useState<FeaturePreviewConfig | null>(null)
@@ -63,28 +66,30 @@ export function PreviewPanel({
         className
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-        <div className="flex items-center gap-2">
-          <Eye className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium text-sm">Preview</span>
-          {previewConfig && (
-            <span className="text-xs text-muted-foreground">
-              • {previewConfig.name}
-            </span>
-          )}
+      {/* Header - only show if not hidden */}
+      {!hideHeader && (
+        <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+          <div className="flex items-center gap-2">
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-sm">Preview</span>
+            {previewConfig && (
+              <span className="text-xs text-muted-foreground">
+                • {previewConfig.name}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={onClose}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">

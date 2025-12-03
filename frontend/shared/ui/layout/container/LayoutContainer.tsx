@@ -488,9 +488,9 @@ export function SplitHorizontalLayout({
   )
 }
 
-// ThreeColumnLayout has been moved to ThreeColumnLayout.tsx with advanced features
+// ThreeColumnLayout has been moved to three-column/ folder with advanced features
 // Re-export from there for backward compatibility
-export { ThreeColumnLayoutAdvanced as ThreeColumnLayout } from "./ThreeColumnLayout"
+export { ThreeColumnLayoutAdvanced as ThreeColumnLayout } from "./three-column"
 
 interface SidebarLayoutProps {
   sidebar: React.ReactNode

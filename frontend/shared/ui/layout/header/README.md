@@ -4,7 +4,7 @@ Unified header components for consistent UI across the application.
 
 ## Features
 
-- **10 Header presets**: feature, sidebar, container, page, modal, card, section, toolbar, chat, minimal
+- **5 Core Header presets**: feature, sidebar, container, page, minimal
 - **Compound component pattern**: `<Header.Title>`, `<Header.Actions>`, `<Header.Breadcrumbs>`
 - **5 Size variants**: xs, sm, md, lg, xl
 - **7 Visual variants**: default, minimal, compact, elevated, transparent, sticky, floating
@@ -190,65 +190,6 @@ Full-width page header with breadcrumbs.
 />
 ```
 
-### ModalHeader
-Simple modal/dialog header.
-
-```tsx
-<ModalHeader
-  title="Edit Profile"
-  description="Update your information"
-  onClose={handleClose}
-/>
-```
-
-### CardHeader
-Minimal card header.
-
-```tsx
-<CardHeader
-  title="Recent Activity"
-  description="Last 7 days"
-  icon={Activity}
-  actions={<Button size="sm">View All</Button>}
-/>
-```
-
-### SectionHeader
-Section divider header.
-
-```tsx
-<SectionHeader
-  title="Advanced Settings"
-  description="Configure advanced options"
-  badge={<Badge>Pro</Badge>}
-  border
-/>
-```
-
-### ToolbarHeader
-Three-section toolbar layout.
-
-```tsx
-<ToolbarHeader
-  left={<SearchInput />}
-  center={<TabSwitcher />}
-  right={<ViewToggle />}
-/>
-```
-
-### ChatHeader
-Chat/conversation header with avatar.
-
-```tsx
-<ChatHeader
-  title="John Doe"
-  subtitle="Online"
-  avatar={<Avatar src="/john.jpg" />}
-  onBack={handleBack}
-  actions={<IconButtons />}
-/>
-```
-
 ### MinimalHeader
 Bare minimum header.
 
@@ -323,8 +264,7 @@ import { HEADER_PRESETS } from "@/frontend/shared/ui/layout/header"
 </Header>
 
 // Available presets:
-// - feature, sidebar, container, page, modal
-// - card, section, toolbar, minimal, chat
+// - feature, sidebar, container, page, minimal
 ```
 
 ## File Structure

@@ -9,10 +9,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Trash2, Download, ExternalLink, Copy } from 'lucide-react';
-import { useAssets, useRemoveAsset } from '../../hooks/useConvexAssets';
+import { useAssets, useRemoveAsset } from '@/frontend/shared/foundation/hooks/assets';
 import { ConvexLoadingState } from '../loading/ConvexLoadingState';
-import { useToast } from '@/components/ui';
-import { useConvexWorkspaceContext } from '@/frontend/shared/context';
+import { useToast } from '@/hooks/use-toast';
+import { useWorkspaceContext } from '@/frontend/shared/foundation/provider/WorkspaceProvider';
 
 interface AssetGalleryProps {
   onSelectAsset?: (assetId: string, url: string) => void;
@@ -20,8 +20,8 @@ interface AssetGalleryProps {
 }
 
 export function AssetGallery({ onSelectAsset, limit }: AssetGalleryProps) {
-  const { currentWorkspace } = useConvexWorkspaceContext();
-  const workspaceId = currentWorkspace?._id || null;
+  const { workspaceId: ctxWorkspaceId } = useWorkspaceContext();
+  const workspaceId = ctxWorkspaceId || null;
   
   const { assets, loading } = useAssets(workspaceId, limit);
   const { mutate: removeAsset } = useRemoveAsset();

@@ -12,5 +12,13 @@ export type { LayoutSwitcherProps } from "./LayoutSwitcher";
 export { SecondarySidebarWithView } from "./SecondarySidebarWithView";
 export type { SecondarySidebarWithViewProps } from "./SecondarySidebarWithView";
 
-export { ThreeColumnLayout, useThreeColumnLayout } from "./ThreeColumnLayout";
-export type { ThreeColumnLayoutProps } from "./ThreeColumnLayout";
+// ThreeColumnLayout - SSOT is in container/three-column/
+// Re-export for backward compatibility
+export { 
+  ThreeColumnLayoutAdvanced as ThreeColumnLayout,
+  useThreeColumnLayout,
+  LeftPanel,
+  CenterPanel,
+  RightPanel,
+} from "../container/three-column";
+export type { ThreeColumnLayoutAdvancedProps as ThreeColumnLayoutProps } from "../container/three-column";

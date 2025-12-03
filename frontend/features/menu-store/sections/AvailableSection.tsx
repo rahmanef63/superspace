@@ -6,7 +6,7 @@ import { MENU_STORE_CONFIG } from "../constants";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PreviewPanel, getFeaturePreview, hasFeaturePreview } from "@/frontend/shared/features/preview";
+import { PreviewPanel, getFeaturePreview, hasFeaturePreview } from "@/frontend/shared/preview";
 
 interface AvailableSectionProps {
   features?: AvailableFeatureMenu[];

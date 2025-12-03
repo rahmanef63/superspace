@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
-import { PageHeader } from "@/frontend/shared/ui/components/pages/PageHeader"
+import { PageHeader } from "@/frontend/shared/ui/layout/header"
 import {
   Activity,
   Calendar,
@@ -73,7 +73,7 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
     <div className="space-y-6 font-bold text-primary-foreground">
       <PageHeader
         title={`Welcome back${workspace?.name ? ` to ${workspace.name}` : ""}!`}
-        subtitle="Here's what's happening with your workspace today."
+        description="Here's what's happening with your workspace today."
       />
 
       {/* Stats Grid - Use real data where available, show -- for features not yet implemented */}

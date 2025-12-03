@@ -51,15 +51,30 @@ export {
   getAvailableViews,
 } from "./renderer";
 
+// ✅ View Toolbar
+export { ViewToolbar, ViewSwitcher as ViewToolbarSwitcher } from "./ViewToolbar";
+
+// ✅ View Header (combines Header + ViewToolbar)
+export { 
+  ViewHeader, 
+  ViewHeaderRoot, 
+  ViewHeaderContent, 
+  ViewHeaderToolbar,
+  type ViewHeaderProps,
+  type ViewHeaderAction,
+} from "./ViewHeader";
+
 // ✅ View Components (Fully Implemented)
 // These components are fully aligned with ViewField/ViewAction types
-export { default as TableView } from "./views/Table/TableView";
+export { default as TableView } from "./views/TableView";
 export { default as GridView } from "./views/GridView";
-
-// 📝 TODO: Implement remaining views with proper ViewField/ViewAction types
-// Note: Legacy CardView and DetailListView were moved to view/ folder
-// as they use incompatible Column/RowAction types and need rewriting.
-// For now, all unimplemented view types use fallback components in renderer.tsx
+export { default as ListView } from "./views/ListView";
+export { default as CompactListView } from "./views/CompactListView";
+export { default as KanbanView } from "./views/KanbanView";
+export { default as GalleryView } from "./views/GalleryView";
+export { default as CalendarView } from "./views/CalendarView";
+export { default as TimelineView } from "./views/TimelineView";
+export { default as TreeView } from "./views/TreeView";
 
 // ⚠️ DEPRECATED: Legacy Compatibility Layer
 // TODO: Remove after migrating all features to new ViewProvider/ViewRenderer API

@@ -38,6 +38,10 @@ export type WorkspaceWithHierarchy = Doc<"workspaces"> & {
 export const getMainWorkspace = query({
   args: {},
   handler: async (ctx) => {
+    // Return null if not authenticated instead of throwing
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return null
+    
     const userId = await ensureUser(ctx)
     
     // First try the optimized index
@@ -69,6 +73,10 @@ export const getChildWorkspaces = query({
     includeLinked: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Return empty array if not authenticated
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+    
     const userId = await ensureUser(ctx)
     const includeLinked = args.includeLinked ?? true
     
@@ -125,6 +133,10 @@ export const getWorkspaceAncestors = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
+    // Return empty array if not authenticated
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+    
     const workspace = await ctx.db.get(args.workspaceId)
     if (!workspace) return []
     
@@ -175,6 +187,10 @@ export const getWorkspaceTree = query({
     maxDepth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    // Return null tree if not authenticated
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return { mainWorkspace: null, workspaces: [], tree: null }
+    
     const userId = await ensureUser(ctx)
     const maxDepth = args.maxDepth ?? 3
     
@@ -262,6 +278,10 @@ export const getSiblingWorkspaces = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
+    // Return empty array if not authenticated
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+    
     const workspace = await ctx.db.get(args.workspaceId)
     if (!workspace) return []
     

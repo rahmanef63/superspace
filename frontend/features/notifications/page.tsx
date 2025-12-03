@@ -1,6 +1,10 @@
 "use client";
 
+import { Bell, CheckCheck, Settings } from "lucide-react";
 import { Id } from "@convex/_generated/dataModel";
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
+import { Button } from "@/components/ui/button";
 
 export interface NotificationsPageProps {
   workspaceId: Id<"workspaces"> | null;
@@ -9,36 +13,53 @@ export interface NotificationsPageProps {
 export default function NotificationsPage({ workspaceId }: NotificationsPageProps) {
   if (!workspaceId) {
     return (
-      <div className="flex h-full items-center justify-center p-8">
+      <PageContainer className="flex items-center justify-center" fullHeight>
         <div className="text-center">
           <h2 className="text-xl font-semibold">No Workspace Selected</h2>
           <p className="mt-2 text-muted-foreground">
             Please select a workspace to view notifications
           </p>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Notifications</h1>
-            <p className="text-sm text-muted-foreground">
-              System notifications and activity feed
+      <FeatureHeader
+        icon={Bell}
+        title="Notifications"
+        subtitle="System notifications and activity feed"
+        badge={{ text: "Coming Soon", variant: "secondary" }}
+        secondaryActions={
+          <>
+            <Button variant="ghost" size="sm" disabled>
+              <CheckCheck className="h-4 w-4 mr-2" />
+              Mark all read
+            </Button>
+            <Button variant="ghost" size="sm" disabled>
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </>
+        }
+      />
+
+      <div className="flex-1 overflow-auto p-6">
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center space-y-4">
+            <Bell className="h-16 w-16 mx-auto text-muted-foreground/30" />
+            <div>
+              <p className="text-lg font-medium">Notifications feature is under development</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Expected Release: Q1 2025
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-md">
+              This page will display your activity feed, system notifications,
+              and important updates from your workspace.
             </p>
           </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-auto p-4">
-        <div className="text-center text-muted-foreground">
-          <p>Notifications feature is under development</p>
-          <p className="mt-2 text-sm">
-            This page will display your activity feed and notifications
-          </p>
         </div>
       </div>
     </div>

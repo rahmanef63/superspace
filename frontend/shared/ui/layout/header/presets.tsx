@@ -1,0 +1,689 @@
+/**
+ * Header Presets
+ * 
+ * Pre-configured header variants for common use cases.
+ * These provide consistent styling across the application.
+ */
+
+"use client"
+
+import * as React from "react"
+import { Plus, Settings, ChevronLeft, type LucideIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+import {
+  Header,
+  HeaderRoot,
+  HeaderSection,
+  HeaderTitle,
+  HeaderActions,
+  HeaderBreadcrumbs,
+  HeaderSearch,
+  HeaderBadge,
+  HeaderMeta,
+  HeaderToolbar,
+  HeaderBack,
+} from "./Header"
+import { HEADER_PRESETS, type HeaderProps, type BreadcrumbItem, type HeaderAction, type HeaderMetaItem } from "./types"
+
+// ============================================================================
+// Feature Header (Main page headers)
+// ============================================================================
+
+export interface FeatureHeaderProps {
+  /** Feature title */
+  title: string
+  /** Feature subtitle/description */
+  subtitle?: string
+  /** Feature icon */
+  icon?: LucideIcon
+  /** Breadcrumb items */
+  breadcrumbs?: BreadcrumbItem[]
+  /** Primary action (usually "Add" button) */
+  primaryAction?: {
+    label: string
+    icon?: LucideIcon
+    onClick?: () => void
+    href?: string
+    disabled?: boolean
+  }
+  /** Secondary actions - can be array of action config or React nodes */
+  secondaryActions?: HeaderAction[] | React.ReactNode
+  /** Badge (e.g., "Beta", "New") */
+  badge?: {
+    text: string
+    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+  }
+  /** Meta information (e.g., count, last updated) */
+  meta?: HeaderMetaItem[]
+  /** Toolbar content below header */
+  toolbar?: React.ReactNode
+  /** Additional className */
+  className?: string
+  /** Children */
+  children?: React.ReactNode
+}
+
+export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
+  title,
+  subtitle,
+  icon,
+  breadcrumbs,
+  primaryAction,
+  secondaryActions,
+  badge,
+  meta,
+  toolbar,
+  className,
+  children,
+}) => {
+  const preset = HEADER_PRESETS.feature
+
+  // Helper to render secondary actions
+  const renderSecondaryActions = () => {
+    if (!secondaryActions) return null
+    
+    // If it's a React element, render it directly
+    if (React.isValidElement(secondaryActions)) {
+      return secondaryActions
+    }
+    
+    // If it's an array of action configs, render buttons
+    if (Array.isArray(secondaryActions)) {
+      return secondaryActions.map((action) => {
+        const ActionIcon = action.icon
+        return (
+          <Button
+            key={action.id || action.label}
+            variant={action.variant || "outline"}
+            size="sm"
+            onClick={action.onClick}
+            disabled={action.disabled}
+          >
+            {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
+            {action.label}
+          </Button>
+        )
+      })
+    }
+    
+    // Otherwise render as-is (for other ReactNode types)
+    return secondaryActions
+  }
+
+  return (
+    <div className="flex flex-col">
+      <Header
+        variant={preset.variant}
+        size={preset.size}
+        layout="standard"
+        background={preset.background}
+        border={!toolbar && preset.border}
+        className={className}
+      >
+        <div className="flex-1 min-w-0">
+          {breadcrumbs && breadcrumbs.length > 0 && (
+            <Header.Breadcrumbs items={breadcrumbs} className="mb-2" />
+          )}
+          <div className="flex items-center gap-3">
+            <Header.Title
+              title={title}
+              subtitle={subtitle}
+              icon={icon}
+              iconSize="lg"
+            />
+            {badge && (
+              <Header.Badge text={badge.text} variant={badge.variant} />
+            )}
+          </div>
+          {meta && meta.length > 0 && (
+            <Header.Meta items={meta} className="mt-1" />
+          )}
+        </div>
+        <Header.Actions>
+          {renderSecondaryActions()}
+          {primaryAction && (
+            <Button 
+              onClick={primaryAction.onClick} 
+              asChild={!!primaryAction.href}
+              disabled={primaryAction.disabled}
+            >
+              {primaryAction.href ? (
+                <Link href={primaryAction.href}>
+                  {primaryAction.icon && <primaryAction.icon className="h-4 w-4 mr-2" />}
+                  {primaryAction.label}
+                </Link>
+              ) : (
+                <>
+                  {primaryAction.icon && <primaryAction.icon className="h-4 w-4 mr-2" />}
+                  {primaryAction.label}
+                </>
+              )}
+            </Button>
+          )}
+          {children}
+        </Header.Actions>
+      </Header>
+      {toolbar && (
+        <Header.Toolbar>{toolbar}</Header.Toolbar>
+      )}
+    </div>
+  )
+}
+FeatureHeader.displayName = "FeatureHeader"
+
+// ============================================================================
+// Sidebar Header
+// ============================================================================
+
+export interface SidebarHeaderProps {
+  /** Header title */
+  title: string
+  /** Subtitle or meta info */
+  subtitle?: string
+  /** Settings/options button */
+  onSettings?: () => void
+  /** Add button */
+  onAdd?: () => void
+  /** Custom actions */
+  actions?: React.ReactNode
+  /** Search configuration */
+  search?: {
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
+  }
+  /** Additional className */
+  className?: string
+}
+
+export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
+  title,
+  subtitle,
+  onSettings,
+  onAdd,
+  actions,
+  search,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.sidebar
+
+  return (
+    <div className="flex flex-col">
+      <Header
+        variant={preset.variant}
+        size={preset.size}
+        layout="standard"
+        background={preset.background}
+        border={preset.border}
+        sticky={preset.sticky}
+        className={cn("shrink-0", className)}
+      >
+        <Header.Title title={title} subtitle={subtitle} size="sm" />
+        <Header.Actions>
+          {actions}
+          {onSettings && (
+            <Button variant="ghost" size="icon" onClick={onSettings}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          )}
+          {onAdd && (
+            <Button variant="ghost" size="icon" onClick={onAdd}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
+        </Header.Actions>
+      </Header>
+      {search && (
+        <div className="px-3 py-2 border-b">
+          <Header.Search
+            value={search.value}
+            onChange={search.onChange}
+            placeholder={search.placeholder ?? "Search..."}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+SidebarHeader.displayName = "SidebarHeader"
+
+// ============================================================================
+// Container Header (Panel/Container headers)
+// ============================================================================
+
+export interface ContainerHeaderProps {
+  /** Header title */
+  title: string
+  /** Subtitle */
+  subtitle?: string
+  /** Icon */
+  icon?: LucideIcon
+  /** Show back button */
+  showBack?: boolean
+  /** Back button handler */
+  onBack?: () => void
+  /** Back href */
+  backHref?: string
+  /** Actions */
+  actions?: React.ReactNode
+  /** Badge */
+  badge?: React.ReactNode
+  /** Collapse toggle */
+  collapsible?: boolean
+  /** Is collapsed */
+  isCollapsed?: boolean
+  /** Toggle collapse handler */
+  onToggleCollapse?: () => void
+  /** Additional className */
+  className?: string
+}
+
+export const ContainerHeader: React.FC<ContainerHeaderProps> = ({
+  title,
+  subtitle,
+  icon,
+  showBack,
+  onBack,
+  backHref,
+  actions,
+  badge,
+  collapsible,
+  isCollapsed,
+  onToggleCollapse,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.container
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={className}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        {showBack && (
+          <Header.Back
+            onClick={onBack}
+            href={backHref}
+            label=""
+          />
+        )}
+        <Header.Title
+          title={title}
+          subtitle={subtitle}
+          icon={icon}
+          size="md"
+        />
+        {badge}
+      </div>
+      <Header.Actions>
+        {actions}
+        {collapsible && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+          >
+            <ChevronLeft
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isCollapsed && "rotate-180"
+              )}
+            />
+          </Button>
+        )}
+      </Header.Actions>
+    </Header>
+  )
+}
+ContainerHeader.displayName = "ContainerHeader"
+
+// ============================================================================
+// Page Header (Full page header with breadcrumbs)
+// ============================================================================
+
+export interface PageHeaderProps {
+  /** Page title */
+  title: string
+  /** Page description */
+  description?: string
+  /** Breadcrumb items */
+  breadcrumbs?: BreadcrumbItem[]
+  /** Primary action */
+  primaryAction?: HeaderAction | React.ReactNode
+  /** Secondary actions */
+  secondaryActions?: React.ReactNode
+  /** Additional className */
+  className?: string
+}
+
+export const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  description,
+  breadcrumbs,
+  primaryAction,
+  secondaryActions,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.page
+
+  const renderPrimaryAction = () => {
+    if (!primaryAction) return null
+    if (React.isValidElement(primaryAction)) return primaryAction
+    
+    const action = primaryAction as HeaderAction
+    const ActionIcon = action.icon
+    
+    return (
+      <Button onClick={action.onClick} asChild={!!action.href}>
+        {action.href ? (
+          <Link href={action.href}>
+            {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
+            {action.label}
+          </Link>
+        ) : (
+          <>
+            {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
+            {action.label}
+          </>
+        )}
+      </Button>
+    )
+  }
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={className}
+    >
+      <div className="flex-1 min-w-0">
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <Header.Breadcrumbs items={breadcrumbs} className="mb-3" />
+        )}
+        <Header.Title title={title} subtitle={description} size="xl" />
+      </div>
+      <Header.Actions>
+        {secondaryActions}
+        {renderPrimaryAction()}
+      </Header.Actions>
+    </Header>
+  )
+}
+PageHeader.displayName = "PageHeader"
+
+// ============================================================================
+// Modal Header
+// ============================================================================
+
+export interface ModalHeaderProps {
+  /** Modal title */
+  title: string
+  /** Modal description */
+  description?: string
+  /** Close handler */
+  onClose?: () => void
+  /** Additional className */
+  className?: string
+}
+
+export const ModalHeader: React.FC<ModalHeaderProps> = ({
+  title,
+  description,
+  onClose,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.modal
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={className}
+    >
+      <Header.Title title={title} subtitle={description} size="md" />
+      {onClose && (
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          ×
+        </Button>
+      )}
+    </Header>
+  )
+}
+ModalHeader.displayName = "ModalHeader"
+
+// ============================================================================
+// Card Header
+// ============================================================================
+
+export interface CardHeaderProps {
+  /** Card title */
+  title: string
+  /** Card description */
+  description?: string
+  /** Card icon */
+  icon?: LucideIcon
+  /** Actions */
+  actions?: React.ReactNode
+  /** Additional className */
+  className?: string
+}
+
+export const CardHeader: React.FC<CardHeaderProps> = ({
+  title,
+  description,
+  icon,
+  actions,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.card
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={cn("p-0", className)}
+    >
+      <Header.Title title={title} subtitle={description} icon={icon} size="sm" />
+      {actions && <Header.Actions>{actions}</Header.Actions>}
+    </Header>
+  )
+}
+CardHeader.displayName = "CardHeader"
+
+// ============================================================================
+// Section Header
+// ============================================================================
+
+export interface SectionHeaderProps {
+  /** Section title */
+  title: string
+  /** Section description */
+  description?: string
+  /** Actions */
+  actions?: React.ReactNode
+  /** Badge */
+  badge?: React.ReactNode
+  /** Border bottom */
+  border?: boolean
+  /** Additional className */
+  className?: string
+}
+
+export const SectionHeader: React.FC<SectionHeaderProps> = ({
+  title,
+  description,
+  actions,
+  badge,
+  border = false,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.section
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={border}
+      className={cn("px-0", className)}
+    >
+      <div className="flex items-center gap-2">
+        <Header.Title title={title} subtitle={description} size="md" />
+        {badge}
+      </div>
+      {actions && <Header.Actions>{actions}</Header.Actions>}
+    </Header>
+  )
+}
+SectionHeader.displayName = "SectionHeader"
+
+// ============================================================================
+// Toolbar Header
+// ============================================================================
+
+export interface ToolbarHeaderProps {
+  /** Left content */
+  left?: React.ReactNode
+  /** Center content */
+  center?: React.ReactNode
+  /** Right content */
+  right?: React.ReactNode
+  /** Additional className */
+  className?: string
+}
+
+export const ToolbarHeader: React.FC<ToolbarHeaderProps> = ({
+  left,
+  center,
+  right,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.toolbar
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="split"
+      background={preset.background}
+      border={preset.border}
+      sticky={preset.sticky}
+      className={className}
+    >
+      <Header.Section position="left">{left}</Header.Section>
+      <Header.Section position="center">{center}</Header.Section>
+      <Header.Section position="right">{right}</Header.Section>
+    </Header>
+  )
+}
+ToolbarHeader.displayName = "ToolbarHeader"
+
+// ============================================================================
+// Chat Header
+// ============================================================================
+
+export interface ChatHeaderProps {
+  /** Chat/conversation title */
+  title: string
+  /** Status or subtitle */
+  subtitle?: string
+  /** Avatar or icon */
+  avatar?: React.ReactNode
+  /** Actions (e.g., call, video, info) */
+  actions?: React.ReactNode
+  /** Back button handler */
+  onBack?: () => void
+  /** Additional className */
+  className?: string
+}
+
+export const ChatHeader: React.FC<ChatHeaderProps> = ({
+  title,
+  subtitle,
+  avatar,
+  actions,
+  onBack,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.chat
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      sticky={preset.sticky}
+      className={className}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        {onBack && (
+          <Header.Back onClick={onBack} label="" />
+        )}
+        {avatar}
+        <Header.Title title={title} subtitle={subtitle} size="sm" />
+      </div>
+      {actions && <Header.Actions>{actions}</Header.Actions>}
+    </Header>
+  )
+}
+ChatHeader.displayName = "ChatHeader"
+
+// ============================================================================
+// Minimal Header
+// ============================================================================
+
+export interface MinimalHeaderProps {
+  /** Title */
+  title?: string
+  /** Actions */
+  actions?: React.ReactNode
+  /** Additional className */
+  className?: string
+  /** Children */
+  children?: React.ReactNode
+}
+
+export const MinimalHeader: React.FC<MinimalHeaderProps> = ({
+  title,
+  actions,
+  className,
+  children,
+}) => {
+  const preset = HEADER_PRESETS.minimal
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={className}
+    >
+      {title && <Header.Title title={title} size="sm" />}
+      {children}
+      {actions && <Header.Actions>{actions}</Header.Actions>}
+    </Header>
+  )
+}
+MinimalHeader.displayName = "MinimalHeader"

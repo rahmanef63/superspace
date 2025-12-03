@@ -28,6 +28,17 @@ export type { AppSidebarProps } from "./sidebar/primary";
 // Secondary Sidebar (includes SecondaryList and variants)
 export * from "./sidebar/secondary";
 
+// Explicit exports for SecondaryLayout components
+export {
+  SecondarySidebarLayout,
+  SecondarySidebarHeader,
+  SecondarySidebar,
+  SecondarySidebarTools,
+  type SecondarySidebarLayoutProps,
+  type SecondarySidebarHeaderProps,
+  type SecondarySidebarProps,
+} from "./sidebar/secondary";
+
 // Site Header & Components
 export {
   SiteHeader,
@@ -57,14 +68,95 @@ export { TableView, GridView } from "./view-system";
 // ============================================================================
 
 export * as Compositions from "./compositions";
-export * from "./compositions";
+export { 
+  LayoutSwitcher,
+  SecondarySidebarWithView,
+  ThreeColumnLayout,
+  useThreeColumnLayout,
+  useLayoutMode,
+  type LayoutMode,
+  type LayoutSwitcherProps,
+  type SecondarySidebarWithViewProps,
+  type ThreeColumnLayoutProps,
+} from "./compositions";
 
 // ============================================================================
 // Menus System
 // ============================================================================
 
 export * as Menus from "./menus";
-export * from "./menus";
+export { 
+  SecondaryMenuProvider,
+  useSecondaryMenuContext,
+  useMenuItems,
+  useMenuMutations,
+  buildMenuTree,
+  flattenMenuTree,
+  computeNextOrder as menuComputeNextOrder,
+  DragDropMenuTree,
+  BreadcrumbNavigation,
+  MenuStoreMenuWrapper,
+  DocumentMenuWrapper,
+  ChatMenuWrapper,
+  MenuItemForm,
+  MenuDisplay,
+  MenuPreview,
+  MenuTree,
+  type SecondaryMenuContextValue,
+  type SecondaryMenuProviderProps,
+} from "./menus";
+
+// ============================================================================
+// Unified DnD System
+// ============================================================================
+
+export * as DnD from "./dnd";
+export { 
+  DnDTreeProvider,
+  useDnDTreeContext,
+  useDnDState,
+  useDnDConfig,
+  UnifiedDnDTree,
+  DnDTreeItem,
+  RootDropZone,
+  computeNextOrder,
+  buildTree,
+  flattenTree,
+} from "./dnd";
+
+// ============================================================================
+// Layout Container System
+// ============================================================================
+
+export * as Container from "./container";
+export { 
+  LayoutContainer,
+  SingleLayout,
+  SplitVerticalLayout,
+  SplitHorizontalLayout,
+  SidebarLayout,
+  ResizeHandle,
+  CollapsiblePanel,
+  type LayoutType,
+  type SplitMode,
+  type LayoutNode,
+  type PanelRenderContext,
+  type LayoutContainerProps,
+} from "./container";
+
+// ============================================================================
+// Tabs System (SSOT)
+// ============================================================================
+
+export * as TabsSystem from "./tabs";
+export * from "./tabs";
+
+// ============================================================================
+// Header System (SSOT)
+// ============================================================================
+
+export * as HeaderSystem from "./header";
+export * from "./header";
 
 // ============================================================================
 // Notifications

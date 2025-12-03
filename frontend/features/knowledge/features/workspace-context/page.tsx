@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Id } from "@convex/_generated/dataModel";
-import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
 import { Building2, Brain, Save, Users, Target, MessageSquare, Loader2, Wrench, GitBranch, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

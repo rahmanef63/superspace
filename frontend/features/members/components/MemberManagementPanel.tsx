@@ -5,7 +5,7 @@ import { UserPlus, Users, Mail, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageHeader } from "@/frontend/shared/ui/components/pages/PageHeader";
+import { PageHeader } from "@/frontend/shared/ui/layout/header";
 import type { Id } from "@convex/_generated/dataModel";
 import { MemberList } from "./MemberList";
 import { MemberView } from "./MemberView";
@@ -31,8 +31,8 @@ export function MemberManagementPanel({
     <div className="space-y-6">
       <PageHeader
         title={LABELS.title}
-        subtitle={LABELS.subtitle}
-        actions={
+        description={LABELS.subtitle}
+        secondaryActions={
           canInvite ? (
             <div className="flex items-center gap-2">
               <BulkInviteDialog workspaceId={workspaceId} />

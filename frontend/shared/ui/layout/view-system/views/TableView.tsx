@@ -30,7 +30,7 @@ import {
   ArrowDown,
   ArrowUpDown,
 } from "lucide-react";
-import type { ViewComponentProps } from "../../types";
+import type { ViewComponentProps } from "../types";
 import { cn } from "@/lib/utils";
 
 /**

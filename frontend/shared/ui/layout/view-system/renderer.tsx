@@ -119,34 +119,37 @@ const safeImport = (
  * ✅ SSOT: All view components are located in ./views/ directory
  * 
  * Current Implementation Status:
- * - ✅ Fully Implemented (2): table, grid
- * - 🔜 Pending (16): list, gallery, kanban, calendar, timeline, etc.
+ * - ✅ Fully Implemented (9): table, grid, list, compact, kanban, gallery, calendar, timeline, tree
+ * - 🔜 Pending (9): tiles, masonry, board, gantt, nested, map, chart, feed, inbox
  * 
  * Structure:
  * - ./views/Table/TableView.tsx (advanced table with TanStack)
  * - ./views/GridView.tsx (responsive card grid)
- * - [16 more to implement]
- * 
- * Note: Legacy CardView and DetailListView were moved to view/ folder
- * as they use incompatible Column/RowAction types (not ViewField/ViewAction)
+ * - ./views/ListView.tsx (vertical list with grouping)
+ * - ./views/CompactListView.tsx (dense list view)
+ * - ./views/KanbanView.tsx (kanban board with drag-drop)
+ * - ./views/GalleryView.tsx (image gallery with lightbox)
+ * - ./views/CalendarView.tsx (month/week/day calendar)
+ * - ./views/TimelineView.tsx (chronological timeline)
+ * - ./views/TreeView.tsx (hierarchical tree)
  */
 const viewComponents: Record<ViewType, ComponentType<ViewComponentProps<any>>> = {
   // ✅ Implemented views (aligned with ViewField/ViewAction types)
-  table: safeImport(() => import("./views/Table/TableView"), "Table View"),
+  table: safeImport(() => import("./views/TableView"), "Table View"),
   grid: safeImport(() => import("./views/GridView"), "Grid View"),
+  list: safeImport(() => import("./views/ListView"), "List View"),
+  compact: safeImport(() => import("./views/CompactListView"), "Compact List View"),
+  kanban: safeImport(() => import("./views/KanbanView"), "Kanban Board"),
+  gallery: safeImport(() => import("./views/GalleryView"), "Gallery View"),
+  calendar: safeImport(() => import("./views/CalendarView"), "Calendar View"),
+  timeline: safeImport(() => import("./views/TimelineView"), "Timeline View"),
+  tree: safeImport(() => import("./views/TreeView"), "Tree View"),
   
   // 🔜 To be implemented views - using fallback components
-  list: createFallbackComponent("List View"),
-  compact: createFallbackComponent("Compact List View"),
-  gallery: createFallbackComponent("Gallery View"),
   tiles: createFallbackComponent("Tiles View"),
   masonry: createFallbackComponent("Masonry View"),
-  kanban: createFallbackComponent("Kanban Board"),
   board: createFallbackComponent("Board View"),
-  calendar: createFallbackComponent("Calendar View"),
-  timeline: createFallbackComponent("Timeline View"),
   gantt: createFallbackComponent("Gantt Chart"),
-  tree: createFallbackComponent("Tree View"),
   nested: createFallbackComponent("Nested View"),
   map: createFallbackComponent("Map View"),
   chart: createFallbackComponent("Chart View"),

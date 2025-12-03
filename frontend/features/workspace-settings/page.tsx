@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react"
 import type { Id } from "@convex/_generated/dataModel"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Settings, User, Puzzle } from "lucide-react"
 import { SettingsView, SettingsRegistryProvider } from "@/frontend/shared/settings"
 import { DynamicSettingsView } from "@/frontend/shared/settings/components/DynamicSettingsView"
 import { FeatureSettingsSync } from "@/frontend/shared/settings/components/FeatureSettingsSync"
 import { WorkspaceSettings } from "@/frontend/shared/settings/workspace"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/frontend/shared/ui/layout/tabs"
 
 export interface WorkspaceSettingsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -28,20 +28,20 @@ export default function WorkspaceSettingsPage({ workspaceId }: WorkspaceSettings
   const tabs = useMemo(
     () => [
       {
-        value: "personal",
+        id: "personal",
         label: "Personal",
         icon: User,
         description: "Configure your profile, preferences, and notifications.",
       },
       {
-        value: "features",
+        id: "features",
         label: "Features",
         icon: Puzzle,
         description: "Configure settings for installed features.",
         disabled: !hasWorkspace,
       },
       {
-        value: "workspace",
+        id: "workspace",
         label: "Workspace",
         icon: Settings,
         description: "Manage workspace defaults, roles, and installed features.",
@@ -53,29 +53,27 @@ export default function WorkspaceSettingsPage({ workspaceId }: WorkspaceSettings
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="border-b border-border px-6 py-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold leading-tight">Settings</h1>
-            <p className="text-sm text-muted-foreground">
-              Customize your personal experience and workspace configuration from a single place.
-            </p>
-          </div>
-          {!hasWorkspace && (
-            <Badge variant="outline" className="gap-1">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              Workspace unavailable
-            </Badge>
-          )}
-        </div>
-      </div>
+      <FeatureHeader
+        icon={Settings}
+        title="Settings"
+        subtitle="Customize your personal experience and workspace configuration from a single place."
+        badge={!hasWorkspace ? { 
+          text: "Workspace unavailable", 
+          variant: "outline",
+          icon: AlertTriangle,
+        } : undefined}
+      />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col gap-0">
-        <div className="border-b border-border px-6 py-4">
+      <Tabs 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        variant="underline"
+        className="flex h-full flex-col"
+      >
+        <div className="border-b border-border px-6">
           <TabsList>
-            {tabs.map(({ value, label, icon: Icon, disabled }) => (
-              <TabsTrigger key={value} value={value} disabled={disabled}>
-                <Icon className="h-4 w-4" />
+            {tabs.map(({ id, label, icon: Icon, disabled }) => (
+              <TabsTrigger key={id} value={id} disabled={disabled} icon={Icon}>
                 {label}
               </TabsTrigger>
             ))}

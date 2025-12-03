@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@convex/_generated/dataModel";
-import { PageContainer } from "@/frontend/shared/ui/components/pages/PageContainer";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
 import { MemberManagementPanel } from "./components/MemberManagementPanel";
 
 export interface MembersPageProps {

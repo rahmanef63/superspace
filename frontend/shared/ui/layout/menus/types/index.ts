@@ -1,6 +1,17 @@
 import { Id } from "@convex/_generated/dataModel";
 import { ElementType } from "react";
 
+// Re-export DnD types from unified dnd module (SSOT)
+export { 
+  type DropPosition, 
+  type DropPreview,
+  DEFAULT_ACCENT_COLORS as ACCENT_COLORS,
+  DEFAULT_DND_CONFIG,
+} from "@/frontend/shared/ui/layout/dnd";
+
+// Drop threshold - use from dnd config
+export const DROP_THRESHOLD = 0.25; // matches dnd dropThreshold
+
 // Core menu item type
 export interface MenuItemRecord {
   _id: Id<"menuItems">;
@@ -80,14 +91,7 @@ export interface ImportMenuResult {
   sourceName: string;
 }
 
-// Drop position type
-export type DropPosition = "above" | "below" | "inside";
-
-// Drop preview type
-export interface DropPreview {
-  id: string;
-  position: DropPosition;
-}
+// NOTE: DropPosition and DropPreview are now re-exported from dnd module at top of file
 
 // Form data type
 export interface MenuItemFormData {
@@ -173,15 +177,8 @@ export const MENU_ITEM_TYPES: Array<{ value: MenuItemType; label: string }> = [
   { value: 'divider', label: 'Divider' }
 ];
 
-// Color constants
-export const ACCENT_COLORS = {
-  primary: 'var(--accent, rgba(59,130,246,0.68))',
-  background: 'var(--accent, rgba(59,130,246,0.12))',
-  boundary: 'var(--accent, rgba(59,130,246,0.45))',
-} as const;
-
-// Drop threshold for drag and drop
-export const DROP_THRESHOLD = 0.3;
+// NOTE: ACCENT_COLORS is now re-exported from dnd module at top of file
+// This keeps backward compatibility while ensuring SSOT
 
 export type SecondaryMenuAvatarMode = "icon" | "profile" | "both";
 

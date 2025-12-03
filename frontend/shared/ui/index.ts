@@ -122,9 +122,12 @@ export {
 } from './components/registry'
 
 // ============================================================
-// Pages & Templates
+// Pages & Templates (DEPRECATED - use layout/container and layout/header)
 // ============================================================
-export * from './components/pages'
+// NOTE: PageContainer and PageHeader are now in layout/container and layout/header
+// Re-export for backward compatibility
+export { PageContainer } from './layout/container'
+export { PageHeader } from './layout/header'
 
 // ============================================================
 // Performance Components

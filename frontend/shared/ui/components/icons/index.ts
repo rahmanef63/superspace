@@ -12,7 +12,6 @@
 export {
   // UI Components
   IconPicker,
-  ColorPicker,
   IconGrid,
 
   // Dynamic Icon Components
@@ -72,7 +71,18 @@ export {
   type ColorOption,
   type DynamicIconProps,
   type IconPickerProps,
-  type ColorPickerProps,
   type IconGridProps,
   type IconLookup,
 } from "@/frontend/shared/ui/icons";
+
+// Re-export ColorPicker from its new location
+export {
+  ColorPicker,
+  SimpleColorPicker,
+  PresetColorPicker,
+  InlineColorPicker,
+  type ColorPickerProps,
+  type SimpleColorPickerProps,
+  type PresetColorPickerProps,
+  type InlineColorPickerProps,
+} from "@/frontend/shared/ui/color-picker";

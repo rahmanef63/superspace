@@ -76,26 +76,36 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces) as WorkspaceDoc[] | undefined;
   const [workspaceId, setWorkspaceIdState] = useState<Id<"workspaces"> | null>(null);
 
-  // Fetch hierarchy data
-  const mainWorkspaceQuery = useQuery(api.workspace.hierarchy.getMainWorkspace);
-  const workspaceTreeQuery = useQuery(api.workspace.hierarchy.getWorkspaceTree, { maxDepth: 3 });
+  // Wait for userWorkspaces to load before fetching hierarchy data
+  // This ensures we have authentication established before making additional queries
+  const isUserLoaded = userWorkspaces !== undefined;
+
+  // Fetch hierarchy data - only when user is loaded
+  const mainWorkspaceQuery = useQuery(
+    api.workspace.hierarchy.getMainWorkspace,
+    isUserLoaded ? {} : "skip"
+  );
+  const workspaceTreeQuery = useQuery(
+    api.workspace.hierarchy.getWorkspaceTree,
+    isUserLoaded ? { maxDepth: 3 } : "skip"
+  );
   
   // Fetch children of current workspace
   const childWorkspacesQuery = useQuery(
     api.workspace.hierarchy.getChildWorkspaces,
-    workspaceId ? { workspaceId, includeLinked: true } : "skip"
+    isUserLoaded && workspaceId ? { workspaceId, includeLinked: true } : "skip"
   );
   
   // Fetch siblings of current workspace
   const siblingWorkspacesQuery = useQuery(
     api.workspace.hierarchy.getSiblingWorkspaces,
-    workspaceId ? { workspaceId } : "skip"
+    isUserLoaded && workspaceId ? { workspaceId } : "skip"
   );
   
   // Fetch ancestors (for breadcrumb)
   const ancestorsQuery = useQuery(
     api.workspace.hierarchy.getWorkspaceAncestors,
-    workspaceId ? { workspaceId } : "skip"
+    isUserLoaded && workspaceId ? { workspaceId } : "skip"
   );
 
   const setWorkspaceId = useCallback((id: Id<"workspaces"> | null) => {

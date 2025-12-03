@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
 
 export function UserSettings() {
   const currentUser = useCurrentUser();
@@ -29,8 +31,8 @@ export function UserSettings() {
     }
   }, [currentUser]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
 
     try {
@@ -45,61 +47,70 @@ export function UserSettings() {
     }
   };
 
+  const handleSave = () => {
+    handleSubmit();
+  };
+
   if (!currentUser) {
-    return <div>Loading...</div>;
+    return (
+      <PageContainer centered>
+        <div className="text-muted-foreground">Loading...</div>
+      </PageContainer>
+    );
   }
 
   return (
-    <div className="flex-col justify-center items-center mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <User className="w-6 h-6" />
-          Profile Settings
-        </h1>
-        <p className="text-muted-foreground">Manage your personal information</p>
+    <div className="flex h-full flex-col">
+      <FeatureHeader
+        icon={User}
+        title="Profile Settings"
+        subtitle="Manage your personal information and preferences"
+        primaryAction={{
+          label: isLoading ? "Saving..." : "Save Changes",
+          icon: Save,
+          onClick: handleSave,
+          disabled: isLoading,
+        }}
+      />
+
+      <div className="flex-1 overflow-auto">
+        <PageContainer maxWidth="2xl" padding>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Personal Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input id="email" type="email" value={formData.email} disabled />
+                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    rows={3}
+                    placeholder="Tell us about yourself..."
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </form>
+        </PageContainer>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Personal Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" value={formData.email} disabled />
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                rows={3}
-                placeholder="Tell us about yourself..."
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex items-center justify-end">
-          <Button type="submit" disabled={isLoading} className="gap-2">
-            <Save className="w-4 h-4" />
-            {isLoading ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </form>
     </div>
   );
 }

@@ -2,19 +2,23 @@
 
 import type { Id } from "@convex/_generated/dataModel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, FileText, Plus } from "lucide-react";
 import { DocumentsView } from "../shared/components";
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
 import type { DocumentEditorMode } from "../shared";
 
 interface DocumentsFeaturePageProps {
   workspaceId?: Id<"workspaces"> | null;
   editorMode?: DocumentEditorMode;
   initialTab?: "workspace" | "database";
+  /** Hide header when used inside Knowledge feature */
+  hideHeader?: boolean;
 }
 
 export default function DocumentsFeaturePage({
   workspaceId,
   editorMode = "block",
+  hideHeader = false,
 }: DocumentsFeaturePageProps) {
   if (!workspaceId) {
     return (
@@ -30,8 +34,22 @@ export default function DocumentsFeaturePage({
   }
 
   return (
-    <div className="h-full">
-      <DocumentsView workspaceId={workspaceId} editorMode={editorMode} />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Feature Header - Only show for standalone documents */}
+      {!hideHeader && (
+        <div className="flex-shrink-0 border-b">
+          <FeatureHeader
+            icon={FileText}
+            title="Documents"
+            subtitle="Create and manage your documents"
+          />
+        </div>
+      )}
+      
+      {/* Documents View */}
+      <div className="flex-1 min-h-0">
+        <DocumentsView workspaceId={workspaceId} editorMode={editorMode} />
+      </div>
     </div>
   );
 }

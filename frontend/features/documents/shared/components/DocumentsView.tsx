@@ -37,7 +37,9 @@ export function DocumentsViewContent({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const newIsMobile = window.innerWidth < 768;
+      // Only update state if value actually changed
+      setIsMobile(prev => prev !== newIsMobile ? newIsMobile : prev);
     };
 
     checkMobile();

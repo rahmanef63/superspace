@@ -19,6 +19,9 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { DocumentEditorMode } from "../types";
 
+// Shared UI imports
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
+
 // Import the documents view for document/article sections
 import { DocumentsView } from "@/frontend/features/documents/shared/components";
 
@@ -63,20 +66,25 @@ export function KnowledgeViewTabs({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header with AI indicator */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-purple-500" />
-          <h1 className="text-lg font-semibold">Knowledge Base</h1>
-          <Badge variant="secondary" className="gap-1 text-xs">
-            <Sparkles className="h-3 w-3" />
-            AI Context
-          </Badge>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {documentCounts?.total ?? 0} items available for AI
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Feature Header - Using shared UI */}
+      <div className="flex-shrink-0 border-b">
+        <FeatureHeader
+          icon={Brain}
+          title="Knowledge Base"
+          subtitle="Manage documents, articles, and AI context"
+          badge={{
+            text: "AI Context",
+            variant: "secondary",
+            icon: Sparkles,
+          }}
+          meta={[
+            { 
+              label: "Items", 
+              value: String(documentCounts?.total ?? 0),
+            },
+          ]}
+        />
       </div>
 
       {/* Tabs Navigation */}
@@ -85,8 +93,8 @@ export function KnowledgeViewTabs({
         onValueChange={(v) => setActiveTab(v as KnowledgeTab)}
         className="flex-1 flex flex-col min-h-0"
       >
-        <div className="border-b bg-muted/30">
-          <TabsList className="w-full justify-start h-auto p-0 bg-transparent rounded-none">
+        <div className="flex-shrink-0 border-b bg-muted/30">
+          <TabsList className="w-full justify-start h-auto p-0 bg-transparent rounded-none px-4">
             <TabsTrigger
               value="articles"
               className={cn(

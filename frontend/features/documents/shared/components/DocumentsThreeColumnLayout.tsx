@@ -1,13 +1,41 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toggle } from "@/components/ui/toggle";
+import { 
+  FileText, 
+  Plus, 
+  Info, 
+  X, 
+  Clock, 
+  Calendar, 
+  FileType,
+  TreeDeciduous,
+  LayoutGrid,
+} from "lucide-react";
 import type { DocumentCategory, DocumentEditorMode, DocumentRecord, DocumentSortOptions } from "../types";
 import type { DocumentsManagerHook } from "../hooks/useDocumentsManager";
 import { CreateDocumentDialog } from "./CreateDocumentDialog";
-import { DocumentsListCompact } from "./DocumentsListCompact";
 import { DocumentEditorOnly } from "./DocumentEditorOnly";
+import { DocumentsTree } from "./DocumentsTree";
+import { DocumentsBreadcrumbs } from "./DocumentsBreadcrumbs";
+import { formatRelativeTime } from "../utils";
+
+// Shared UI imports
+import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
+import { 
+  ContainerHeader,
+  HeaderControls,
+} from "@/frontend/shared/ui/layout/header";
+import { 
+  UniversalToolbar,
+  toolType,
+  type SortToolParams,
+} from "@/frontend/shared/ui/layout/toolbar";
 
 // Lazy load heavy components
 const DocumentInspector = lazy(() => 
@@ -32,31 +60,26 @@ export interface DocumentsThreeColumnLayoutProps {
 /**
  * 3-Column Layout for Desktop Documents View
  * 
- * Column 1: Secondary Sidebar (20-25%) - Document list with search/filter
- * Column 2: Editor (50-55%) - Document editor with content
- * Column 3: Inspector (20-25%) - Metadata, tags, sharing, TOC
+ * Uses ThreeColumnLayoutAdvanced from shared UI:
+ * - Left: Document tree with search/filter (collapsible)
+ * - Center: Document editor
+ * - Right: Document inspector (collapsible)
  * 
- * Features:
- * - Lazy loading for performance
- * - Skeleton states during loading
- * - Responsive width adjustments
- * - Collapsible inspector
+ * Pattern follows WorkspaceStorePage for consistency.
  */
 export function DocumentsThreeColumnLayout({
   manager,
   workspaceId,
   editorMode = "block",
   storageKey,
-  onDelete,
-  onPin,
-  onStar,
-  sortOptions,
+  sortOptions = { field: "modified", order: "desc" },
   onSortChange,
   sortedDocuments,
   category,
 }: DocumentsThreeColumnLayoutProps) {
-  const [showInspector, setShowInspector] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [viewMode, setViewMode] = useState<"tree" | "grid">("tree");
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -66,34 +89,188 @@ export function DocumentsThreeColumnLayout({
     (doc) => doc._id === manager.state.selectedDocumentId
   );
 
-  return (
-    <div className="flex h-full bg-background">
-      {/* COLUMN 1: Secondary Sidebar - Document List */}
-      <div className="w-80 flex-shrink-0 border-r border-border">
-        <DocumentsListCompact
-          documents={manager.documents}
-          filteredDocuments={sortedDocuments}
-          isLoading={manager.isLoading}
-          onSelect={manager.selectDocument}
-          onCreate={manager.openCreateDialog}
-          selectedDocumentId={manager.state.selectedDocumentId}
-          search={manager.search}
-          onSearch={manager.setSearch}
-          visibility={manager.visibility}
-          onVisibilityChange={manager.setVisibility}
-          stats={manager.stats}
-          storageKey={storageKey}
-          onDelete={onDelete}
-          onPin={onPin}
-          onStar={onStar}
-          sortOptions={sortOptions}
-          onSortChange={onSortChange}
-          workspaceId={workspaceId}
+  // Sort tool params for toolbar
+  const sortToolParams: SortToolParams = useMemo(
+    () => ({
+      options: [
+        { label: "Recently Modified", value: "modified", icon: Clock },
+        { label: "Recently Created", value: "created", icon: Calendar },
+        { label: "Name", value: "name", icon: FileType },
+      ],
+      currentSort: sortOptions.field,
+      currentDirection: sortOptions.order,
+      onChange: (field, direction) => {
+        if (onSortChange) {
+          onSortChange({
+            field: field as "created" | "modified" | "name",
+            order: direction || "desc",
+          });
+        }
+      },
+      showDirection: true,
+    }),
+    [sortOptions, onSortChange]
+  );
+
+  // Visibility filter options
+  const visibilityOptions: Array<DocumentsManagerHook["visibility"]> = [
+    "all",
+    "private",
+    "public",
+  ];
+
+  // ============================================================================
+  // LEFT PANEL - Document Tree
+  // ============================================================================
+  const leftPanelContent = useMemo(() => (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Panel Header - Compact */}
+      <div className="flex-shrink-0 border-b bg-muted/30">
+        <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{sortedDocuments.length}</span>
+            {sortedDocuments.length !== manager.documents.length && (
+              <span>of {manager.documents.length}</span>
+            )}
+            <span>documents</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="flex border rounded-md">
+              <Toggle
+                pressed={viewMode === "tree"}
+                onPressedChange={() => setViewMode("tree")}
+                size="sm"
+                className="rounded-r-none h-7 w-7 p-0"
+              >
+                <TreeDeciduous className="h-3.5 w-3.5" />
+              </Toggle>
+              <Toggle
+                pressed={viewMode === "grid"}
+                onPressedChange={() => setViewMode("grid")}
+                size="sm"
+                className="rounded-l-none h-7 w-7 p-0"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </Toggle>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={manager.openCreateDialog}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="px-3 pb-2 space-y-2">
+          <HeaderControls
+            searchable
+            searchProps={{
+              value: manager.search,
+              onChange: manager.setSearch,
+              placeholder: "Search documents...",
+            }}
+            responsive
+          />
+          
+          {/* Sort */}
+          <UniversalToolbar
+            tools={[
+              {
+                id: "sort-docs" as any,
+                type: toolType.sort,
+                params: sortToolParams,
+              },
+            ]}
+            spacing="compact"
+            background="transparent"
+          />
+
+          {/* Visibility Filter */}
+          <div className="flex flex-wrap items-center gap-1">
+            {visibilityOptions.map((option) => (
+              <Button
+                key={option}
+                size="sm"
+                variant={option === manager.visibility ? "default" : "outline"}
+                onClick={() => manager.setVisibility(option)}
+                className="h-6 text-xs px-2"
+              >
+                {option.charAt(0).toUpperCase() + option.slice(1)}
+              </Button>
+            ))}
+          </div>
+
+          {/* Breadcrumbs */}
+          <DocumentsBreadcrumbs
+            documents={manager.documents}
+            selectedId={manager.state.selectedDocumentId ?? undefined}
+            onSelect={(docId) => manager.selectDocument(docId ?? null)}
+          />
+        </div>
+      </div>
+      
+      {/* Document Tree */}
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="p-2">
+          {manager.isLoading ? (
+            <div className="flex h-32 items-center justify-center">
+              <div className="text-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary mx-auto mb-2" />
+                <span className="text-xs text-muted-foreground">Loading...</span>
+              </div>
+            </div>
+          ) : sortedDocuments.length === 0 ? (
+            <div className="flex h-32 items-center justify-center p-4">
+              <p className="text-sm text-muted-foreground text-center">
+                No documents match your filters.
+              </p>
+            </div>
+          ) : (
+            <DocumentsTree
+              documents={sortedDocuments}
+              selectedId={manager.state.selectedDocumentId ?? null}
+              onSelect={(docId) => manager.selectDocument(docId)}
+            />
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  ), [manager, sortedDocuments, viewMode, sortToolParams, visibilityOptions]);
+
+  // ============================================================================
+  // CENTER PANEL - Document Editor
+  // ============================================================================
+  const centerPanelContent = useMemo(() => (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Panel Header */}
+      <div className="flex-shrink-0 border-b bg-muted/30">
+        <ContainerHeader
+          title={selectedDocument?.title || "Editor"}
+          subtitle={selectedDocument 
+            ? `Modified ${formatRelativeTime(selectedDocument.lastModified || selectedDocument._creationTime)}`
+            : "Select a document to edit"
+          }
+          icon={FileText}
+          actions={selectedDocument && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setRightPanelCollapsed(false)}
+            >
+              <Info className="h-3.5 w-3.5 mr-1" />
+              Inspector
+            </Button>
+          )}
         />
       </div>
-
-      {/* COLUMN 2: Editor - Document Content */}
-      <div className={showInspector ? "flex-1 min-w-0" : "flex-1"}>
+      
+      {/* Editor Content */}
+      <div className="flex-1 min-h-0 overflow-auto">
         {manager.state.selectedDocumentId ? (
           <Suspense fallback={<EditorSkeleton />}>
             {isMounted && (
@@ -109,10 +286,38 @@ export function DocumentsThreeColumnLayout({
           <EmptyEditorState onCreate={manager.openCreateDialog} />
         )}
       </div>
+    </div>
+  ), [manager, selectedDocument, editorMode, isMounted]);
 
-      {/* COLUMN 3: Inspector - Metadata & Settings */}
-      {showInspector && manager.state.selectedDocumentId && selectedDocument && (
-        <div className="w-80 flex-shrink-0 border-l border-border bg-muted/30">
+  // ============================================================================
+  // RIGHT PANEL - Document Inspector
+  // ============================================================================
+  const rightPanelContent = useMemo(() => (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Panel Header */}
+      <div className="flex-shrink-0 border-b bg-muted/30">
+        <ContainerHeader
+          title="Inspector"
+          subtitle={selectedDocument ? "Document Details" : "Select a document"}
+          icon={Info}
+          actions={
+            selectedDocument && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setRightPanelCollapsed(true)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )
+          }
+        />
+      </div>
+      
+      {/* Inspector Content */}
+      <div className="flex-1 min-h-0 overflow-auto">
+        {selectedDocument ? (
           <Suspense fallback={<InspectorSkeleton />}>
             {isMounted && (
               <DocumentInspector
@@ -136,13 +341,55 @@ export function DocumentsThreeColumnLayout({
                   // TODO: Implement tag remove mutation
                   console.log("Remove tag:", tag);
                 }}
-                onClose={() => setShowInspector(false)}
+                onClose={() => setRightPanelCollapsed(true)}
                 isMobile={false}
               />
             )}
           </Suspense>
-        </div>
-      )}
+        ) : (
+          <div className="flex h-full items-center justify-center p-6">
+            <div className="text-center">
+              <Info className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Select a document to view details
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  ), [selectedDocument, isMounted]);
+
+  return (
+    <>
+      <ThreeColumnLayoutAdvanced
+        left={leftPanelContent}
+        center={centerPanelContent}
+        right={rightPanelContent}
+        // Labels
+        leftLabel="Documents"
+        centerLabel="Editor"
+        rightLabel="Inspector"
+        // Widths
+        leftWidth={280}
+        rightWidth={320}
+        centerMinWidth={400}
+        minSideWidth={200}
+        maxSideWidth={500}
+        collapsedWidth={44}
+        // Features
+        resizable={true}
+        showCollapseButtons={true}
+        persistState={true}
+        storageKey={storageKey ?? "documents-layout"}
+        // Responsive
+        collapseLeftAt={900}
+        collapseRightAt={1100}
+        stackAt={640}
+        // Right panel state
+        rightCollapsed={rightPanelCollapsed}
+        onRightCollapsedChange={setRightPanelCollapsed}
+      />
 
       {/* Create Document Dialog */}
       <CreateDocumentDialog
@@ -155,7 +402,7 @@ export function DocumentsThreeColumnLayout({
           manager.selectDocument(documentId);
         }}
       />
-    </div>
+    </>
   );
 }
 
@@ -239,19 +486,7 @@ function EmptyEditorState({ onCreate }: { onCreate: () => void }) {
     <div className="h-full flex items-center justify-center">
       <div className="text-center space-y-4 px-4">
         <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-muted-foreground"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+          <FileText className="w-8 h-8 text-muted-foreground" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-1">
@@ -260,12 +495,10 @@ function EmptyEditorState({ onCreate }: { onCreate: () => void }) {
           <p className="text-sm text-muted-foreground mb-4">
             Select a document from the sidebar or create a new one
           </p>
-          <button
-            onClick={onCreate}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
+          <Button onClick={onCreate}>
+            <Plus className="h-4 w-4 mr-2" />
             Create Document
-          </button>
+          </Button>
         </div>
       </div>
     </div>

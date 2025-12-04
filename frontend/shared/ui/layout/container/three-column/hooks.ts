@@ -51,16 +51,29 @@ export function useResponsiveCollapse(
   onCollapsedChange: ((collapsed: boolean) => void) | undefined
 ) {
   const [autoCollapsed, setAutoCollapsed] = React.useState(false)
+  
+  // Use refs to avoid infinite loops from callbacks in dependency array
+  const callbackRef = React.useRef(onCollapsedChange)
+  const autoCollapsedRef = React.useRef(autoCollapsed)
+  
+  // Keep refs updated
+  React.useEffect(() => {
+    callbackRef.current = onCollapsedChange
+  }, [onCollapsedChange])
+  
+  React.useEffect(() => {
+    autoCollapsedRef.current = autoCollapsed
+  }, [autoCollapsed])
 
   React.useEffect(() => {
     if (!collapseAt || typeof window === "undefined") return
 
     const handleResize = () => {
       const shouldCollapse = window.innerWidth < collapseAt
-      if (shouldCollapse !== autoCollapsed) {
+      if (shouldCollapse !== autoCollapsedRef.current) {
         setAutoCollapsed(shouldCollapse)
         if (externalCollapsed === undefined) {
-          onCollapsedChange?.(shouldCollapse)
+          callbackRef.current?.(shouldCollapse)
         }
       }
     }
@@ -68,7 +81,7 @@ export function useResponsiveCollapse(
     handleResize()
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [collapseAt, autoCollapsed, externalCollapsed, onCollapsedChange])
+  }, [collapseAt, externalCollapsed]) // Remove autoCollapsed and onCollapsedChange from deps
 
   return autoCollapsed
 }

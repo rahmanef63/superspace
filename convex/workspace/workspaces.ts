@@ -38,12 +38,13 @@ export const getUserWorkspaces = query({
       } catch (_err) {
         // ignore if table missing or not linked yet
       }
+      // Get ALL users with this email (to handle duplicates)
       if (identity.email) {
-        const byEmail = await ctx.db
+        const byEmailAll = await ctx.db
           .query("users")
           .withIndex("by_email", (q) => q.eq("email", identity.email!))
-          .first()
-        if (byEmail) candidateIds.push(byEmail._id as any)
+          .collect()
+        for (const u of byEmailAll) candidateIds.push(u._id as any)
       }
     }
 
@@ -68,7 +69,9 @@ export const getUserWorkspaces = query({
         const workspace = await ctx.db.get(membership.workspaceId)
         if (!workspace) return null as any
         const role = await ctx.db.get(membership.roleId)
-        return { ...workspace, membership, role } as any
+        // Check if user is the owner (creator) of this workspace
+        const isOwner = uniqueIds.includes(String(workspace.createdBy))
+        return { ...workspace, membership, role, isOwner, isShared: !isOwner } as any
       }),
     ).then((arr) => arr.filter(Boolean))
 
@@ -87,7 +90,8 @@ export const getUserWorkspaces = query({
       for (const ws of created) {
         const key = String(ws._id)
         if (!(key in byWorkspaceId)) {
-          byWorkspaceId[key] = { ...ws } as any
+          // Workspaces created by user are owned by them
+          byWorkspaceId[key] = { ...ws, isOwner: true, isShared: false } as any
         }
       }
     }

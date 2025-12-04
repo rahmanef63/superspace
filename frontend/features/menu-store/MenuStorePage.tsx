@@ -4,7 +4,7 @@
  * Main page component for managing menus with tree structure
  * 3-Panel Layout using ThreeColumnLayoutAdvanced:
  * - Left: Menu Tree with DnD (collapsible)
- * - Middle: Menu Inspector or Available Features
+ * - Middle: Menu Inspector, Available Features, Feature Settings, or Import
  * - Right: Feature Preview Panel (collapsible)
  * 
  * Pattern follows WorkspaceStorePage for consistency.
@@ -30,7 +30,7 @@ import { FeatureListPanel, PreviewPanel, getAllFeaturePreviews, hasFeaturePrevie
 import { DragDropMenuTree } from "@/frontend/shared/ui"
 import { 
   Menu, Plus, RefreshCw, TreeDeciduous, LayoutGrid, Eye, X, Info, Layers, 
-  Download, Settings, Loader2, Package, Check, Lock, EyeOff, FolderPlus
+  Download, Settings, Loader2, Package, Check, Lock, EyeOff, FolderPlus, Sliders
 } from "lucide-react"
 import { FEATURE_TYPES, STATUS_BADGE_VARIANTS } from "./constants"
 import { Button } from "@/components/ui/button"
@@ -42,6 +42,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { MenuItem, AvailableFeatureMenu, ViewMode, TabType } from "./types"
+// Feature Settings imports
+import { SettingsRegistryProvider } from "@/frontend/shared/settings"
+import { DynamicSettingsView } from "@/frontend/shared/settings/components/DynamicSettingsView"
+import { FeatureSettingsSync } from "@/frontend/shared/settings/components/FeatureSettingsSync"
+import { FeatureSettingsListPanel } from "@/frontend/shared/settings/components/FeatureSettingsListPanel"
+import { FeatureSettingsPanel } from "@/frontend/shared/settings/components/FeatureSettingsPanel"
 
 // ============================================================================
 // Available Features Section
@@ -265,8 +271,15 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   const [previewVisible, setPreviewVisible] = React.useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = React.useState(true)
 
+  // Feature settings state (for right panel - settings mode)
+  const [selectedSettingsFeatureSlug, setSelectedSettingsFeatureSlug] = React.useState<string | null>(null)
+  const [settingsVisible, setSettingsVisible] = React.useState(false)
+
+  // Right panel mode: "preview" or "settings"
+  const [rightPanelMode, setRightPanelMode] = React.useState<"preview" | "settings">("preview")
+
   // Center panel mode
-  const [centerPanelMode, setCenterPanelMode] = React.useState<"inspector" | "available" | "import">("inspector")
+  const [centerPanelMode, setCenterPanelMode] = React.useState<"inspector" | "available" | "settings" | "import">("inspector")
 
   // Filtered menu items - separate system and non-system
   const filteredItems = React.useMemo(() => 
@@ -304,16 +317,27 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
     } else {
       setSelectedFeatureId(featureId)
       setPreviewVisible(true)
+      setSettingsVisible(false) // Close settings if open
+      setRightPanelMode("preview")
       setRightPanelCollapsed(false)
     }
   }, [selectedFeatureId, previewVisible])
 
-  // Handlers
-  const handleEditItem = React.useCallback((item: MenuItem) => {
-    setEditingItemId(item._id)
-    setShowForm(true)
-  }, [setEditingItemId, setShowForm])
+  // Handle feature settings toggle
+  const handleToggleSettings = React.useCallback((featureSlug: string, featureName?: string) => {
+    if (selectedSettingsFeatureSlug === featureSlug && settingsVisible) {
+      setSettingsVisible(false)
+      setRightPanelCollapsed(true)
+    } else {
+      setSelectedSettingsFeatureSlug(featureSlug)
+      setSettingsVisible(true)
+      setPreviewVisible(false) // Close preview if open
+      setRightPanelMode("settings")
+      setRightPanelCollapsed(false)
+    }
+  }, [selectedSettingsFeatureSlug, settingsVisible])
 
+  // Handlers
   const handleDeleteItem = React.useCallback(async (itemId: Id<"menuItems">) => {
     await mutations.deleteMenuItem(itemId, () => {
       if (state.selectedItemId === itemId) {
@@ -550,16 +574,20 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
           title={centerPanelMode === "inspector" 
             ? "Inspector" 
             : centerPanelMode === "available" 
-              ? "Available Features" 
-              : "Import Menu"
+              ? "Available Features"
+              : centerPanelMode === "settings"
+                ? "Feature Settings"
+                : "Import Menu"
           }
           subtitle={centerPanelMode === "inspector"
             ? (selectedMenuItem ? "Menu Details" : "Select a menu")
             : centerPanelMode === "available"
               ? `${availableFeatures?.length ?? 0} features available`
-              : "Import from another workspace"
+              : centerPanelMode === "settings"
+                ? "Configure installed features"
+                : "Import from another workspace"
           }
-          icon={centerPanelMode === "inspector" ? Info : centerPanelMode === "available" ? Package : Download}
+          icon={centerPanelMode === "inspector" ? Info : centerPanelMode === "available" ? Package : centerPanelMode === "settings" ? Sliders : Download}
         />
         
         {/* Mode Tabs */}
@@ -568,7 +596,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             value={centerPanelMode} 
             onValueChange={(v) => setCenterPanelMode(v as typeof centerPanelMode)}
           >
-            <TabsList className="w-full grid grid-cols-3">
+            <TabsList className="w-full grid grid-cols-4">
               <TabsTrigger value="inspector" className="text-xs">
                 <Info className="h-3.5 w-3.5 mr-1" />
                 Inspector
@@ -576,6 +604,10 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
               <TabsTrigger value="available" className="text-xs">
                 <Package className="h-3.5 w-3.5 mr-1" />
                 Available
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs">
+                <Sliders className="h-3.5 w-3.5 mr-1" />
+                Settings
               </TabsTrigger>
               <TabsTrigger value="import" className="text-xs">
                 <Download className="h-3.5 w-3.5 mr-1" />
@@ -622,6 +654,20 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             />
           </div>
         )}
+
+        {centerPanelMode === "settings" && (
+          <div className="h-full">
+            <FeatureSettingsListPanel
+              menuItems={menuItems ?? []}
+              onToggleSettings={(featureSlug, featureName) => {
+                handleToggleSettings(featureSlug, featureName)
+              }}
+              activeSettingsSlug={settingsVisible ? selectedSettingsFeatureSlug : null}
+              searchable
+              showCounts
+            />
+          </div>
+        )}
         
         {centerPanelMode === "import" && (
           <div className="p-4">
@@ -637,28 +683,44 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
     </div>
   )
 
-  // Right Panel Content - Feature Preview
+  // Right Panel Content - Feature Preview or Settings
   const selectedFeatureConfig = React.useMemo(() => {
     if (!selectedFeatureId || !availableFeatures) return null
     return availableFeatures.find((f) => f.slug === selectedFeatureId) ?? null
   }, [selectedFeatureId, availableFeatures])
 
+  // Get the menu item for the selected settings feature
+  const selectedSettingsMenuItem = React.useMemo(() => {
+    if (!selectedSettingsFeatureSlug || !menuItems) return null
+    return menuItems.find(item => item.slug === selectedSettingsFeatureSlug) ?? null
+  }, [selectedSettingsFeatureSlug, menuItems])
+
   const rightPanelContent = (
     <div className="flex flex-col h-full min-h-0">
-      {/* Panel Header */}
+      {/* Panel Header - adapts based on mode */}
       <div className="flex-shrink-0 border-b bg-muted/30">
         <ContainerHeader
-          title={selectedFeatureConfig?.name ?? "Preview"}
-          subtitle={selectedFeatureConfig?.description ?? "Select a feature to preview"}
-          icon={Eye}
+          title={rightPanelMode === "settings" 
+            ? (selectedSettingsMenuItem?.name ?? "Settings") 
+            : (selectedFeatureConfig?.name ?? "Preview")
+          }
+          subtitle={rightPanelMode === "settings"
+            ? "Feature configuration"
+            : (selectedFeatureConfig?.description ?? "Select a feature to preview")
+          }
+          icon={rightPanelMode === "settings" ? Sliders : Eye}
           actions={
-            previewVisible && selectedFeatureId && (
+            (previewVisible || settingsVisible) && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
-                  setPreviewVisible(false)
+                  if (rightPanelMode === "settings") {
+                    setSettingsVisible(false)
+                  } else {
+                    setPreviewVisible(false)
+                  }
                   setRightPanelCollapsed(true)
                 }}
               >
@@ -669,17 +731,32 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
         />
       </div>
       
-      {/* Preview Content */}
+      {/* Content - Show Preview or Settings based on mode */}
       <div className="flex-1 min-h-0 overflow-auto">
-        <PreviewPanel
-          featureId={selectedFeatureId}
-          visible={previewVisible}
-          onClose={() => {
-            setPreviewVisible(false)
-            setRightPanelCollapsed(true)
-          }}
-          hideHeader
-        />
+        {rightPanelMode === "settings" && settingsVisible && selectedSettingsFeatureSlug ? (
+          <SettingsRegistryProvider>
+            <FeatureSettingsSync workspaceId={workspaceId} />
+            <FeatureSettingsPanel
+              featureSlug={selectedSettingsFeatureSlug}
+              featureName={selectedSettingsMenuItem?.name}
+              onClose={() => {
+                setSettingsVisible(false)
+                setRightPanelCollapsed(true)
+              }}
+              showBackButton={false}
+            />
+          </SettingsRegistryProvider>
+        ) : (
+          <PreviewPanel
+            featureId={selectedFeatureId}
+            visible={previewVisible}
+            onClose={() => {
+              setPreviewVisible(false)
+              setRightPanelCollapsed(true)
+            }}
+            hideHeader
+          />
+        )}
       </div>
     </div>
   )

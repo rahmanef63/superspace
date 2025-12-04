@@ -1,9 +1,15 @@
 /**
  * Main chat container component
+ * Uses shared layout container from frontend/shared/ui/layout/container
  * @module shared/chat/components/ChatContainer
  */
 
+"use client";
+
 import React from "react";
+import { cn } from "@/lib/utils";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
+import { ContainerHeader } from "@/frontend/shared/ui/layout/header";
 import type { ChatRoomRef, ChatDataSource } from "../types/chat";
 import type { UserMeta } from "../types/message";
 import type { ChatConfig, ChatLayout } from "../types/config";
@@ -24,11 +30,18 @@ export type ChatContainerProps = {
   layout?: Partial<ChatLayout>;
   events?: ChatEvents;
   className?: string;
+  /** Use shared ContainerHeader instead of ChatHeader */
+  useSharedHeader?: boolean;
+  /** Toolbar slot (for filters, actions, etc.) */
+  toolbarSlot?: React.ReactNode;
+  /** Children slot (for custom content) */
+  children?: React.ReactNode;
 };
 
 /**
  * Main chat container - the "ultimate" component
  * Orchestrates all chat functionality based on config
+ * Uses shared PageContainer for consistent layout
  */
 export function ChatContainer({
   room,
@@ -38,6 +51,9 @@ export function ChatContainer({
   layout: layoutPartial,
   events,
   className = "",
+  useSharedHeader = false,
+  toolbarSlot,
+  children,
 }: ChatContainerProps) {
   // Initialize chat state
   const chat = useChat({
@@ -64,23 +80,50 @@ export function ChatContainer({
   const isReadOnly = chat.config.contextMode === "system";
 
   return (
-    <div
-      className={`chat-container ${className}`}
-      data-theme={chat.config.theme}
-      data-context={chat.config.contextMode}
+    <PageContainer
+      maxWidth="full"
+      padding={false}
+      fullHeight
+      className={cn("flex flex-col", className)}
     >
-      {/* Header */}
-      <ChatHeader
-        room={chat.roomMeta}
-        participants={chat.participants}
-        actions={layoutPartial?.headerActions || []}
-        config={chat.config}
-        onRefresh={chat.refresh}
-      />
+      {/* Header - Use shared or custom */}
+      {useSharedHeader ? (
+        <ContainerHeader
+          title={chat.roomMeta?.name || "Chat"}
+          subtitle={
+            chat.config.isGroup
+              ? `${chat.participants.length} participants`
+              : chat.participants[0]?.name
+          }
+          actions={
+            <button onClick={chat.refresh} className="p-2 hover:bg-muted rounded">
+              Refresh
+            </button>
+          }
+        />
+      ) : (
+        <ChatHeader
+          room={chat.roomMeta}
+          participants={chat.participants}
+          actions={layoutPartial?.headerActions || []}
+          config={chat.config}
+          onRefresh={chat.refresh}
+        />
+      )}
 
-      <div className="chat-body">
+      {/* Toolbar slot */}
+      {toolbarSlot && (
+        <div className="border-b border-border bg-background/50">
+          {toolbarSlot}
+        </div>
+      )}
+
+      {/* Custom children */}
+      {children}
+
+      <div className="flex-1 flex overflow-hidden">
         {/* Main content */}
-        <div className="chat-main">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Messages */}
           <ChatThread
             messages={chat.messages}
@@ -125,10 +168,10 @@ export function ChatContainer({
 
       {/* Error display */}
       {chat.error && (
-        <div className="chat-error" role="alert">
+        <div className="px-4 py-2 bg-destructive/10 text-destructive text-sm" role="alert">
           {chat.error.message}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

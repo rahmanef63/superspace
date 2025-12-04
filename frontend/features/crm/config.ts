@@ -6,7 +6,7 @@ export default defineFeature({
   description: 'Customer relationship management with integrated chat',
 
   ui: {
-    icon: 'Users',
+    icon: 'Contact',
     path: '/dashboard/crm',
     component: 'CRMPage',
     category: 'productivity',

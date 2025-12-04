@@ -249,6 +249,10 @@ export function TableView<T extends Record<string, any>>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={cn(
+                    config.onItemClick && "cursor-pointer hover:bg-muted/50"
+                  )}
+                  onClick={() => config.onItemClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

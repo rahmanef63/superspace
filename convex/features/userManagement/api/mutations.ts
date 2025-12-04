@@ -1,0 +1,703 @@
+/**
+ * User Management Mutations
+ * 
+ * Orchestration mutations for unified user management:
+ * - inviteToHierarchy: Bulk invite to workspace + children
+ * - bulkInviteFriends: Quick invite multiple friends
+ * - Team management mutations
+ * 
+ * @module convex/features/user-management/api/mutations
+ */
+
+import { v } from "convex/values";
+import { mutation } from "../../../_generated/server";
+import { ensureUser, requirePermission, hasPermission, requireActiveMembership } from "../../../auth/helpers";
+import type { Id } from "../../../_generated/dataModel";
+import { PERMS } from "../../../workspace/permissions";
+
+/**
+ * Role propagation strategies
+ */
+const ROLE_LEVEL_DECREASE = 10; // Level increase per hierarchy depth (lower level = more power)
+
+/**
+ * Invite user to workspace hierarchy
+ * Invites a user to a parent workspace and optionally all children
+ */
+export const inviteToHierarchy = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    inviteeEmail: v.string(),
+    baseRoleId: v.id("roles"),
+    propagateToChildren: v.boolean(),
+    propagationStrategy: v.union(
+      v.literal("same"),
+      v.literal("decreasing"),
+    ),
+    maxDepth: v.optional(v.number()),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const inviterId = await ensureUser(ctx);
+    if (!inviterId) throw new Error("Not authenticated");
+
+    // Verify permission on source workspace
+    await requirePermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
+
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace) throw new Error("Workspace not found");
+
+    const baseRole = await ctx.db.get(args.baseRoleId);
+    if (!baseRole) throw new Error("Role not found");
+
+    // Capture slug for use in nested function (TypeScript narrowing workaround)
+    const baseRoleSlug = baseRole.slug;
+    const baseRoleLevel = baseRole.level ?? 0;
+
+    const maxDepth = args.maxDepth ?? 3;
+    const targetWorkspaceIds: Id<"workspaces">[] = [args.workspaceId];
+    const roleMap = new Map<string, Id<"roles">>();
+    roleMap.set(String(args.workspaceId), args.baseRoleId);
+
+    // Collect child workspaces if propagating
+    if (args.propagateToChildren) {
+      async function collectChildren(wsId: Id<"workspaces">, depth: number, parentRoleLevel: number) {
+        if (depth >= maxDepth) return;
+
+        const children = await ctx.db
+          .query("workspaces")
+          .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", wsId))
+          .collect();
+
+        for (const child of children) {
+          targetWorkspaceIds.push(child._id);
+
+          // Determine role for this child based on strategy
+          if (args.propagationStrategy === "same") {
+            // Use same role if it exists in child workspace, otherwise find equivalent
+            const childRole = await ctx.db
+              .query("roles")
+              .withIndex("by_workspace_slug", (q) => q.eq("workspaceId", child._id).eq("slug", baseRoleSlug))
+              .first();
+            
+            if (childRole) {
+              roleMap.set(String(child._id), childRole._id);
+            } else {
+              // Fall back to default role
+              const defaultRole = await ctx.db
+                .query("roles")
+                .withIndex("by_workspace", (q) => q.eq("workspaceId", child._id))
+                .filter((q) => q.eq(q.field("isDefault"), true))
+                .first();
+              if (defaultRole) {
+                roleMap.set(String(child._id), defaultRole._id);
+              }
+            }
+          } else if (args.propagationStrategy === "decreasing") {
+            // Find role with lower privilege (higher level number)
+            const targetLevel = parentRoleLevel + ROLE_LEVEL_DECREASE;
+            const childRoles = await ctx.db
+              .query("roles")
+              .withIndex("by_workspace", (q) => q.eq("workspaceId", child._id))
+              .collect();
+            
+            // Find closest role at or above target level
+            const sortedRoles = childRoles.sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
+            const targetRole = sortedRoles.find((r) => (r.level ?? 0) >= targetLevel) 
+              || sortedRoles[sortedRoles.length - 1]; // Fallback to lowest privilege
+            
+            if (targetRole) {
+              roleMap.set(String(child._id), targetRole._id);
+              await collectChildren(child._id, depth + 1, targetRole.level ?? targetLevel);
+            }
+          }
+
+          await collectChildren(child._id, depth + 1, parentRoleLevel + ROLE_LEVEL_DECREASE);
+        }
+      }
+
+      await collectChildren(args.workspaceId, 0, baseRoleLevel);
+    }
+
+    // Generate unique invitation token
+    function generateToken(): string {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let token = "";
+      for (let i = 0; i < 32; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return token;
+    }
+
+    // Check if invitee already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.inviteeEmail))
+      .first();
+
+    // Create invitations for each workspace
+    const results: Array<{
+      workspaceId: string;
+      success: boolean;
+      invitationId?: string;
+      error?: string;
+    }> = [];
+
+    for (const wsId of targetWorkspaceIds) {
+      const roleId = roleMap.get(String(wsId));
+      if (!roleId) {
+        results.push({
+          workspaceId: String(wsId),
+          success: false,
+          error: "No suitable role found",
+        });
+        continue;
+      }
+
+      // Check if already a member
+      if (existingUser) {
+        const existingMembership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_user_workspace", (q) =>
+            q.eq("userId", existingUser._id).eq("workspaceId", wsId)
+          )
+          .first();
+
+        if (existingMembership && existingMembership.status === "active") {
+          results.push({
+            workspaceId: String(wsId),
+            success: false,
+            error: "Already a member",
+          });
+          continue;
+        }
+      }
+
+      // Check for existing pending invitation
+      const existingInvitation = await ctx.db
+        .query("invitations")
+        .withIndex("by_workspace", (q) => q.eq("workspaceId", wsId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("inviteeEmail"), args.inviteeEmail),
+            q.eq(q.field("status"), "pending")
+          )
+        )
+        .first();
+
+      if (existingInvitation) {
+        results.push({
+          workspaceId: String(wsId),
+          success: false,
+          error: "Invitation already pending",
+        });
+        continue;
+      }
+
+      // Create invitation
+      const invitationId = await ctx.db.insert("invitations", {
+        type: "workspace",
+        workspaceId: wsId,
+        inviterId,
+        inviteeEmail: args.inviteeEmail,
+        inviteeId: existingUser?._id,
+        roleId,
+        status: "pending",
+        message: args.message,
+        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+        token: generateToken(),
+      });
+
+      results.push({
+        workspaceId: String(wsId),
+        success: true,
+        invitationId: String(invitationId),
+      });
+    }
+
+    // Create hierarchy invitation record for tracking
+    const hierarchyInvitationId = await ctx.db.insert("hierarchyInvitations", {
+      sourceWorkspaceId: args.workspaceId,
+      inviterId,
+      inviteeEmail: args.inviteeEmail,
+      inviteeId: existingUser?._id,
+      propagationStrategy: args.propagationStrategy,
+      baseRoleId: args.baseRoleId,
+      targetWorkspaceIds,
+      status: results.every((r) => r.success) ? "pending" : "partial",
+      resultMapping: JSON.stringify(
+        Object.fromEntries(
+          results.map((r) => [
+            r.workspaceId,
+            { status: r.success ? "pending" : "failed", invitationId: r.invitationId, error: r.error },
+          ])
+        )
+      ),
+      createdAt: Date.now(),
+      message: args.message,
+    });
+
+    return {
+      hierarchyInvitationId,
+      results,
+      totalWorkspaces: targetWorkspaceIds.length,
+      successCount: results.filter((r) => r.success).length,
+    };
+  },
+});
+
+/**
+ * Bulk invite friends to workspace
+ * Quick invite multiple friends to a workspace at once
+ */
+export const bulkInviteFriends = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    friendIds: v.array(v.id("users")),
+    roleId: v.id("roles"),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const inviterId = await ensureUser(ctx);
+    if (!inviterId) throw new Error("Not authenticated");
+
+    // Verify permission
+    await requirePermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
+
+    const results: Array<{
+      friendId: string;
+      success: boolean;
+      invitationId?: string;
+      error?: string;
+    }> = [];
+
+    // Verify friendship for each friend
+    for (const friendId of args.friendIds) {
+      // Check if they are actually friends
+      const friendship1 = await ctx.db
+        .query("friendships")
+        .withIndex("by_users", (q) => q.eq("user1Id", inviterId).eq("user2Id", friendId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .first();
+
+      const friendship2 = await ctx.db
+        .query("friendships")
+        .withIndex("by_users", (q) => q.eq("user1Id", friendId).eq("user2Id", inviterId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .first();
+
+      if (!friendship1 && !friendship2) {
+        results.push({
+          friendId: String(friendId),
+          success: false,
+          error: "Not a friend",
+        });
+        continue;
+      }
+
+      // Get friend's email
+      const friend = await ctx.db.get(friendId);
+      if (!friend) {
+        results.push({
+          friendId: String(friendId),
+          success: false,
+          error: "User not found",
+        });
+        continue;
+      }
+
+      // Check if already a member
+      const existingMembership = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_user_workspace", (q) =>
+          q.eq("userId", friendId).eq("workspaceId", args.workspaceId)
+        )
+        .first();
+
+      if (existingMembership && existingMembership.status === "active") {
+        results.push({
+          friendId: String(friendId),
+          success: false,
+          error: "Already a member",
+        });
+        continue;
+      }
+
+      // Check for existing pending invitation
+      const existingInvitation = await ctx.db
+        .query("invitations")
+        .withIndex("by_invitee_id", (q) => q.eq("inviteeId", friendId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("workspaceId"), args.workspaceId),
+            q.eq(q.field("status"), "pending")
+          )
+        )
+        .first();
+
+      if (existingInvitation) {
+        results.push({
+          friendId: String(friendId),
+          success: false,
+          error: "Invitation already pending",
+        });
+        continue;
+      }
+
+      // Generate token
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let token = "";
+      for (let i = 0; i < 32; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // Create invitation
+      const invitationId = await ctx.db.insert("invitations", {
+        type: "workspace",
+        workspaceId: args.workspaceId,
+        inviterId,
+        inviteeEmail: friend.email,
+        inviteeId: friendId,
+        roleId: args.roleId,
+        status: "pending",
+        message: args.message,
+        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        token,
+      });
+
+      results.push({
+        friendId: String(friendId),
+        success: true,
+        invitationId: String(invitationId),
+      });
+    }
+
+    return {
+      results,
+      totalInvites: args.friendIds.length,
+      successCount: results.filter((r) => r.success).length,
+    };
+  },
+});
+
+/**
+ * Create a user team
+ */
+export const createTeam = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MEMBERS);
+
+    // Generate slug
+    const slug = args.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+    // Check for duplicate slug
+    const existing = await ctx.db
+      .query("userTeams")
+      .withIndex("by_slug", (q) => q.eq("workspaceId", args.workspaceId).eq("slug", slug))
+      .first();
+
+    if (existing) {
+      throw new Error("Team with this name already exists");
+    }
+
+    const teamId = await ctx.db.insert("userTeams", {
+      name: args.name,
+      slug,
+      description: args.description,
+      workspaceId: args.workspaceId,
+      color: args.color,
+      icon: args.icon,
+      createdBy: userId,
+    });
+
+    return teamId;
+  },
+});
+
+/**
+ * Add member to team
+ */
+export const addTeamMember = mutation({
+  args: {
+    teamId: v.id("userTeams"),
+    userId: v.id("users"),
+    role: v.optional(v.union(v.literal("leader"), v.literal("member"))),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) throw new Error("Team not found");
+
+    await requirePermission(ctx, team.workspaceId, PERMS.MANAGE_MEMBERS);
+
+    // Check if already a member
+    const existing = await ctx.db
+      .query("teamMemberships")
+      .withIndex("by_team_user", (q) => q.eq("teamId", args.teamId).eq("userId", args.userId))
+      .first();
+
+    if (existing) {
+      throw new Error("User is already a team member");
+    }
+
+    const membershipId = await ctx.db.insert("teamMemberships", {
+      teamId: args.teamId,
+      userId: args.userId,
+      role: args.role ?? "member",
+      joinedAt: Date.now(),
+      addedBy: currentUserId,
+    });
+
+    return membershipId;
+  },
+});
+
+/**
+ * Remove member from team
+ */
+export const removeTeamMember = mutation({
+  args: {
+    teamId: v.id("userTeams"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) throw new Error("Team not found");
+
+    await requirePermission(ctx, team.workspaceId, PERMS.MANAGE_MEMBERS);
+
+    const membership = await ctx.db
+      .query("teamMemberships")
+      .withIndex("by_team_user", (q) => q.eq("teamId", args.teamId).eq("userId", args.userId))
+      .first();
+
+    if (!membership) {
+      throw new Error("User is not a team member");
+    }
+
+    await ctx.db.delete(membership._id);
+
+    return true;
+  },
+});
+
+/**
+ * Invite entire team to workspace(s)
+ */
+export const inviteTeamToWorkspaces = mutation({
+  args: {
+    teamId: v.id("userTeams"),
+    workspaceIds: v.array(v.id("workspaces")),
+    roleId: v.id("roles"),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const inviterId = await ensureUser(ctx);
+    if (!inviterId) throw new Error("Not authenticated");
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) throw new Error("Team not found");
+
+    // Get team members
+    const teamMemberships = await ctx.db
+      .query("teamMemberships")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+
+    const results: Array<{
+      workspaceId: string;
+      userId: string;
+      success: boolean;
+      error?: string;
+    }> = [];
+
+    for (const wsId of args.workspaceIds) {
+      // Verify permission on each workspace
+      try {
+        await requirePermission(ctx, wsId, PERMS.INVITE_MEMBERS);
+      } catch {
+        for (const tm of teamMemberships) {
+          results.push({
+            workspaceId: String(wsId),
+            userId: String(tm.userId),
+            success: false,
+            error: "No permission to invite to this workspace",
+          });
+        }
+        continue;
+      }
+
+      for (const tm of teamMemberships) {
+        const user = await ctx.db.get(tm.userId);
+        if (!user) continue;
+
+        // Check if already a member
+        const existingMembership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_user_workspace", (q) =>
+            q.eq("userId", tm.userId).eq("workspaceId", wsId)
+          )
+          .first();
+
+        if (existingMembership && existingMembership.status === "active") {
+          results.push({
+            workspaceId: String(wsId),
+            userId: String(tm.userId),
+            success: false,
+            error: "Already a member",
+          });
+          continue;
+        }
+
+        // Generate token
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let token = "";
+        for (let i = 0; i < 32; i++) {
+          token += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Create invitation
+        await ctx.db.insert("invitations", {
+          type: "workspace",
+          workspaceId: wsId,
+          inviterId,
+          inviteeEmail: user.email,
+          inviteeId: tm.userId,
+          roleId: args.roleId,
+          status: "pending",
+          message: args.message,
+          expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+          token,
+        });
+
+        results.push({
+          workspaceId: String(wsId),
+          userId: String(tm.userId),
+          success: true,
+        });
+      }
+    }
+
+    return {
+      results,
+      totalInvites: teamMemberships.length * args.workspaceIds.length,
+      successCount: results.filter((r) => r.success).length,
+    };
+  },
+});
+
+/**
+ * Create role hierarchy link
+ */
+export const createRoleHierarchyLink = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    parentRoleId: v.id("roles"),
+    childRoleId: v.id("roles"),
+    inheritanceMode: v.union(
+      v.literal("full"),
+      v.literal("restrict"),
+      v.literal("extend"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_ROLES);
+
+    // Verify both roles belong to the workspace
+    const parentRole = await ctx.db.get(args.parentRoleId);
+    const childRole = await ctx.db.get(args.childRoleId);
+
+    if (!parentRole || parentRole.workspaceId !== args.workspaceId) {
+      throw new Error("Parent role not found in workspace");
+    }
+    if (!childRole || childRole.workspaceId !== args.workspaceId) {
+      throw new Error("Child role not found in workspace");
+    }
+
+    // Check for existing link
+    const existing = await ctx.db
+      .query("roleHierarchyLinks")
+      .withIndex("by_parent_child", (q) =>
+        q.eq("parentRoleId", args.parentRoleId).eq("childRoleId", args.childRoleId)
+      )
+      .first();
+
+    if (existing) {
+      throw new Error("Role hierarchy link already exists");
+    }
+
+    // Check for circular reference
+    async function hasCircularPath(fromRole: Id<"roles">, toRole: Id<"roles">, visited: Set<string>): Promise<boolean> {
+      if (String(fromRole) === String(toRole)) return true;
+      if (visited.has(String(fromRole))) return false;
+      visited.add(String(fromRole));
+
+      const childLinks = await ctx.db
+        .query("roleHierarchyLinks")
+        .withIndex("by_parent", (q) => q.eq("parentRoleId", fromRole))
+        .collect();
+
+      for (const link of childLinks) {
+        if (await hasCircularPath(link.childRoleId, toRole, visited)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (await hasCircularPath(args.childRoleId, args.parentRoleId, new Set())) {
+      throw new Error("Cannot create circular role hierarchy");
+    }
+
+    const linkId = await ctx.db.insert("roleHierarchyLinks", {
+      parentRoleId: args.parentRoleId,
+      childRoleId: args.childRoleId,
+      workspaceId: args.workspaceId,
+      inheritanceMode: args.inheritanceMode,
+      createdBy: userId,
+      createdAt: Date.now(),
+    });
+
+    return linkId;
+  },
+});
+
+/**
+ * Delete role hierarchy link
+ */
+export const deleteRoleHierarchyLink = mutation({
+  args: {
+    linkId: v.id("roleHierarchyLinks"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const link = await ctx.db.get(args.linkId);
+    if (!link) throw new Error("Link not found");
+
+    await requirePermission(ctx, link.workspaceId, PERMS.MANAGE_ROLES);
+
+    await ctx.db.delete(args.linkId);
+
+    return true;
+  },
+});

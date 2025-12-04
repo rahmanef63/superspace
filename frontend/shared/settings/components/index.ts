@@ -20,3 +20,7 @@ export { FeatureSettingsSheet } from './FeatureSettingsSheet';
 export type { FeatureSettingsSheetProps } from './FeatureSettingsSheet';
 export { FeatureSettingsButton } from './FeatureSettingsButton';
 export type { FeatureSettingsButtonProps } from './FeatureSettingsButton';
+
+// Feature Settings List Panel (for Menu Store Settings tab)
+export { FeatureSettingsListPanel } from './FeatureSettingsListPanel';
+export type { FeatureSettingsListPanelProps } from './FeatureSettingsListPanel';

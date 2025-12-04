@@ -46,6 +46,8 @@ export interface LegacyViewConfig<T = any> {
     }>;
   };
   searchFn?: (item: T, query: string) => boolean;
+  /** Called when an item is clicked (for navigation/opening) */
+  onOpen?: (item: T) => void;
 }
 
 /**
@@ -93,6 +95,7 @@ function convertLegacyConfig<T>(
     label: "View",
     columns,
     rowActions,
+    onItemClick: legacyConfig.onOpen,
     renderCard: legacyConfig.card
       ? (item: T) => (
           <div className="flex flex-col gap-2">

@@ -34,6 +34,7 @@ import {
   Settings,
   Pencil,
   Trash2,
+  Share2,
 } from "lucide-react"
 import type { Id, Doc } from "@convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
@@ -389,6 +390,7 @@ function WorkspaceMenuItem({
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
   const color = (workspace as any).color ?? "#6366f1"
   const isMain = (workspace as any).isMainWorkspace
+  const isShared = (workspace as any).isShared
 
   return (
     <DropdownMenuItem
@@ -409,6 +411,12 @@ function WorkspaceMenuItem({
           <span className="text-sm font-medium">{workspace.name}</span>
           {isMain && (
             <Crown className="size-3 text-yellow-500" />
+          )}
+          {isShared && (
+            <Badge variant="outline" className="h-4 px-1 text-[10px] gap-0.5">
+              <Share2 className="size-2.5" />
+              Shared
+            </Badge>
           )}
         </div>
         <span className="text-xs text-muted-foreground">

@@ -50,7 +50,29 @@ async function getRoleIdsForPermission(ctx: any, workspaceId: Id<"workspaces">, 
     })
     .map((role: any) => role._id)
 }
-// Get workspace menu items
+
+import { DEFAULT_MENU_ITEMS } from "./menu_manifest_data"
+import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
+
+// Helper to get roles with a given permission for a workspace
+async function getRolesWithPermission(ctx: any, workspaceId: Id<"workspaces">, permKey?: string) {
+  const permissionValue = normalizePermissionKey(permKey)
+  if (!permissionValue) return []
+  
+  const roles = await ctx.db
+    .query("roles")
+    .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspaceId))
+    .collect()
+  
+  return roles
+    .filter((role: any) => {
+      const permissions = role.permissions || []
+      return permissions.includes("*") || permissions.includes(permissionValue)
+    })
+    .map((role: any) => role._id)
+}
+
+// Get workspace menu items - merges database items with manifest for SSOT
 export const getWorkspaceMenuItems = query({
   args: {
     workspaceId: v.id("workspaces"),
@@ -121,6 +143,55 @@ export const getWorkspaceMenuItems = query({
         .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
         .filter((q) => q.eq(q.field("isVisible"), true))
         .collect()
+    }
+
+    // === SSOT: Merge missing default/system features from manifest ===
+    // This ensures new features appear immediately without requiring a sync
+    const dbSlugs = new Set(menuItems.map((item) => item.slug))
+    
+    // Get roles for permission checking
+    const allRoles = await ctx.db
+      .query("roles")
+      .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+    
+    const getVisibleRoleIds = (permKey?: string) => {
+      const permissionValue = normalizePermissionKey(permKey)
+      if (!permissionValue) return []
+      return allRoles
+        .filter((role: any) => {
+          const permissions = role.permissions || []
+          return permissions.includes("*") || permissions.includes(permissionValue)
+        })
+        .map((role: any) => role._id)
+    }
+    
+    // Add missing default/system features from manifest
+    for (const manifestItem of DEFAULT_MENU_ITEMS) {
+      if (!dbSlugs.has(manifestItem.slug)) {
+        // Only include default and system features (not optional)
+        const featureType = manifestItem.metadata?.featureType
+        if (featureType === "default" || featureType === "system") {
+          const visibleForRoleIds = getVisibleRoleIds(manifestItem.requiresPermission)
+          
+          // Create a virtual menu item from manifest
+          menuItems.push({
+            _id: `manifest:${manifestItem.slug}` as any, // Virtual ID
+            workspaceId: args.workspaceId,
+            name: manifestItem.name,
+            slug: manifestItem.slug,
+            type: manifestItem.type,
+            icon: manifestItem.icon,
+            path: manifestItem.path,
+            component: manifestItem.component,
+            order: manifestItem.order,
+            isVisible: true,
+            visibleForRoleIds,
+            metadata: manifestItem.metadata,
+            _fromManifest: true, // Mark as from manifest (not persisted)
+          })
+        }
+      }
     }
 
     // Filter menu items based on user role permissions
@@ -228,9 +299,6 @@ export const getMenuItemBySlug = query({
     return item
   },
 })
-
-import { DEFAULT_MENU_ITEMS } from "./menu_manifest_data"
-import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
 
 // Create default menu items for a workspace based on manifest
 // INTERNAL MUTATION: Called from server context (createWorkspace, resetWorkspace)
@@ -498,6 +566,73 @@ export const setMenuItemComponent = mutation({
       metadata: def?.metadata,
       createdBy: userId,
     })
+  },
+})
+
+// Sync menu items - adds missing items from manifest without deleting existing ones
+// This is useful when new features are added to the manifest and need to appear in existing workspaces
+export const syncMenuItems = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
+    const userId = membership?.userId
+
+    console.log("[syncMenuItems] Syncing menu items for workspace:", args.workspaceId)
+
+    // Call internal mutation to sync - it only adds missing items
+    await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+    })
+
+    return { success: true }
+  },
+})
+
+// Internal mutation: Sync menu items for ALL workspaces
+// Called by cron job to ensure all workspaces have new features from manifest
+export const syncAllWorkspaceMenus = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    console.log("[syncAllWorkspaceMenus] Starting batch menu sync for all workspaces...")
+    
+    // Get all workspaces
+    const workspaces = await ctx.db.query("workspaces").collect()
+    
+    let successCount = 0
+    let errorCount = 0
+    
+    for (const workspace of workspaces) {
+      try {
+        // Get owner user ID for the workspace
+        const ownerMembership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspace._id))
+          .filter((q: any) => q.eq(q.field("status"), "active"))
+          .first()
+        
+        if (!ownerMembership) {
+          console.warn(`[syncAllWorkspaceMenus] No active membership found for workspace ${workspace._id}`)
+          continue
+        }
+        
+        // Call createDefaultMenuItems which handles adding missing items
+        await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
+          workspaceId: workspace._id,
+          actorUserId: ownerMembership.userId,
+        })
+        
+        successCount++
+      } catch (error) {
+        console.error(`[syncAllWorkspaceMenus] Error syncing workspace ${workspace._id}:`, error)
+        errorCount++
+      }
+    }
+    
+    console.log(`[syncAllWorkspaceMenus] Complete: ${successCount} synced, ${errorCount} errors`)
+    return { successCount, errorCount, total: workspaces.length }
   },
 })
 

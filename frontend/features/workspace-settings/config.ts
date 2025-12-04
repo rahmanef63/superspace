@@ -3,12 +3,12 @@ import { defineFeature } from '@/lib/features/defineFeature'
 export default defineFeature({
   id: 'settings',
   name: 'Settings',
-  description: 'Workspace configuration and settings',
+  description: 'Personal preferences, account settings, and app configuration',
 
   ui: {
     icon: 'Settings',
     path: '/dashboard/settings',
-    component: 'WorkspacesPage',
+    component: 'SettingsPage',
     category: 'administration',
     order: 99,
   },
@@ -16,9 +16,9 @@ export default defineFeature({
   technical: {
     featureType: 'system',
     hasUI: true,
-    hasConvex: true,
+    hasConvex: false, // Personal settings use localStorage, no Convex needed
     hasTests: true,
-    version: '1.0.0',
+    version: '2.0.0', // Major version bump for simplified architecture
   },
 
   status: {
@@ -39,7 +39,8 @@ export default defineFeature({
     optional: [],
   },
 
-  tags: ['workspace', 'settings', 'configuration'],
+  tags: ['personal', 'settings', 'preferences', 'account'],
 
-  permissions: ['MANAGE_WORKSPACE'],
+  // No permissions needed - personal settings are user-scoped
+  permissions: [],
 })

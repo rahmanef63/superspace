@@ -3,12 +3,20 @@
  *
  * Real-time communication features including:
  * - Chat system (messages, channels, threads)
+ * - AI chat (AI assistants, bots)
  * - Comments (document comments, inline comments)
  * - Collaboration (presence, cursors, activity)
  * - Notifications (real-time alerts, inbox)
  *
+ * NOTE: ChatContainer and AIContainer now use shared layout components from:
+ * - PageContainer from @/frontend/shared/ui/layout/container
+ * - ContainerHeader from @/frontend/shared/ui/layout/header
+ * 
+ * This ensures DRY principle - same container/header pattern as
+ * menu-store, workspace-store, and documents features.
+ *
  * @example
- * import { ChatView, useChat, CommentThread } from '@/frontend/shared/communications'
+ * import { ChatContainer, AIContainer, useChat } from '@/frontend/shared/communications'
  */
 
 // ============================================================
@@ -29,6 +37,25 @@ export { useChat } from './chat/hooks/useChat'
 export { useChatPresence } from './chat/hooks/useChatPresence'
 export { useChatScroll } from './chat/hooks/useChatScroll'
 export { useMessageActions } from './chat/hooks/useMessageActions'
+
+// ============================================================
+// AI Chat System
+// ============================================================
+// AI Components
+export {
+  AIMessage as AIMessageComponent,
+  AIInput,
+  AIHeader,
+  AIThread,
+  AIContainer,
+  AISessionCard,
+  AIEmptyState,
+  AIKnowledgeSelector,
+} from './chat/components/ai'
+// AI Hooks
+export { useAI } from './chat/hooks/useAI'
+export { useAIStoreBase, createAIStore, aiStoreSelectors } from './chat/hooks/useAIStore'
+// AI Types (re-exported from ./chat)
 
 // ============================================================
 // Comments System
@@ -53,16 +80,28 @@ export { CollaborativeCursor } from './collaboration/CollaborativeCursor'
 export type {
   // Chat types
   Message,
-  Channel,
-  Thread,
-  ChatState,
+  MessageContent,
+  MessageDraft,
+  UserMeta,
+  Attachment,
+  Paginated,
+} from './chat/types/message'
 
-  // Comment types
-  Comment,
-  CommentThread as CommentThreadType,
+export type {
+  ChatRoomRef,
+  RoomMeta,
+} from './chat/types/chat'
 
-  // Collaboration types
-  Presence,
-  Collaborator,
-  Activity,
-} from './chat/types/'
+export type {
+  ChatConfig,
+  ChatLayout,
+} from './chat/types/config'
+
+// AI Types
+export type {
+  AIMessage as AIMessageType,
+  AISession,
+  AIConfig,
+  AIKnowledgeContext,
+  KnowledgeSourceType,
+} from './chat/types/ai'

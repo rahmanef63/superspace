@@ -79,8 +79,8 @@ export type TabAlignment = "start" | "center" | "end" | "stretch"
  * Props for the main Tabs container
  */
 export interface TabsProps {
-  /** Array of tab items */
-  tabs: TabItem[]
+  /** Array of tab items (optional when using compound pattern) */
+  tabs?: TabItem[]
   /** Currently active tab ID (controlled) */
   activeTab?: string
   /** Default active tab ID (uncontrolled) */

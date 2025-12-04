@@ -1,16 +1,17 @@
 # Reusable Chat System
 
-A comprehensive, param-driven chat module for SuperSpace that supports multiple use cases through configuration.
+A comprehensive, param-driven chat module for SuperSpace that supports multiple use cases through configuration, including **AI chat functionality**.
 
 ## Features
 
-- **Multi-context**: Comments, Support, Workspace, Projects, Documents, CRM, Activity Feeds
+- **Multi-context**: Comments, Support, Workspace, Projects, Documents, CRM, Activity Feeds, **AI Chat**
 - **Fully configurable**: 50+ config options to customize behavior
 - **Type-safe**: Complete TypeScript support
 - **RBAC**: Built-in role-based access control
 - **Real-time**: Presence, typing indicators, optimistic updates
 - **Rich media**: Attachments, link previews, image gallery
 - **Extensible**: Custom commands, integrations, moderation hooks
+- **AI Integration**: Built-in AI chat components and hooks
 
 ## Installation
 
@@ -20,8 +21,10 @@ A comprehensive, param-driven chat module for SuperSpace that supports multiple 
 
 ## Quick Start
 
+### Standard Chat
+
 ```tsx
-import { ChatContainer, createConvexChatDataSource } from "@/frontend/shared/chat";
+import { ChatContainer, createConvexChatDataSource } from "@/frontend/shared/communications";
 
 function MyChat() {
   const convex = useConvex();
@@ -41,6 +44,106 @@ function MyChat() {
     />
   );
 }
+```
+
+### AI Chat
+
+```tsx
+import { 
+  AIContainer, 
+  AISessionCard,
+  AIKnowledgeSelector,
+  useAI 
+} from "@/frontend/shared/communications";
+
+function MyAIChat() {
+  const ai = useAI({
+    workspaceId,
+    userId,
+    onSendMessage: async (sessionId, message, context) => {
+      // Send to your AI backend
+    },
+    onCreateSession: async (title) => {
+      // Create new AI session
+    },
+  });
+
+  return (
+    <AIContainer
+      session={ai.session}
+      messages={ai.messages}
+      isSending={ai.isSending}
+      onSend={ai.sendMessage}
+      knowledgeEnabled={true}
+      onKnowledgeToggle={(enabled) => setKnowledgeEnabled(enabled)}
+    >
+      <AIKnowledgeSelector
+        isEnabled={knowledgeEnabled}
+        onEnabledChange={setKnowledgeEnabled}
+        selectedSources={selectedSources}
+        onSourcesChange={setSelectedSources}
+      />
+    </AIContainer>
+  );
+}
+```
+
+## AI Components
+
+### AIContainer
+Main container for AI chat interface.
+
+```tsx
+<AIContainer
+  session={session}
+  messages={messages}
+  isLoading={isLoading}
+  isSending={isSending}
+  knowledgeEnabled={true}
+  hasKnowledge={true}
+  onSend={(message) => sendMessage(message)}
+  onKnowledgeToggle={(enabled) => setEnabled(enabled)}
+/>
+```
+
+### AIMessage
+Individual AI message component with streaming support.
+
+```tsx
+<AIMessage
+  message={message}
+  isStreaming={isStreaming}
+  onCopy={(content) => copyToClipboard(content)}
+  onRegenerate={(messageId) => regenerate(messageId)}
+/>
+```
+
+### AISessionCard
+Session card for AI chat list.
+
+```tsx
+<AISessionCard
+  id={session._id}
+  title={session.title}
+  lastMessage={session.messages[0]?.content}
+  timestamp={formatTime(session.updatedAt)}
+  messageCount={session.messages.length}
+  isActive={isSelected}
+  isGlobal={session.isGlobal}
+  onClick={() => selectSession(session._id)}
+/>
+```
+
+### AIKnowledgeSelector
+Knowledge source selector for AI context.
+
+```tsx
+<AIKnowledgeSelector
+  isEnabled={true}
+  onEnabledChange={(enabled) => setEnabled(enabled)}
+  selectedSources={['wiki', 'documents']}
+  onSourcesChange={(sources) => setSources(sources)}
+/>
 ```
 
 ## Configuration

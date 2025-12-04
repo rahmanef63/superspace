@@ -1,9 +1,21 @@
 /**
  * Chat header component
+ * 
+ * NOTE: For consistency with other features, consider using:
+ * - ContainerHeader from @/frontend/shared/ui/layout/header
+ * - ChatContainer with useSharedHeader={true}
+ * 
  * @module shared/chat/components/ChatHeader
  */
 
+"use client";
+
 import React from "react";
+import { cn } from "@/lib/utils";
+import { Search, Pin, UserPlus, RefreshCw, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { RoomMeta } from "../types/chat";
 import type { UserMeta } from "../types/message";
 import type { ChatConfig } from "../types/config";
@@ -17,10 +29,12 @@ export type ChatHeaderProps = {
   onRefresh?: () => void;
   onSearch?: (query: string) => void;
   onInvite?: () => void;
+  className?: string;
 };
 
 /**
  * Chat header with room info and actions
+ * Uses Tailwind classes consistent with shared UI components
  */
 export function ChatHeader({
   room,
@@ -30,6 +44,7 @@ export function ChatHeader({
   onRefresh,
   onSearch,
   onInvite,
+  className,
 }: ChatHeaderProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [showSearch, setShowSearch] = React.useState(false);
@@ -47,55 +62,56 @@ export function ChatHeader({
   };
 
   return (
-    <div className="chat-header">
-      <div className="chat-header-info">
+    <div className={cn(
+      "flex items-center justify-between p-4 border-b border-border bg-card",
+      className
+    )}>
+      <div className="flex items-center gap-3 min-w-0">
         {/* Room avatar */}
-        {room?.avatarUrl && (
-          <img
-            src={room.avatarUrl}
-            alt={room.name}
-            className="chat-header-avatar"
-          />
-        )}
+        <Avatar className="h-10 w-10 flex-shrink-0">
+          <AvatarImage src={room?.avatarUrl} alt={room?.name} />
+          <AvatarFallback>
+            {room?.name ? room.name.charAt(0).toUpperCase() : <MessageCircle className="h-5 w-5" />}
+          </AvatarFallback>
+        </Avatar>
 
         {/* Room name & metadata */}
-        <div className="chat-header-text">
-          <h2 className="chat-header-title">{room?.name || "Loading..."}</h2>
-          <div className="chat-header-meta">
+        <div className="min-w-0">
+          <h2 className="font-semibold truncate">{room?.name || "Loading..."}</h2>
+          <div className="text-sm text-muted-foreground">
             {config.isGroup && (
-              <span className="chat-header-participants">
+              <span>
                 {participants.length} participant{participants.length !== 1 ? "s" : ""}
               </span>
             )}
             {!config.isGroup && participants.length > 0 && (
-              <span className="chat-header-status">
-                {formatUserName(participants[0])}
-              </span>
+              <span>{formatUserName(participants[0])}</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="chat-header-actions">
+      <div className="flex items-center gap-1">
         {/* Search */}
         {actions.includes("search") && (
           <>
-            <button
-              className="chat-header-action"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleSearch}
               aria-label="Search messages"
-              title="Search"
+              className="h-8 w-8"
             >
-              🔍
-            </button>
+              <Search className="h-4 w-4" />
+            </Button>
             {showSearch && (
-              <form onSubmit={handleSearchSubmit} className="chat-header-search">
-                <input
+              <form onSubmit={handleSearchSubmit} className="ml-2">
+                <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search messages..."
-                  className="chat-header-search-input"
+                  className="h-8 w-48"
                   autoFocus
                 />
               </form>
@@ -105,37 +121,40 @@ export function ChatHeader({
 
         {/* Pin */}
         {actions.includes("pin") && (
-          <button
-            className="chat-header-action"
+          <Button
+            variant="ghost"
+            size="icon"
             aria-label="Pinned messages"
-            title="Pinned messages"
+            className="h-8 w-8"
           >
-            📌
-          </button>
+            <Pin className="h-4 w-4" />
+          </Button>
         )}
 
         {/* Invite */}
         {actions.includes("invite") && config.allowInviteLink && (
-          <button
-            className="chat-header-action"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onInvite}
             aria-label="Invite users"
-            title="Invite"
+            className="h-8 w-8"
           >
-            ➕
-          </button>
+            <UserPlus className="h-4 w-4" />
+          </Button>
         )}
 
         {/* Refresh */}
         {onRefresh && (
-          <button
-            className="chat-header-action"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onRefresh}
             aria-label="Refresh"
-            title="Refresh"
+            className="h-8 w-8"
           >
-            🔄
-          </button>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         )}
       </div>
     </div>

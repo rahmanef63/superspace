@@ -3,16 +3,18 @@
  * 
  * Inline-editable inspector panel for workspace details
  * Shows: name, description, type, icon, color, owner, created/updated time
+ * Includes: Danger Zone for delete/reset operations
  */
 
 "use client"
 
 import * as React from "react"
-import { useQuery } from "convex/react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { useRouter } from "next/navigation"
 import { 
   User, 
   Calendar, 
@@ -27,6 +29,12 @@ import {
   Briefcase,
   Info,
   Layers,
+  Trash2,
+  RefreshCw,
+  AlertTriangle,
+  Loader2,
+  Globe,
+  Lock,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,6 +43,7 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -43,10 +52,30 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
 import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
 import { WORKSPACE_TYPE_OPTIONS } from "../constants"
 import type { WorkspaceStoreItem, WorkspaceType } from "../types"
+import { toast } from "sonner"
 
 // ============================================================================
 // Types
@@ -386,8 +415,225 @@ export function WorkspaceInspector({
             </code>
           </div>
         </div>
+
+        <Separator />
+
+        {/* Visibility Settings */}
+        <div className="space-y-4">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Visibility</h4>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {workspace.isPublic ? (
+                <Globe className="h-4 w-4 text-green-500" />
+              ) : (
+                <Lock className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <div className="text-sm font-medium">
+                  {workspace.isPublic ? "Public" : "Private"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {workspace.isPublic 
+                    ? "Anyone can find and request to join"
+                    : "Only invited members can access"
+                  }
+                </div>
+              </div>
+            </div>
+            <Switch
+              checked={workspace.isPublic ?? false}
+              onCheckedChange={(checked) => handleUpdate("isPublic", checked)}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Danger Zone */}
+        <DangerZone 
+          workspaceId={workspace.id as Id<"workspaces">}
+          workspaceName={workspace.name}
+        />
       </div>
     </ScrollArea>
+  )
+}
+
+// ============================================================================
+// Danger Zone Component
+// ============================================================================
+
+interface DangerZoneProps {
+  workspaceId: Id<"workspaces">
+  workspaceName: string
+}
+
+function DangerZone({ workspaceId, workspaceName }: DangerZoneProps) {
+  const router = useRouter()
+  const deleteWorkspace = useMutation(api.workspace.workspaces.deleteWorkspace as any)
+  const resetWorkspace = useMutation(api.workspace.workspaces.resetWorkspace as any)
+
+  const [showResetDialog, setShowResetDialog] = React.useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
+  const [resetMode, setResetMode] = React.useState<'replaceMenus' | 'clean'>('replaceMenus')
+  const [isDeleting, setIsDeleting] = React.useState(false)
+  const [isResetting, setIsResetting] = React.useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await deleteWorkspace({ workspaceId })
+      toast.success("Workspace deleted", {
+        description: "Your workspace has been permanently deleted",
+      })
+      router.replace('/dashboard?deleted=1')
+    } catch (error) {
+      toast.error("Failed to delete workspace", {
+        description: error instanceof Error ? error.message : "An error occurred",
+      })
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
+  const handleReset = async () => {
+    setIsResetting(true)
+    try {
+      await resetWorkspace({ workspaceId, mode: resetMode })
+      toast.success("Workspace reset", {
+        description: resetMode === 'clean' 
+          ? "All data has been cleared" 
+          : "Menus have been replaced with defaults",
+      })
+      setShowResetDialog(false)
+    } catch (error) {
+      toast.error("Failed to reset workspace", {
+        description: error instanceof Error ? error.message : "An error occurred",
+      })
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <h4 className="text-xs font-medium text-destructive uppercase tracking-wider flex items-center gap-2">
+        <AlertTriangle className="h-3 w-3" />
+        Danger Zone
+      </h4>
+
+      <div className="space-y-3 p-3 border border-destructive/30 rounded-lg bg-destructive/5">
+        {/* Reset Workspace */}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="text-sm font-medium">Reset Workspace</div>
+            <div className="text-xs text-muted-foreground">
+              Clear data or restore default menus
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowResetDialog(true)}
+            className="border-destructive/50 text-destructive hover:bg-destructive/10"
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Reset
+          </Button>
+        </div>
+
+        <Separator className="bg-destructive/20" />
+
+        {/* Delete Workspace */}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="text-sm font-medium">Delete Workspace</div>
+            <div className="text-xs text-muted-foreground">
+              Permanently delete this workspace
+            </div>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      {/* Reset Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Workspace</DialogTitle>
+            <DialogDescription>
+              Choose how you want to reset "{workspaceName}"
+            </DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={resetMode} onValueChange={(v) => setResetMode(v as typeof resetMode)}>
+            <div className="flex items-start space-x-3 p-3 border rounded-lg">
+              <RadioGroupItem value="replaceMenus" id="replaceMenus" />
+              <Label htmlFor="replaceMenus" className="flex flex-col gap-1 cursor-pointer">
+                <span className="font-medium">Replace menus with defaults</span>
+                <span className="text-xs text-muted-foreground">
+                  Restore default menu items. Your data will be preserved.
+                </span>
+              </Label>
+            </div>
+            <div className="flex items-start space-x-3 p-3 border rounded-lg border-destructive/30">
+              <RadioGroupItem value="clean" id="clean" />
+              <Label htmlFor="clean" className="flex flex-col gap-1 cursor-pointer">
+                <span className="font-medium text-destructive">Clean reset</span>
+                <span className="text-xs text-muted-foreground">
+                  Clear all data including documents, tasks, and settings. This cannot be undone.
+                </span>
+              </Label>
+            </div>
+          </RadioGroup>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={resetMode === 'clean' ? 'destructive' : 'default'}
+              onClick={handleReset}
+              disabled={isResetting}
+            >
+              {isResetting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {resetMode === 'clean' ? 'Reset Everything' : 'Reset Menus'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{workspaceName}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the workspace 
+              and all its data, including documents, tasks, members, and settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete Workspace
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }
 

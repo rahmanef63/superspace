@@ -104,6 +104,15 @@ export function GridView<T extends Record<string, any>>({
     }
   };
 
+  // Handle card click - navigation or selection
+  const handleCardClick = (item: T, index: number) => {
+    if (config.onItemClick) {
+      config.onItemClick(item);
+    } else if (config.settings?.selectable) {
+      toggleSelection(item, index);
+    }
+  };
+
   // Render custom card if provided
   if (config.renderCard) {
     return (
@@ -113,12 +122,22 @@ export function GridView<T extends Record<string, any>>({
             const id = getItemId(item, index);
             const selected = isSelected(item, index);
             return (
-              <div key={id} className="relative">
+              <div 
+                key={id} 
+                className={cn(
+                  "relative cursor-pointer",
+                  config.onItemClick && "hover:opacity-80 transition-opacity"
+                )}
+                onClick={() => handleCardClick(item, index)}
+              >
                 {config.settings?.selectable && (
                   <div className="absolute top-2 left-2 z-10">
                     <Checkbox
                       checked={selected}
-                      onCheckedChange={() => toggleSelection(item, index)}
+                      onCheckedChange={(e) => {
+                        e && toggleSelection(item, index);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
                       aria-label={`Select ${id}`}
                     />
                   </div>
@@ -156,7 +175,7 @@ export function GridView<T extends Record<string, any>>({
                 "relative transition-colors cursor-pointer hover:bg-accent/50",
                 selected && "ring-2 ring-primary"
               )}
-              onClick={() => config.settings?.selectable && toggleSelection(item, index)}
+              onClick={() => handleCardClick(item, index)}
             >
               {config.settings?.selectable && (
                 <div className="absolute top-4 right-4 z-10">

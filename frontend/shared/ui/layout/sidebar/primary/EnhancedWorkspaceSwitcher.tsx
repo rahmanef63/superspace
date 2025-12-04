@@ -48,6 +48,7 @@ import {
   Palette,
   MoreHorizontal,
   Check,
+  Share2,
 } from "lucide-react";
 import { Id, Doc } from "@convex/_generated/dataModel";
 import { useWorkspaceContext, useChildWorkspaces } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
@@ -263,6 +264,11 @@ export function EnhancedWorkspaceSwitcher({
                         Main
                       </Badge>
                     )}
+                    {(currentWorkspace as any)?.isShared && (
+                      <Badge variant="outline" className="h-4 px-1 text-[10px] gap-0.5">
+                        <Share2 className="size-2.5" />
+                      </Badge>
+                    )}
                   </div>
                   <span className="truncate text-xs text-muted-foreground">
                     {currentWorkspace?.type || ""}
@@ -309,6 +315,7 @@ export function EnhancedWorkspaceSwitcher({
                     isSelected={String(workspaceId) === String(mainWorkspace._id)}
                     onSelect={() => handleWorkspaceSelect(mainWorkspace._id)}
                     isMain
+                    isShared={(mainWorkspace as any).isShared}
                   />
                   <DropdownMenuSeparator />
                 </>
@@ -329,6 +336,7 @@ export function EnhancedWorkspaceSwitcher({
                           isSelected={String(workspaceId) === String(ws._id)}
                           onSelect={() => handleWorkspaceSelect(ws._id)}
                           isLinked={(ws as any).isLinked}
+                          isShared={(ws as any).isShared}
                         />
                       ))}
                     </>
@@ -346,6 +354,7 @@ export function EnhancedWorkspaceSwitcher({
                           isSelected={String(workspaceId) === String(ws._id)}
                           onSelect={() => handleWorkspaceSelect(ws._id)}
                           isLinked={(ws as any).isLinked}
+                          isShared={(ws as any).isShared}
                           onUnlink={
                             (ws as any).isLinked
                               ? () => handleUnlinkWorkspace(ws._id)
@@ -374,6 +383,7 @@ export function EnhancedWorkspaceSwitcher({
                         workspace={ws}
                         isSelected={String(workspaceId) === String(ws._id)}
                         onSelect={() => handleWorkspaceSelect(ws._id)}
+                        isShared={(ws as any).isShared}
                       />
                     ))}
                   <DropdownMenuSeparator />
@@ -465,6 +475,7 @@ function WorkspaceMenuItem({
   onSelect,
   isMain = false,
   isLinked = false,
+  isShared = false,
   onUnlink,
   onColorChange,
 }: {
@@ -473,6 +484,7 @@ function WorkspaceMenuItem({
   onSelect: () => void;
   isMain?: boolean;
   isLinked?: boolean;
+  isShared?: boolean;
   onUnlink?: () => void;
   onColorChange?: (color: string) => void;
 }) {
@@ -502,6 +514,12 @@ function WorkspaceMenuItem({
           {isMain && (
             <Badge variant="secondary" className="h-4 px-1 text-[10px]">
               Main
+            </Badge>
+          )}
+          {isShared && (
+            <Badge variant="outline" className="h-4 px-1 text-[10px] gap-0.5">
+              <Share2 className="size-2.5" />
+              Shared
             </Badge>
           )}
           {isLinked && (

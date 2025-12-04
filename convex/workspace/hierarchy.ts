@@ -318,9 +318,14 @@ export const getSiblingWorkspaces = query({
     await collectDescendants(args.workspaceId, 0)
     
     if (!workspace.parentWorkspaceId) {
-      // Root level - return other root workspaces by same creator
-      // EXCLUDE: Main Workspace, ancestors, descendants
-      const siblings = await ctx.db
+      // Root level - return other root workspaces that user has access to
+      // EXCLUDE: Main Workspace, ancestors, descendants, current workspace
+      
+      // Get user's identity for membership lookup
+      const userId = await ensureUser(ctx)
+      
+      // 1. Get workspaces created by user
+      const createdWorkspaces = await ctx.db
         .query("workspaces")
         .withIndex("by_creator", (q) => q.eq("createdBy", workspace.createdBy))
         .filter((q) => 
@@ -335,8 +340,38 @@ export const getSiblingWorkspaces = query({
         )
         .collect()
       
+      // 2. Get workspaces user has membership to (shared with them)
+      const memberships = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect()
+      
+      const memberWorkspaces: Doc<"workspaces">[] = []
+      for (const membership of memberships) {
+        const ws = await ctx.db.get(membership.workspaceId)
+        if (ws && 
+            String(ws._id) !== String(args.workspaceId) &&
+            ws.isMainWorkspace !== true &&
+            !ws.parentWorkspaceId) {
+          // Mark as shared
+          memberWorkspaces.push({ ...ws, isShared: true, isOwner: false } as any)
+        }
+      }
+      
+      // Combine and deduplicate (prefer created over member if same)
+      const createdIds = new Set(createdWorkspaces.map(w => String(w._id)))
+      const uniqueMemberWorkspaces = memberWorkspaces.filter(
+        w => !createdIds.has(String(w._id))
+      )
+      
+      const allSiblings = [
+        ...createdWorkspaces.map(w => ({ ...w, isOwner: true, isShared: false })),
+        ...uniqueMemberWorkspaces
+      ]
+      
       // Filter out ancestors and descendants
-      return siblings.filter(s => 
+      return allSiblings.filter(s => 
         !ancestorIds.has(String(s._id)) && 
         !descendantIds.has(String(s._id))
       )

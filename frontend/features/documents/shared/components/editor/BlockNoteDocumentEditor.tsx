@@ -5,7 +5,8 @@ import { useTheme } from "next-themes";
 import { useBlockNoteSync } from "@convex-dev/prosemirror-sync/blocknote";
 import { BlockNoteEditor, BlockNoteSchema } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
-import { ArrowLeft, ArrowLeftIcon, Edit3, Globe, Lock, Save } from "lucide-react";
+import { ArrowLeftIcon, Globe, Lock } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import type { Id } from "@convex/_generated/dataModel";
 import { api } from "@convex/_generated/api";
@@ -35,8 +36,8 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
   const togglePublic = useToggleDocumentPublic();
   const userId = useMenuPresenceUserId();
 
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
 
   // Determine the effective theme for BlockNote (only supports 'light' or 'dark')
   const blockNoteTheme = (resolvedTheme === "dark" ? "dark" : "light") as "light" | "dark";
@@ -62,12 +63,16 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
   }, [document]);
 
   const handleSaveTitle = async () => {
-    if (!titleValue.trim() || !document) return;
+    if (!document) return;
+    
+    const trimmedTitle = titleValue.trim();
+    if (!trimmedTitle || trimmedTitle === document.title) {
+      setTitleValue(document.title);
+      return;
+    }
 
     try {
-      await updateTitle({ id: documentId, title: titleValue.trim() });
-      setIsEditingTitle(false);
-      toast.success("Title updated");
+      await updateTitle({ id: documentId, title: trimmedTitle });
     } catch (error) {
       toast.error("Failed to update title");
       setTitleValue(document.title);
@@ -110,74 +115,60 @@ export function BlockNoteDocumentEditor({ documentId, onBack, className }: Block
               </button>
             )}
 
-            {isEditingTitle ? (
-              <div className="flex items-center gap-2 flex-1">
-                <input
-                  type="text"
-                  value={titleValue}
-                  onChange={(e) => setTitleValue(e.target.value)}
-                  onBlur={handleSaveTitle}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSaveTitle();
-                    } else if (e.key === "Escape") {
-                      setTitleValue(document.title);
-                      setIsEditingTitle(false);
-                    }
-                  }}
-                  className="text-2xl font-bold text-foreground bg-transparent border-none outline-none flex-1"
-                  autoFocus
-                />
-                <button
-                  onClick={handleSaveTitle}
-                  className="p-1 text-primary hover:text-primary/80"
-                >
-                  <Save className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-1">
-                <h1 className="text-2xl font-bold text-foreground">{document.title}</h1>
-                {canEdit && (
-                  <button
-                    onClick={() => setIsEditingTitle(true)}
-                    className="p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            )}
+            <input
+              type="text"
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              onFocus={() => setIsTitleFocused(true)}
+              onBlur={() => {
+                setIsTitleFocused(false);
+                handleSaveTitle();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                } else if (e.key === "Escape") {
+                  setTitleValue(document.title);
+                  e.currentTarget.blur();
+                }
+              }}
+              disabled={!canEdit}
+              className={cn(
+                "text-xl font-semibold bg-transparent border-none outline-none flex-1 min-w-0",
+                "focus:ring-0 focus:outline-none",
+                canEdit && "hover:bg-muted/50 focus:bg-muted/50 rounded px-2 py-1 -ml-2",
+                !canEdit && "cursor-default"
+              )}
+              placeholder="Untitled"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {userId && documentId && (
               <DocumentPresenceIndicator roomId={documentId} userId={userId} />
             )}
 
             {canEdit && (
-              <button
-                onClick={handleTogglePublic}
-                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors", document.isPublic ? "bg-accent text-accent-foreground hover:bg-accent/90" : "bg-muted text-foreground hover:bg-muted/80")}
-              >
-                {document.isPublic ? (
-                  <>
-                    <Globe className="w-4 h-4" />
-                    Public
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    Private
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={document.isPublic}
+                  onCheckedChange={handleTogglePublic}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {document.isPublic ? (
+                    <><Globe className="w-3.5 h-3.5" /> Public</>
+                  ) : (
+                    <><Lock className="w-3.5 h-3.5" /> Private</>
+                  )}
+                </span>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="text-sm text-muted-foreground">
-          Last modified: {formatRelativeTime(document.lastModified ?? document._creationTime)}
+        <div className="text-xs text-muted-foreground">
+          Last modified {formatRelativeTime(document.lastModified ?? document._creationTime)}
         </div>
       </div>
 

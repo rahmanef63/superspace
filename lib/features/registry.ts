@@ -16,6 +16,7 @@ import callsConfig from '@/frontend/features/calls/config'
 import statusConfig from '@/frontend/features/status/config'
 import membersConfig from '@/frontend/features/members/config'
 import aiConfig from '@/frontend/features/ai/config'
+import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
 import starredConfig from '@/frontend/features/starred/config'
 import knowledgeConfig from '@/frontend/features/knowledge/config'
 import friendsConfig from '@/frontend/features/friends/config'
@@ -24,6 +25,7 @@ import databaseConfig from '@/frontend/features/database/config'
 import documentsConfig from '@/frontend/features/documents/config'
 import menuStoreConfig from '@/frontend/features/menu-store/config'
 import invitationsConfig from '@/frontend/features/invitations/config'
+import userManagementConfig from '@/frontend/features/user-management/config'
 import reportsConfig from '@/frontend/features/reports/config'
 import tasksConfig from '@/frontend/features/tasks/config'
 import supportConfig from '@/frontend/features/support/config'
@@ -35,7 +37,6 @@ import builderConfig from '@/frontend/features/builder/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
-import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
 import platformAdminConfig from '@/frontend/features/platform-admin/config'
 
@@ -46,6 +47,7 @@ const featureConfigs: FeatureConfig[] = [
   statusConfig,
   membersConfig,
   aiConfig,
+  workspaceStoreConfig,
   starredConfig,
   knowledgeConfig,
   friendsConfig,
@@ -54,6 +56,7 @@ const featureConfigs: FeatureConfig[] = [
   documentsConfig,
   menuStoreConfig,
   invitationsConfig,
+  userManagementConfig,
   reportsConfig,
   tasksConfig,
   supportConfig,
@@ -65,7 +68,6 @@ const featureConfigs: FeatureConfig[] = [
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
-  workspaceStoreConfig,
   cmsLiteConfig,
   platformAdminConfig,
 ]

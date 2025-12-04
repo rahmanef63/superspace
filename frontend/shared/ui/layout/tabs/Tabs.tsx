@@ -340,15 +340,18 @@ export function TabsTrigger({
   const ctx = useTabsContext()
   const isActive = ctx.activeTab === value
 
+  // Extract stable references to avoid re-running effect when context object changes
+  const { registerTab, unregisterTab } = ctx
+
   // Register this tab
   React.useEffect(() => {
-    ctx.registerTab({
+    registerTab({
       id: value,
       label: typeof children === "string" ? children : value,
       disabled,
     })
-    return () => ctx.unregisterTab(value)
-  }, [value, children, disabled, ctx])
+    return () => unregisterTab(value)
+  }, [value, children, disabled, registerTab, unregisterTab])
 
   return (
     <button

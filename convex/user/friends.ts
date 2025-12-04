@@ -10,6 +10,10 @@ export const getUserFriends = query({
     const userId = await getExistingUserId(ctx);
     if (!userId) return [] as any;
 
+    // Get current user to check for duplicates
+    const currentUser = await ctx.db.get(userId);
+    const currentUserEmail = currentUser?.email;
+
     const friendships = await ctx.db
       .query("friendships")
       .withIndex("by_user1", (q) => q.eq("user1Id", userId))
@@ -34,7 +38,12 @@ export const getUserFriends = query({
       }),
     ]);
 
-    return friends.filter(f => f.friend);
+    // Filter out: null friends, self (by ID), and duplicates of self (by email)
+    return friends.filter(f => 
+      f.friend && 
+      f.friend._id !== userId &&
+      f.friend.email !== currentUserEmail
+    );
   },
 });
 

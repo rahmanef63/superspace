@@ -190,3 +190,62 @@ export type {
   MessageBusEvent,
 } from "./types/events";
 export type { MemberProfile } from "./types/member";
+
+// ============================================================================
+// AI Chat System
+// ============================================================================
+
+// AI Components
+export {
+  AIMessage,
+  AIInput,
+  AIHeader,
+  AIThread,
+  AIContainer,
+  AISessionCard,
+  AIEmptyState,
+  AIKnowledgeSelector,
+} from "./components/ai";
+export type {
+  AIMessageProps,
+  AIInputProps,
+  AIHeaderProps,
+  AIThreadProps,
+  AIContainerProps,
+  AISessionCardProps,
+  AIEmptyStateProps,
+  AIKnowledgeSelectorProps,
+  KnowledgeSource,
+} from "./components/ai";
+
+// AI Hooks
+export { useAI } from "./hooks/useAI";
+export type { UseAIProps } from "./hooks/useAI";
+export { useAIStoreBase, createAIStore, aiStoreSelectors } from "./hooks/useAIStore";
+export type { AIStore } from "./hooks/useAIStore";
+
+// AI Types
+export type {
+  AIRole,
+  AIMessage as AIMessageType,
+  AIMessageMetadata,
+  AIMessageDraft,
+  AISession,
+  AISettings,
+  AIBotType,
+  AIBotConfig,
+  AICapability,
+  KnowledgeSourceType,
+  AIKnowledgeContext,
+  AIStoreState,
+  AIStoreActions,
+  AIDataSource,
+  AIConfig,
+  AILayout,
+  UseAIOptions,
+  UseAIReturn,
+  AIEvents,
+  AIListViewProps,
+  AIDetailViewProps,
+} from "./types/ai";
+export { DEFAULT_AI_SETTINGS } from "./types/ai";

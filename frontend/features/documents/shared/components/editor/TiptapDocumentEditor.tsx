@@ -1,7 +1,9 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Globe, Lock, ArrowLeft } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
+import { Switch } from "@/components/ui/switch";
 import { CommentsPanel } from "@/frontend/shared/communications";
 import {
   useDocumentById,
@@ -94,17 +96,17 @@ export function TiptapDocumentEditor({ documentId, onBack, className }: TiptapDo
   }
 
   return (
-    <div className={cn("flex h-full bg-white", className)}>
+    <div className={cn("flex h-full bg-background", className)}>
       <div className="flex-1 flex flex-col">
-        <div className="border-b border-gray-200 p-4">
+        <div className="border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               {onBack && (
                 <button
                   onClick={onBack}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  {"<- Back"}
+                  <ArrowLeft className="w-4 h-4" />
                 </button>
               )}
 
@@ -115,31 +117,50 @@ export function TiptapDocumentEditor({ documentId, onBack, className }: TiptapDo
                   setTitle(e.target.value);
                   setHasUnsavedChanges(true);
                 }}
-                className="flex-1 text-2xl font-semibold text-gray-900 bg-transparent border-none outline-none"
+                className={cn(
+                  "flex-1 text-xl font-semibold bg-transparent border-none outline-none",
+                  "hover:bg-muted/50 focus:bg-muted/50 rounded px-2 py-1 -ml-2"
+                )}
                 placeholder="Untitled"
               />
+            </div>
+
+            <div className="flex items-center gap-4">
+              {userId && (
+                <DocumentPresenceIndicator roomId={documentId} userId={userId} />
+              )}
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={isPublic}
+                  onCheckedChange={(checked) => {
+                    setIsPublic(checked);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {isPublic ? (
+                    <><Globe className="w-3.5 h-3.5" /> Public</>
+                  ) : (
+                    <><Lock className="w-3.5 h-3.5" /> Private</>
+                  )}
+                </span>
+              </div>
 
               <button
-                onClick={() => {
-                  setIsPublic((prev) => !prev);
-                  setHasUnsavedChanges(true);
-                }}
-                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors", isPublic ? "bg-green-50 text-green-700 hover:bg-green-100" : "bg-gray-50 text-gray-700 hover:bg-gray-100")}
-              >
-                {isPublic ? "Public" : "Private"}
-              </button>
-
-              <button
-                className={cn("flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors", hasUnsavedChanges ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-100 text-gray-400 cursor-not-allowed")}
+                onClick={handleSave}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                  hasUnsavedChanges 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                )}
                 disabled={!hasUnsavedChanges}
               >
                 {hasUnsavedChanges ? "Save" : "Saved"}
               </button>
             </div>
-
-            {userId && (
-              <DocumentPresenceIndicator roomId={documentId} userId={userId} showLabel={false} />
-            )}
           </div>
         </div>
 
@@ -154,27 +175,27 @@ export function TiptapDocumentEditor({ documentId, onBack, className }: TiptapDo
           />
         </div>
 
-        <div className="border-t border-gray-200 px-6 py-2 bg-gray-50">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="border-t border-border px-6 py-2 bg-muted/30">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div>
               {stats.characters} characters • {stats.words} words
             </div>
             <div className="flex items-center gap-4">
-              {hasUnsavedChanges && <span className="text-orange-600">Unsaved changes</span>}
+              {hasUnsavedChanges && <span className="text-amber-600">Unsaved changes</span>}
               <button
                 onClick={() => setShowComments((prev) => !prev)}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-primary hover:text-primary/80"
               >
                 {showComments ? "Hide comments" : "Show comments"}
               </button>
-              <span>Last modified: {formatRelativeTime(document.lastModified ?? document._creationTime)}</span>
+              <span>Last modified {formatRelativeTime(document.lastModified ?? document._creationTime)}</span>
             </div>
           </div>
         </div>
       </div>
 
       {showComments && (
-        <div className="w-80 border-l bg-gray-50">
+        <div className="w-80 border-l border-border bg-muted/30">
           <CommentsPanel documentId={documentId} />
         </div>
       )}

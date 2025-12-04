@@ -8,7 +8,7 @@ export default defineFeature({
   ui: {
     icon: 'Menu',
     path: '/dashboard/menus',
-    component: 'MenusPage',
+    component: 'MenuStorePage',
     category: 'administration',
     order: 10,
   },

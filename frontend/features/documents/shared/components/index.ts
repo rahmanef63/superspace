@@ -1,7 +1,6 @@
 ﻿// New exports (preferred)
 export * from "./CreateDocumentDialog";
 export * from "./DocumentsListView";
-export * from "./DocumentsListCompact";
 export * from "./DocumentDetailView";
 export * from "./DocumentEditorOnly";
 export * from "./DocumentsView";

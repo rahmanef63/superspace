@@ -65,23 +65,22 @@ export function TabsProvider({
   lazy,
   keepMounted,
 }: TabsProviderProps) {
-  const [tabs, setTabs] = React.useState<Map<string, TabItem>>(new Map())
+  const tabsRef = React.useRef<Map<string, TabItem>>(new Map())
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0)
 
   const registerTab = React.useCallback((tab: TabItem) => {
-    setTabs((prev) => {
-      const next = new Map(prev)
-      next.set(tab.id, tab)
-      return next
-    })
+    tabsRef.current.set(tab.id, tab)
+    // Only force update if we need reactivity for the tabs list
+    // Most use cases don't need this, so we skip the re-render
   }, [])
 
   const unregisterTab = React.useCallback((id: string) => {
-    setTabs((prev) => {
-      const next = new Map(prev)
-      next.delete(id)
-      return next
-    })
+    tabsRef.current.delete(id)
+    // Don't trigger re-render on unregister to avoid infinite loops
   }, [])
+
+  // Stable getter for tabs
+  const getTabs = React.useCallback(() => tabsRef.current, [])
 
   const value = React.useMemo<TabsContextValue>(
     () => ({
@@ -93,7 +92,7 @@ export function TabsProvider({
       alignment,
       lazy,
       keepMounted,
-      tabs,
+      tabs: tabsRef.current,
       registerTab,
       unregisterTab,
     }),
@@ -106,7 +105,6 @@ export function TabsProvider({
       alignment,
       lazy,
       keepMounted,
-      tabs,
       registerTab,
       unregisterTab,
     ]

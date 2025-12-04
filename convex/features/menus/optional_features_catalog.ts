@@ -110,7 +110,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "slug": "crm",
     "name": "CRM",
     "description": "Customer relationship management with integrated chat",
-    "icon": "Users",
+    "icon": "Contact",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [

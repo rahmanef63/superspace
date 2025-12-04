@@ -40,6 +40,7 @@ import { customFeaturesTables } from "./custom/schema";
 import { systemFeaturesTables } from "./system/schema";
 import { bundleTables } from "./bundles/schema";
 import { knowledgeTables } from "./knowledge/api/schema";
+import { userManagementTables } from "./userManagement/api/schema";
 
 export const featureTables = {
   ...coreTables,
@@ -84,4 +85,5 @@ export const featureTables = {
   ...systemFeaturesTables,
   ...bundleTables,
   ...knowledgeTables,
+  ...userManagementTables,
 };

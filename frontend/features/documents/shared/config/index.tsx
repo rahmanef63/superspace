@@ -83,6 +83,7 @@ export const createDocumentViewConfig = (
 
   return {
     getId: (doc) => String(doc._id),
+    onOpen: options.onOpen,
     columns: [
       {
         id: "title",

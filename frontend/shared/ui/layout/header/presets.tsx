@@ -46,6 +46,7 @@ export interface FeatureHeaderProps {
   badge?: {
     text: string
     variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+    icon?: LucideIcon
   }
   /** Meta information (e.g., count, last updated) */
   meta?: HeaderMetaItem[]

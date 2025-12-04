@@ -84,6 +84,32 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
+    name: "Workspace Store",
+    slug: "workspace-store",
+    type: "route" as const,
+    icon: "Building2",
+    path: "/dashboard/workspace-store",
+    component: "WorkspaceStorePage" as const,
+    order: 5,
+    metadata: {
+      description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
+      version: "1.0.0",
+      category: "administration" as const,
+      tags: [
+        "workspace",
+        "hierarchy",
+        "tree",
+        "system",
+        "administration"
+      ],
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "MANAGE_WORKSPACES",
+      originalRequiresPermission: "MANAGE_WORKSPACES"
+    },
+    requiresPermission: "MANAGE_WORKSPACES"
+  },
+  {
     name: "Starred" as const,
     slug: "starred" as const,
     type: "route" as const,
@@ -226,7 +252,7 @@ export const DEFAULT_MENU_ITEMS = [
     type: "route" as const,
     icon: "Menu" as const,
     path: "/dashboard/menus",
-    component: "MenusPage" as const,
+    component: "MenuStorePage" as const,
     order: 10,
     metadata: {
       description: "Install and manage navigation menus",
@@ -269,6 +295,33 @@ export const DEFAULT_MENU_ITEMS = [
     requiresPermission: "MANAGE_INVITATIONS"
   },
   {
+    name: "User Management",
+    slug: "user-management",
+    type: "route" as const,
+    icon: "UserCog" as const,
+    path: "/dashboard/user-management",
+    component: "UserManagementPage" as const,
+    order: 12,
+    metadata: {
+      description: "Unified user management: members, teams, invitations, and role hierarchy",
+      version: "1.0.0",
+      category: "administration" as const,
+      tags: [
+        "users",
+        "members",
+        "teams",
+        "roles",
+        "invitations",
+        "access-control"
+      ],
+      featureType: "system" as const,
+      originalFeatureType: "system" as const,
+      requiresPermission: "MANAGE_MEMBERS",
+      originalRequiresPermission: "MANAGE_MEMBERS"
+    },
+    requiresPermission: "MANAGE_MEMBERS"
+  },
+  {
     name: "Profile" as const,
     slug: "user-settings",
     type: "route" as const,
@@ -296,23 +349,21 @@ export const DEFAULT_MENU_ITEMS = [
     type: "route" as const,
     icon: "Settings" as const,
     path: "/dashboard/settings",
-    component: "WorkspacesPage" as const,
+    component: "SettingsPage" as const,
     order: 99,
     metadata: {
-      description: "Workspace configuration and settings",
-      version: "1.0.0",
+      description: "Personal preferences, account settings, and app configuration",
+      version: "2.0.0",
       category: "administration" as const,
       tags: [
-        "workspace",
+        "personal",
         "settings",
-        "configuration"
+        "preferences",
+        "account"
       ],
       featureType: "system" as const,
-      originalFeatureType: "system" as const,
-      requiresPermission: "MANAGE_WORKSPACE",
-      originalRequiresPermission: "MANAGE_WORKSPACE"
-    },
-    requiresPermission: "MANAGE_WORKSPACE"
+      originalFeatureType: "system" as const
+    }
   },
   {
     name: "Cms Lite",

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
+import { query, mutation, internalMutation } from "../_generated/server";
 import { ensureUser, requireActiveMembership, hasPermission, canPermission } from "../auth/helpers";
 import { PERMS } from "./permissions";
 
@@ -31,11 +31,11 @@ export const sendWorkspaceInvitation = mutation({
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect();
 
-    // Find user by email
+    // Find user by email (use first() to handle potential duplicates)
     const inviteeUser = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.inviteeEmail))
-      .unique();
+      .withIndex("by_email", (q) => q.eq("email", args.inviteeEmail))
+      .first();
 
     if (inviteeUser) {
       const existingMember = existingMembership.find(m => m.userId === inviteeUser._id);
@@ -128,11 +128,11 @@ export const sendPersonalInvitation = mutation({
     const currentUserId = await ensureUser(ctx);
     if (!currentUserId) throw new Error("Not authenticated");
 
-    // Check if user exists
+    // Check if user exists (use first() instead of unique() to handle potential duplicates)
     const inviteeUser = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.inviteeEmail))
-      .unique();
+      .withIndex("by_email", (q) => q.eq("email", args.inviteeEmail))
+      .first();
 
     // Check for existing invitation
     const existingInvitation = await ctx.db
@@ -310,7 +310,7 @@ export const acceptInvitation = mutation({
       const existingMembership = await ctx.db
         .query("workspaceMemberships")
         .withIndex("by_user_workspace", (q) => q.eq("userId", currentUserId).eq("workspaceId", invitation.workspaceId!))
-        .unique();
+        .first();
 
       if (!existingMembership) {
         await ctx.db.insert("workspaceMemberships", {
@@ -592,11 +592,11 @@ export const sendBulkInvitations = mutation({
 
     for (const inv of args.invitations) {
       try {
-        // Check if user is already a member
+        // Check if user is already a member (use first() to handle potential duplicates)
         const inviteeUser = await ctx.db
           .query("users")
-          .filter((q) => q.eq(q.field("email"), inv.email))
-          .unique();
+          .withIndex("by_email", (q) => q.eq("email", inv.email))
+          .first();
 
         if (inviteeUser) {
           const existingMembership = await ctx.db
@@ -751,6 +751,31 @@ export const cleanupExpiredInvitations = mutation({
       }
     }
 
+    return { cleanedCount };
+  },
+});
+
+// Internal version for cron job - no auth required
+export const cleanupExpiredInvitationsInternal = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    console.log("[cleanupExpiredInvitationsInternal] Starting cleanup...");
+    
+    const now = Date.now();
+    const invitations = await ctx.db
+      .query("invitations")
+      .filter((q) => q.eq(q.field("status"), "pending"))
+      .collect();
+
+    let cleanedCount = 0;
+    for (const inv of invitations) {
+      if (inv.expiresAt && inv.expiresAt < now) {
+        await ctx.db.patch(inv._id, { status: "expired" });
+        cleanedCount++;
+      }
+    }
+
+    console.log(`[cleanupExpiredInvitationsInternal] Cleaned up ${cleanedCount} expired invitations`);
     return { cleanedCount };
   },
 });

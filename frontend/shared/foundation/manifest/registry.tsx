@@ -26,6 +26,7 @@ import {
   Building2,
   Camera,
   CheckSquare,
+  Contact,
   Database,
   Eye,
   FileText,
@@ -44,6 +45,7 @@ import {
   Star,
   TrendingUp,
   User,
+  UserCog,
   Users,
   Workflow
 } from "lucide-react"
@@ -110,6 +112,21 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/ai/page")),
   },
   {
+    id: "workspace-store",
+    componentId: "WorkspaceStorePage",
+    title: "Workspace Store",
+    description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
+    icon: Building2,
+    component: lazy(async () => {
+        const module = await import("@/frontend/features/workspace-store")
+        const Component = module.WorkspaceStorePage
+        if (!Component) {
+          throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
+        }
+        return { default: Component }
+      }),
+  },
+  {
     id: "starred",
     componentId: "StarredPage",
     title: "Starred",
@@ -159,11 +176,18 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
   },
   {
     id: "menus",
-    componentId: "MenusPage",
+    componentId: "MenuStorePage",
     title: "Menu Store",
     description: "Install and manage navigation menus",
     icon: Menu,
-    component: lazy(() => import("@/frontend/features/menu-store/MenuStorePage")),
+    component: lazy(async () => {
+        const module = await import("@/frontend/features/menu-store")
+        const Component = module.MenuStorePage
+        if (!Component) {
+          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
+        }
+        return { default: Component }
+      }),
   },
   {
     id: "invitations",
@@ -172,6 +196,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage workspace invitations",
     icon: Mail,
     component: lazy(() => import("@/frontend/features/invitations/page")),
+  },
+  {
+    id: "user-management",
+    componentId: "UserManagementPage",
+    title: "User Management",
+    description: "Unified user management: members, teams, invitations, and role hierarchy",
+    icon: UserCog,
+    component: lazy(() => import("@/frontend/features/user-management/page")),
   },
   {
     id: "reports",
@@ -210,7 +242,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     componentId: "CRMPage",
     title: "CRM",
     description: "Customer relationship management with integrated chat",
-    icon: Users,
+    icon: Contact,
     component: lazy(() => import("@/frontend/features/crm/page")),
   },
   {
@@ -287,9 +319,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
   },
   {
     id: "settings",
-    componentId: "WorkspacesPage",
+    componentId: "SettingsPage",
     title: "Settings",
-    description: "Workspace configuration and settings",
+    description: "Personal preferences, account settings, and app configuration",
     icon: Settings,
     component: lazy(() => import("@/frontend/features/workspace-settings/page")),
   },
@@ -308,14 +340,6 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Super Admin panel for managing features, workspaces, and system configuration",
     icon: Shield,
     component: lazy(() => import("@/frontend/features/platform-admin/views/PlatformAdminPage")),
-  },
-  {
-    id: "workspace-store",
-    componentId: "WorkspaceStorePage",
-    title: "Workspace Store",
-    description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
-    icon: Building2,
-    component: lazy(() => import("@/frontend/features/workspace-store/WorkspaceStorePage")),
   }
 ]
 

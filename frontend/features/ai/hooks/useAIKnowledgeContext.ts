@@ -4,7 +4,7 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { useAIStore } from "../stores"
-import type { KnowledgeSourceType } from "../components/WikiSelector"
+import type { KnowledgeSourceType } from "../types"
 
 /**
  * Hook to fetch and format knowledge context for AI

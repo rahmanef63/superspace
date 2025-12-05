@@ -57,18 +57,15 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
   },
 
   loadMessages: async (chatId: string) => {
-    set({ isLoading: true });
     try {
       const repo = get().repo;
       const messages = repo ? await repo.getMessages(chatId) : [];
       set((state) => ({
         messages: { ...state.messages, [chatId]: messages },
-        isLoading: false,
       }));
     } catch (error) {
       console.error('Failed to load messages:', error);
       toast.error('Gagal memuat pesan');
-      set({ isLoading: false });
     }
   },
 

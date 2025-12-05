@@ -15,9 +15,8 @@ export {
 
 // AI Chat (updated)
 export { AIChatContainer } from "./ai/components/AIChatContainer";
-export { RefactoredAIView } from "./ai/RefactoredAIView";
+export { default as AIDetailView } from "./ai/AIDetailView";
 export type { AIChatContainerProps } from "./ai/components/AIChatContainer";
-export type { RefactoredAIViewProps } from "./ai/RefactoredAIView";
 
 // Comments/Threads (new)
 export { CommentsPanel } from "./comments/components/CommentsPanel";

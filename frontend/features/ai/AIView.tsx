@@ -30,7 +30,7 @@ export function AIView() {
     // On mobile, show either AI chat list or AI chat detail, not both
     if (selectedSessionId) {
       return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-full bg-background">
           <TopBar
             title="AI"
             showSearch={false}
@@ -43,7 +43,7 @@ export function AIView() {
     }
     
     return (
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-full bg-background">
         <TopBar
           title="AI"
           showSearch={true}

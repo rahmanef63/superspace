@@ -8,6 +8,7 @@ export interface Chat {
   isPinned: boolean
   isArchived: boolean
   isMuted: boolean
+  isFavorite?: boolean
   createdAt: number
   updatedAt: number
   avatar?: string

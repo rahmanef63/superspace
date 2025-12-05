@@ -5,7 +5,8 @@ import { SearchBar } from "../components/ui/SearchBar";
 
 export function ChatManagementView() {
   const isMobile = useIsMobile();
-  const { setActiveTab } = useWhatsAppStore();
+  // Use individual selector to prevent unnecessary re-renders
+  const setActiveTab = useWhatsAppStore((s) => s.setActiveTab);
 
   const handleBack = () => {
     setActiveTab('chats');

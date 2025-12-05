@@ -32,7 +32,9 @@ export const useInitializeChat = (providedWorkspaceId?: Id<"workspaces"> | null)
 
 // Hook to get current chat data
 export const useCurrentChat = () => {
-  const { chats, selectedChatId } = useWhatsAppStore();
+  // Use individual selectors to prevent unnecessary re-renders
+  const chats = useWhatsAppStore((s) => s.chats);
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
   return { selectedChat, selectedChatId };
@@ -41,7 +43,10 @@ export const useCurrentChat = () => {
 // Hook to handle mobile-specific Chats behavior
 export const useMobileWhatsApp = () => {
   const isMobile = useIsMobile();
-  const { selectedChatId, setSelectedChat, setActiveTab } = useWhatsAppStore();
+  // Use individual selectors to prevent unnecessary re-renders
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
+  const setSelectedChat = useWhatsAppStore((s) => s.setSelectedChat);
+  const setActiveTab = useWhatsAppStore((s) => s.setActiveTab);
   
   const handleBack = () => {
     if (isMobile) {

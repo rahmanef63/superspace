@@ -26,8 +26,11 @@ export const AI_PROVIDERS = [
   },
 ]
 
+export const DEFAULT_PROVIDER = "groq"
+export const DEFAULT_MODEL_ID = "llama-3.3-70b-versatile"
+
 export const DEFAULT_AI_SETTINGS = {
-  model: AI_MODELS.GPT_4,
+  model: DEFAULT_MODEL_ID,
   temperature: 0.7,
   maxTokens: 2048,
   systemPrompt: "You are a helpful AI assistant.",
@@ -49,6 +52,13 @@ export const AI_TOPICS = [
   "Business",
   "Creative",
 ] as const
+
+export const DEFAULT_SUGGESTIONS = [
+  "Explain how this codebase is structured",
+  "What are the main features of this project?",
+  "Help me write a function that...",
+  "Debug this error...",
+]
 
 export const MAX_MESSAGE_LENGTH = 4000
 export const MAX_CONVERSATIONS = 100

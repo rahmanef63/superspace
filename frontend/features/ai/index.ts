@@ -1,10 +1,7 @@
-// Main components (legacy)
+// Main components
 export * from "./AIListView"
 export * from "./AIDetailView"
 export * from "./AIView"
-
-// Refactored views (uses shared/communications)
-export * from "./view"
 
 // Sub-components
 export * from "./components"
@@ -30,16 +27,43 @@ export * from "./lib"
 // AI Wiki / Knowledge Base
 export * from "./wiki"
 
-// Re-export shared AI components for convenience
+// Re-export AI Elements components (new shadcn.io/ai style components)
 export {
-  AIMessage,
-  AIInput,
-  AIHeader,
-  AIThread,
-  AIContainer,
-  AISessionCard,
-  AIEmptyState,
-  AIKnowledgeSelector,
+  // New AI Elements
+  Message,
+  MessageContent,
+  MessageAvatar,
+  Response,
+  Conversation,
+  ConversationContent,
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputSubmit,
+  PromptInputAttachButton,
+  PromptInputAttachments,
+  Actions,
+  Action,
+  Tool,
+  ToolHeader,
+  ToolContent,
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  Source,
+  Suggestions,
+  Suggestion,
+  Branch,
+  CodeBlock,
+  Loader,
+  Image,
+  InlineCitation,
+  Task,
+  WebPreview,
+  // AI Hooks
   useAI,
   useAIStoreBase,
   createAIStore,
@@ -47,12 +71,9 @@ export {
 } from "@/frontend/shared/communications"
 
 export type {
-  AIMessageType,
+  AIMessage as AIMessageType,
   AISession,
-  AISettings,
   AIConfig,
-  AILayout,
-  AIEvents,
   AIKnowledgeContext,
   KnowledgeSourceType,
 } from "@/frontend/shared/communications"

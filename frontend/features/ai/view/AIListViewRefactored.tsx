@@ -6,7 +6,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Sparkles, Loader2, Bot, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -14,13 +14,70 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
 import { GlobalModeToggle } from "@/frontend/shared/ui/components/controls";
-import { AISessionCard } from "@/frontend/shared/communications";
 import { useAIStore } from "@/frontend/features/ai/stores";
 import { useAIActions } from "@/frontend/features/ai/hooks";
 import {
   truncateMessage,
   formatSidebarTimestamp,
 } from "@/frontend/shared/ui/layout/sidebar/secondary/utils";
+
+// Local session card component (replaces old AISessionCard)
+interface SessionCardProps {
+  id: string;
+  title: string;
+  lastMessage: string;
+  timestamp: string;
+  messageCount: number;
+  isActive: boolean;
+  isGlobal?: boolean;
+  onClick: () => void;
+}
+
+function SessionCard({
+  title,
+  lastMessage,
+  timestamp,
+  messageCount,
+  isActive,
+  isGlobal,
+  onClick,
+}: SessionCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full text-left p-3 rounded-lg transition-colors",
+        "hover:bg-accent/50",
+        isActive ? "bg-accent" : "bg-transparent"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+          isGlobal ? "bg-purple-500/10 text-purple-500" : "bg-primary/10 text-primary"
+        )}>
+          {isGlobal ? <Globe className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-medium text-sm text-foreground truncate">
+              {title}
+            </h3>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {timestamp}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground truncate mt-1">
+            {lastMessage}
+          </p>
+          <span className="text-xs text-muted-foreground/60">
+            {messageCount} {messageCount === 1 ? "message" : "messages"}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
 
 type AIListViewVariant = "standalone" | "layout";
 
@@ -193,7 +250,7 @@ export function AIListViewRefactored({
               hasRealData && (
                 <div className="space-y-2">
                   {filteredChats.map((chat) => (
-                    <AISessionCard
+                    <SessionCard
                       key={chat.id}
                       id={chat.id}
                       title={chat.title}

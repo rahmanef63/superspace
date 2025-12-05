@@ -169,9 +169,20 @@ export const appendChatMessage = mutation({
     sessionId: v.id("aiChatSessions"),
     message: v.string(),
     role: v.string(),
+    id: v.optional(v.string()),
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      name: v.string(),
+      type: v.string(),
+      url: v.string(),
+      size: v.number(),
+    }))),
+    replyTo: v.optional(v.string()),
+    reasoning: v.optional(v.string()),
     metadata: v.optional(v.object({
-      tokenCount: v.optional(v.number()),
+      tokenCount: v.optional(v.float64()),
       contextIds: v.optional(v.array(v.string())),
+      duration: v.optional(v.float64()),
     })),
   },
   handler: async (ctx, args) => {
@@ -181,14 +192,21 @@ export const appendChatMessage = mutation({
     }
 
     const messageEntry = {
+      id: args.id ?? Math.random().toString(36).substring(2, 15),
       role: args.role,
       content: args.message,
       timestamp: Date.now(),
+      attachments: args.attachments,
+      replyTo: args.replyTo,
+      reasoning: args.reasoning,
       metadata: args.metadata,
     };
 
+    // Cast session.messages to any to avoid type errors with old schema if needed, 
+    // but since we updated schema.ts, the types should be inferred correctly if we regenerated types.
+    // However, at runtime, we just append.
     await ctx.db.patch(args.sessionId, {
-      messages: [...session.messages, messageEntry],
+      messages: [...session.messages, messageEntry] as any,
       updatedAt: Date.now(),
     });
 
@@ -226,5 +244,77 @@ export const updateChatSession = mutation({
     await ctx.db.patch(args.sessionId, updates);
 
     return await ctx.db.get(args.sessionId);
+  },
+});
+
+/**
+ * Add a branch to a message (for regeneration)
+ */
+export const addMessageBranch = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+    messageId: v.string(),
+    content: v.string(),
+    branchId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new Error("Chat session not found");
+    }
+
+    const messages = session.messages.map((msg: any) => {
+      if (msg.id === args.messageId) {
+        const newBranch = {
+          id: args.branchId ?? Math.random().toString(36).substring(2, 15),
+          content: args.content,
+          timestamp: Date.now(),
+        };
+        return {
+          ...msg,
+          branches: [...(msg.branches || []), newBranch],
+        };
+      }
+      return msg;
+    });
+
+    await ctx.db.patch(args.sessionId, {
+      messages,
+      updatedAt: Date.now(),
+    });
+
+    return messages.find((m: any) => m.id === args.messageId);
+  },
+});
+
+/**
+ * Set feedback for a message
+ */
+export const setMessageFeedback = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+    messageId: v.string(),
+    feedback: v.string(), // "up" | "down"
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new Error("Chat session not found");
+    }
+
+    const messages = session.messages.map((msg: any) => {
+      if (msg.id === args.messageId) {
+        return {
+          ...msg,
+          feedback: args.feedback,
+        };
+      }
+      return msg;
+    });
+
+    await ctx.db.patch(args.sessionId, {
+      messages,
+      updatedAt: Date.now(),
+    });
   },
 });

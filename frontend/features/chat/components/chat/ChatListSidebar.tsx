@@ -31,11 +31,10 @@ export function ChatListSidebar({ showArchived = false }: ChatListSidebarProps) 
     sidebarContext = null;
   }
   
-  const {
-    chats,
-    selectedChatId,
-    setSelectedChat
-  } = useWhatsAppStore();
+  // Use individual selectors to prevent unnecessary re-renders
+  const chats = useWhatsAppStore((s) => s.chats);
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
+  const setSelectedChat = useWhatsAppStore((s) => s.setSelectedChat);
 
   const filteredChats = chats.filter((chat: Chat) => {
     const matchesSearch = chat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

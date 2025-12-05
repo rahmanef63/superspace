@@ -2,34 +2,48 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { toast } from 'sonner';
 import type { Id } from '@/convex/_generated/dataModel';
-import type { KnowledgeSourceType } from '../components/WikiSelector';
+import type { KnowledgeSourceType } from '../types';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface AIMessage {
-  id: string;
+  id?: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
+  branches?: Array<{ id: string; content: string; timestamp: number }>;
+  attachments?: Array<{ id: string; name: string; type: string; url: string; size: number }>;
+  replyTo?: string;
+  feedback?: string;
+  reasoning?: string;
   metadata?: {
     tokenCount?: number;
     contextIds?: string[];
     model?: string;
+    duration?: number;
   };
 }
 
 export interface AISession {
   _id: Id<"aiChatSessions">;
+  id: string; // Alias for _id for compatibility with ConversationItem
   workspaceId?: string;
   userId: string;
   title: string;
+  icon?: string; // Lucide icon name
+  topic?: string; // Topic/description for the session
   isGlobal?: boolean;
   messages: AIMessage[];
   status: 'active' | 'archived';
   createdAt: number;
   updatedAt: number;
+  // New fields for conversation features
+  isPinned?: boolean;
+  isFavorite?: boolean;
+  isMuted?: boolean;
+  tags?: string[];
 }
 
 export interface AIStoreState {
@@ -65,6 +79,12 @@ export interface AIStoreState {
   addSession: (session: AISession) => void;
   updateSession: (sessionId: Id<"aiChatSessions">, updates: Partial<AISession>) => void;
   removeSession: (sessionId: Id<"aiChatSessions">) => void;
+  
+  // New conversation actions
+  pinSession: (sessionId: Id<"aiChatSessions">, isPinned: boolean) => void;
+  favoriteSession: (sessionId: Id<"aiChatSessions">, isFavorite: boolean) => void;
+  archiveSession: (sessionId: Id<"aiChatSessions">, isArchived: boolean) => void;
+  renameSession: (sessionId: Id<"aiChatSessions">, title: string, topic?: string) => void;
   
   // Message actions
   addMessage: (sessionId: Id<"aiChatSessions">, message: AIMessage) => void;
@@ -173,6 +193,73 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
         selectedSession: wasSelected ? null : state.selectedSession,
       };
     });
+  },
+
+  // Pin/Unpin a session
+  pinSession: (sessionId, isPinned) => {
+    set((state) => {
+      const newSessions = state.sessions.map(s => 
+        s._id === sessionId ? { ...s, isPinned, updatedAt: Date.now() } : s
+      );
+      // Sort pinned sessions to top
+      newSessions.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.updatedAt - a.updatedAt;
+      });
+      const selectedSession = state.selectedSessionId === sessionId
+        ? newSessions.find(s => s._id === sessionId) || null
+        : state.selectedSession;
+      return { sessions: newSessions, selectedSession };
+    });
+    toast.success(isPinned ? 'Session pinned' : 'Session unpinned');
+  },
+
+  // Favorite/Unfavorite a session
+  favoriteSession: (sessionId, isFavorite) => {
+    set((state) => {
+      const newSessions = state.sessions.map(s => 
+        s._id === sessionId ? { ...s, isFavorite, updatedAt: Date.now() } : s
+      );
+      const selectedSession = state.selectedSessionId === sessionId
+        ? newSessions.find(s => s._id === sessionId) || null
+        : state.selectedSession;
+      return { sessions: newSessions, selectedSession };
+    });
+    toast.success(isFavorite ? 'Added to favorites' : 'Removed from favorites');
+  },
+
+  // Archive/Unarchive a session
+  archiveSession: (sessionId, isArchived) => {
+    set((state) => {
+      const newStatus: AISession['status'] = isArchived ? 'archived' : 'active';
+      const newSessions: AISession[] = state.sessions.map(s => 
+        s._id === sessionId 
+          ? { ...s, status: newStatus, updatedAt: Date.now() } 
+          : s
+      );
+      const selectedSession = state.selectedSessionId === sessionId
+        ? newSessions.find(s => s._id === sessionId) || null
+        : state.selectedSession;
+      return { sessions: newSessions, selectedSession };
+    });
+    toast.success(isArchived ? 'Session archived' : 'Session unarchived');
+  },
+
+  // Rename a session
+  renameSession: (sessionId, title, topic) => {
+    set((state) => {
+      const updates: Partial<AISession> = { title, updatedAt: Date.now() };
+      if (topic !== undefined) updates.topic = topic;
+      const newSessions = state.sessions.map(s => 
+        s._id === sessionId ? { ...s, ...updates } : s
+      );
+      const selectedSession = state.selectedSessionId === sessionId
+        ? newSessions.find(s => s._id === sessionId) || null
+        : state.selectedSession;
+      return { sessions: newSessions, selectedSession };
+    });
+    toast.success('Session renamed');
   },
 
   // Add message to a session

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Globe, Lock, ArrowLeft } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
 import { Switch } from "@/components/ui/switch";
-import { CommentsPanel } from "@/frontend/shared/communications";
+import { CommentsPanel } from "@/frontend/features/comments";
 import {
   useDocumentById,
   useMenuPresenceUserId,

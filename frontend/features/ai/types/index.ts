@@ -7,6 +7,8 @@ export interface AIMessageData {
   metadata?: Record<string, any>
 }
 
+export type KnowledgeSourceType = string;
+
 export interface AIConversation {
   id: string
   title: string
@@ -30,32 +32,4 @@ export interface AIProvider {
   name: string
   models: string[]
   isAvailable: boolean
-}
-
-export interface AIListViewProps {
-  selectedChatId?: string
-  onChatSelect?: (chatId: string) => void
-  conversations?: AIConversation[]
-  onNewChat?: () => void
-}
-
-export interface AIDetailViewProps {
-  chatId?: string
-  conversation?: AIConversation
-  onSendMessage?: (message: string) => void
-  isLoading?: boolean
-}
-
-export interface AIInputProps {
-  onSendMessage: (message: string) => void
-  disabled?: boolean
-  placeholder?: string
-  maxLength?: number
-}
-
-export interface AIMessageProps {
-  message: AIMessageData
-  isLast?: boolean
-  onRegenerate?: () => void
-  onCopy?: () => void
 }

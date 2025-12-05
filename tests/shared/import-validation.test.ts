@@ -102,14 +102,11 @@ describe('Shared Import Validation - Baseline', () => {
       expect(ChatMessage).toBeDefined()
     })
 
-    it('should import chat hooks', async () => {
-      // Check if chat hooks exist
-      try {
-        const hooks = await import('@/frontend/shared/communications/hooks')
-        expect(hooks).toBeDefined()
-      } catch (e) {
-        console.log('Chat hooks import:', e)
-      }
+    it('should import AI hooks from main facade', async () => {
+      // AI hooks are now exported from the main communications facade
+      const { useAI, useAIStoreBase } = await import('@/frontend/shared/communications')
+      expect(useAI).toBeDefined()
+      expect(useAIStoreBase).toBeDefined()
     })
   })
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -15,25 +15,49 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
-import { CreateConversationModal } from "./CreateConversationModal" // Updated import path to use local CreateConversationModal
+import { CreateConversationModal } from "./CreateConversationModal"
+import { EditChatDialog, LeaveChatDialog, DeleteChatDialog } from "./ChatDialogs"
 import { GlobalModeToggle } from "@/frontend/shared/ui/components/controls"
 import { toast } from "sonner"
+
 type ChatListViewVariant = "standalone" | "layout"
 
 interface ChatListViewProps {
   showArchived?: boolean
   variant?: ChatListViewVariant
 }
+
 export function ChatListView({ showArchived = false, variant = "standalone" }: ChatListViewProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [openNewChat, setOpenNewChat] = useState(false)
   const isMobile = useIsMobile()
-  const { chats, selectedChatId, setSelectedChat, globalMode, setGlobalMode, loadChats, loadMessages } = useWhatsAppStore()
+  
+  // Use individual selectors to prevent unnecessary re-renders
+  const chats = useWhatsAppStore((s) => s.chats)
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId)
+  const setSelectedChat = useWhatsAppStore((s) => s.setSelectedChat)
+  const globalMode = useWhatsAppStore((s) => s.globalMode)
+  const setGlobalMode = useWhatsAppStore((s) => s.setGlobalMode)
+  const loadChats = useWhatsAppStore((s) => s.loadChats)
+  const loadMessages = useWhatsAppStore((s) => s.loadMessages)
+  
   const { workspaceId } = useWorkspaceContext()
   const friends = useQuery(api.user.friends.getUserFriends) as any[] | undefined
   const me = useQuery(api.auth.auth.loggedInUser) as any
+  
+  // Mutations for CRUD operations
   const createConv = useMutation((api as any)["features/chat/conversations"].createConversation)
   const createGlobalDirect = useMutation((api as any)["features/chat/conversations"].createOrGetDirectGlobal)
+  const updateConversation = useMutation((api as any)["features/chat/conversations"].updateConversation)
+  const leaveConversation = useMutation((api as any)["features/chat/conversations"].leaveConversation)
+  
+  // CRUD Dialog states
+  const [editingChat, setEditingChat] = useState<Chat | null>(null)
+  const [leavingChat, setLeavingChat] = useState<Chat | null>(null)
+  const [deletingChat, setDeletingChat] = useState<Chat | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  
+  // Filter chats
   const filteredChats = chats.filter((chat: Chat) => {
     const matchesSearch =
       chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,6 +67,125 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
     }
     return matchesSearch && !chat.isArchived
   })
+  
+  // CRUD Handlers
+  const handleEditChat = useCallback((chat: Chat) => {
+    setEditingChat(chat)
+  }, [])
+  
+  const handleSaveChat = useCallback(async (chatId: string, data: { name?: string; description?: string }) => {
+    setIsUpdating(true)
+    try {
+      await updateConversation({
+        conversationId: chatId as Id<"conversations">,
+        name: data.name,
+        metadata: data.description ? { description: data.description } : undefined,
+      })
+      await loadChats()
+      toast.success("Chat updated successfully")
+    } catch (e) {
+      console.error("Failed to update chat:", e)
+      toast.error((e as any)?.message || "Failed to update chat")
+    } finally {
+      setIsUpdating(false)
+    }
+  }, [updateConversation, loadChats])
+  
+  const handlePinChat = useCallback(async (chatId: string, isPinned: boolean) => {
+    try {
+      await updateConversation({
+        conversationId: chatId as Id<"conversations">,
+        metadata: { isPinned },
+      })
+      await loadChats()
+      toast.success(isPinned ? "Chat pinned" : "Chat unpinned")
+    } catch (e) {
+      console.error("Failed to pin/unpin chat:", e)
+      toast.error((e as any)?.message || "Failed to update chat")
+    }
+  }, [updateConversation, loadChats])
+  
+  const handleMuteChat = useCallback(async (chatId: string, isMuted: boolean) => {
+    try {
+      await updateConversation({
+        conversationId: chatId as Id<"conversations">,
+        metadata: { isMuted },
+      })
+      await loadChats()
+      toast.success(isMuted ? "Notifications muted" : "Notifications unmuted")
+    } catch (e) {
+      console.error("Failed to mute/unmute chat:", e)
+      toast.error((e as any)?.message || "Failed to update chat")
+    }
+  }, [updateConversation, loadChats])
+  
+  const handleFavoriteChat = useCallback(async (chatId: string, isFavorite: boolean) => {
+    try {
+      await updateConversation({
+        conversationId: chatId as Id<"conversations">,
+        metadata: { isFavorite },
+      })
+      await loadChats()
+      toast.success(isFavorite ? "Added to favorites" : "Removed from favorites")
+    } catch (e) {
+      console.error("Failed to favorite chat:", e)
+      toast.error((e as any)?.message || "Failed to update chat")
+    }
+  }, [updateConversation, loadChats])
+  
+  const handleArchiveChat = useCallback(async (chatId: string, isArchived: boolean) => {
+    try {
+      await updateConversation({
+        conversationId: chatId as Id<"conversations">,
+        metadata: { isArchived },
+      })
+      await loadChats()
+      toast.success(isArchived ? "Chat archived" : "Chat unarchived")
+    } catch (e) {
+      console.error("Failed to archive chat:", e)
+      toast.error((e as any)?.message || "Failed to update chat")
+    }
+  }, [updateConversation, loadChats])
+  
+  const handleLeaveChat = useCallback((chatId: string) => {
+    const chat = chats.find(c => c.id === chatId)
+    if (chat) {
+      setLeavingChat(chat)
+    }
+  }, [chats])
+  
+  const handleConfirmLeave = useCallback(async (chatId: string) => {
+    setIsUpdating(true)
+    try {
+      await leaveConversation({ conversationId: chatId as Id<"conversations"> })
+      if (selectedChatId === chatId) {
+        setSelectedChat(null)
+      }
+      await loadChats()
+      toast.success("Left conversation")
+    } catch (e) {
+      console.error("Failed to leave conversation:", e)
+      toast.error((e as any)?.message || "Failed to leave conversation")
+    } finally {
+      setIsUpdating(false)
+    }
+  }, [leaveConversation, selectedChatId, setSelectedChat, loadChats])
+  
+  // Note: Delete functionality would require a backend mutation to fully delete
+  // For now, we use "leave" as the primary removal action
+  const handleDeleteChat = useCallback((chatId: string) => {
+    const chat = chats.find(c => c.id === chatId)
+    if (chat) {
+      setDeletingChat(chat)
+    }
+  }, [chats])
+  
+  const handleConfirmDelete = useCallback(async (chatId: string) => {
+    // For now, delete = leave (full delete requires admin mutation)
+    await handleConfirmLeave(chatId)
+    setDeletingChat(null)
+  }, [handleConfirmLeave])
+  
   const containerClasses = cn(
     "flex h-full flex-col",
     variant === "standalone"
@@ -95,21 +238,51 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
           </div>
         ) : (
           <div>
-              {filteredChats.map((chat) => (
-                <ChatListItem
-                  key={chat.id}
-                  {...chat}
-                  isActive={chat.id === selectedChatId}
-                  onClick={() => {
-                    setSelectedChat(chat.id)
-                    // Prefetch messages for selected chat
-                    loadMessages?.(chat.id)
-                  }}
-                />
-              ))}
+            {filteredChats.map((chat) => (
+              <ChatListItem
+                key={chat.id}
+                {...chat}
+                isActive={chat.id === selectedChatId}
+                onClick={() => {
+                  setSelectedChat(chat.id)
+                  // Prefetch messages for selected chat
+                  loadMessages?.(chat.id)
+                }}
+                // CRUD callbacks
+                onEdit={handleEditChat}
+                onPin={handlePinChat}
+                onMute={handleMuteChat}
+                onFavorite={handleFavoriteChat}
+                onArchive={handleArchiveChat}
+                onLeave={handleLeaveChat}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* CRUD Dialogs */}
+      <EditChatDialog
+        chat={editingChat}
+        isOpen={!!editingChat}
+        onClose={() => setEditingChat(null)}
+        onSave={handleSaveChat}
+        isLoading={isUpdating}
+      />
+      <LeaveChatDialog
+        chat={leavingChat}
+        isOpen={!!leavingChat}
+        onClose={() => setLeavingChat(null)}
+        onConfirm={handleConfirmLeave}
+        isLoading={isUpdating}
+      />
+      <DeleteChatDialog
+        chat={deletingChat}
+        isOpen={!!deletingChat}
+        onClose={() => setDeletingChat(null)}
+        onConfirm={handleConfirmDelete}
+        isLoading={isUpdating}
+      />
 
       {/* New Chat Modal - lists Friends */}
       {!showArchived && (

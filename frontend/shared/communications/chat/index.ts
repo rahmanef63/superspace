@@ -195,28 +195,9 @@ export type { MemberProfile } from "./types/member";
 // AI Chat System
 // ============================================================================
 
-// AI Components
-export {
-  AIMessage,
-  AIInput,
-  AIHeader,
-  AIThread,
-  AIContainer,
-  AISessionCard,
-  AIEmptyState,
-  AIKnowledgeSelector,
-} from "./components/ai";
-export type {
-  AIMessageProps,
-  AIInputProps,
-  AIHeaderProps,
-  AIThreadProps,
-  AIContainerProps,
-  AISessionCardProps,
-  AIEmptyStateProps,
-  AIKnowledgeSelectorProps,
-  KnowledgeSource,
-} from "./components/ai";
+// NOTE: AI Components have been moved to frontend/shared/communications/components/ai/
+// Import AI Elements from the main communications facade instead:
+// import { Message, Response, PromptInput, ... } from '@/frontend/shared/communications'
 
 // AI Hooks
 export { useAI } from "./hooks/useAI";

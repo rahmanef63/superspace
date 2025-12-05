@@ -20,7 +20,8 @@ import { DocumentPresenceIndicator } from "../DocumentPresenceIndicator";
 import { formatRelativeTime } from "../../utils";
 import { cn } from "@/lib/utils";
 
-import "@blocknote/core/fonts/inter.css";
+// Note: @blocknote/core/fonts/inter.css is not available in package
+// Fonts are included in @blocknote/mantine/style.css
 import "@blocknote/mantine/style.css";
 
 export interface BlockNoteDocumentEditorProps {

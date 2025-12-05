@@ -18,7 +18,9 @@ import { ChatSkeleton } from "@/frontend/shared/ui/components/loading";
  * Handles responsive layout for mobile/desktop
  */
 export function ChatsViewRefactored() {
-  const { selectedChatId, isLoading } = useWhatsAppStore();
+  // Use individual selectors to prevent unnecessary re-renders
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
+  const isLoading = useWhatsAppStore((s) => s.isLoading);
   const isMobile = useIsMobile();
 
   // Show skeleton while initial data is loading

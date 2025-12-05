@@ -63,6 +63,7 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
     // Transform Convex sessions to store format
     const transformedSessions: AISession[] = sessions.map((s: any) => ({
       _id: s._id,
+      id: s._id, // Alias for ConversationItem compatibility
       workspaceId: s.workspaceId,
       userId: s.userId,
       title: s.title,
@@ -94,6 +95,7 @@ export const useAIActions = () => {
   const workspaceId = useAIStore((s) => s.workspaceId);
   const userId = useAIStore((s) => s.userId);
   const globalMode = useAIStore((s) => s.globalMode);
+  const sessions = useAIStore((s) => s.sessions);
   const selectedSessionId = useAIStore((s) => s.selectedSessionId);
   const selectedSession = useAIStore((s) => s.selectedSession);
   const selectedKnowledgeSources = useAIStore((s) => s.selectedKnowledgeSources);
@@ -110,6 +112,8 @@ export const useAIActions = () => {
   const createSessionMutation = useMutation(api.features.ai.mutations.createChatSession);
   const appendMessageMutation = useMutation(api.features.ai.mutations.appendChatMessage);
   const updateSessionMutation = useMutation(api.features.ai.mutations.updateChatSession);
+  const addMessageBranchMutation = useMutation(api.features.ai.mutations.addMessageBranch);
+  const setMessageFeedbackMutation = useMutation(api.features.ai.mutations.setMessageFeedback);
 
   // Generate title using AI based on conversation
   const generateTitle = useCallback(async (
@@ -179,6 +183,7 @@ export const useAIActions = () => {
       if (session) {
         const newSession: AISession = {
           _id: session._id,
+          id: session._id, // Alias for ConversationItem compatibility
           workspaceId: session.workspaceId,
           userId: session.userId,
           title: session.title,
@@ -198,11 +203,30 @@ export const useAIActions = () => {
     }
   }, [workspaceId, userId, globalMode, createSessionMutation, addSession]);
 
-  const sendMessage = useCallback(async (content: string, knowledgeContext?: string) => {
-    if (!selectedSessionId) {
+  const sendMessage = useCallback(async (
+    content: string, 
+    knowledgeContext?: string, 
+    sessionIdOverride?: Id<"aiChatSessions">,
+    options?: {
+      attachments?: any[],
+      replyTo?: string,
+    }
+  ) => {
+    // Allow passing sessionId directly for immediate use after session creation
+    const targetSessionId: Id<"aiChatSessions"> | null = sessionIdOverride ?? selectedSessionId;
+    
+    if (!targetSessionId) {
       console.error("No session selected");
       return null;
     }
+
+    // TypeScript now knows targetSessionId is Id<"aiChatSessions">
+    const sessionId = targetSessionId;
+
+    // Get the target session from store
+    const targetSession = sessionIdOverride 
+      ? sessions.find((s: AISession) => s._id === sessionIdOverride)
+      : selectedSession;
 
     // Get the API key for the configured provider
     const provider = settings.defaultProvider || "groq";
@@ -220,23 +244,28 @@ export const useAIActions = () => {
     setError(null);
 
     // Check if this is the first message (for auto-title generation)
-    const isFirstMessage = !selectedSession?.messages?.length || selectedSession.messages.length === 0;
+    const isFirstMessage = !targetSession?.messages?.length || targetSession.messages.length === 0;
 
     try {
       // Add user message to store immediately for optimistic UI
-      const userMessageId = `${selectedSessionId}-${Date.now()}`;
-      addMessage(selectedSessionId, {
+      const userMessageId = `${sessionId}-${Date.now()}`;
+      addMessage(sessionId, {
         id: userMessageId,
         role: 'user',
         content,
         timestamp: Date.now(),
+        attachments: options?.attachments,
+        replyTo: options?.replyTo,
       });
 
       // Persist user message to Convex
       await appendMessageMutation({
-        sessionId: selectedSessionId,
+        sessionId,
         message: content,
         role: "user",
+        id: userMessageId,
+        attachments: options?.attachments,
+        replyTo: options?.replyTo,
       });
 
       // Build system prompt with knowledge context
@@ -252,7 +281,7 @@ export const useAIActions = () => {
       // Build messages array for API (include conversation history)
       const messages = [
         ...systemMessages,
-        ...(selectedSession?.messages || []).map((m: AIMessage) => ({
+        ...(targetSession?.messages || []).map((m: AIMessage) => ({
           role: m.role,
           content: m.content,
         })),
@@ -260,6 +289,7 @@ export const useAIActions = () => {
       ];
 
       // Call AI API
+      const startTime = Date.now();
       const response = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -274,6 +304,9 @@ export const useAIActions = () => {
         }),
       });
 
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `API error: ${response.status}`);
@@ -283,29 +316,31 @@ export const useAIActions = () => {
       const aiResponse = data.content;
 
       // Add AI response to store
-      addMessage(selectedSessionId, {
-        id: `${selectedSessionId}-${Date.now()}-ai`,
+      addMessage(sessionId, {
+        id: `${sessionId}-${Date.now()}-ai`,
         role: 'assistant',
         content: aiResponse,
         timestamp: Date.now(),
         metadata: {
           model: data.model,
           tokenCount: data.usage?.total_tokens,
+          duration,
         },
       });
 
       // Persist AI response to Convex
       await appendMessageMutation({
-        sessionId: selectedSessionId,
+        sessionId,
         message: aiResponse,
         role: "assistant",
         metadata: {
           tokenCount: data.usage?.total_tokens,
+          duration,
         },
       });
 
-      // Auto-generate title after first message exchange
-      if (isFirstMessage && selectedSession?.title === "New Chat") {
+      // Auto-generate title after first message exchange for new chats
+      if (isFirstMessage && targetSession?.title === "New Chat") {
         const generatedTitle = await generateTitle(
           content,
           aiResponse,
@@ -318,12 +353,12 @@ export const useAIActions = () => {
         if (generatedTitle) {
           // Update in Convex
           await updateSessionMutation({
-            sessionId: selectedSessionId,
+            sessionId,
             title: generatedTitle,
           });
 
           // Update in local store
-          updateSession(selectedSessionId, { title: generatedTitle });
+          updateSession(sessionId, { title: generatedTitle });
         }
       }
 
@@ -337,11 +372,67 @@ export const useAIActions = () => {
     } finally {
       setSending(false);
     }
-  }, [selectedSessionId, selectedSession, settings, appendMessageMutation, addMessage, setSending, setError, generateTitle, updateSessionMutation, updateSession]);
+  }, [selectedSessionId, selectedSession, sessions, settings, appendMessageMutation, addMessage, setSending, setError, generateTitle, updateSessionMutation, updateSession, globalMode]);
+
+  const regenerateMessage = useCallback(async (
+    sessionId: Id<"aiChatSessions">,
+    messageId: string,
+    newContent: string
+  ) => {
+    try {
+      await addMessageBranchMutation({
+        sessionId,
+        messageId,
+        content: newContent,
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to add message branch:", error);
+      return false;
+    }
+  }, [addMessageBranchMutation]);
+
+  const submitFeedback = useCallback(async (
+    sessionId: Id<"aiChatSessions">,
+    messageId: string,
+    feedback: "up" | "down"
+  ) => {
+    try {
+      await setMessageFeedbackMutation({
+        sessionId,
+        messageId,
+        feedback,
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to submit feedback:", error);
+      return false;
+    }
+  }, [setMessageFeedbackMutation]);
+
+  const updateSessionMetadata = useCallback(async (
+    sessionId: Id<"aiChatSessions">,
+    updates: { icon?: string; title?: string; topic?: string }
+  ) => {
+    try {
+      await updateSessionMutation({
+        sessionId,
+        ...updates,
+      });
+      updateSession(sessionId, updates);
+      return true;
+    } catch (error) {
+      console.error("Failed to update session metadata:", error);
+      return false;
+    }
+  }, [updateSessionMutation, updateSession]);
 
   return {
     createSession,
     sendMessage,
+    regenerateMessage,
+    submitFeedback,
+    updateSessionMetadata,
     selectSession: setSelectedSession,
   };
 };

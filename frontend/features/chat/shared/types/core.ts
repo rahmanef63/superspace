@@ -24,9 +24,11 @@ export interface Chat {
   isGroup?: boolean;
   isArchived?: boolean;
   isMuted?: boolean;
+  isFavorite?: boolean;
   avatar?: string;
   participants?: string[];
   tags?: string[];
+  description?: string;
 }
 
 export interface Member {

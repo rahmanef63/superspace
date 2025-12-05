@@ -1,91 +1,132 @@
+/**
+ * AI Chat List Card
+ * Uses shared ConversationListCard with AI-specific styling
+ * @module features/ai
+ */
+
 "use client"
 
 import { Bot } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import { 
+  ConversationListCard,
+  type ConversationItem,
+} from "@/frontend/shared/communications/conversation"
+import type { AISession } from "../stores"
+import { AIContextMenu } from "./AIContextMenu"
 
 export interface AIChatListCardProps {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: string
-  messageCount: number
+  session: AISession
   isActive?: boolean
-  isGlobal?: boolean
   onClick?: () => void
+  // CRUD callbacks
+  onRename?: (session: AISession) => void
+  onPin?: (sessionId: string, isPinned: boolean) => void
+  onFavorite?: (sessionId: string, isFavorite: boolean) => void
+  onArchive?: (sessionId: string, isArchived: boolean) => void
+  onDelete?: (sessionId: string) => void
+  onDuplicate?: (session: AISession) => void
+  onExport?: (session: AISession) => void
 }
 
 /**
- * Dynamic card component for AI chat list items.
- * Provides consistent styling and flexible layout for chat previews.
+ * AI-specific list card using shared ConversationListCard
  */
 export function AIChatListCard({
-  id,
-  title,
-  lastMessage,
-  timestamp,
-  messageCount,
+  session,
   isActive = false,
-  isGlobal = false,
   onClick,
+  onRename,
+  onPin,
+  onFavorite,
+  onArchive,
+  onDelete,
+  onDuplicate,
+  onExport,
 }: AIChatListCardProps) {
-  return (
-    <Card
-      className={cn(
-        "p-3 cursor-pointer transition-all duration-200",
-        "hover:shadow-md hover:border-primary/20",
-        isActive 
-          ? "bg-accent border-primary/30 shadow-sm" 
-          : "bg-card hover:bg-muted/50",
-      )}
+  // Guard against undefined session
+  if (!session) {
+    return null
+  }
+
+  // Convert AISession to ConversationItem
+  const item: ConversationItem = {
+    id: session._id,
+    name: session.title,
+    description: session.topic,
+    timestamp: formatTimestamp(session.updatedAt),
+    isPinned: session.isPinned,
+    isFavorite: session.isFavorite,
+    isMuted: session.isMuted,
+    isArchived: session.status === 'archived',
+    messageCount: session.messages?.length || 0,
+    tags: session.tags,
+  }
+
+  // Get last message preview
+  const lastMessage = session.messages?.length 
+    ? session.messages[session.messages.length - 1]?.content 
+    : undefined
+
+  // Check if we have context menu actions
+  const hasActions = onRename || onPin || onFavorite || onArchive || onDelete || onDuplicate || onExport
+
+  const cardContent = (
+    <ConversationListCard
+      item={item}
+      isActive={isActive}
       onClick={onClick}
-    >
-      <div className="flex items-start gap-3">
-        {/* Avatar */}
-        <div className={cn(
-          "h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0",
-          isGlobal 
-            ? "bg-gradient-to-br from-purple-600 to-pink-600"
-            : "bg-gradient-to-br from-blue-600 to-purple-600"
-        )}>
-          <Bot className="h-5 w-5 text-white" />
-        </div>
-        
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-1">
-          {/* Title Row */}
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-medium text-foreground truncate text-sm">
-              {title}
-            </h3>
-            <span className="text-xs text-muted-foreground flex-shrink-0">
-              {timestamp}
-            </span>
-          </div>
-          
-          {/* Message Preview */}
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {lastMessage}
-          </p>
-          
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-1">
-            {isGlobal && (
-              <span className="text-xs bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full">
-                Private
-              </span>
-            )}
-            {messageCount > 0 && (
-              <span className={cn(
-                "text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full",
-                isGlobal ? "ml-auto" : ""
-              )}>
-                {messageCount} msg{messageCount !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Card>
+      context="ai"
+      lastMessage={lastMessage}
+      isGlobal={session.isGlobal}
+      showContextMenu={false} // We handle context menu separately
+      icon={<Bot className="h-5 w-5 text-white" />}
+    />
   )
+
+  // Wrap with context menu if we have actions
+  if (hasActions) {
+    return (
+      <AIContextMenu
+        session={session}
+        onRename={onRename}
+        onPin={onPin}
+        onFavorite={onFavorite}
+        onArchive={onArchive}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        onExport={onExport}
+      >
+        {cardContent}
+      </AIContextMenu>
+    )
+  }
+
+  return cardContent
 }
+
+// Helper function
+function formatTimestamp(ts: number): string {
+  if (!ts) return ''
+  try {
+    const date = new Date(ts)
+    const now = new Date()
+    const isToday = date.toDateString() === now.toDateString()
+    
+    if (isToday) {
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      })
+    }
+    
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  } catch {
+    return ''
+  }
+}
+
+export default AIChatListCard

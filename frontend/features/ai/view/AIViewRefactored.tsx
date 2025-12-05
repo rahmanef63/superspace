@@ -12,7 +12,8 @@ import { SecondarySidebarLayout } from "@/frontend/shared/ui";
 import { useAIStore } from "@/frontend/features/ai/stores";
 import { useInitializeAI, useAIActions } from "@/frontend/features/ai/hooks";
 import { AIListViewRefactored } from "./AIListViewRefactored";
-import { AIDetailViewRefactored } from "./AIDetailViewRefactored";
+// Use the root-level AIDetailView which has AI Elements
+import { AIDetailView } from "../AIDetailView";
 
 export function AIViewRefactored() {
   const isMobile = useIsMobile();
@@ -38,20 +39,20 @@ export function AIViewRefactored() {
     // On mobile, show either AI chat list or AI chat detail, not both
     if (selectedSessionId) {
       return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-full bg-background">
           <TopBar
             title="AI"
             showSearch={false}
             showActions={false}
             onMenuClick={handleBack}
           />
-          <AIDetailViewRefactored chatId={selectedSessionId} />
+          <AIDetailView chatId={selectedSessionId} />
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-full bg-background">
         <TopBar
           title="AI"
           showSearch={true}
@@ -78,7 +79,7 @@ export function AIViewRefactored() {
       }
       contentClassName="flex h-full flex-col bg-background"
     >
-      <AIDetailViewRefactored chatId={selectedSessionId ?? undefined} />
+      <AIDetailView chatId={selectedSessionId ?? undefined} />
     </SecondarySidebarLayout>
   );
 }

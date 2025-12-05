@@ -44,14 +44,37 @@ export const aiChatSessions = defineTable({
   workspaceId: v.optional(v.string()), // Optional: null for global/private sessions
   userId: v.string(),
   title: v.string(),
+  icon: v.optional(v.string()), // Icon name from lucide-react
   isGlobal: v.optional(v.boolean()), // true for global/private sessions
   messages: v.array(v.object({
+    id: v.optional(v.string()),
     role: v.string(), // system, user, assistant
     content: v.string(),
     timestamp: v.number(),
+    
+    // New fields for advanced features
+    branches: v.optional(v.array(v.object({
+      id: v.string(),
+      content: v.string(),
+      timestamp: v.number(),
+    }))),
+    
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      name: v.string(),
+      type: v.string(),
+      url: v.string(),
+      size: v.number(),
+    }))),
+    
+    replyTo: v.optional(v.string()),
+    feedback: v.optional(v.string()), // "up" | "down"
+    reasoning: v.optional(v.string()),
+    
     metadata: v.optional(v.object({
-      tokenCount: v.optional(v.number()),
+      tokenCount: v.optional(v.float64()),
       contextIds: v.optional(v.array(v.string())),
+      duration: v.optional(v.float64()),
     })),
   })),
   status: v.string(), // active, archived

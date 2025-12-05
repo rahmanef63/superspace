@@ -6,6 +6,10 @@ export * from './ChatListView';
 export * from './ChatListSidebar';
 export { ChatDetailView } from './ChatDetailView';
 
+// CRUD Components
+export * from './ChatContextMenu';
+export * from './ChatDialogs';
+
 // Refactored components (using shared/communications)
 export { ChatMessageBubble } from './ChatMessageBubble';
 export type { ChatMessageBubbleProps } from './ChatMessageBubble';

@@ -6,11 +6,17 @@ import { SecondarySidebarLayout } from "@/frontend/shared/ui";
 import { ChatSkeleton } from "@/frontend/shared/ui/components/loading";
 
 export function ChatsView() {
-  const { selectedChatId, isLoading } = useWhatsAppStore();
+  // Use individual selectors to prevent unnecessary re-renders
+  const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
+  const isLoading = useWhatsAppStore((s) => s.isLoading);
+  const chats = useWhatsAppStore((s) => s.chats);
   const isMobile = useIsMobile();
 
-  // Show skeleton while initial data is loading
-  if (isLoading) {
+  // Only show skeleton on initial load (no chats yet)
+  // This prevents blocking the UI when refreshing chats
+  const showSkeleton = isLoading && chats.length === 0;
+
+  if (showSkeleton) {
     return <ChatSkeleton />;
   }
 

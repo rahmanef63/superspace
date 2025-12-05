@@ -3,27 +3,24 @@
  *
  * Real-time communication features including:
  * - Chat system (messages, channels, threads)
- * - AI chat (AI assistants, bots)
- * - Comments (document comments, inline comments)
- * - Collaboration (presence, cursors, activity)
- * - Notifications (real-time alerts, inbox)
- *
- * NOTE: ChatContainer and AIContainer now use shared layout components from:
- * - PageContainer from @/frontend/shared/ui/layout/container
- * - ContainerHeader from @/frontend/shared/ui/layout/header
- * 
- * This ensures DRY principle - same container/header pattern as
- * menu-store, workspace-store, and documents features.
+ * - AI Elements (ChatGPT-style components)
+ * - Shared conversation components (context menu, dialogs, list cards)
  *
  * @example
- * import { ChatContainer, AIContainer, useChat } from '@/frontend/shared/communications'
+ * import { useChat, ChatContainer } from '@/frontend/shared/communications'
+ * import { Message, Response, PromptInput } from '@/frontend/shared/communications'
  */
+
+// ============================================================
+// Shared Conversation Components (DRY - used by Chat, AI, etc.)
+// ============================================================
+export * from './conversation'
 
 // ============================================================
 // Chat System
 // ============================================================
 export * from './chat'
-// Chat components are in ./chat/components/
+// Chat components
 export { ChatInput } from './chat/components/ChatInput'
 export { ChatContainer } from './chat/components/ChatContainer'
 export { ChatHeader } from './chat/components/ChatHeader'
@@ -37,53 +34,190 @@ export { useChat } from './chat/hooks/useChat'
 export { useChatPresence } from './chat/hooks/useChatPresence'
 export { useChatScroll } from './chat/hooks/useChatScroll'
 export { useMessageActions } from './chat/hooks/useMessageActions'
-
-// ============================================================
-// AI Chat System
-// ============================================================
-// AI Components
-export {
-  AIMessage as AIMessageComponent,
-  AIInput,
-  AIHeader,
-  AIThread,
-  AIContainer,
-  AISessionCard,
-  AIEmptyState,
-  AIKnowledgeSelector,
-} from './chat/components/ai'
-// AI Hooks
+// AI Hooks (still in chat folder for now)
 export { useAI } from './chat/hooks/useAI'
 export { useAIStoreBase, createAIStore, aiStoreSelectors } from './chat/hooks/useAIStore'
-// AI Types (re-exported from ./chat)
 
 // ============================================================
-// Comments System
+// AI Elements Components (shadcn.io/ai style)
+// ChatGPT-style interface components - shared between AI and Chat
 // ============================================================
-export { CommentsPanel } from './comments/components/CommentsPanel'
-// TODO: Add more comment components when available
-// export * from './comments'
+export {
+  // Message - Chat message containers with role-based styling
+  Message,
+  MessageContent,
+  MessageAvatar,
+  useMessage,
+  // Response - Streaming-optimized markdown renderer
+  Response,
+  parseIncompleteMarkdownContent,
+  // Conversation - Auto-scrolling chat containers
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+  useConversation,
+  // PromptInput - Auto-resizing textarea with toolbar
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+  PromptInputButton,
+  PromptInputSubmit,
+  PromptInputAttachButton,
+  PromptInputAttachments,
+  PromptInputModelSelect,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectValue,
+  usePromptInput,
+  // Actions - Interactive action buttons
+  Actions,
+  Action,
+  // Tool - Collapsible tool execution display
+  Tool,
+  ToolHeader,
+  ToolContent,
+  ToolInput,
+  ToolOutput,
+  // Reasoning - Collapsible AI reasoning display
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+  // Sources - Collapsible source citations
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  Source,
+  // Suggestion - Scrollable suggestion pills
+  Suggestions,
+  Suggestion,
+  // Branch - Response variation navigation
+  Branch,
+  BranchMessages,
+  BranchSelector,
+  BranchPrevious,
+  BranchNext,
+  BranchPage,
+  useBranch,
+  // CodeBlock - Syntax-highlighted code blocks
+  CodeBlock,
+  CodeBlockCopyButton,
+  // Loader - Animated loader for AI streaming
+  Loader,
+  // Image - AI-generated image display
+  Image,
+  // InlineCitation - Inline citations with hover previews
+  InlineCitation,
+  InlineCitationText,
+  InlineCitationCard,
+  InlineCitationCardTrigger,
+  InlineCitationCardBody,
+  InlineCitationCarousel,
+  InlineCitationCarouselHeader,
+  InlineCitationCarouselIndex,
+  InlineCitationCarouselContent,
+  InlineCitationCarouselItem,
+  InlineCitationSource,
+  InlineCitationQuote,
+  // Task - AI task workflow display
+  Task,
+  TaskTrigger,
+  TaskContent,
+  TaskItem,
+  TaskItemFile,
+  // WebPreview - Live iframe preview for AI-generated UIs
+  WebPreview,
+  WebPreviewNavigation,
+  WebPreviewNavigationButton,
+  WebPreviewUrl,
+  WebPreviewBody,
+  WebPreviewConsole,
+} from './components/ai'
 
-// ============================================================
-// Collaboration Features
-// ============================================================
-export { PresenceIndicator } from './collaboration/PresenceIndicator'
-export { CollaborativeCursor } from './collaboration/CollaborativeCursor'
-// TODO: Add more collaboration exports when available
-// export { ActivityFeed } from './collaboration/ActivityFeed'
-// export { usePresence } from './collaboration/hooks/usePresence'
-// export { useCollaboration } from './collaboration/hooks/useCollaboration'
+// AI Elements Types
+export type {
+  MessageRole,
+  MessageProps,
+  MessageContentProps,
+  MessageAvatarProps,
+  ResponseProps,
+  ConversationProps,
+  ConversationContentProps,
+  ConversationScrollButtonProps,
+  PromptInputProps,
+  PromptInputTextareaProps,
+  PromptInputToolbarProps,
+  PromptInputToolsProps,
+  PromptInputButtonProps,
+  PromptInputSubmitProps,
+  PromptInputAttachButtonProps,
+  PromptInputAttachmentsProps,
+  PromptInputModelSelectProps,
+  ChatStatus,
+  Attachment,
+  ActionsProps,
+  ActionProps,
+  ToolProps,
+  ToolHeaderProps,
+  ToolContentProps,
+  ToolInputProps,
+  ToolOutputProps,
+  ToolState,
+  ReasoningProps,
+  ReasoningTriggerProps,
+  ReasoningContentProps,
+  SourcesProps,
+  SourcesTriggerProps,
+  SourcesContentProps,
+  SourceProps,
+  SuggestionsProps,
+  SuggestionProps,
+  BranchProps,
+  BranchMessagesProps,
+  BranchSelectorProps,
+  BranchNavigationProps,
+  BranchPageProps,
+  CodeBlockProps,
+  CodeBlockCopyButtonProps,
+  LoaderProps,
+  ImageProps,
+  InlineCitationProps,
+  InlineCitationTextProps,
+  InlineCitationCardProps,
+  InlineCitationCardTriggerProps,
+  InlineCitationCardBodyProps,
+  InlineCitationCarouselProps,
+  InlineCitationCarouselHeaderProps,
+  InlineCitationCarouselIndexProps,
+  InlineCitationCarouselContentProps,
+  InlineCitationCarouselItemProps,
+  InlineCitationSourceProps,
+  InlineCitationQuoteProps,
+  TaskProps,
+  TaskTriggerProps,
+  TaskContentProps,
+  TaskItemProps,
+  TaskItemFileProps,
+  WebPreviewProps,
+  WebPreviewNavigationProps,
+  WebPreviewNavigationButtonProps,
+  WebPreviewUrlProps,
+  WebPreviewBodyProps,
+  WebPreviewConsoleProps,
+  ConsoleLog,
+} from './components/ai'
 
 // ============================================================
 // Types
 // ============================================================
 export type {
   // Chat types
-  Message,
-  MessageContent,
+  Message as ChatMessageType,
+  MessageContent as ChatMessageContent,
   MessageDraft,
   UserMeta,
-  Attachment,
+  Attachment as ChatAttachment,
   Paginated,
 } from './chat/types/message'
 
@@ -99,9 +233,104 @@ export type {
 
 // AI Types
 export type {
-  AIMessage as AIMessageType,
+  AIMessage,
   AISession,
   AIConfig,
   AIKnowledgeContext,
   KnowledgeSourceType,
 } from './chat/types/ai'
+
+// ============================================================================
+// Shared Composer Components
+// ============================================================================
+export {
+  ComposerBar,
+  EmojiPicker,
+  AttachmentMenu,
+  type ComposerContext,
+  type ComposerConfig,
+  type ComposerCallbacks,
+  type ComposerAttachment,
+  type AttachmentType,
+  DEFAULT_COMPOSER_LABELS,
+} from './composer'
+
+// ============================================================================
+// Shared Message Components
+// ============================================================================
+export {
+  MessageBubble,
+  MessageReactions,
+  ExistingReactions,
+  type BaseMessage,
+  type MessageContext,
+  type MessageBubbleCallbacks,
+  type MessageStatus,
+} from './message'
+
+// ============================================================================
+// Member Info Components (for member/contact detail views)
+// ============================================================================
+export {
+  MemberInfoModal,
+  MemberInfoHeader,
+  MemberInfoSidebar,
+  MemberInfoContent,
+  NavigationItem,
+  MEMBER_INFO_SECTIONS,
+  DEFAULT_MEMBER_INFO_SECTION,
+  OverviewSection,
+  MediaSection,
+  FilesSection,
+  LinksSection,
+  EventsSection,
+  EncryptionSection,
+  GroupsSection,
+  MemberDetailView,
+} from './chat/components/member'
+export type { MemberInfoSection, MemberInfoContact } from './chat/components/member'
+export type { MemberDetailViewProps } from './chat/components/member/MemberDetailView'
+
+// ============================================================================
+// Shared Utilities (DRY - used by Chat, AI, and other features)
+// ============================================================================
+export {
+  // From formatMessage.ts
+  formatTimestamp,
+  formatUserName,
+  extractMentions,
+  extractUrls,
+  sanitizeText,
+  parseMarkdown,
+  highlightMentions,
+  truncate,
+  formatFileSize,
+  getMessagePreview,
+  isEdited,
+  isDeleted,
+  isSystemMessage,
+  formatReactionCount,
+  groupMessagesByDate,
+  shouldGroupMessages,
+  // From id.ts
+  generateId,
+  generateMessageId,
+  generateRoomId,
+  generateAttachmentId,
+  generateThreadId,
+  parseIdType,
+  isValidId,
+  createCompositeKey,
+  parseCompositeKey,
+  // Additional shared utilities
+  getInitials,
+  truncateText,
+  truncateMessage,
+  validateMessage,
+  extractTopicFromMessage,
+  generateConversationTitle,
+  isImageFile,
+  isVideoFile,
+  isAudioFile,
+  formatMessageTime,
+} from './utils'

@@ -274,6 +274,7 @@ export {
 export {
   MemberInfoModal,
   MemberInfoDrawer,
+  MemberInfoPanel,
   MemberInfoHeader,
   MemberInfoSidebar,
   MemberInfoContent,
@@ -289,7 +290,7 @@ export {
   GroupsSection,
   MemberDetailView,
 } from './chat/components/member'
-export type { MemberInfoSection, MemberInfoContact, MemberInfoDrawerProps } from './chat/components/member'
+export type { MemberInfoSection, MemberInfoContact, MemberInfoDrawerProps, MemberInfoPanelProps } from './chat/components/member'
 export type { MemberDetailViewProps } from './chat/components/member/MemberDetailView'
 
 // ============================================================================

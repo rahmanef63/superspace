@@ -1,0 +1,153 @@
+---
+description: Rules for feature development, auto-discovery, and modular architecture
+globs: frontend/features/**/*,convex/features/**/*,lib/features/**/*
+---
+
+# Feature Development Rules
+
+## Zero Hardcoding Policy
+
+**NEVER hardcode feature references outside feature folders.**
+
+### ❌ FORBIDDEN Patterns
+
+```typescript
+// Hardcoded feature lists
+const FEATURES = ['analytics', 'chat', 'calendar']
+
+// Manual imports
+import AnalyticsPage from '@/frontend/features/analytics/page'
+
+// Hardcoded component mappings
+const COMPONENT_MAP = {
+  'analytics': '@/frontend/features/analytics/page',
+  'chat': '@/frontend/features/chat/page',
+}
+
+// Hardcoded navigation items
+const NAV_ITEMS = [
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'chat', label: 'Chat' },
+]
+```
+
+### ✅ REQUIRED Patterns
+
+```typescript
+// Auto-discovery
+import { getAllFeatures } from '@/lib/features/registry'
+const FEATURES = getAllFeatures()
+
+// Dynamic resolution
+const feature = FEATURES.find(f => f.id === slug)
+const Component = await dynamic(() => import(feature.componentPath))
+
+// Dynamic navigation
+const navItems = FEATURES
+  .filter(f => f.ui.category === 'analytics')
+  .map(f => ({ id: f.id, label: f.name }))
+```
+
+## Single Source of Truth
+
+**Each feature has EXACTLY ONE config file:**
+
+```
+frontend/features/{slug}/config.ts
+```
+
+**This file defines:**
+- Feature metadata (id, name, description)
+- UI configuration (icon, path, component, order)
+- Technical specs (type, version, dependencies)
+- Status (state, isReady)
+- Permissions (required permissions array)
+
+**DO NOT:**
+- Duplicate feature information elsewhere
+- Create separate configuration files
+- Store feature metadata in databases
+
+## Auto-Discovery System
+
+**All features MUST be auto-discovered:**
+
+```typescript
+// Browser (Vite)
+const featureModules = import.meta.glob(
+  '../../frontend/features/*/config.ts',
+  { eager: true }
+)
+const features = Object.values(featureModules).map(m => m.default)
+
+// Node.js (tsx/scripts)
+import { getAllFeatures } from '@/lib/features/registry.server'
+const features = getAllFeatures()
+```
+
+**Auto-discovery systems:**
+- Browser: `lib/features/registry.ts` (uses `import.meta.glob`)
+- Node.js: `lib/features/registry.server.ts` (uses `glob.sync`)
+
+## Feature Structure
+
+```
+frontend/features/{slug}/
+├── config.ts              # Single Source of Truth
+├── components/            # UI components
+├── hooks/                 # Custom hooks
+├── features/              # Nested sub-features
+├── shared/                # Shared within feature
+└── settings/              # Feature-specific settings
+
+convex/features/{slug}/
+├── queries.ts             # Read operations
+├── mutations.ts           # Write operations
+├── schema.ts              # Database schema
+├── features/              # Sub-features backend
+└── shared/                # Shared within feature
+```
+
+## CRUD Commands Only
+
+**Use ONLY these commands to manage features:**
+
+```bash
+# CREATE
+pnpm run create:feature {slug}
+
+# READ
+pnpm run list:features
+
+# UPDATE
+pnpm run edit:feature {slug}
+
+# DELETE
+pnpm run delete:feature {slug}
+
+# SYNC
+pnpm run sync:all
+```
+
+**DO NOT:**
+- Manually edit generated files
+- Bypass the CRUD system
+- Hardcode feature references
+
+## Three-Tier Sharing Model
+
+1. **Global Shared** (`frontend/shared/`, `convex/shared/`)
+   - Used by ALL features
+   - Example: Button, requirePermission
+
+2. **Feature-Shared** (`{feature}/shared/`)
+   - Used within ONE feature
+   - Example: SharedEditor (CMS)
+
+3. **Local** (within feature folder)
+   - Used in one place only
+
+**Decision tree:**
+- Used by **all features**? → `frontend/shared/` or `convex/shared/`
+- Used **within one feature**? → `{feature}/shared/`
+- Used **in one place**? → Keep it local

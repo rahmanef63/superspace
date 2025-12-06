@@ -1,0 +1,517 @@
+# SuperSpace - Cursor AI Rules & Guidelines
+
+> **Comprehensive rules and base knowledge for AI agents working on SuperSpace**
+> **Last Updated:** 2025-01-20
+
+---
+
+## 🎯 Project Overview
+
+**SuperSpace** is a modular, feature-based SaaS platform built with:
+- **Next.js 15** (App Router) + React 19
+- **Convex** (real-time serverless database)
+- **Clerk** (authentication & billing)
+- **TypeScript** + **Zod** (type safety & validation)
+- **shadcn/ui** + **Tailwind CSS** (UI components)
+
+**Key Innovation:** Truly modular features with zero hardcoding and 100% auto-discovery.
+
+---
+
+## 🚨 CRITICAL RULES (NEVER VIOLATE)
+
+### Rule #1: Zero Hardcoding Outside Feature Folders
+
+**❌ FORBIDDEN:**
+- Hardcoding feature lists outside `frontend/features/*/`, `convex/features/*/`, or `tests/features/*/`
+- Manual feature registration in central config files
+- Hardcoded component imports in scripts or manifests
+- Hardcoded feature IDs in validation or test files
+
+**✅ REQUIRED:**
+- Use auto-discovery via `lib/features/registry.ts` (browser) or `lib/features/registry.server.ts` (Node)
+- Dynamic path resolution using file existence checks
+- All feature references must use `getAllFeatures()` from registry
+
+**Why:** Hardcoding creates maintenance burden, bugs, and violates DRY principles.
+
+### Rule #2: Single Source of Truth - config.ts
+
+**Each feature has EXACTLY ONE source of truth:**
+```
+frontend/features/{slug}/config.ts
+```
+
+**This file defines:**
+- Feature metadata (id, name, description)
+- UI configuration (icon, path, component, order)
+- Technical specs (type, version, dependencies)
+- Status (state, isReady)
+- Permissions (required permissions array)
+
+**❌ DO NOT:**
+- Duplicate feature information elsewhere
+- Create separate configuration files
+- Store feature metadata in databases
+
+**✅ DO:**
+- Edit `config.ts` for ALL feature changes
+- Use `pnpm run edit:feature {slug}` to modify configs
+- Let auto-discovery system propagate changes
+
+### Rule #3: Always Check Permissions (RBAC)
+
+**EVERY Convex handler MUST check permissions:**
+
+```typescript
+// ✅ REQUIRED in all queries and mutations
+const { membership } = await requirePermission(
+  ctx,
+  args.workspaceId,
+  'resource.create' // Permission key
+)
+```
+
+**Permission Hierarchy:**
+- Owner (0) → Full control
+- Admin (10) → Manage workspace
+- Manager (30) → Manage content
+- Staff (50) → Create content
+- Client (70) → Limited access
+- Guest (90) → Read-only
+
+**Validated by:** `scripts/validate-permissions.ts`
+
+### Rule #4: Always Log Mutations (Audit)
+
+**EVERY Convex mutation MUST log audit events:**
+
+```typescript
+// ✅ REQUIRED after all mutations
+await logAuditEvent(ctx, {
+  workspaceId: args.workspaceId,
+  userId: membership.userId,
+  action: 'RESOURCE_CREATED',
+  resourceType: 'resource',
+  resourceId: resourceId,
+  metadata: { title: args.title },
+})
+```
+
+**Why:** Immutable audit trail for compliance, forensics, and debugging.
+
+**Validated by:** `scripts/validate-audit-logs.ts`
+
+### Rule #5: Use CRUD Commands Only
+
+**To manage features, use ONLY these commands:**
+
+```bash
+# CREATE
+pnpm run create:feature {slug}
+
+# READ
+pnpm run list:features
+
+# UPDATE
+pnpm run edit:feature {slug}
+
+# DELETE
+pnpm run delete:feature {slug}
+
+# SYNC
+pnpm run sync:all
+```
+
+**❌ DO NOT:**
+- Manually edit generated files
+- Bypass the CRUD system
+- Hardcode feature references
+
+---
+
+## 🏗️ Architecture Patterns
+
+### Feature Structure
+
+```
+frontend/features/{slug}/
+├── config.ts              # Single Source of Truth
+├── components/            # UI components
+├── hooks/                 # Custom hooks
+├── features/              # Nested sub-features
+├── shared/                # Shared within feature
+└── settings/              # Feature-specific settings
+
+convex/features/{slug}/
+├── queries.ts             # Read operations
+├── mutations.ts           # Write operations
+├── schema.ts              # Database schema
+├── features/              # Sub-features backend
+└── shared/                # Shared within feature
+```
+
+### Three-Tier Sharing Model
+
+1. **Global Shared** (`frontend/shared/`, `convex/shared/`)
+   - Used by ALL features
+   - Example: Button, requirePermission
+
+2. **Feature-Shared** (`{feature}/shared/`)
+   - Used within ONE feature
+   - Example: SharedEditor (CMS)
+
+3. **Local** (within feature folder)
+   - Used in one place only
+
+**Decision tree:**
+- Used by **all features**? → `frontend/shared/` or `convex/shared/`
+- Used **within one feature**? → `{feature}/shared/`
+- Used **in one place**? → Keep it local
+
+### Convex Mutation Pattern (6-Step)
+
+**EVERY mutation MUST follow this pattern:**
+
+```typescript
+export const createResource = mutation({
+  args: {
+    workspaceId: v.id('workspaces'),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // STEP 1: Permission check (MANDATORY - FIRST LINE)
+    const { membership } = await requirePermission(
+      ctx,
+      args.workspaceId,
+      'resource.create'
+    )
+
+    // STEP 2: Input validation
+    if (!args.title || args.title.length < 3) {
+      throw new Error('Title must be at least 3 characters')
+    }
+
+    // STEP 3: Workspace verification
+    const workspace = await ctx.db.get(args.workspaceId)
+    if (!workspace) {
+      throw new Error('Workspace not found')
+    }
+
+    // STEP 4: User authentication
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      throw new Error('User not authenticated')
+    }
+
+    // STEP 5: Business logic
+    const resourceId = await ctx.db.insert('resources', {
+      workspaceId: args.workspaceId,
+      title: args.title,
+      createdBy: membership.userId,
+      createdAt: Date.now(),
+    })
+
+    // STEP 6: Audit log (MANDATORY - AFTER SUCCESS)
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      userId: membership.userId,
+      action: 'RESOURCE_CREATED',
+      resourceType: 'resource',
+      resourceId: resourceId,
+      metadata: { title: args.title },
+    })
+
+    return resourceId
+  }
+})
+```
+
+### Convex Query Pattern
+
+```typescript
+export const getResources = query({
+  args: { workspaceId: v.id('workspaces') },
+  handler: async (ctx, args) => {
+    // ✅ STEP 1: Permission check
+    await requirePermission(ctx, args.workspaceId, 'resource.view')
+
+    // ✅ STEP 2: Query data
+    const resources = await ctx.db
+      .query('resources')
+      .withIndex('by_workspace', q => q.eq('workspaceId', args.workspaceId))
+      .collect()
+
+    return resources
+  }
+})
+```
+
+---
+
+## 🛠️ Tech Stack Details
+
+### Frontend
+- **Next.js 15** - App Router, Server Components, RSC
+- **React 19** - Latest features, concurrent rendering
+- **TypeScript** - Type safety throughout
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - Accessible component library
+- **Zustand** - Client state management
+- **Zod** - Schema validation
+
+### Backend
+- **Convex** - Real-time serverless database
+- **Clerk** - Authentication & user management
+- **Clerk Billing** - Subscription management
+
+### Development
+- **pnpm** - Package manager
+- **Vitest** - Testing framework
+- **convex-test** - Integration testing
+- **tsx** - TypeScript execution for scripts
+
+---
+
+## 📁 File Organization
+
+### Where Features Can Be Mentioned
+
+**✅ ALLOWED:**
+- `frontend/features/{slug}/` - Feature implementation
+- `convex/features/{slug}/` - Feature backend
+- `tests/features/{slug}/` - Feature tests
+- `lib/features/registry.ts` - Auto-discovery system
+- Auto-generated files (manifests, registries)
+
+**❌ FORBIDDEN:**
+- Central config files (deleted)
+- Hardcoded mappings in scripts
+- Hardcoded lists in tests
+- Application code outside features
+
+### Import Patterns
+
+```typescript
+// Global shared (all features can use)
+import { Button } from '@/frontend/shared/ui/button'
+import { requirePermission } from '@/convex/shared/permissions/helpers'
+
+// Feature-shared (within one feature)
+import { ImageUploader } from '@/features/cms/shared/components/ImageUploader'
+
+// Feature-specific
+import { PostEditor } from '@/features/cms/components/PostEditor'
+
+// Convex API
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
+```
+
+---
+
+## ✅ Definition of Done (DoD)
+
+**Before committing, ensure:**
+
+1. ✅ **Zod Validation** - All inputs validated with Zod schemas
+2. ✅ **RBAC** - Permission checks on all Convex handlers
+3. ✅ **Audit Logging** - All mutations logged to activityEvents table
+4. ✅ **Workspace Isolation** - Cross-workspace access prevented
+5. ✅ **Tests** - Unit tests written and passing
+6. ✅ **No Hardcoding** - Zero hardcoded feature references
+7. ✅ **Auto-Discovery** - Features auto-discovered via registry
+8. ✅ **Type Safety** - Full TypeScript coverage
+9. ✅ **Validation Passes** - `pnpm run validate:all` passes
+10. ✅ **Tests Pass** - `pnpm test` passes
+
+---
+
+## 🔍 Common Commands
+
+```bash
+# Feature Management
+pnpm run create:feature {slug}          # Create new feature
+pnpm run list:features                  # List all features
+pnpm run edit:feature {slug}            # Edit feature
+pnpm run delete:feature {slug}          # Delete feature
+pnpm run sync:all                       # Sync manifests
+
+# Validation
+pnpm run validate:all                  # Validate everything
+pnpm run validate:features             # Validate features only
+pnpm run validate:permissions          # Check RBAC
+pnpm run validate:audit                 # Check audit logs
+pnpm run validate:dod                  # Check DoD compliance
+
+# Testing
+pnpm test                               # Run all tests
+pnpm test:coverage                      # With coverage
+
+# Development
+pnpm dev                                # Start Next.js
+npx convex dev                          # Start Convex
+pnpm build                              # Build for production
+```
+
+---
+
+## 📚 Essential Documentation
+
+**Must-read files:**
+- `docs/00_BASE_KNOWLEDGE.md` - Essential developer knowledge
+- `docs/2-rules/FEATURE_RULES.md` - Feature development rules
+- `docs/2-rules/MUTATION_TEMPLATE_GUIDE.md` - Mutation patterns
+- `docs/1-core/1_SYSTEM_OVERVIEW.md` - Architecture overview
+- `PROJECT_STATUS.md` - Current project status
+
+**Reference:**
+- `convex/templates/mutation_template.ts.example` - Mutation template
+- `lib/features/defineFeature.ts` - Feature definition helper
+- `convex/shared/permissions/helpers.ts` - RBAC helpers
+- `convex/shared/audit/logger.ts` - Audit logging
+
+---
+
+## 🎯 When Creating New Code
+
+### Creating a Feature
+
+1. Use `pnpm run create:feature {slug}` to scaffold
+2. Edit `frontend/features/{slug}/config.ts` (SSOT)
+3. Implement frontend in `frontend/features/{slug}/`
+4. Implement backend in `convex/features/{slug}/`
+5. Add tests in `tests/features/{slug}/`
+6. Run `pnpm run sync:all`
+7. Validate with `pnpm run validate:all`
+
+### Creating a Mutation
+
+1. Copy from `convex/templates/mutation_template.ts.example`
+2. Follow 6-step pattern (permission → validation → logic → audit)
+3. Use permission constants (not hardcoded strings)
+4. Write tests for all 5 test types
+5. Validate with `pnpm run validate:permissions` and `pnpm run validate:audit`
+
+### Creating a Component
+
+1. Use shadcn/ui components from `frontend/shared/ui/`
+2. Follow three-tier sharing model
+3. Use TypeScript with proper types
+4. Add proper error handling
+5. Make it accessible (ARIA labels, keyboard navigation)
+
+---
+
+## ⚠️ Anti-Patterns (DON'T DO THIS)
+
+### ❌ Skipping Permission Checks
+```typescript
+// ❌ BAD
+export const createResource = mutation({
+  handler: async (ctx, args) => {
+    // MISSING: await requirePermission(...)
+    return await ctx.db.insert('resources', args)
+  }
+})
+```
+
+### ❌ Skipping Audit Logging
+```typescript
+// ❌ BAD
+export const deleteResource = mutation({
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, 'resource.delete')
+    await ctx.db.delete(args.id)
+    // MISSING: await logAuditEvent(...)
+  }
+})
+```
+
+### ❌ Hardcoding Feature Lists
+```typescript
+// ❌ BAD
+const FEATURES = ['analytics', 'chat', 'calendar']
+
+// ✅ GOOD
+import { getAllFeatures } from '@/lib/features/registry'
+const FEATURES = getAllFeatures()
+```
+
+### ❌ Manual Feature Imports
+```typescript
+// ❌ BAD
+import AnalyticsPage from '@/frontend/features/analytics/page'
+
+// ✅ GOOD
+const feature = FEATURES.find(f => f.id === slug)
+const Component = await dynamic(() => import(feature.componentPath))
+```
+
+---
+
+## 🔗 Quick Reference
+
+### Permission Constants
+```typescript
+import { PERMISSIONS } from '@/convex/shared/permissions/constants'
+await requirePermission(ctx, workspaceId, PERMISSIONS.RESOURCE.CREATE)
+```
+
+### Audit Actions
+```typescript
+import { AUDIT_ACTIONS } from '@/convex/shared/audit/constants'
+await logAuditEvent(ctx, {
+  action: AUDIT_ACTIONS.RESOURCE_CREATED,
+  // ...
+})
+```
+
+### Feature Config Template
+```typescript
+import { defineFeature } from '@/lib/features/defineFeature'
+
+export default defineFeature({
+  id: '{slug}',
+  name: '{Name}',
+  description: '{Description}',
+  ui: {
+    icon: '{Icon}',
+    path: '/dashboard/{slug}',
+    component: '{Name}Page',
+    category: '{category}',
+    order: 100,
+  },
+  technical: {
+    featureType: 'optional', // default | optional | experimental
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+  status: {
+    state: 'stable', // development | beta | stable | deprecated
+    isReady: true,
+  },
+  permissions: ['{slug}.view'],
+})
+```
+
+---
+
+## 🎓 Key Takeaways
+
+1. **Everything is modular** - Features are self-contained, auto-discovered
+2. **RBAC is mandatory** - Every operation checks permissions
+3. **Audit everything** - All mutations are logged immutably
+4. **No hardcoding** - Use auto-discovery, dynamic resolution
+5. **Single source of truth** - One config file per feature
+6. **Test-driven** - Write tests, achieve high coverage
+7. **Type-safe** - TypeScript + Zod validation everywhere
+
+---
+
+**Last Updated:** 2025-01-20
+**Version:** 1.0.0
+**Status:** ✅ Active - Must Follow
+

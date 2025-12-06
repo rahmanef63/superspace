@@ -15,7 +15,17 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-export function ChatDetailView() {
+export interface ChatDetailViewProps {
+  /** Callback to toggle right panel (contact info) in three-column layout */
+  onToggleContactPanel?: () => void;
+  /** Whether using external panel management (three-column layout) */
+  useExternalPanel?: boolean;
+}
+
+export function ChatDetailView({
+  onToggleContactPanel,
+  useExternalPanel = false,
+}: ChatDetailViewProps = {}) {
   const { selectedChat, selectedChatId } = useCurrentChat();
   const { isMobile, handleBack } = useMobileWhatsApp();
   // Use individual selectors to prevent unnecessary re-renders
@@ -323,6 +333,8 @@ export function ChatDetailView() {
         title={selectedChat.name}
         subtitle="last seen recently"
         contact={chatContact}
+        onToggleContactPanel={onToggleContactPanel}
+        useExternalPanel={useExternalPanel}
       />
 
       {/* Selection Mode Toolbar */}

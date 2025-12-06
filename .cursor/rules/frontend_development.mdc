@@ -1,0 +1,263 @@
+---
+description: Rules for frontend development, React components, and UI patterns
+globs: frontend/**/*.tsx,frontend/**/*.ts,app/**/*.tsx,components/**/*.tsx
+---
+
+# Frontend Development Rules
+
+## Component Structure
+
+**Use functional components with TypeScript:**
+
+```typescript
+'use client'
+
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
+import { Button } from '@/frontend/shared/ui/button'
+
+interface ResourceListProps {
+  workspaceId: Id<'workspaces'>
+}
+
+export function ResourceList({ workspaceId }: ResourceListProps) {
+  const resources = useQuery(api.features.resources.queries.getResources, {
+    workspaceId,
+  })
+
+  const createResource = useMutation(
+    api.features.resources.mutations.createResource
+  )
+
+  if (resources === undefined) {
+    return <div>Loading...</div>
+  }
+
+  return (
+    <div>
+      <Button onClick={() => createResource({ workspaceId, title: 'New' })}>
+        Create Resource
+      </Button>
+      {resources.map(r => (
+        <div key={r._id}>{r.title}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+## Import Patterns
+
+**Follow three-tier sharing model:**
+
+```typescript
+// Global shared (all features can use)
+import { Button } from '@/frontend/shared/ui/button'
+import { useToast } from '@/hooks/use-toast'
+
+// Feature-shared (within one feature)
+import { ImageUploader } from '@/features/cms/shared/components/ImageUploader'
+
+// Feature-specific
+import { PostEditor } from '@/features/cms/components/PostEditor'
+
+// Convex API
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
+```
+
+## Convex Hooks
+
+**Use Convex React hooks:**
+
+```typescript
+import { useQuery, useMutation, useAction } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+
+// Query (read)
+const resources = useQuery(api.features.resources.queries.getResources, {
+  workspaceId,
+})
+
+// Mutation (write)
+const createResource = useMutation(
+  api.features.resources.mutations.createResource
+)
+
+// Action (external API calls)
+const generateReport = useAction(api.features.reports.actions.generate)
+```
+
+**Handle loading states:**
+```typescript
+if (resources === undefined) {
+  return <div>Loading...</div>
+}
+
+if (resources === null) {
+  return <div>Error loading resources</div>
+}
+```
+
+## Type Safety
+
+**Use proper TypeScript types:**
+
+```typescript
+import { Id } from '@/convex/_generated/dataModel'
+import { Doc } from '@/convex/_generated/dataModel'
+
+// Use Id types (not string)
+type ResourceId = Id<'resources'>
+type WorkspaceId = Id<'workspaces'>
+
+// Use Doc types for documents
+type Resource = Doc<'resources'>
+
+// Props interfaces
+interface ResourceListProps {
+  workspaceId: WorkspaceId
+  onSelect?: (resourceId: ResourceId) => void
+}
+```
+
+## Error Handling
+
+**Handle errors gracefully:**
+
+```typescript
+import { useToast } from '@/hooks/use-toast'
+
+export function ResourceList({ workspaceId }: Props) {
+  const { toast } = useToast()
+  const createResource = useMutation(
+    api.features.resources.mutations.createResource
+  )
+
+  const handleCreate = async () => {
+    try {
+      await createResource({
+        workspaceId,
+        title: 'New Resource',
+      })
+      toast({
+        title: 'Success',
+        description: 'Resource created successfully',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create resource',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  return <Button onClick={handleCreate}>Create</Button>
+}
+```
+
+## Accessibility
+
+**Make components accessible:**
+
+```typescript
+import { Button } from '@/frontend/shared/ui/button'
+
+export function ResourceCard({ resource }: Props) {
+  return (
+    <div
+      role="article"
+      aria-label={`Resource: ${resource.title}`}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleSelect()
+        }
+      }}
+    >
+      <h2>{resource.title}</h2>
+      <Button
+        aria-label={`Delete ${resource.title}`}
+        onClick={handleDelete}
+      >
+        Delete
+      </Button>
+    </div>
+  )
+}
+```
+
+## Styling
+
+**Use Tailwind CSS classes:**
+
+```typescript
+<div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
+  <h2 className="text-lg font-semibold">{title}</h2>
+  <Button variant="outline" size="sm">Action</Button>
+</div>
+```
+
+**Use shadcn/ui components:**
+- Import from `@/frontend/shared/ui/`
+- Don't create custom components that duplicate shadcn/ui functionality
+- Customize via className props when needed
+
+## State Management
+
+**Use Zustand for client state:**
+
+```typescript
+import { create } from 'zustand'
+
+interface ResourceStore {
+  selectedId: string | null
+  setSelected: (id: string | null) => void
+}
+
+export const useResourceStore = create<ResourceStore>((set) => ({
+  selectedId: null,
+  setSelected: (id) => set({ selectedId: id }),
+}))
+```
+
+**Use React hooks for component state:**
+```typescript
+const [isOpen, setIsOpen] = useState(false)
+const [searchQuery, setSearchQuery] = useState('')
+```
+
+## Form Handling
+
+**Use react-hook-form with Zod:**
+
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const schema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  description: z.string().optional(),
+})
+
+type FormData = z.infer<typeof schema>
+
+export function ResourceForm({ onSubmit }: Props) {
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+  })
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <input {...form.register('title')} />
+      {form.formState.errors.title && (
+        <p>{form.formState.errors.title.message}</p>
+      )}
+      <Button type="submit">Submit</Button>
+    </form>
+  )
+}
+```

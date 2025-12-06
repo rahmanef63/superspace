@@ -1,0 +1,233 @@
+---
+description: Base knowledge about SuperSpace project structure, concepts, and patterns
+globs: **/*
+---
+
+# SuperSpace Base Knowledge
+
+## Project Overview
+
+**SuperSpace** is a modular, feature-based SaaS platform with:
+- **Next.js 15** (App Router) + React 19
+- **Convex** (real-time serverless database)
+- **Clerk** (authentication & billing)
+- **TypeScript** + **Zod** (type safety & validation)
+- **shadcn/ui** + **Tailwind CSS** (UI components)
+
+**Key Innovation:** Truly modular features with zero hardcoding and 100% auto-discovery.
+
+## Core Concepts
+
+### 1. Modular Feature System
+
+**Everything is a feature.** Each feature is self-contained:
+- Has own UI, backend, tests
+- Can have nested sub-features
+- RBAC-enforced (permission checks on all operations)
+- Audit-logged (all mutations tracked)
+
+### 2. Auto-Discovery
+
+**Zero manual registration.** Features are auto-discovered:
+- Browser: `lib/features/registry.ts` (uses `import.meta.glob`)
+- Node.js: `lib/features/registry.server.ts` (uses `glob.sync`)
+
+### 3. Three-Tier Sharing Model
+
+1. **Global Shared** (`frontend/shared/`, `convex/shared/`)
+   - Used by ALL features
+2. **Feature-Shared** (`{feature}/shared/`)
+   - Used within ONE feature
+3. **Local** (within feature folder)
+   - Used in one place only
+
+### 4. RBAC (Role-Based Access Control)
+
+**Permission Hierarchy:**
+- Owner (0) → Full control
+- Admin (10) → Manage workspace
+- Manager (30) → Manage content
+- Staff (50) → Create content
+- Client (70) → Limited access
+- Guest (90) → Read-only
+
+**Every Convex handler MUST check permissions.**
+
+### 5. Audit Logging
+
+**All mutations are logged** to `activityEvents` table for:
+- Compliance
+- Forensics
+- Debugging
+
+## Project Structure
+
+```
+frontend/
+├── features/                    # All features (modular)
+│   ├── {feature-slug}/
+│   │   ├── config.ts           # Single Source of Truth
+│   │   ├── components/
+│   │   ├── features/            # Nested sub-features
+│   │   ├── shared/              # Feature-specific shared
+│   │   └── settings/            # Feature settings
+│   └── ...
+├── shared/                      # Global shared
+│   ├── ui/                      # shadcn/ui components
+│   ├── foundation/              # Core utilities
+│   └── ...
+└── lib/
+    └── features/
+        ├── registry.ts          # Browser auto-discovery
+        └── registry.server.ts    # Node.js auto-discovery
+
+convex/
+├── features/                    # Mirror frontend
+│   ├── {feature_slug}/
+│   │   ├── queries.ts
+│   │   ├── mutations.ts
+│   │   ├── schema.ts
+│   │   ├── features/            # Nested sub-features
+│   │   └── shared/               # Feature-shared
+│   └── ...
+└── shared/                       # Global shared
+    ├── permissions/
+    ├── audit/
+    └── utils/
+
+tests/
+└── features/                    # Feature tests
+    └── {feature-slug}/
+```
+
+## Essential Files
+
+### Feature Config (SSOT)
+```
+frontend/features/{slug}/config.ts
+```
+
+### Auto-Discovery
+- `lib/features/registry.ts` (browser)
+- `lib/features/registry.server.ts` (Node.js)
+
+### RBAC Helpers
+- `convex/shared/permissions/helpers.ts`
+
+### Audit Logging
+- `convex/shared/audit/logger.ts`
+
+### Mutation Template
+- `convex/templates/mutation_template.ts.example`
+
+## Common Patterns
+
+### Feature Config
+```typescript
+import { defineFeature } from '@/lib/features/defineFeature'
+
+export default defineFeature({
+  id: '{slug}',
+  name: '{Name}',
+  description: '{Description}',
+  ui: {
+    icon: '{Icon}',
+    path: '/dashboard/{slug}',
+    component: '{Name}Page',
+    category: '{category}',
+    order: 100,
+  },
+  technical: {
+    featureType: 'optional', // default | optional | experimental
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+  status: {
+    state: 'stable', // development | beta | stable | deprecated
+    isReady: true,
+  },
+  permissions: ['{slug}.view'],
+})
+```
+
+### Convex Mutation
+```typescript
+export const createResource = mutation({
+  args: { workspaceId: v.id('workspaces'), title: v.string() },
+  handler: async (ctx, args) => {
+    // 1. Permission check
+    const { membership } = await requirePermission(
+      ctx, args.workspaceId, 'resource.create'
+    )
+    // 2. Validation
+    // 3. Business logic
+    const id = await ctx.db.insert('resources', { ... })
+    // 4. Audit log
+    await logAuditEvent(ctx, { ... })
+    return id
+  }
+})
+```
+
+### React Component
+```typescript
+'use client'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+
+export function ResourceList({ workspaceId }: Props) {
+  const resources = useQuery(api.features.resources.queries.getResources, {
+    workspaceId,
+  })
+  const createResource = useMutation(
+    api.features.resources.mutations.createResource
+  )
+  // ...
+}
+```
+
+## Commands
+
+```bash
+# Feature Management
+pnpm run create:feature {slug}
+pnpm run list:features
+pnpm run edit:feature {slug}
+pnpm run delete:feature {slug}
+pnpm run sync:all
+
+# Validation
+pnpm run validate:all
+pnpm run validate:features
+pnpm run validate:permissions
+pnpm run validate:audit
+
+# Testing
+pnpm test
+pnpm test:coverage
+
+# Development
+pnpm dev
+npx convex dev
+```
+
+## Documentation
+
+**Must-read files:**
+- `docs/00_BASE_KNOWLEDGE.md` - Essential developer knowledge
+- `docs/2-rules/FEATURE_RULES.md` - Feature development rules
+- `docs/2-rules/MUTATION_TEMPLATE_GUIDE.md` - Mutation patterns
+- `docs/1-core/1_SYSTEM_OVERVIEW.md` - Architecture overview
+- `PROJECT_STATUS.md` - Current project status
+
+## Key Principles
+
+1. **Zero Hardcoding** - Use auto-discovery, dynamic resolution
+2. **Single Source of Truth** - One config file per feature
+3. **RBAC Mandatory** - Every operation checks permissions
+4. **Audit Everything** - All mutations are logged
+5. **Type Safety** - TypeScript + Zod validation everywhere
+6. **Test-Driven** - Write tests, achieve high coverage
+7. **Modular Architecture** - Features are self-contained

@@ -1,0 +1,239 @@
+---
+description: Rules for Convex backend development, mutations, queries, and RBAC
+globs: convex/**/*.ts
+---
+
+# Convex Backend Rules
+
+## Mutation Pattern (6-Step - MANDATORY)
+
+**EVERY mutation MUST follow this pattern:**
+
+```typescript
+export const createResource = mutation({
+  args: {
+    workspaceId: v.id('workspaces'),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // STEP 1: Permission check (MANDATORY - FIRST LINE)
+    const { membership } = await requirePermission(
+      ctx,
+      args.workspaceId,
+      'resource.create'
+    )
+
+    // STEP 2: Input validation
+    if (!args.title || args.title.length < 3) {
+      throw new Error('Title must be at least 3 characters')
+    }
+
+    // STEP 3: Workspace verification
+    const workspace = await ctx.db.get(args.workspaceId)
+    if (!workspace) {
+      throw new Error('Workspace not found')
+    }
+
+    // STEP 4: User authentication
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      throw new Error('User not authenticated')
+    }
+
+    // STEP 5: Business logic
+    const resourceId = await ctx.db.insert('resources', {
+      workspaceId: args.workspaceId,
+      title: args.title,
+      createdBy: membership.userId,
+      createdAt: Date.now(),
+    })
+
+    // STEP 6: Audit log (MANDATORY - AFTER SUCCESS)
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      userId: membership.userId,
+      action: 'RESOURCE_CREATED',
+      resourceType: 'resource',
+      resourceId: resourceId,
+      metadata: { title: args.title },
+    })
+
+    return resourceId
+  }
+})
+```
+
+## Query Pattern
+
+**EVERY query MUST check permissions:**
+
+```typescript
+export const getResources = query({
+  args: { workspaceId: v.id('workspaces') },
+  handler: async (ctx, args) => {
+    // ✅ STEP 1: Permission check
+    await requirePermission(ctx, args.workspaceId, 'resource.view')
+
+    // ✅ STEP 2: Query data
+    const resources = await ctx.db
+      .query('resources')
+      .withIndex('by_workspace', q => q.eq('workspaceId', args.workspaceId))
+      .collect()
+
+    return resources
+  }
+})
+```
+
+## RBAC (Role-Based Access Control)
+
+**Permission Hierarchy:**
+- Owner (0) → Full control
+- Admin (10) → Manage workspace
+- Manager (30) → Manage content
+- Staff (50) → Create content
+- Client (70) → Limited access
+- Guest (90) → Read-only
+
+**Permission Check Pattern:**
+```typescript
+// Use permission constants (not hardcoded strings)
+import { PERMISSIONS } from '@/convex/shared/permissions/constants'
+const { membership } = await requirePermission(
+  ctx,
+  args.workspaceId,
+  PERMISSIONS.RESOURCE.CREATE
+)
+```
+
+**Validated by:** `scripts/validate-permissions.ts`
+
+## Audit Logging
+
+**EVERY mutation MUST log audit events:**
+
+```typescript
+await logAuditEvent(ctx, {
+  workspaceId: args.workspaceId,
+  userId: membership.userId,
+  action: 'RESOURCE_CREATED',
+  resourceType: 'resource',
+  resourceId: resourceId,
+  metadata: { title: args.title },
+})
+```
+
+**Why:** Immutable audit trail for compliance, forensics, and debugging.
+
+**Validated by:** `scripts/validate-audit-logs.ts`
+
+**Note:** Use `activityEvents` table (not `auditLogs`).
+
+## Convex Function Syntax
+
+**ALWAYS use new function syntax:**
+
+```typescript
+import { query, mutation } from './_generated/server'
+import { v } from 'convex/values'
+
+export const exampleQuery = query({
+  args: { id: v.id('resources') },
+  returns: v.any(), // or v.null() if no return
+  handler: async (ctx, args) => {
+    // Function body
+  },
+})
+```
+
+**ALWAYS include:**
+- `args` validator
+- `returns` validator (use `v.null()` if no return)
+- `handler` function
+
+## Schema Guidelines
+
+**Always define schema in `convex/schema.ts`:**
+
+```typescript
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
+
+export default defineSchema({
+  resources: defineTable({
+    workspaceId: v.id('workspaces'),
+    title: v.string(),
+    createdBy: v.id('users'),
+    createdAt: v.number(),
+  })
+    .index('by_workspace', ['workspaceId'])
+    .index('by_created_by', ['createdBy']),
+})
+```
+
+**Index naming:**
+- Always include all index fields in the name
+- Format: `by_{field1}_and_{field2}`
+- Example: `by_workspace_and_created_at`
+
+## Query Guidelines
+
+**DO NOT use `filter` - use indexes instead:**
+
+```typescript
+// ❌ BAD
+const resources = await ctx.db
+  .query('resources')
+  .filter(q => q.eq(q.field('workspaceId'), args.workspaceId))
+  .collect()
+
+// ✅ GOOD
+const resources = await ctx.db
+  .query('resources')
+  .withIndex('by_workspace', q => q.eq('workspaceId', args.workspaceId))
+  .collect()
+```
+
+**Ordering:**
+- Use `.order('asc')` or `.order('desc')`
+- Default is ascending by `_creationTime`
+
+## Workspace Isolation
+
+**ALWAYS verify workspace ownership:**
+
+```typescript
+const resource = await ctx.db.get(args.resourceId)
+if (!resource) {
+  throw new Error('Resource not found')
+}
+
+if (resource.workspaceId !== args.workspaceId) {
+  throw new Error('Resource does not belong to this workspace')
+}
+```
+
+## Error Handling
+
+**Throw descriptive errors:**
+
+```typescript
+// Validation errors
+if (!args.title || args.title.trim().length === 0) {
+  throw new Error('Title is required and cannot be empty')
+}
+
+// Permission errors (handled by requirePermission)
+// Will throw: "Permission denied: You don't have 'resource.create' permission"
+
+// Not found errors
+const resource = await ctx.db.get(args.id)
+if (!resource) {
+  throw new Error('Resource not found')
+}
+
+// Cross-workspace errors
+if (resource.workspaceId !== args.workspaceId) {
+  throw new Error('Resource does not belong to this workspace')
+}
+```

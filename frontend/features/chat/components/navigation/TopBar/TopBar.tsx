@@ -21,6 +21,10 @@ interface TopBarProps {
   showActions?: boolean;
   onMenuClick?: () => void;
   contact?: MemberSummary;
+  /** For desktop: callback to toggle right panel instead of opening drawer */
+  onToggleContactPanel?: () => void;
+  /** Whether to use drawer (mobile) or external toggle (desktop with three-column layout) */
+  useExternalPanel?: boolean;
 }
 
 export function TopBar({
@@ -31,6 +35,8 @@ export function TopBar({
   showActions = true,
   onMenuClick,
   contact,
+  onToggleContactPanel,
+  useExternalPanel = false,
 }: TopBarProps) {
   const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
   const hasMember = Boolean(contact);
@@ -49,7 +55,13 @@ export function TopBar({
 
   const handleMemberInfoClick = () => {
     if (!hasMember) return;
-    setIsMemberInfoOpen(true);
+    // If using external panel (desktop three-column), call the toggle callback
+    if (useExternalPanel && onToggleContactPanel) {
+      onToggleContactPanel();
+    } else {
+      // Otherwise use internal drawer (mobile)
+      setIsMemberInfoOpen(true);
+    }
   };
 
   return (
@@ -71,7 +83,8 @@ export function TopBar({
         )}
       </div>
 
-      {contact && (
+      {/* Only render internal drawer when NOT using external panel */}
+      {contact && !useExternalPanel && (
         <MemberInfoDrawer
           contact={contact}
           isOpen={isMemberInfoOpen}

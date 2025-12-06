@@ -66,3 +66,6 @@ export const useMobileWhatsApp = () => {
 
 // Re-export store hook for convenience
 export { useWhatsAppStore };
+
+// Member actions hooks
+export * from './useMemberActions';

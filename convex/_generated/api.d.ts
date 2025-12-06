@@ -183,6 +183,7 @@ import type * as shared_audit from "../shared/audit.js";
 import type * as shared_auth from "../shared/auth.js";
 import type * as shared_storage from "../shared/storage.js";
 import type * as user_friends from "../user/friends.js";
+import type * as user_memberActions from "../user/memberActions.js";
 import type * as user_users from "../user/users.js";
 import type * as workspace_activity from "../workspace/activity.js";
 import type * as workspace_debug from "../workspace/debug.js";
@@ -388,6 +389,7 @@ declare const fullApi: ApiFromModules<{
   "shared/auth": typeof shared_auth;
   "shared/storage": typeof shared_storage;
   "user/friends": typeof user_friends;
+  "user/memberActions": typeof user_memberActions;
   "user/users": typeof user_users;
   "workspace/activity": typeof workspace_activity;
   "workspace/debug": typeof workspace_debug;

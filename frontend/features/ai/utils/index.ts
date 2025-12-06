@@ -15,6 +15,15 @@ export {
   validateMessage,
 } from "@/frontend/shared/communications"
 
+// Re-export error handling utilities
+export {
+  parseAIError,
+  formatErrorForToast,
+  PROVIDER_KEY_URLS,
+  PROVIDER_NAMES,
+  type ParsedAIError,
+} from "./error-handler"
+
 /**
  * Search conversations by title, topic, or message content
  * AI-specific utility

@@ -1,4 +1,6 @@
 export { MemberInfoModal } from "./MemberInfoModal";
+export { MemberInfoDrawer } from "./MemberInfoDrawer";
+export type { MemberInfoDrawerProps } from "./MemberInfoDrawer";
 export { MemberInfoHeader } from "./MemberInfoHeader";
 export { MemberInfoSidebar } from "./MemberInfoSidebar";
 export { MemberInfoContent } from "./MemberInfoContent";

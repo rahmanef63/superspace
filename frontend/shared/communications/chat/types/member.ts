@@ -3,8 +3,12 @@
  * @module shared/chat/types/member
  */
 
+import type { Id } from "@/convex/_generated/dataModel";
+
 export type MemberProfile = {
   id: string;
+  /** User ID in database - use this for API calls */
+  userId?: Id<"users"> | string;
   name: string;
   username?: string;
   avatar?: string;

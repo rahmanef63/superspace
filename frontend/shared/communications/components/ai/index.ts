@@ -249,3 +249,60 @@ export {
   type WebPreviewConsoleProps,
   type ConsoleLog,
 } from './web-preview'
+
+// Shimmer - Text shimmer loading animation
+export {
+  Shimmer,
+  type ShimmerProps,
+} from './shimmer'
+
+// ChainOfThought - Collapsible AI reasoning display
+export {
+  ChainOfThought,
+  ChainOfThoughtHeader,
+  ChainOfThoughtStep,
+  ChainOfThoughtSearchResults,
+  ChainOfThoughtSearchResult,
+  ChainOfThoughtContent,
+  ChainOfThoughtImage,
+  type ChainOfThoughtProps,
+  type ChainOfThoughtHeaderProps,
+  type ChainOfThoughtStepProps,
+  type ChainOfThoughtSearchResultsProps,
+  type ChainOfThoughtSearchResultProps,
+  type ChainOfThoughtContentProps,
+  type ChainOfThoughtImageProps,
+} from './chain-of-thought'
+
+// ModelSelector - AI model selection dialog
+export {
+  ModelSelector,
+  ModelSelectorTrigger,
+  ModelSelectorContent,
+  ModelSelectorDialog,
+  ModelSelectorInput,
+  ModelSelectorList,
+  ModelSelectorEmpty,
+  ModelSelectorGroup,
+  ModelSelectorItem,
+  ModelSelectorShortcut,
+  ModelSelectorSeparator,
+  ModelSelectorLogo,
+  ModelSelectorLogoGroup,
+  ModelSelectorName,
+  type ModelSelectorProps,
+  type ModelSelectorTriggerProps,
+  type ModelSelectorContentProps,
+  type ModelSelectorDialogProps,
+  type ModelSelectorInputProps,
+  type ModelSelectorListProps,
+  type ModelSelectorEmptyProps,
+  type ModelSelectorGroupProps,
+  type ModelSelectorItemProps,
+  type ModelSelectorShortcutProps,
+  type ModelSelectorSeparatorProps,
+  type ModelSelectorLogoProps,
+  type ModelSelectorLogoGroupProps,
+  type ModelSelectorNameProps,
+  type ProviderName,
+} from './model-selector'

@@ -14,6 +14,9 @@ export * from "./Button"
 export * from "./Input"
 export * from "./Card"
 
+// Rich Text Components
+export * from "./rich-text"
+
 // Re-export for convenience
 export {
   componentRegistry,

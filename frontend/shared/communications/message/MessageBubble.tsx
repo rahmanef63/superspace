@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { RichTextRenderer } from "@/frontend/shared/ui/components/rich-text";
 import type { 
   BaseMessage, 
   MessageContext, 
@@ -315,9 +316,11 @@ export function MessageBubble({
             )}
           >
             {/* Message content */}
-            <div className="whitespace-pre-wrap break-words text-sm">
-              {message.content.text}
-            </div>
+            <RichTextRenderer
+              content={message.content.text}
+              variant={allowMarkdown ? "markdown" : "plain"}
+              className="break-words"
+            />
 
             {/* Attachments */}
             {message.content.attachments && message.content.attachments.length > 0 && (

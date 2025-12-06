@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { TopBarHeader } from "./TopBarHeader";
 import { TopBarActions } from "./TopBarActions";
-import { MemberInfoModal } from "@/frontend/shared/communications";
+import { MemberInfoDrawer } from "@/frontend/shared/communications";
+import { useMemberInfo } from "@/frontend/features/chat/shared/hooks";
 
 interface MemberSummary {
   id: string;
@@ -33,6 +34,18 @@ export function TopBar({
 }: TopBarProps) {
   const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
   const hasMember = Boolean(contact);
+  
+  // Use member info hook for actions and state
+  const memberInfo = useMemberInfo(contact?.id ?? "");
+  const { 
+    isFavorite, 
+    isBlocked, 
+    addToFavorites, 
+    removeFromFavorites, 
+    blockMember, 
+    unblockMember,
+    reportMember 
+  } = memberInfo;
 
   const handleMemberInfoClick = () => {
     if (!hasMember) return;
@@ -41,7 +54,7 @@ export function TopBar({
 
   return (
     <>
-      <div className="flex min-h-[60px] items-center justify-between border-b border-wa-border bg-wa-surface px-4 py-3 md:min-h-[64px]">
+      <div className="flex min-h-[60px] items-center justify-between border-b border-border bg-background px-4 py-3 md:min-h-[64px]">
         <TopBarHeader
           title={title}
           subtitle={subtitle}
@@ -59,10 +72,19 @@ export function TopBar({
       </div>
 
       {contact && (
-        <MemberInfoModal
+        <MemberInfoDrawer
           contact={contact}
           isOpen={isMemberInfoOpen}
           onClose={() => setIsMemberInfoOpen(false)}
+          onBack={() => setIsMemberInfoOpen(false)}
+          side="right"
+          isFavorite={isFavorite}
+          isBlocked={isBlocked}
+          onAddToFavorites={addToFavorites}
+          onRemoveFromFavorites={removeFromFavorites}
+          onBlock={blockMember}
+          onUnblock={unblockMember}
+          onReport={reportMember}
         />
       )}
     </>

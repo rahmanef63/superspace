@@ -15,6 +15,50 @@ interface ChatRequest {
   maxTokens?: number
 }
 
+// Request timeout in milliseconds (30 seconds)
+const REQUEST_TIMEOUT = 30000
+
+/**
+ * Create a fetch request with timeout
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeout: number = REQUEST_TIMEOUT
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+    return response
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+/**
+ * Parse error response from AI provider
+ */
+function parseProviderError(provider: string, status: number, errorText: string): string {
+  try {
+    const errorJson = JSON.parse(errorText)
+    // Extract meaningful error message from various provider formats
+    const message = 
+      errorJson.error?.message || 
+      errorJson.message || 
+      errorJson.error?.error?.message ||
+      errorJson.detail ||
+      errorText
+    return `${provider} API error: ${message}`
+  } catch {
+    return `${provider} API error: ${status} - ${errorText.slice(0, 200)}`
+  }
+}
+
 // Provider-specific configurations
 const PROVIDER_CONFIGS: Record<string, { baseUrl: string; headers?: Record<string, string> }> = {
   groq: {
@@ -47,19 +91,29 @@ const PROVIDER_CONFIGS: Record<string, { baseUrl: string; headers?: Record<strin
   ollama: {
     baseUrl: "http://localhost:11434/v1",
   },
+  google: {
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+  },
+  cohere: {
+    baseUrl: "https://api.cohere.ai/v1",
+  },
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  let provider = "unknown"
+  
   try {
     const body: ChatRequest = await request.json()
-    const { messages, provider, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048 } = body
+    const { messages, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048 } = body
+    provider = body.provider
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: "Messages are required" }, { status: 400 })
     }
 
     if (!apiKey && provider !== "ollama") {
-      return NextResponse.json({ error: "API key is required" }, { status: 400 })
+      return NextResponse.json({ error: `No API key configured for ${provider}` }, { status: 400 })
     }
 
     // Get provider config
@@ -70,13 +124,21 @@ export async function POST(request: NextRequest) {
 
     const apiBaseUrl = baseUrl || providerConfig?.baseUrl
 
-    // Handle Anthropic separately (different API format)
+    // Handle specific providers
     if (provider === "anthropic") {
       return handleAnthropicRequest(messages, model, apiKey, temperature, maxTokens)
     }
 
+    if (provider === "google") {
+      return handleGoogleRequest(messages, model, apiKey, temperature, maxTokens)
+    }
+
+    if (provider === "cohere") {
+      return handleCohereRequest(messages, model, apiKey, temperature, maxTokens)
+    }
+
     // OpenAI-compatible API call (works for Groq, OpenAI, Together, Fireworks, etc.)
-    const response = await fetch(`${apiBaseUrl}/chat/completions`, {
+    const response = await fetchWithTimeout(`${apiBaseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,8 +155,9 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error(`AI API error (${provider}):`, errorText)
+      const errorMessage = parseProviderError(provider, response.status, errorText)
       return NextResponse.json(
-        { error: `AI API error: ${response.status} - ${errorText}` },
+        { error: errorMessage },
         { status: response.status }
       )
     }
@@ -103,18 +166,44 @@ export async function POST(request: NextRequest) {
     const assistantMessage = data.choices?.[0]?.message?.content
 
     if (!assistantMessage) {
-      return NextResponse.json({ error: "No response from AI" }, { status: 500 })
+      return NextResponse.json({ error: "No response from AI provider. The model may be unavailable." }, { status: 500 })
     }
 
+    console.log(`[AI Chat] ${provider}/${model} responded in ${Date.now() - startTime}ms`)
+    
     return NextResponse.json({
       content: assistantMessage,
       model: data.model,
       usage: data.usage,
     })
   } catch (error) {
-    console.error("AI chat error:", error)
+    const elapsed = Date.now() - startTime
+    console.error(`AI chat error (${provider}, ${elapsed}ms):`, error)
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return NextResponse.json(
+          { error: `Request to ${provider} timed out after 30 seconds. The AI provider may be slow or unavailable.` },
+          { status: 504 }
+        )
+      }
+      
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        return NextResponse.json(
+          { error: `Unable to connect to ${provider}. Please check your internet connection or try a different provider.` },
+          { status: 503 }
+        )
+      }
+      
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "An unexpected error occurred. Please try again." },
       { status: 500 }
     )
   }
@@ -127,52 +216,224 @@ async function handleAnthropicRequest(
   temperature: number,
   maxTokens: number
 ) {
-  // Convert messages to Anthropic format
-  const systemMessage = messages.find((m) => m.role === "system")
-  const otherMessages = messages.filter((m) => m.role !== "system")
+  try {
+    // Convert messages to Anthropic format
+    const systemMessage = messages.find((m) => m.role === "system")
+    const otherMessages = messages.filter((m) => m.role !== "system")
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      system: systemMessage?.content,
-      messages: otherMessages.map((m) => ({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content: m.content,
-      })),
-    }),
-  })
+    const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        system: systemMessage?.content,
+        messages: otherMessages.map((m) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: m.content,
+        })),
+      }),
+    })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error("Anthropic API error:", errorText)
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Anthropic API error:", errorText)
+      const errorMessage = parseProviderError("Anthropic", response.status, errorText)
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+    const assistantMessage = data.content?.[0]?.text
+
+    if (!assistantMessage) {
+      return NextResponse.json({ error: "No response from Anthropic. The model may be unavailable." }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      content: assistantMessage,
+      model: data.model,
+      usage: {
+        prompt_tokens: data.usage?.input_tokens,
+        completion_tokens: data.usage?.output_tokens,
+        total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+      },
+    })
+  } catch (error) {
+    console.error("Anthropic request error:", error)
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: "Request to Anthropic timed out. Please try again." },
+        { status: 504 }
+      )
+    }
     return NextResponse.json(
-      { error: `Anthropic API error: ${response.status} - ${errorText}` },
-      { status: response.status }
+      { error: error instanceof Error ? error.message : "Anthropic request failed" },
+      { status: 500 }
     )
   }
+}
 
-  const data = await response.json()
-  const assistantMessage = data.content?.[0]?.text
+async function handleGoogleRequest(
+  messages: ChatMessage[],
+  model: string,
+  apiKey: string,
+  temperature: number,
+  maxTokens: number
+) {
+  try {
+    const contents = messages
+      .filter(m => m.role !== "system")
+      .map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }]
+      }))
 
-  if (!assistantMessage) {
-    return NextResponse.json({ error: "No response from Anthropic" }, { status: 500 })
+    const systemMessage = messages.find(m => m.role === "system")
+    
+    const body: any = {
+      contents,
+      generationConfig: {
+        temperature,
+        maxOutputTokens: maxTokens,
+      }
+    }
+
+    if (systemMessage && model.includes("1.5")) {
+      body.systemInstruction = {
+        parts: [{ text: systemMessage.content }]
+      }
+    } else if (systemMessage) {
+      if (contents.length > 0 && contents[0].role === "user") {
+        contents[0].parts[0].text = `${systemMessage.content}\n\n${contents[0].parts[0].text}`
+      } else {
+        contents.unshift({
+          role: "user",
+          parts: [{ text: systemMessage.content }]
+        })
+      }
+    }
+
+    const response = await fetchWithTimeout(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Google API error:", errorText)
+      const errorMessage = parseProviderError("Google", response.status, errorText)
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+    const assistantMessage = data.candidates?.[0]?.content?.parts?.[0]?.text
+
+    if (!assistantMessage) {
+      return NextResponse.json({ error: "No response from Google. The model may be unavailable." }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      content: assistantMessage,
+      model: model,
+      usage: {
+        total_tokens: data.usageMetadata?.totalTokenCount || 0
+      },
+    })
+  } catch (error) {
+    console.error("Google request error:", error)
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: "Request to Google timed out. Please try again." },
+        { status: 504 }
+      )
+    }
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Google request failed" },
+      { status: 500 }
+    )
   }
+}
 
-  return NextResponse.json({
-    content: assistantMessage,
-    model: data.model,
-    usage: {
-      prompt_tokens: data.usage?.input_tokens,
-      completion_tokens: data.usage?.output_tokens,
-      total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
-    },
-  })
+async function handleCohereRequest(
+  messages: ChatMessage[],
+  model: string,
+  apiKey: string,
+  temperature: number,
+  maxTokens: number
+) {
+  try {
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage.role !== "user") {
+      return NextResponse.json({ error: "Last message must be from user for Cohere" }, { status: 400 })
+    }
+
+    const chatHistory = messages.slice(0, -1).map(m => ({
+      role: m.role === "assistant" ? "CHATBOT" : "USER",
+      message: m.content
+    }))
+
+    const response = await fetchWithTimeout("https://api.cohere.ai/v1/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        message: lastMessage.content,
+        chat_history: chatHistory,
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Cohere API error:", errorText)
+      const errorMessage = parseProviderError("Cohere", response.status, errorText)
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+    
+    return NextResponse.json({
+      content: data.text,
+      model: model,
+      usage: {
+        total_tokens: (data.meta?.tokens?.input_tokens || 0) + (data.meta?.tokens?.output_tokens || 0)
+      },
+    })
+  } catch (error) {
+    console.error("Cohere request error:", error)
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: "Request to Cohere timed out. Please try again." },
+        { status: 504 }
+      )
+    }
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Cohere request failed" },
+      { status: 500 }
+    )
+  }
 }

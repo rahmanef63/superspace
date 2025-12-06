@@ -56,6 +56,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Response } from "../ai/response"
+import { Reasoning, ReasoningTrigger, ReasoningContent } from "../ai/reasoning"
 
 // ============================================================================
 // Types
@@ -90,6 +92,10 @@ export interface GrokMessageProps extends React.HTMLAttributes<HTMLDivElement> {
   onSuggestionClick?: (suggestion: string) => void
   /** Is regenerating */
   isRegenerating?: boolean
+  /** AI reasoning/thinking content */
+  reasoning?: string
+  /** Is streaming reasoning */
+  isStreamingReasoning?: boolean
   /** Children (message content) */
   children?: React.ReactNode
 }
@@ -134,6 +140,8 @@ export function GrokAIMessage({
   suggestions,
   onSuggestionClick,
   isRegenerating,
+  reasoning,
+  isStreamingReasoning,
   className,
   ...props
 }: Omit<GrokMessageProps, 'from'>) {
@@ -158,9 +166,21 @@ export function GrokAIMessage({
 
   return (
     <div className={cn("mb-6", className)} {...props}>
+      {/* Reasoning display (if available) */}
+      {reasoning && (
+        <Reasoning isStreaming={isStreamingReasoning} className="mb-4">
+          <ReasoningTrigger>Thinking process</ReasoningTrigger>
+          <ReasoningContent>
+            <Response className="text-muted-foreground text-sm">{reasoning}</Response>
+          </ReasoningContent>
+        </Reasoning>
+      )}
+
       {/* Message content */}
       <div className="text-[15px] text-foreground leading-relaxed">
-        {hasBranches ? activeBranch?.content : children}
+        {hasBranches 
+          ? <Response>{activeBranch?.content || ''}</Response>
+          : children}
       </div>
 
       {/* Action bar */}

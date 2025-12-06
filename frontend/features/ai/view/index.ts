@@ -1,12 +1,8 @@
 /**
  * AI View Exports
- * Refactored views using shared/communications
+ * Re-exports from parent folder for legacy compatibility
  */
 
-// Refactored views (use shared/communications components)
-export { AIViewRefactored } from "./AIViewRefactored";
-export { AIListViewRefactored } from "./AIListViewRefactored";
-export { AIDetailViewRefactored } from "./AIDetailViewRefactored";
-
-// Export default as the refactored view
-export { AIViewRefactored as default } from "./AIViewRefactored";
+// Re-export from parent (the actual views)
+export { AIView } from "../AIView";
+export { AIView as default } from "../AIView";

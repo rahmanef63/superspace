@@ -521,6 +521,8 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
               suggestions={followUpSuggestions}
               onSuggestionClick={handleSuggestionClick}
               isRegenerating={isRegenerating}
+              reasoning={msg.reasoning}
+              isStreamingReasoning={isLastAIMessage && isSending}
             >
               <Response>{msg.content}</Response>
             </GrokAIMessage>

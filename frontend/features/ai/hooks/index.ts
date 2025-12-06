@@ -8,6 +8,7 @@ import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/Works
 import { useUser } from "@clerk/nextjs"
 import type { AIConversation, AIMessageData, AISettings } from "../types"
 import { generateId, generateConversationTitle, extractTopicFromMessage } from "../utils"
+import { parseAIError, PROVIDER_NAMES } from "../utils/error-handler"
 import { DEFAULT_AI_SETTINGS } from "../constants"
 import { useAIStore, type AISession, type AIMessage } from "../stores"
 import { useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings"
@@ -236,7 +237,11 @@ export const useAIActions = () => {
     );
 
     if (!apiKeyConfig?.apiKey && provider !== "ollama") {
-      toast.error(`No API key configured for ${provider}. Go to Settings > AI to add one.`);
+      const providerName = PROVIDER_NAMES[provider] || provider;
+      toast.error('API Key Required', {
+        description: `No API key configured for ${providerName}. Please add your API key in AI Settings.`,
+        duration: 8000,
+      });
       return null;
     }
 
@@ -367,7 +372,19 @@ export const useAIActions = () => {
       const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
       console.error("AI chat error:", error);
       setError(errorMessage);
-      toast.error(errorMessage);
+      
+      // Parse error for user-friendly message
+      const parsedError = parseAIError(error instanceof Error ? error : errorMessage, provider);
+      
+      toast.error(parsedError.title, {
+        description: parsedError.message,
+        duration: parsedError.retryDelay ? (parsedError.retryDelay + 5) * 1000 : 8000,
+        action: parsedError.actionUrl ? {
+          label: parsedError.action || 'Learn more',
+          onClick: () => window.open(parsedError.actionUrl, '_blank'),
+        } : undefined,
+      });
+      
       return null;
     } finally {
       setSending(false);

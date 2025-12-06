@@ -25,7 +25,12 @@ export interface AccordionProps
 
 const Accordion = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Root>,
-  AccordionProps
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root> & { 
+    items: AccordionItem[]
+    itemClassName?: string
+    triggerClassName?: string
+    contentClassName?: string
+  }
 >(
   (
     {

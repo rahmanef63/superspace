@@ -15,7 +15,15 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer"
 import { FeatureSettingsPanel } from "./FeatureSettingsPanel"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export interface FeatureSettingsSheetProps {
   /** Whether the sheet is open */
@@ -50,6 +58,31 @@ export function FeatureSettingsSheet({
   featureName,
   defaultCategory,
 }: FeatureSettingsSheetProps) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="h-[85vh]">
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{featureName || featureSlug} Settings</DrawerTitle>
+            <DrawerDescription>
+              Configure settings for {featureName || featureSlug}
+            </DrawerDescription>
+          </DrawerHeader>
+          <FeatureSettingsPanel
+            featureSlug={featureSlug}
+            featureName={featureName}
+            defaultCategory={defaultCategory}
+            onClose={() => onOpenChange(false)}
+            showBackButton={false}
+            className="h-full"
+          />
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 

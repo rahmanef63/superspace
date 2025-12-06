@@ -248,6 +248,24 @@ export const updateChatSession = mutation({
 });
 
 /**
+ * Delete a chat session
+ */
+export const deleteChatSession = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new Error("Chat session not found");
+    }
+
+    await ctx.db.delete(args.sessionId);
+    return { success: true, id: args.sessionId };
+  },
+});
+
+/**
  * Add a branch to a message (for regeneration)
  */
 export const addMessageBranch = mutation({

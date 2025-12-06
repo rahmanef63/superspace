@@ -14,23 +14,6 @@ export { ChatComposer } from '../chat/components/ChatComposer'
 export { ActivityFeed } from '../chat/components/ActivityFeed'
 
 // ============================================================
-// Shared Chat Bubble Components (WhatsApp Style)
-// Used by both AI and Chat features
-// ============================================================
-export {
-  ChatBubble,
-  ChatContainer,
-  DateDivider,
-  TypingIndicator,
-  type ChatBubbleProps,
-  type MessageStatus,
-  type MessageFrom,
-  type MessageBranch,
-  type LinkPreview,
-  type VoiceMessage,
-} from './chat-bubble'
-
-// ============================================================
 // Grok-style AI Chat Components
 // Modern, minimal AI chat UI inspired by X/Grok
 // ============================================================

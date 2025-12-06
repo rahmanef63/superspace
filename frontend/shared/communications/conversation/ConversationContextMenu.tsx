@@ -2,6 +2,28 @@
  * Shared Context Menu for Conversations
  * Used by Chat, AI, and other conversation-like features
  * @module shared/communications/conversation
+ * 
+ * @example
+ * // Basic usage with any React element as children
+ * <ConversationContextMenu
+ *   item={item}
+ *   context="ai"
+ *   onPin={(id, isPinned) => handlePin(id, isPinned)}
+ *   onDelete={(id) => handleDelete(id)}
+ * >
+ *   <YourCardComponent />
+ * </ConversationContextMenu>
+ * 
+ * @example
+ * // With custom actions
+ * <ConversationContextMenu
+ *   item={item}
+ *   customActions={[
+ *     { id: 'custom', label: 'Custom Action', icon: Star, onClick: handleCustom }
+ *   ]}
+ * >
+ *   <div>...</div>
+ * </ConversationContextMenu>
  */
 
 "use client"
@@ -90,7 +112,7 @@ export function ConversationContextMenu<T extends ConversationItem = Conversatio
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
+      <ContextMenuTrigger className="block">
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">

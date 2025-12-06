@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, MoreVertical, Phone, Video, Search, Info } from "lucide-react";
-import { MemberInfoModal } from "@/frontend/shared/communications";
+import { MemberInfoDrawer } from "@/frontend/shared/communications";
+import { useMemberInfo } from "@/frontend/features/chat/shared/hooks";
 import { cn } from "@/lib/utils";
 
 interface MemberSummary {
@@ -50,6 +51,18 @@ export function MobileHeader({
 }: MobileHeaderProps) {
   const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
   const hasMember = Boolean(contact);
+
+  // Use member info hook for actions and state
+  const memberInfo = useMemberInfo(contact?.id ?? "");
+  const { 
+    isFavorite, 
+    isBlocked, 
+    addToFavorites, 
+    removeFromFavorites, 
+    blockMember, 
+    unblockMember,
+    reportMember 
+  } = memberInfo;
 
   const handleMemberInfoClick = () => {
     if (!hasMember) return;
@@ -136,10 +149,20 @@ export function MobileHeader({
       </div>
 
       {contact && (
-        <MemberInfoModal
+        <MemberInfoDrawer
           contact={contact}
           isOpen={isMemberInfoOpen}
           onClose={() => setIsMemberInfoOpen(false)}
+          onBack={() => setIsMemberInfoOpen(false)}
+          isFavorite={isFavorite}
+          isBlocked={isBlocked}
+          onAddToFavorites={addToFavorites}
+          onRemoveFromFavorites={removeFromFavorites}
+          onBlock={blockMember}
+          onUnblock={unblockMember}
+          onReport={reportMember}
+          onVoiceCall={onVoiceCall}
+          onVideoCall={onVideoCall}
         />
       )}
     </>

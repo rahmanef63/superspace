@@ -1459,13 +1459,20 @@ export const syncWorkspaceDefaultMenus = mutation({
     featureSlugs: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
-    await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
-      workspaceId: args.workspaceId,
-      actorUserId: membership?.userId,
-      selectedSlugs: args.featureSlugs ?? undefined,
-    })
-    return true as const
+    try {
+      const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
+      await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
+        workspaceId: args.workspaceId,
+        actorUserId: membership?.userId,
+        selectedSlugs: args.featureSlugs ?? undefined,
+      })
+      return true as const
+    } catch (error) {
+      // If user doesn't have permission, just return false instead of throwing
+      // This prevents the app from crashing if a regular user triggers this sync
+      console.log("Skipping menu sync due to insufficient permissions")
+      return false as const
+    }
   },
 })
 

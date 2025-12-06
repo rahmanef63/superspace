@@ -1,7 +1,27 @@
 "use client"
 
+/**
+ * Response - Streaming-optimized markdown renderer for AI-generated content
+ * 
+ * Uses Streamdown for professional streaming markdown rendering with:
+ * - Auto-completion of incomplete formatting during streaming
+ * - Proper handling of code blocks, tables, etc.
+ * - Smooth cursor animations during streaming
+ * 
+ * Falls back to simple parser if Streamdown is not available.
+ */
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
+
+// Try to use Streamdown for better streaming support
+let Streamdown: React.ComponentType<{ children: string; className?: string }> | null = null
+try {
+  // Dynamic import check - in production, this will be bundled if available
+  Streamdown = require("streamdown").Streamdown
+} catch {
+  // Streamdown not available, will use fallback
+}
 
 interface ResponseProps extends React.HTMLAttributes<HTMLDivElement> {
   children: string | React.ReactNode
@@ -21,6 +41,10 @@ interface ResponseProps extends React.HTMLAttributes<HTMLDivElement> {
    * Enable intelligent streaming parsing (auto-complete incomplete formatting)
    */
   parseIncompleteMarkdown?: boolean
+  /**
+   * Use Streamdown for rendering (better streaming support)
+   */
+  useStreamdown?: boolean
 }
 
 /**
@@ -212,14 +236,10 @@ function processBasicFormatting(text: string, baseKey: number): React.ReactNode 
  * Response - Streaming-optimized markdown renderer for AI-generated content
  * 
  * Features:
+ * - Uses Streamdown when available for professional streaming support
  * - Auto-completes incomplete formatting during streaming
  * - Hides broken links until complete
  * - Basic markdown support (bold, italic, code, links, headers, lists)
- * 
- * Note: For full markdown support with syntax highlighting, install:
- * - react-markdown
- * - remark-gfm
- * - react-syntax-highlighter
  */
 function Response({
   children,
@@ -228,6 +248,7 @@ function Response({
   allowedLinkPrefixes = ["*"],
   defaultOrigin,
   parseIncompleteMarkdown = true,
+  useStreamdown = true,
   ...props
 }: ResponseProps) {
   if (typeof children !== "string") {
@@ -238,6 +259,16 @@ function Response({
     )
   }
 
+  // Use Streamdown if available and enabled
+  if (useStreamdown && Streamdown) {
+    return (
+      <div data-slot="response" className={cn("prose dark:prose-invert prose-sm max-w-none", className)} {...props}>
+        <Streamdown>{children}</Streamdown>
+      </div>
+    )
+  }
+
+  // Fallback to simple markdown parser
   const content = parseIncompleteMarkdown 
     ? parseIncompleteMarkdownContent(children) 
     : children

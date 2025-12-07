@@ -1,5 +1,7 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
+import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 const currencySettingsArgs = {
   workspaceId: v.string(),
@@ -16,6 +18,8 @@ const currencySettingsArgs = {
 export const updateSettings = mutation({
   args: currencySettingsArgs,
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("currencySettings")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
@@ -29,19 +33,35 @@ export const updateSettings = mutation({
       autoUpdate: args.settings.autoUpdate,
       autoUpdateInterval: args.settings.autoUpdateInterval,
       lastUpdateAt: now,
-      updatedBy: args.actorId ?? null,
+      updatedBy: args.actorId ?? actor.clerkUserId,
     };
+
+    let id;
+    let action;
 
     if (existing) {
       await ctx.db.patch(existing._id, payload);
-      return existing._id;
+      id = existing._id;
+      action = "currency.update_settings";
+    } else {
+      id = await ctx.db.insert("currencySettings", {
+        workspaceId: args.workspaceId,
+        ...payload,
+        createdBy: args.actorId ?? actor.clerkUserId,
+      });
+      action = "currency.create_settings";
     }
 
-    return ctx.db.insert("currencySettings", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      ...payload,
-      createdBy: args.actorId ?? null,
+      actor: actor.clerkUserId,
+      resourceType: "currencySettings",
+      resourceId: id,
+      action,
+      changes: args.settings,
     });
+
+    return id;
   },
 });
 
@@ -52,6 +72,8 @@ export const fetchAndUpdateRates = mutation({
     source: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const settings = await ctx.db
       .query("currencySettings")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
@@ -65,7 +87,16 @@ export const fetchAndUpdateRates = mutation({
 
     await ctx.db.patch(settings._id, {
       lastUpdateAt: now,
-      updatedBy: args.actorId ?? settings.updatedBy ?? null,
+      updatedBy: args.actorId ?? actor.clerkUserId,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "currencySettings",
+      resourceId: settings._id,
+      action: "currency.fetch_rates",
+      changes: { source: args.source },
     });
 
     // TODO: Integrate with external provider. For now, no external rates updated.
@@ -83,6 +114,8 @@ export const setRate = mutation({
     actorId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("exchangeRates")
       .withIndex("by_pair", (q: any) =>
@@ -97,21 +130,37 @@ export const setRate = mutation({
       rate: args.rate,
       timestamp: now,
       source: args.source ?? "manual",
-      updatedBy: args.actorId ?? null,
+      updatedBy: args.actorId ?? actor.clerkUserId,
     };
+
+    let id;
+    let action;
 
     if (existing) {
       await ctx.db.patch(existing._id, payload);
-      return existing._id;
+      id = existing._id;
+      action = "currency.update_rate";
+    } else {
+      id = await ctx.db.insert("exchangeRates", {
+        workspaceId: args.workspaceId,
+        fromCurrency: args.fromCurrency,
+        toCurrency: args.toCurrency,
+        ...payload,
+        createdBy: args.actorId ?? actor.clerkUserId,
+      });
+      action = "currency.set_rate";
     }
 
-    return ctx.db.insert("exchangeRates", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      fromCurrency: args.fromCurrency,
-      toCurrency: args.toCurrency,
-      ...payload,
-      createdBy: args.actorId ?? null,
+      actor: actor.clerkUserId,
+      resourceType: "exchangeRate",
+      resourceId: id,
+      action,
+      changes: { from: args.fromCurrency, to: args.toCurrency, rate: args.rate },
     });
+
+    return id;
   },
 });
 
@@ -127,6 +176,7 @@ export const importRates = mutation({
     actorId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
     let updated = 0;
 
     for (const rate of args.rates) {
@@ -144,7 +194,7 @@ export const importRates = mutation({
         rate: rate.rate,
         timestamp: now,
         source: rate.source ?? "import",
-        updatedBy: args.actorId ?? null,
+        updatedBy: args.actorId ?? actor.clerkUserId,
       };
 
       if (existing) {
@@ -155,12 +205,20 @@ export const importRates = mutation({
           fromCurrency: rate.fromCurrency,
           toCurrency: rate.toCurrency,
           ...payload,
-          createdBy: args.actorId ?? null,
+          createdBy: args.actorId ?? actor.clerkUserId,
         });
       }
 
       updated += 1;
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "exchangeRate",
+      action: "currency.import_rates",
+      changes: { count: updated },
+    });
 
     return updated;
   },

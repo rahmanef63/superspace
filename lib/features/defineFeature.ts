@@ -116,6 +116,10 @@ const BaseFeatureConfigSchema = z.object({
   // Settings integration
   hasSettings: z.boolean().optional(),
   settingsPath: z.string().optional(),
+
+  // Export/Import integration
+  hasExportImport: z.boolean().optional(),
+  exportConfigPath: z.string().optional(),
 })
 
 // Recursive type for children

@@ -26,6 +26,7 @@
         "edit:feature": "tsx scripts/features/edit.ts",
         "delete:feature": "tsx scripts/features/delete.ts",
         "sync:features": "tsx scripts/features/sync.ts",
+        "add:export-import": "tsx scripts/features/add-export-import.ts",
         "generate:manifest": "tsx scripts/features/generate-manifest.ts",
         "generate:registry": "tsx scripts/features/generate-registry.ts",
         "test:registry": "tsx scripts/features/test-registry.ts",
@@ -160,6 +161,7 @@
         "tunnel-rat": "^0.1.2",
         "use-stick-to-bottom": "^1.1.1",
         "use-sync-external-store": "latest",
+        "uuid": "^13.0.0",
         "vaul": "^1.1.2",
         "zod": "4.1.12",
         "zustand": "latest"

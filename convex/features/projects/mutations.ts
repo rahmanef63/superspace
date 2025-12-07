@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requireActiveMembership } from "../../auth/helpers";
+import { logAuditEvent } from "../../shared/audit";
+
 
 /**
  * Create a new project
@@ -21,8 +23,10 @@ export const createProject = mutation({
   },
   returns: v.id("projects"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
+
 
     let conversationId = undefined;
 
@@ -71,6 +75,15 @@ export const createProject = mutation({
       joinedAt: Date.now(),
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "project.create",
+      resourceType: "project",
+      resourceId: projectId,
+      metadata: { name: args.name },
+    });
+
     return projectId;
   },
 });
@@ -100,11 +113,11 @@ export const updateProject = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error("Project not found");
+    await requireActiveMembership(ctx, project.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     // Check if user has permission (owner or admin)
     const membership = await ctx.db
@@ -128,6 +141,15 @@ export const updateProject = mutation({
 
     await ctx.db.patch(args.projectId, updates);
 
+    await logAuditEvent(ctx, {
+      workspaceId: project.workspaceId,
+      actorUserId: userId,
+      action: "project.update",
+      resourceType: "project",
+      resourceId: args.projectId,
+      changes: updates,
+    });
+
     return null;
   },
 });
@@ -147,11 +169,11 @@ export const addProjectMember = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const currentUserId = await ensureUser(ctx);
-    if (!currentUserId) throw new Error("Not authenticated");
-
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error("Project not found");
+    await requireActiveMembership(ctx, project.workspaceId);
+    const currentUserId = await ensureUser(ctx);
+    if (!currentUserId) throw new Error("Not authenticated");
 
     // Check if current user is owner or admin
     const currentMembership = await ctx.db
@@ -205,6 +227,15 @@ export const addProjectMember = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: project.workspaceId,
+      actorUserId: currentUserId,
+      action: "project.add_member",
+      resourceType: "project",
+      resourceId: args.projectId,
+      metadata: { addedUserId: args.userId, role: args.role },
+    });
+
     return null;
   },
 });
@@ -219,11 +250,12 @@ export const removeProjectMember = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+    await requireActiveMembership(ctx, project.workspaceId);
     const currentUserId = await ensureUser(ctx);
     if (!currentUserId) throw new Error("Not authenticated");
 
-    const project = await ctx.db.get(args.projectId);
-    if (!project) throw new Error("Project not found");
 
     // Check if current user is owner or admin or removing themselves
     const currentMembership = await ctx.db
@@ -255,6 +287,15 @@ export const removeProjectMember = mutation({
 
     // Remove member
     await ctx.db.delete(targetMembership._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: project.workspaceId,
+      actorUserId: currentUserId,
+      action: "project.remove_member",
+      resourceType: "project",
+      resourceId: args.projectId,
+      metadata: { removedUserId: args.userId },
+    });
 
     return null;
   },

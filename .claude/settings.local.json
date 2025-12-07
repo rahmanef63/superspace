@@ -6,7 +6,13 @@
       "Bash(powershell.exe -Command \"(Get-Content ''scripts\\isolate-feature.ps1'') -replace ''✓ '', '''' | Set-Content ''scripts\\isolate-feature.ps1'' -Encoding UTF8\")",
       "Bash(powershell.exe -Command \"Select-String ''âœ'' ''scripts\\isolate-feature.ps1'' | Select-Object -First 10\")",
       "Bash(cmd.exe /c \"scripts\\isolate-cms-lite.bat\")",
-      "Bash(cmd.exe /c scriptsisolate-cms-lite.bat)"
+      "Bash(cmd.exe /c scriptsisolate-cms-lite.bat)",
+      "Bash(findstr:*)",
+      "Bash(del:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npx convex dev:*)",
+      "Bash(pnpm ls:*)"
     ],
     "deny": [],
     "ask": []

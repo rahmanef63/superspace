@@ -8,7 +8,7 @@ import { mutation } from "../../../../_generated/server";
 import type { MutationCtx } from "../../../../_generated/server";
 import { v } from "convex/values";
 import { requireAdmin } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Update or create website settings for a workspace
@@ -17,28 +17,28 @@ import { recordAuditEvent } from "../../../lib/audit";
 export const updateWebsiteSettings = mutation({
   args: {
     workspaceId: v.id("workspaces"),
-    
+
     // Domain settings
     subdomain: v.optional(v.string()),
     customDomain: v.optional(v.string()),
     useCustomDomain: v.optional(v.boolean()),
-    
+
     // SEO settings
     siteTitle: v.optional(v.string()),
     siteDescription: v.optional(v.string()),
     keywords: v.optional(v.string()),
     favicon: v.optional(v.string()),
     ogImage: v.optional(v.string()),
-    
+
     // Analytics
     googleAnalyticsId: v.optional(v.string()),
     facebookPixelId: v.optional(v.string()),
-    
+
     // Social media
     twitterHandle: v.optional(v.string()),
     facebookPage: v.optional(v.string()),
     linkedinPage: v.optional(v.string()),
-    
+
     // Advanced
     robotsTxt: v.optional(v.string()),
     customCss: v.optional(v.string()),
@@ -48,26 +48,26 @@ export const updateWebsiteSettings = mutation({
     // RBAC: Require admin permission
     const actor = await requireAdmin(ctx);
     const adminUser = await ctx.db.get(actor.adminUserId);
-    
+
     if (!adminUser) {
       throw new Error("Admin user not found");
     }
-    
+
     // Check if settings exist for this workspace
     const existing = await ctx.db
       .query("cms_lite_website_settings")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .first();
-    
+
     const now = Date.now();
     const userId = actor.adminUserId;
-    
+
     // Build update object (only include provided fields)
     const updateData: Record<string, any> = {
       updatedAt: now,
       updatedBy: userId,
     };
-    
+
     // Add all optional fields if provided
     const fields = [
       'subdomain', 'customDomain', 'useCustomDomain',
@@ -76,15 +76,15 @@ export const updateWebsiteSettings = mutation({
       'twitterHandle', 'facebookPage', 'linkedinPage',
       'robotsTxt', 'customCss', 'customHeadCode'
     ];
-    
+
     for (const field of fields) {
       if (args[field as keyof typeof args] !== undefined) {
         updateData[field] = args[field as keyof typeof args];
       }
     }
-    
+
     let settingsId: any;
-    
+
     if (existing) {
       // Update existing settings
       await ctx.db.patch(existing._id, updateData);
@@ -99,17 +99,17 @@ export const updateWebsiteSettings = mutation({
         ...updateData,
       });
     }
-    
+
     // Audit log
-    await recordAuditEvent(ctx, {
-      actorId: String(userId),
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      entity: "website_settings",
-      entityId: String(settingsId),
-      action: existing ? "updated" : "created",
+      actor: actor.clerkUserId,
+      resourceType: "website_settings",
+      resourceId: settingsId,
+      action: existing ? "website_settings.updated" : "website_settings.created",
       changes: updateData,
     });
-    
+
     return settingsId;
   },
 });
@@ -127,30 +127,30 @@ export const verifyDomain = mutation({
     // RBAC: Require admin permission
     const actor = await requireAdmin(ctx);
     const adminUser = await ctx.db.get(actor.adminUserId);
-    
+
     if (!adminUser) {
       throw new Error("Admin user not found");
     }
-    
+
     // Get settings
     const settings = await ctx.db
       .query("cms_lite_website_settings")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .first();
-    
+
     if (!settings) {
       throw new Error("Website settings not found");
     }
-    
+
     // TODO: Implement actual DNS verification
     // For now, this is a mock implementation
     // In production, you would:
     // 1. Check A record points to correct IP (e.g., 76.76.21.21)
     // 2. Check CNAME record points to cname.superspace.app
     // 3. Use DNS lookup API or service
-    
+
     const verified = await mockDnsVerification(args.domain);
-    
+
     // Update verification status
     await ctx.db.patch(settings._id, {
       domainVerified: verified,
@@ -158,21 +158,21 @@ export const verifyDomain = mutation({
       updatedAt: Date.now(),
       // Note: updatedBy expects Id<"users"> but we have Id<"adminUsers">
     });
-    
+
     // Audit log
-    await recordAuditEvent(ctx, {
-      actorId: String(actor.adminUserId),
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      entity: "website_settings",
-      entityId: String(settings._id),
-      action: "domain_verification",
-      changes: { 
+      actor: actor.clerkUserId,
+      resourceType: "website_settings",
+      resourceId: settings._id,
+      action: "website_settings.domain_verification",
+      changes: {
         domain: args.domain,
         verified,
         timestamp: Date.now(),
       },
     });
-    
+
     return { verified };
   },
 });
@@ -188,10 +188,10 @@ async function mockDnsVerification(domain: string): Promise<boolean> {
   // - Check A record: domain -> 76.76.21.21
   // - Check CNAME record: domain -> cname.superspace.app
   console.log(`[MOCK] Verifying domain: ${domain}`);
-  
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 100));
-  
+
   // Mock verification logic
   // In real implementation, this would make DNS queries
   return true;
@@ -209,34 +209,34 @@ export const deleteWebsiteSettings = mutation({
     // RBAC: Require admin permission
     const actor = await requireAdmin(ctx);
     const adminUser = await ctx.db.get(actor.adminUserId);
-    
+
     if (!adminUser) {
       throw new Error("Admin user not found");
     }
-    
+
     // Get settings
     const settings = await ctx.db
       .query("cms_lite_website_settings")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .first();
-    
+
     if (!settings) {
       throw new Error("Website settings not found");
     }
-    
+
     // Delete settings
     await ctx.db.delete(settings._id);
-    
+
     // Audit log
-    await recordAuditEvent(ctx, {
-      actorId: String(actor.adminUserId),
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      entity: "website_settings",
-      entityId: String(settings._id),
-      action: "deleted",
+      actor: actor.clerkUserId,
+      resourceType: "website_settings",
+      resourceId: settings._id,
+      action: "website_settings.deleted",
       changes: {},
     });
-    
+
     return { success: true };
   },
 });

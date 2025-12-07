@@ -24,8 +24,8 @@ export * from "./stores"
 // Services
 export * from "./lib"
 
-// AI Wiki / Knowledge Base
-export * from "./wiki"
+// Agents (Sub-Agent System)
+export * from "./agents"
 
 // Re-export AI Elements components (new shadcn.io/ai style components)
 export {

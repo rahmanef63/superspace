@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requireActiveMembership } from "../../auth/helpers";
+import { logAuditEvent } from "../../shared/audit";
+
 
 /**
  * Create a new comment
@@ -28,6 +30,7 @@ export const createComment = mutation({
   },
   returns: v.id("comments"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -61,6 +64,19 @@ export const createComment = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "comment.create",
+      resourceType: "comment",
+      resourceId: commentId,
+      metadata: {
+        entityType: args.entityType,
+        entityId: args.entityId,
+        parentId: args.parentId,
+      },
+    });
+
     return commentId;
   },
 });
@@ -75,15 +91,11 @@ export const updateComment = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new Error("Comment not found");
-
-    if (comment.authorId !== userId) {
-      throw new Error("Not authorized to edit this comment");
-    }
+    await requireActiveMembership(ctx, comment.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     await ctx.db.patch(args.commentId, {
       content: args.content,
@@ -91,6 +103,15 @@ export const updateComment = mutation({
         edited: true,
         editedAt: Date.now(),
       },
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: comment.workspaceId,
+      actorUserId: userId,
+      action: "comment.update",
+      resourceType: "comment",
+      resourceId: args.commentId,
+      changes: { content: args.content },
     });
 
     return null;
@@ -106,15 +127,11 @@ export const deleteComment = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new Error("Comment not found");
-
-    if (comment.authorId !== userId) {
-      throw new Error("Not authorized to delete this comment");
-    }
+    await requireActiveMembership(ctx, comment.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     // Delete all replies first
     const replies = await ctx.db
@@ -127,6 +144,15 @@ export const deleteComment = mutation({
     }
 
     await ctx.db.delete(args.commentId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: comment.workspaceId,
+      actorUserId: userId,
+      action: "comment.delete",
+      resourceType: "comment",
+      resourceId: args.commentId,
+      metadata: { replyCount: replies.length },
+    });
 
     return null;
   },
@@ -142,14 +168,23 @@ export const resolveComment = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment) throw new Error("Comment not found");
+    await requireActiveMembership(ctx, comment.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const comment = await ctx.db.get(args.commentId);
-    if (!comment) throw new Error("Comment not found");
-
     await ctx.db.patch(args.commentId, {
       isResolved: args.resolved,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: comment.workspaceId,
+      actorUserId: userId,
+      action: "comment.resolve",
+      resourceType: "comment",
+      resourceId: args.commentId,
+      changes: { isResolved: args.resolved },
     });
 
     return null;

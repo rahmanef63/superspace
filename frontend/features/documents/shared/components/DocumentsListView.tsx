@@ -15,6 +15,8 @@ import {
   SecondarySidebarTools,
 } from "@/frontend/shared/ui";
 import { DocumentMenuWrapper } from "@/frontend/shared/ui";
+import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
+import { SelectionPopover } from "@/frontend/shared/ui/selection-tools";
 import {
   UniversalToolbar,
   toolType,
@@ -51,6 +53,10 @@ export interface DocumentsListViewProps {
   onSortChange?: (options: DocumentSortOptions) => void;
   workspaceId: Id<"workspaces">;
   isMobile?: boolean;
+  // Export/Import props
+  selectedDocIds?: Id<"documents">[];
+  onSelectionChange?: (selectedIds: Id<"documents">[]) => void;
+  enableExportImport?: boolean;
 }
 
 const visibilityOptions: Array<DocumentsManagerHook["visibility"]> = [
@@ -80,6 +86,9 @@ export function DocumentsListView({
   onSortChange,
   workspaceId,
   isMobile = false,
+  selectedDocIds = [],
+  onSelectionChange,
+  enableExportImport = false,
 }: DocumentsListViewProps) {
   const viewStorageKey = storageKey ?? "documents.view";
   // Use new toolbar viewMode system - map to toolbar view modes
@@ -122,15 +131,27 @@ export function DocumentsListView({
   const handleBreadcrumbSelect = useCallback(
     (docId?: Id<"documents">) => {
       onSelect?.(docId ?? null);
+      if (docId) {
+        const exists = selectedDocIds.includes(docId);
+        const next = exists
+          ? selectedDocIds.filter(id => id !== docId)
+          : [...selectedDocIds, docId];
+        onSelectionChange?.(next);
+      }
     },
-    [onSelect]
+    [onSelect, onSelectionChange, selectedDocIds]
   );
 
   const handleTreeSelect = useCallback(
     (docId: Id<"documents">) => {
       onSelect?.(docId);
+      const exists = selectedDocIds.includes(docId);
+      const next = exists
+        ? selectedDocIds.filter(id => id !== docId)
+        : [...selectedDocIds, docId];
+      onSelectionChange?.(next);
     },
-    [onSelect]
+    [onSelect, onSelectionChange, selectedDocIds]
   );
 
   const sortToolParams: SortToolParams = useMemo(
@@ -174,6 +195,14 @@ export function DocumentsListView({
           onClick: onCreate,
         }
       : undefined,
+    secondaryActions: enableExportImport ? [
+      <FeatureExportImport
+        key="export-import"
+        featureId="knowledge/docs"
+        variant="separate"
+        selectedIds={selectedDocIds}
+      />,
+    ] : undefined,
     toolbar: (
       <div className="space-y-3">
         <SecondarySidebarTools
@@ -184,6 +213,21 @@ export function DocumentsListView({
           }}
         />
         <div className="flex flex-wrap items-center gap-2">
+          <SelectionPopover
+            items={filteredDocuments.map(doc => ({
+              id: String(doc._id),
+              label: doc.title || "Untitled",
+              hint: doc.metadata?.description || doc.content?.slice(0, 80) || undefined,
+            }))}
+            selectedIds={selectedDocIds.map(String)}
+            onChange={(ids) => {
+              const next = documents
+                .filter(doc => ids.includes(String(doc._id)))
+                .map(doc => doc._id)
+              onSelectionChange?.(next)
+            }}
+            label="Select"
+          />
           <UniversalToolbar
             tools={[
               {
@@ -196,6 +240,13 @@ export function DocumentsListView({
             background="transparent"
             className="flex-1"
           />
+          {enableExportImport && (
+            <FeatureExportImport
+              featureId="knowledge/docs"
+              variant="separate"
+              selectedIds={selectedDocIds}
+            />
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {visibilityOptions.map((option) => (
@@ -313,12 +364,36 @@ export function DocumentsListView({
                   <p className="text-sm text-muted-foreground">{headerProps.description}</p>
                 )}
               </div>
-              {headerProps.primaryAction && typeof headerProps.primaryAction === 'object' && 'onClick' in headerProps.primaryAction && (
-                <Button size="sm" onClick={headerProps.primaryAction.onClick}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <SelectionPopover
+                  items={filteredDocuments.map(doc => ({
+                    id: String(doc._id),
+                    label: doc.title || "Untitled",
+                    hint: doc.metadata?.description || doc.content?.slice(0, 80) || undefined,
+                  }))}
+                  selectedIds={selectedDocIds.map(String)}
+                  onChange={(ids) => {
+                    const next = documents
+                      .filter(doc => ids.includes(String(doc._id)))
+                      .map(doc => doc._id)
+                    onSelectionChange?.(next)
+                  }}
+                  label="Select"
+                />
+                {enableExportImport && (
+                  <FeatureExportImport
+                    featureId="knowledge/docs"
+                    variant="separate"
+                    selectedIds={selectedDocIds}
+                  />
+                )}
+                {headerProps.primaryAction && typeof headerProps.primaryAction === 'object' && 'onClick' in headerProps.primaryAction && (
+                  <Button size="sm" onClick={headerProps.primaryAction.onClick}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Search, Sort, and Filters */}
@@ -343,6 +418,13 @@ export function DocumentsListView({
                   background="transparent"
                   className="flex-1"
                 />
+                {enableExportImport && (
+                  <FeatureExportImport
+                    featureId="knowledge/docs"
+                    variant="separate"
+                    selectedIds={selectedDocIds}
+                  />
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {visibilityOptions.map((option) => (

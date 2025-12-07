@@ -1,7 +1,10 @@
-import { mutation } from "../../_generated";
+import { mutation, type Id } from "../../_generated";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { internal } from "../../_generated";
+import { logAuditEvent } from "../../../lib/audit";
+import { requireAdmin } from "../../../lib/rbac";
+
 
 /**
  * Add an item to the cart
@@ -37,12 +40,12 @@ export const addItem = mutation({
     }
 
     // Find or create active cart
-    let cart = await ctx.db
+    let cart = await (ctx.db
       .query("carts")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q: any) => q.eq("userId", identity.subject))
       .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
       .filter((q) => q.eq(q.field("status"), "active"))
-      .first();
+      .first());
 
     if (!cart) {
       // Create new cart
@@ -82,10 +85,10 @@ export const addItem = mutation({
     });
 
     // Update cart totals
-    const items = await ctx.db
+    const items = await (ctx.db
       .query("cartItems")
-      .withIndex("by_cart", (q) => q.eq("cartId", cartDoc._id))
-      .collect();
+      .withIndex("by_cart", (q: any) => q.eq("cartId", cartDoc._id))
+      .collect());
 
     const subtotal = items.reduce(
       (total, item) => total + item.quantity * item.unitPrice,
@@ -99,7 +102,20 @@ export const addItem = mutation({
       updatedBy: identity.subject,
     });
 
-    return { cartId: cartDoc._id, itemId };
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: identity.subject,
+      action: "cart.add_item",
+      resourceType: "cart",
+      resourceId: cartDoc._id,
+      metadata: {
+        itemId,
+        productId: args.productId,
+        quantity: args.quantity,
+      },
+    });
+
+    return { cartId: cartDoc._id as Id<"carts">, itemId };
   },
 });
 
@@ -141,10 +157,10 @@ export const updateItemQuantity = mutation({
     }
 
     // Update cart totals
-    const items = await ctx.db
+    const items = await (ctx.db
       .query("cartItems")
-      .withIndex("by_cart", (q) => q.eq("cartId", cart._id))
-      .collect();
+      .withIndex("by_cart", (q: any) => q.eq("cartId", cart._id))
+      .collect());
 
     const subtotal = items.reduce(
       (total, item) => total + item.quantity * item.unitPrice,
@@ -156,6 +172,18 @@ export const updateItemQuantity = mutation({
       subtotal,
       lastActivityAt: Date.now(),
       updatedBy: identity.subject,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: cart.workspaceId,
+      actor: identity.subject,
+      action: "cart.update_quantity",
+      resourceType: "cart",
+      resourceId: cart._id,
+      metadata: {
+        itemId: args.itemId,
+        quantity: args.quantity,
+      },
     });
 
     return null;
@@ -183,10 +211,10 @@ export const clearCart = mutation({
     }
 
     // Delete all items
-    const items = await ctx.db
+    const items = await (ctx.db
       .query("cartItems")
-      .withIndex("by_cart", (q) => q.eq("cartId", args.cartId))
-      .collect();
+      .withIndex("by_cart", (q: any) => q.eq("cartId", args.cartId))
+      .collect());
 
     for (const item of items) {
       await ctx.db.delete(item._id);
@@ -198,9 +226,20 @@ export const clearCart = mutation({
       subtotal: 0,
       lastActivityAt: Date.now(),
       updatedBy: identity.subject,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: cart.workspaceId,
+      actor: identity.subject,
+      action: "cart.clear",
+      resourceType: "cart",
+      resourceId: cart._id,
+      metadata: {
+        itemsRemoved: items.length,
+      },
     });
 
     return null;
   },
 });
-

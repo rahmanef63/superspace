@@ -4,20 +4,7 @@ import type { Id } from "../../_generated/dataModel";
 import { assertWorkspaceAccess, nextOrderValue } from "./utils";
 import { ensureUser, requirePermission } from "../../auth/helpers";
 import { PERMISSIONS } from "../../workspace/permissions";
-
-// TODO: Implement audit logging system
-// Helper function to create audit logs (placeholder)
-async function createAuditLog(ctx: any, params: {
-  workspaceId: any,
-  userId: any,
-  action: string,
-  resourceType: string,
-  resourceId: any,
-  metadata?: any
-}) {
-  // Placeholder - implement when audit_logs table is added to schema
-  console.log('[Database Audit]', params);
-}
+import { logAuditEvent } from "../../shared/audit";
 
 export {
   create as createTable,
@@ -142,6 +129,16 @@ export const createView = mutation({
       await setDefaultViewInternal(ctx, userId, viewId, table.workspaceId);
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: table.workspaceId,
+      actorUserId: userId,
+      action: "dbView.create",
+      resourceType: "dbView",
+      resourceId: viewId,
+      metadata: { viewName: args.name, viewType: args.type, tableId: args.tableId },
+      changes: args.settings,
+    });
+
     return viewId;
   },
 });
@@ -184,6 +181,16 @@ export const updateView = mutation({
     if (args.isDefault) {
       await setDefaultViewInternal(ctx, userId, args.id, table.workspaceId);
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: table.workspaceId,
+      actorUserId: userId,
+      action: "dbView.update",
+      resourceType: "dbView",
+      resourceId: args.id,
+      metadata: { tableId: view.tableId },
+      changes: updates,
+    });
   },
 });
 
@@ -222,10 +229,10 @@ export const deleteView = mutation({
     }
 
     // CRITICAL: Audit log for deletion
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: table.workspaceId,
-      userId,
-      action: "database.view.deleted",
+      actorUserId: userId,
+      action: "dbView.delete",
       resourceType: "dbView",
       resourceId: id,
       metadata: {
@@ -257,6 +264,15 @@ export const setDefaultView = mutation({
     await requirePermission(ctx, table.workspaceId, PERMISSIONS.DATABASE_UPDATE);
 
     await setDefaultViewInternal(ctx, userId, id, table.workspaceId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: table.workspaceId,
+      actorUserId: userId,
+      action: "dbView.set_default",
+      resourceType: "dbView",
+      resourceId: id,
+      metadata: { tableId: view.tableId },
+    });
   },
 });
 

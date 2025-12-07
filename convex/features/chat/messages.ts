@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { query, mutation, internalQuery, internalMutation, internalAction } from "../../_generated/server";
 import { internal } from "../../_generated/api";
 import { ensureUser, getExistingUserId, resolveCandidateUserIds } from "../../auth/helpers";
+import { logAuditEvent } from "../../shared/audit";
 
 // Get conversation messages
 export const getConversationMessages = query({
@@ -206,6 +207,22 @@ export const sendMessage = mutation({
       }
     }
 
+    // Audit log (only for workspace conversations)
+    if (convMeta.workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId: convMeta.workspaceId,
+        actorUserId: userId,
+        action: "message.sent",
+        resourceType: "messages",
+        resourceId: messageId,
+        metadata: { 
+          conversationId: args.conversationId,
+          type: args.type || "text",
+          hasReply: !!args.replyToId,
+        },
+      });
+    }
+
     return messageId;
   },
 });
@@ -227,7 +244,23 @@ export const deleteMessage = mutation({
       throw new Error("Not authorized to delete this message");
     }
 
+    // Get conversation for workspaceId
+    const conversation = await ctx.db.get(message.conversationId);
+    const workspaceId = conversation?.workspaceId;
+
     await ctx.db.delete(args.messageId);
+
+    // Audit log (only for workspace conversations)
+    if (workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId,
+        actorUserId: userId,
+        action: "message.deleted",
+        resourceType: "messages",
+        resourceId: args.messageId,
+        metadata: { conversationId: message.conversationId },
+      });
+    }
   },
 });
 
@@ -249,10 +282,26 @@ export const editMessage = mutation({
       throw new Error("Not authorized to edit this message");
     }
 
+    // Get conversation for workspaceId
+    const conversation = await ctx.db.get(message.conversationId);
+    const workspaceId = conversation?.workspaceId;
+
     await ctx.db.patch(args.messageId, {
       content: args.content,
       editedAt: Date.now(),
     });
+
+    // Audit log (only for workspace conversations)
+    if (workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId,
+        actorUserId: userId,
+        action: "message.edited",
+        resourceType: "messages",
+        resourceId: args.messageId,
+        metadata: { conversationId: message.conversationId },
+      });
+    }
   },
 });
 
@@ -311,14 +360,34 @@ export const addReaction = mutation({
       .filter((q) => q.eq(q.field("emoji"), args.emoji))
       .first();
 
+    // Get conversation for workspaceId
+    const conversation = await ctx.db.get(message.conversationId);
+    const workspaceId = conversation?.workspaceId;
+
     // Toggle behavior: if exists -> remove; else -> insert
+    let reactionId;
     if (existingReaction) {
       await ctx.db.delete(existingReaction._id);
     } else {
-      await ctx.db.insert("messageReactions", {
+      reactionId = await ctx.db.insert("messageReactions", {
         messageId: args.messageId,
         userId,
         emoji: args.emoji,
+      });
+    }
+
+    // Audit log (only for workspace conversations, only when adding)
+    if (workspaceId && reactionId) {
+      await logAuditEvent(ctx, {
+        workspaceId,
+        actorUserId: userId,
+        action: "messageReaction.added",
+        resourceType: "messageReactions",
+        resourceId: reactionId,
+        metadata: { 
+          messageId: args.messageId,
+          emoji: args.emoji,
+        },
       });
     }
   },
@@ -346,7 +415,28 @@ export const removeReaction = mutation({
       throw new Error("Reaction not found");
     }
 
+    // Get message and conversation for workspaceId
+    const message = await ctx.db.get(args.messageId);
+    if (!message) throw new Error("Message not found");
+    const conversation = await ctx.db.get(message.conversationId);
+    const workspaceId = conversation?.workspaceId;
+
     await ctx.db.delete(reaction._id);
+
+    // Audit log (only for workspace conversations)
+    if (workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId,
+        actorUserId: userId,
+        action: "messageReaction.removed",
+        resourceType: "messageReactions",
+        resourceId: reaction._id,
+        metadata: { 
+          messageId: args.messageId,
+          emoji: args.emoji,
+        },
+      });
+    }
   },
 });
 

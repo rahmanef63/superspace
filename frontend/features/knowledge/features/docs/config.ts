@@ -36,4 +36,8 @@ export default defineFeature({
   },
 
   tags: ['documents', 'notes', 'drafts', 'editor', 'collaboration'],
+
+  // Export/Import integration
+  hasExportImport: true,
+  exportConfigPath: 'features/documents/data/export-config',
 })

@@ -42,48 +42,81 @@ import { bundleTables } from "./bundles/schema";
 import { knowledgeTables } from "./knowledge/api/schema";
 import { userManagementTables } from "./userManagement/api/schema";
 
+// ERP Modules
+import salesTables from "./sales/schema";
+import inventoryTables from "./inventory/schema";
+import crmErpTables from "./crm/schema";
+
+// Shared Features
+import searchTables from "../shared/search/schema";
+import bulkTables from "../shared/bulk/schema";
+import customFieldsTables from "../shared/customFields/schema";
+import automationTables from "../shared/automation/schema";
+import commentsTables from "../shared/comments/schema";
+import attachmentsTables from "../shared/attachments/schema";
+import activityFeedTables from "../shared/activity/schema";
+import favoritesTables from "../shared/favorites/schema";
+
+const tables = <T>(schemaOrTables: T): T extends { tables: infer U } ? U : T =>
+  ((schemaOrTables as any).tables ?? schemaOrTables) as any;
+
 export const featureTables = {
-  ...coreTables,
-  ...menuTables,
-  ...chatTables,
-  ...docsTables,
-  ...databaseTables,
-  ...projectTables,
-  ...crmTables,
-  ...supportTables,
-  ...notificationTables,
-  ...workflowTables,
-  ...canvasTables,
-  ...socialTables,
-  ...activityTables,
-  ...contentTables,
-  ...callTables,
-  ...statusTables,
-  ...cmsTables,
-  ...cmsLiteActivityTables,
-  ...authTables,
-  ...cmsLiteCartTables,
-  ...cmsLiteCommentsTables,
-  ...cmsLiteCopiesTables,
-  ...cmsLiteCurrencyTables,
-  ...cmsLiteFeaturesSchema.tables,
-  ...cmsLiteLandingSchema.tables,
-  ...cmsLiteNavigationSchema.tables,
+  ...tables(coreTables),
+  ...tables(menuTables),
+  ...tables(chatTables),
+  ...tables(docsTables),
+  ...tables(databaseTables),
+  ...tables(projectTables),
+  ...tables(crmTables),
+  ...tables(supportTables),
+  ...tables(notificationTables),
+  ...tables(workflowTables),
+  ...tables(canvasTables),
+  ...tables(socialTables),
+  ...tables(activityTables),
+  ...tables(contentTables),
+  ...tables(callTables),
+  ...tables(statusTables),
+  ...tables(cmsTables),
+  ...tables(cmsLiteActivityTables),
+  ...tables(authTables),
+  ...tables(cmsLiteCartTables),
+  ...tables(cmsLiteCommentsTables),
+  ...tables(cmsLiteCopiesTables),
+  ...tables(cmsLiteCurrencyTables),
+  ...tables(cmsLiteFeaturesSchema),
+  ...tables(cmsLiteLandingSchema),
+  ...tables(cmsLiteNavigationSchema),
   cms_lite_pages: pagesTable,
-  ...cmsLitePortfolioTables,
-  ...cmsLitePostsTables,
-  ...cmsLiteProductsTables,
-  ...cmsLiteQuicklinksTables,
-  ...cmsLiteServicesTables,
-  ...cmsLiteSettingsTables,
+  ...tables(cmsLitePortfolioTables),
+  ...tables(cmsLitePostsTables),
+  ...tables(cmsLiteProductsTables),
+  ...tables(cmsLiteQuicklinksTables),
+  ...tables(cmsLiteServicesTables),
+  ...tables(cmsLiteSettingsTables),
   cms_lite_website_settings: websiteSettingsTable,
-  ...cmsLiteStorageTables,
-  ...cmsLiteUsersTables,
-  ...cmsLiteWishlistTables,
-  ...aiTables,
-  ...customFeaturesTables,
-  ...systemFeaturesTables,
-  ...bundleTables,
-  ...knowledgeTables,
-  ...userManagementTables,
+  ...tables(cmsLiteStorageTables),
+  ...tables(cmsLiteUsersTables),
+  ...tables(cmsLiteWishlistTables),
+  ...tables(aiTables),
+  ...tables(customFeaturesTables),
+  ...tables(systemFeaturesTables),
+  ...tables(bundleTables),
+  ...tables(knowledgeTables),
+  ...tables(userManagementTables),
+
+  // ERP Modules
+  ...tables(salesTables),
+  ...tables(inventoryTables),
+  ...tables(crmErpTables),
+
+  // Shared Features
+  ...tables(searchTables),
+  ...tables(bulkTables),
+  ...tables(customFieldsTables),
+  ...tables(automationTables),
+  ...tables(commentsTables),
+  ...tables(attachmentsTables),
+  ...tables(activityFeedTables),
+  ...tables(favoritesTables),
 };

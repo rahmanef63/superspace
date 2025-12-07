@@ -19,6 +19,13 @@ import {
 } from "./Header"
 import { HEADER_PRESETS, type HeaderAction, type HeaderMetaItem, type BreadcrumbItem } from "./types"
 
+const isHeaderActionConfig = (action: HeaderAction | React.ReactNode): action is HeaderAction => (
+  !React.isValidElement(action) &&
+  typeof action === "object" &&
+  action !== null &&
+  ("label" in action || "id" in action)
+)
+
 // ============================================================================
 // Feature Header (Main page headers)
 // ============================================================================
@@ -41,7 +48,7 @@ export interface FeatureHeaderProps {
     disabled?: boolean
   }
   /** Secondary actions - can be array of action config or React nodes */
-  secondaryActions?: HeaderAction[] | React.ReactNode
+  secondaryActions?: Array<HeaderAction | React.ReactNode> | React.ReactNode
   /** Badge (e.g., "Beta", "New") */
   badge?: {
     text: string
@@ -76,31 +83,53 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
   // Helper to render secondary actions
   const renderSecondaryActions = () => {
     if (!secondaryActions) return null
-    
+
     // If it's a React element, render it directly
     if (React.isValidElement(secondaryActions)) {
       return secondaryActions
     }
-    
-    // If it's an array of action configs, render buttons
+
+    // If it's an array, handle config objects and ReactNodes
     if (Array.isArray(secondaryActions)) {
-      return secondaryActions.map((action) => {
-        const ActionIcon = action.icon
+      return secondaryActions.map((action, index) => {
+        // Generate a stable key for this item
+        const itemKey = `secondary-action-${index}`;
+
+        if (isHeaderActionConfig(action)) {
+          const ActionIcon = action.icon
+          return (
+            <Button
+              key={action.id || action.label || itemKey}
+              variant={action.variant || "outline"}
+              size={action.size || "sm"}
+              onClick={action.onClick}
+              disabled={action.disabled}
+            >
+              {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
+              {action.label}
+            </Button>
+          )
+        }
+
+        if (React.isValidElement(action)) {
+          // Use the existing key if present, otherwise use index-based key
+          const existingKey = action.key;
+          return (
+            <React.Fragment key={existingKey ?? itemKey}>
+              {action}
+            </React.Fragment>
+          );
+        }
+
         return (
-          <Button
-            key={action.id || action.label}
-            variant={action.variant || "outline"}
-            size="sm"
-            onClick={action.onClick}
-            disabled={action.disabled}
-          >
-            {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
-            {action.label}
-          </Button>
+          <React.Fragment key={itemKey}>
+            {action}
+          </React.Fragment>
         )
       })
     }
-    
+
+
     // Otherwise render as-is (for other ReactNode types)
     return secondaryActions
   }
@@ -137,8 +166,8 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
         <Header.Actions>
           {renderSecondaryActions()}
           {primaryAction && (
-            <Button 
-              onClick={primaryAction.onClick} 
+            <Button
+              onClick={primaryAction.onClick}
               asChild={!!primaryAction.href}
               disabled={primaryAction.disabled}
             >
@@ -368,10 +397,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const renderPrimaryAction = () => {
     if (!primaryAction) return null
     if (React.isValidElement(primaryAction)) return primaryAction
-    
+
     const action = primaryAction as HeaderAction
     const ActionIcon = action.icon
-    
+
     return (
       <Button onClick={action.onClick} asChild={!!action.href}>
         {action.href ? (
@@ -452,3 +481,77 @@ export const MinimalHeader: React.FC<MinimalHeaderProps> = ({
   )
 }
 MinimalHeader.displayName = "MinimalHeader"
+
+// ============================================================================
+// Standard Feature Header (Dynamic layout for Features)
+// ============================================================================
+
+export interface StandardFeatureHeaderProps {
+  /** Feature Title */
+  title: string
+  /** Search Configuration */
+  search?: {
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
+  }
+  /** Toggle options (e.g. Public/Private) */
+  toggles?: React.ReactNode
+  /** Main Action Buttons (Export, AI, Add) */
+  actions?: React.ReactNode
+  className?: string
+}
+
+export const StandardFeatureHeader: React.FC<StandardFeatureHeaderProps> = ({
+  title,
+  search,
+  toggles,
+  actions,
+  className,
+}) => {
+  const preset = HEADER_PRESETS.feature
+
+  return (
+    <Header
+      variant={preset.variant}
+      size={preset.size}
+      layout="standard"
+      background={preset.background}
+      border={preset.border}
+      className={className}
+    >
+      {/* 1. Title (Left) */}
+      <Header.Title title={title} size="lg" className="mr-4 shrink-0" />
+
+      {/* 2. Controls Area (Right - Flex) */}
+      <div className="flex flex-1 items-center justify-end gap-3 min-w-0 overflow-x-auto">
+        {/* Search */}
+        {search && (
+          <div className="w-full max-w-[240px] shrink-1">
+            <Header.Search
+              value={search.value}
+              onChange={search.onChange}
+              placeholder={search.placeholder}
+              className="h-8"
+            />
+          </div>
+        )}
+
+        {/* Visibility Toggles */}
+        {toggles && (
+          <div className="shrink-0">
+            {toggles}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {actions && (
+          <Header.Actions className="shrink-0 ml-0">
+            {actions}
+          </Header.Actions>
+        )}
+      </div>
+    </Header>
+  )
+}
+StandardFeatureHeader.displayName = "StandardFeatureHeader"

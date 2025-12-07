@@ -16,6 +16,10 @@ type AccessResult = {
   userId: Id<"users"> | null;
 };
 
+import { ConvexError } from "convex/values";
+
+// ... existing code ...
+
 const ensureDocumentAccess = async (
   ctx: AnyCtx,
   id: string,
@@ -25,25 +29,25 @@ const ensureDocumentAccess = async (
 
   const normalized = ctx.db.normalizeId("documents", id) as Id<"documents"> | null;
   if (!normalized) {
-    throw new Error("Invalid document id");
+    throw new ConvexError({ code: "INVALID_ID", message: "Invalid document id" });
   }
 
   const document = await ctx.db.get(normalized);
   if (!document) {
-    throw new Error("Document not found");
+    throw new ConvexError({ code: "NOT_FOUND", message: "Document not found" });
   }
 
   const isOwner = userId ? document.createdBy === userId : false;
 
   if (requireOwner) {
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new ConvexError({ code: "UNAUTHENTICATED", message: "Not authenticated" });
     }
     if (!isOwner) {
-      throw new Error("Unauthorized");
+      throw new ConvexError({ code: "UNAUTHORIZED", message: "Unauthorized" });
     }
   } else if (!document.isPublic && !isOwner) {
-    throw new Error("Unauthorized");
+    throw new ConvexError({ code: "UNAUTHORIZED", message: "Unauthorized" });
   }
 
   return { documentId: normalized, document, userId };

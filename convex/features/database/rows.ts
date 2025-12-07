@@ -4,20 +4,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ensureUser, requirePermission } from "../../auth/helpers";
 import { assertWorkspaceAccess, hasWorkspaceAccess, nextOrderValue } from "./utils";
 import { PERMISSIONS } from "../../workspace/permissions";
-
-// TODO: Implement audit logging system
-// Helper function to create audit logs (placeholder)
-async function createAuditLog(ctx: any, params: {
-  workspaceId: any,
-  userId: any,
-  action: string,
-  resourceType: string,
-  resourceId: any,
-  metadata?: any
-}) {
-  // Placeholder - implement when audit_logs table is added to schema
-  console.log('[Database Audit]', params);
-}
+import { logAuditEvent } from "../../shared/audit";
 
 interface ViewSettings {
   filters?: Array<{
@@ -224,10 +211,10 @@ export const deleteRow = mutation({
     await ctx.db.delete(args.id);
 
     // CRITICAL: Audit log for deletion
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: row.workspaceId,
-      userId,
-      action: "database.row.deleted",
+      actorUserId: userId,
+      action: "dbRow.deleted",
       resourceType: "dbRow",
       resourceId: args.id,
       metadata: { tableId: row.tableId, linkedDocDeleted: !!row.docId },

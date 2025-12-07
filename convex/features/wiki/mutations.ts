@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
 import { ensureUser, requireActiveMembership } from "../../auth/helpers"
+import { logAuditEvent } from "../../shared/audit"
 
 function slugify(value: string): string {
   return value
@@ -66,12 +67,18 @@ export const create = mutation({
 
     const itemId = await ctx.db.insert("wiki", doc)
 
-    // TODO: Add audit log
-    // await logAudit(ctx, {
-    //   action: "wiki:create",
-    //   workspaceId: args.workspaceId,
-    //   targetId: itemId,
-    // })
+    await logAuditEvent(ctx, {
+      action: "wiki.create",
+      workspaceId: args.workspaceId,
+      actorUserId: actorId,
+      resourceType: "wiki",
+      resourceId: itemId,
+      changes: {
+        title: args.title,
+        isPublished: args.isPublished,
+      },
+      metadata: { slug },
+    })
 
     return itemId
   },
@@ -119,6 +126,15 @@ export const update = mutation({
 
     await ctx.db.patch(args.id, updates)
 
+    await logAuditEvent(ctx, {
+      action: "wiki.update",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "wiki",
+      resourceId: args.id,
+      changes: patch,
+    })
+
     return args.id
   },
 })
@@ -133,9 +149,22 @@ export const remove = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const actorId = membership?.userId ?? (await ensureUser(ctx))
 
     await ctx.db.delete(args.id)
+
+    await logAuditEvent(ctx, {
+      action: "wiki.delete",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "wiki",
+      resourceId: args.id,
+      metadata: {
+        title: item.title,
+        slug: item.slug,
+      },
+    })
 
     return args.id
   },

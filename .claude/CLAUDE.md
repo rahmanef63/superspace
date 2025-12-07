@@ -1,19 +1,50 @@
 # Project Guardrails (SuperSpace / Convex)
-- Stack: Next.js (App Router), Convex (DB utama), shadcn/ui, Zustand.
-- Prinsip: **RBAC ketat**, **audit logging**, **validasi Zod**, **tests hijau**.
-- Dilarang: ganti arsitektur RBAC/Convex; hapus audit; bypass permission.
-- Sumber kebenaran:
-  - convex/workspace/*, convex/menu/*, convex/components/*, convex/user/*, convex/schema.ts
-  - scripts/validate-*.ts, tests/*.test.ts
-- Pipeline:
-  - `/validate:workspace`, `/validate:settings`, `/validate:document`, `/validate:role`, `/validate:conversation`
-  - `/test` untuk semua integration/unit tests
-- Definition of Done (DoD) untuk semua agen:
-  1) Skema tervalidasi (Zod script OK)
-  2) RBAC & permission checks diterapkan
-  3) Audit event dicatat
-  4) Tests hijau (unit+integration)
-  5) CI snippet siap
+
+## 🎯 **Project Overview**
+**SuperSpace** adalah Notion-like SaaS platform dengan arsitektur modular yang sungguhan. Built dengan Next.js 15, Convex, dan React 19. Project ini memiliki **28+ features** yang auto-discovered dengan zero hardcoding.
+
+## 🛠️ **Tech Stack**
+- **Frontend:** Next.js 15 (App Router), React 19, TypeScript
+- **Backend:** Convex (real-time serverless database)
+- **UI:** TailwindCSS v4, shadcn/ui, Radix UI
+- **Auth:** Clerk (authentication + billing)
+- **State:** Zustand + Jotai
+- **Validation:** Zod
+- **Testing:** Vitest + convex-test
+- **Package Manager:** pnpm
+
+## 🏗️ **Arsitektur Core**
+- **Auto-Discovery System:** Features dari `frontend/features/*/config.ts` (100% zero hardcoding)
+- **Three-Tier Sharing:** Global → Feature → Local
+- **RBAC:** Permission hierarchy (0=Owner → 90=Guest)
+- **Audit Logging:** Immutable logs untuk compliance
+- **Universal Database:** 21 property types, 10 view layouts
+
+## 🚫 **Rules (DILARANG)**
+- Ganti arsitektur RBAC/Convex
+- Hapus atau bypass audit logging
+- Hardcode feature registration
+- Skip permission checks
+- Lupakan Zod validation
+
+## ✅ **Definition of Done (DoD)**
+1. Zod validation untuk semua inputs
+2. RBAC & permission checks diterapkan
+3. Audit event dicatat
+4. Workspace isolation enforced
+5. Tests hijau (unit + integration)
+6. Tidak ada hardcoding
+7. Auto-discovery system digunakan
+8. Full TypeScript coverage
+9. Validation scripts pass
+10. CI snippet siap
+
+## 📁 **Sumber Kebenaran**
+- **Schema:** `convex/schema.ts`
+- **Core:** `convex/workspace/*`, `convex/user/*`, `convex/menu/*`, `convex/components/*`
+- **Validation:** `scripts/validate-*.ts`
+- **Tests:** `tests/*.test.ts`
+- **Feature Config:** `frontend/features/*/config.ts`
 
 ## Feature Analysis & Documentation
 

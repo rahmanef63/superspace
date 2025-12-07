@@ -4,7 +4,6 @@ export * from "./DocumentsListView";
 export * from "./DocumentDetailView";
 export * from "./DocumentEditorOnly";
 export * from "./DocumentsView";
-export * from "./DocumentsThreeColumnLayout";
 export * from "./DocumentsBreadcrumbs";
 export * from "./DocumentsTree";
 export * from "./DocumentPresenceIndicator";

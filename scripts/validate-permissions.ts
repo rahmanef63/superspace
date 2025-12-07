@@ -147,6 +147,22 @@ function hasPermissionCheck(mutationContent: string): {
   const adminCheckRegex = /(isWorkspaceAdmin|isWorkspaceOwner)\s*\(/;
   const hasAdminCheck = adminCheckRegex.test(mutationContent);
 
+  // Check for requireActiveMembership() (from auth/helpers)
+  const requireActiveMembershipRegex = /requireActiveMembership\s*\(/;
+  const hasRequireActiveMembership = requireActiveMembershipRegex.test(mutationContent);
+
+  // Check for canPermission() (from auth/helpers)
+  const canPermissionRegex = /canPermission\s*\(/;
+  const hasCanPermission = canPermissionRegex.test(mutationContent);
+
+  // Check for requireAdmin/requireEditor/requireOwner (from features/lib/rbac.ts)
+  const rbacRoleCheckRegex = /(requireAdmin|requireEditor|requireOwner|requirePlatformAdmin)\s*\(/;
+  const hasRbacRoleCheck = rbacRoleCheckRegex.test(mutationContent);
+
+  // Check for isPlatformAdmin (for bundles)
+  const isPlatformAdminRegex = /isPlatformAdmin\s*\(/;
+  const hasPlatformAdminCheck = isPlatformAdminRegex.test(mutationContent);
+
   if (hasRequirePermission) {
     return { hasCheck: true, details: "requirePermission()" };
   }
@@ -159,16 +175,59 @@ function hasPermissionCheck(mutationContent: string): {
     return { hasCheck: true, details: "isWorkspaceAdmin/Owner()" };
   }
 
+  if (hasRequireActiveMembership) {
+    return { hasCheck: true, details: "requireActiveMembership()" };
+  }
+
+  if (hasCanPermission) {
+    return { hasCheck: true, details: "canPermission()" };
+  }
+
+  if (hasRbacRoleCheck) {
+    return { hasCheck: true, details: "requireAdmin/Editor/Owner()" };
+  }
+
+  if (hasPlatformAdminCheck) {
+    return { hasCheck: true, details: "isPlatformAdmin()" };
+  }
+
+  // Check for ctx.auth.getUserIdentity() as auth pattern (for self-service mutations)
+  const userIdentityCheckRegex = /ctx\.auth\.getUserIdentity\s*\(\s*\)/;
+  const hasUserIdentityCheck = userIdentityCheckRegex.test(mutationContent);
+  if (hasUserIdentityCheck) {
+    return { hasCheck: true, details: "ctx.auth.getUserIdentity()" };
+  }
+
   return { hasCheck: false };
 }
 
+
+
+
 /**
- * Check if a mutation is imported from rbac/permissions
+ * Check if a mutation is imported from rbac/permissions or auth/helpers
  */
 function hasPermissionImport(fileContent: string): boolean {
-  const importRegex = /import\s+\{[^}]*(?:requirePermission|checkPermission|isWorkspaceAdmin|isWorkspaceOwner)[^}]*\}\s+from\s+["'].*rbac\/permissions["']/;
-  return importRegex.test(fileContent);
+  // Check for rbac/permissions import
+  const rbacRegex = /import\s+\{[^}]*(?:requirePermission|checkPermission|isWorkspaceAdmin|isWorkspaceOwner)[^}]*\}\s+from\s+["'].*rbac\/permissions["']/;
+  if (rbacRegex.test(fileContent)) return true;
+
+  // Check for auth/helpers import (also has requirePermission, requireActiveMembership, etc.)
+  const authHelpersRegex = /import\s+\{[^}]*(?:requirePermission|requireActiveMembership|canPermission|hasPermission)[^}]*\}\s+from\s+["'].*auth\/helpers["']/;
+  if (authHelpersRegex.test(fileContent)) return true;
+
+  // Check for features/lib/rbac import (requireAdmin, requireEditor, requireOwner)
+  const featuresRbacRegex = /import\s+\{[^}]*(?:requireAdmin|requireEditor|requireOwner|requirePlatformAdmin)[^}]*\}\s+from\s+["'].*lib\/rbac["']/;
+  if (featuresRbacRegex.test(fileContent)) return true;
+
+  // Check for lib/platformAdmin import (isPlatformAdmin)
+  const platformAdminRegex = /import\s+\{[^}]*isPlatformAdmin[^}]*\}\s+from\s+["'].*platformAdmin["']/;
+  if (platformAdminRegex.test(fileContent)) return true;
+
+  return false;
 }
+
+
 
 /**
  * Validate a single mutation file
@@ -294,7 +353,7 @@ function printResults(stats: SummaryStats): void {
     console.log(`   ${colors.cyan}import { requirePermission } from "../../lib/rbac/permissions";${colors.reset}\n`);
     console.log(`2. Add permission check as FIRST LINE in handler:`);
     console.log(`   ${colors.cyan}await requirePermission(ctx, args.workspaceId, "feature.action");${colors.reset}\n`);
-        console.log(`2. Update to use requirePermission() helper`);
+    console.log(`2. Update to use requirePermission() helper`);
     console.log(`3. See template: ${colors.cyan}convex/templates/mutation_template.ts${colors.reset}`);
     console.log();
     console.log(`4. See guide: ${colors.cyan}docs/MUTATION_TEMPLATE_GUIDE.md${colors.reset}\n`);

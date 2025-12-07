@@ -2,7 +2,7 @@ import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import type { Doc, Id, MutationCtx } from "../../_generated";
 import { requireAdmin, requireEditor } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 import { postObject } from "./queries";
 
 type PostSnapshot = Doc<"posts">;
@@ -56,6 +56,14 @@ function mapPostToResponse(post: PostSnapshot) {
   };
 }
 
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
+
 const basePostArgs = {
   slug: v.string(),
   locale: v.string(),
@@ -95,6 +103,7 @@ export const createPost = mutation({
   returns: postObject,
   handler: async (ctx: MutationCtx, args: PostWriteArgs) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const conflict = await ctx.db
       .query("posts")
@@ -138,11 +147,12 @@ export const createPost = mutation({
       }),
     );
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "post",
-      entityId: postId,
-      action: "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "post",
+      resourceId: postId,
+      action: "post.create",
       changes: {
         slug: args.slug,
         locale: args.locale,
@@ -167,6 +177,7 @@ export const updatePost = mutation({
     },
   ) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const post = await ctx.db.get(args.id);
     if (!post) {
@@ -214,11 +225,12 @@ export const updatePost = mutation({
       throw new Error("Failed to load post after update");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "post",
-      entityId: args.id,
-      action: "update",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "post",
+      resourceId: args.id,
+      action: "post.update",
       changes: {
         title: updated.title,
         status: updated.status,
@@ -239,6 +251,7 @@ export const deletePost = mutation({
   }),
   handler: async (ctx: MutationCtx, { id }: { id: Id<"posts"> }) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const post = await ctx.db.get(id);
     if (!post) {
@@ -253,11 +266,12 @@ export const deletePost = mutation({
     await Promise.all(revisions.map((revision: any) => ctx.db.delete(revision._id)));
     await ctx.db.delete(id);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "post",
-      entityId: id,
-      action: "delete",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "post",
+      resourceId: id,
+      action: "post.delete",
     });
 
     return { success: true };
@@ -283,6 +297,7 @@ export const restorePostRevision = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const post = await ctx.db.get(postId);
     if (!post) {
@@ -319,11 +334,12 @@ export const restorePostRevision = mutation({
 
     await ctx.db.patch(postId, restoredPatch as any);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "post",
-      entityId: postId,
-      action: "restore_revision",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "post",
+      resourceId: postId,
+      action: "post.restore_revision",
       changes: {
         revisionId,
       },
@@ -353,6 +369,7 @@ export const bulkUpdatePosts = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     if (ids.length === 0) {
       return { success: true, affected: 0 };
@@ -377,11 +394,12 @@ export const bulkUpdatePosts = mutation({
             }) as Partial<PostInsert>;
             await ctx.db.patch(id, publishPatch as any);
             affected += 1;
-            await recordAuditEvent(ctx, {
-              actorId: actor.clerkUserId,
-              entity: "post",
-              entityId: id,
-              action: "publish",
+            await logAuditEvent(ctx, {
+              workspaceId,
+              actor: actor.clerkUserId,
+              resourceType: "post",
+              resourceId: id,
+              action: "post.publish",
             });
           }
           break;
@@ -395,11 +413,12 @@ export const bulkUpdatePosts = mutation({
             }) as Partial<PostInsert>;
             await ctx.db.patch(id, unpublishPatch as any);
             affected += 1;
-            await recordAuditEvent(ctx, {
-              actorId: actor.clerkUserId,
-              entity: "post",
-              entityId: id,
-              action: "unpublish",
+            await logAuditEvent(ctx, {
+              workspaceId,
+              actor: actor.clerkUserId,
+              resourceType: "post",
+              resourceId: id,
+              action: "post.unpublish",
             });
           }
           break;
@@ -412,11 +431,12 @@ export const bulkUpdatePosts = mutation({
           await Promise.all(revisions.map((revision: any) => ctx.db.delete(revision._id)));
           await ctx.db.delete(id);
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "post",
-            entityId: id,
-            action: "delete",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "post",
+            resourceId: id,
+            action: "post.delete",
           });
           break;
         }

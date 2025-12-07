@@ -1,7 +1,7 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import { requireAdmin } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 import { serviceObject } from "./queries";
 import type { MutationCtx, Id } from "../../_generated";
 
@@ -13,6 +13,14 @@ const baseFields = {
   labelAr: v.string(),
   active: v.optional(v.boolean()),
 };
+
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
 
 export const createService = mutation({
   args: baseFields,
@@ -29,6 +37,7 @@ export const createService = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const existing = await ctx.db
       .query("services")
@@ -53,11 +62,12 @@ export const createService = mutation({
       throw new Error("Failed to create service");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "services",
-      entityId: serviceId,
-      action: "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "services",
+      resourceId: serviceId,
+      action: "service.create",
       changes: { ...args },
     });
 
@@ -89,6 +99,8 @@ export const updateService = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
+
     const service = await ctx.db.get(args.id);
     if (!service) {
       throw new Error("Service not found");
@@ -110,11 +122,12 @@ export const updateService = mutation({
       throw new Error("Failed to update service");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "services",
-      entityId: args.id,
-      action: "update",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "services",
+      resourceId: args.id,
+      action: "service.update",
       changes: patch,
     });
 
@@ -131,14 +144,16 @@ export const deleteService = mutation({
   }),
   handler: async (ctx: MutationCtx, { id }: { id: Id<"services"> }) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     await ctx.db.delete(id);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "services",
-      entityId: id,
-      action: "delete",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "services",
+      resourceId: id,
+      action: "service.delete",
     });
 
     return { success: true };

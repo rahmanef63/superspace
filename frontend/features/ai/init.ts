@@ -1,6 +1,7 @@
 /**
  * AI Feature Initialization
  * Registers AI settings with the shared settings registry
+ * and initializes the sub-agent system.
  */
 
 import { registerFeatureSettings } from "@/frontend/shared/settings"
@@ -12,6 +13,9 @@ import {
   AIPersonalizationSettings,
   AIApiKeysSettings,
 } from "./settings"
+
+// Initialize sub-agents
+import "./init-agents"
 
 registerFeatureSettings("ai", () => [
   {

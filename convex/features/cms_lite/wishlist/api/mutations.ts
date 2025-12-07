@@ -14,6 +14,7 @@ export const createWishlist = mutation({
     metadata: v.optional(v.record(v.string(), v.any())),
   },
   async handler(ctx, args) {
+    await requirePermission(ctx, args.workspaceId, "wishlist:manage");
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
@@ -67,6 +68,7 @@ export const addItem = mutation({
     metadata: v.optional(v.record(v.string(), v.any())),
   },
   async handler(ctx, args) {
+    await requirePermission(ctx, args.workspaceId, "wishlist:manage");
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
@@ -134,10 +136,12 @@ export const removeItem = mutation({
     itemId: v.string(),
   },
   async handler(ctx, args) {
+    await requirePermission(ctx, args.workspaceId, "wishlist:manage");
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
+
 
     // Check wishlist exists and user has access
     const wishlist = await ctx.db.get(args.wishlistId as Id<"wishlists">);

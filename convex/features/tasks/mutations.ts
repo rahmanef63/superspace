@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
 import { ensureUser, requireActiveMembership } from "../../auth/helpers"
+import { logAuditEvent } from "../../shared/audit"
 
 const TASK_STATUS = v.union(v.literal("todo"), v.literal("in_progress"), v.literal("completed"))
 const TASK_PRIORITY = v.union(v.literal("low"), v.literal("medium"), v.literal("high"))
@@ -46,12 +47,19 @@ export const create = mutation({
 
     const itemId = await ctx.db.insert("tasks", doc)
 
-    // TODO: Add audit log
-    // await logAudit(ctx, {
-    //   action: "tasks:create",
-    //   workspaceId: args.workspaceId,
-    //   targetId: itemId,
-    // })
+    await logAuditEvent(ctx, {
+      action: "tasks.create",
+      workspaceId: args.workspaceId,
+      actorUserId: actorId,
+      resourceType: "task",
+      resourceId: itemId,
+      changes: {
+        title: args.title,
+        status: args.status,
+        priority: args.priority,
+        assigneeId: args.assigneeId,
+      },
+    })
 
     return itemId
   },
@@ -113,6 +121,15 @@ export const update = mutation({
 
     await ctx.db.patch(args.id, updates)
 
+    await logAuditEvent(ctx, {
+      action: "tasks.update",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "task",
+      resourceId: args.id,
+      changes: patch,
+    })
+
     return args.id
   },
 })
@@ -127,9 +144,19 @@ export const remove = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const actorId = membership?.userId ?? (await ensureUser(ctx))
 
     await ctx.db.delete(args.id)
+
+    await logAuditEvent(ctx, {
+      action: "tasks.delete",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "task",
+      resourceId: args.id,
+      metadata: { title: item.title },
+    })
 
     return args.id
   },

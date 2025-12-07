@@ -42,6 +42,7 @@ export { usePersistedState, useResponsiveCollapse, useStackedLayout } from "./ho
 
 // Components
 export { ThreeColumnLayoutAdvanced } from "./ThreeColumnLayout"
+export { FeatureThreeColumnLayout } from "./FeatureThreeColumnLayout"
 export { CollapseButton } from "./CollapseButton"
 export { PanelHeader } from "./PanelHeader"
 export { CollapsedPanel } from "./CollapsedPanel"

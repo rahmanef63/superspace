@@ -1,9 +1,9 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import { requireAdmin } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 import { settingsObject } from "./queries";
-import type { MutationCtx } from "../../_generated";
+import type { MutationCtx, Id } from "../../_generated";
 
 const settingsArgs = {
   brandName: v.string(),
@@ -28,6 +28,14 @@ function buildOptionalFields(args: Record<string, string | null | undefined>) {
   return result;
 }
 
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
+
 export const upsertSettings = mutation({
   args: settingsArgs,
   returns: settingsObject,
@@ -47,6 +55,7 @@ export const upsertSettings = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const [existing] = await ctx.db.query("settings").take(1);
     const baseFields = {
@@ -82,11 +91,12 @@ export const upsertSettings = mutation({
       throw new Error("Failed to load settings after update");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "settings",
-      entityId: settingsId,
-      action: existing ? "update" : "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "settings",
+      resourceId: settingsId,
+      action: existing ? "settings.update" : "settings.create",
       changes: { ...args },
     });
 

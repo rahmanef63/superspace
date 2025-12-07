@@ -5,20 +5,7 @@ import { ensureUser, requirePermission } from "../../auth/helpers";
 import type { Id } from "../../_generated/dataModel";
 import { assertWorkspaceAccess, hasWorkspaceAccess } from "./utils";
 import { PERMISSIONS } from "../../workspace/permissions";
-
-// TODO: Implement audit logging system
-// Helper function to create audit logs (placeholder)
-async function createAuditLog(ctx: any, params: {
-  workspaceId: any,
-  userId: any,
-  action: string,
-  resourceType: string,
-  resourceId: any,
-  metadata?: any
-}) {
-  // Placeholder - implement when audit_logs table is added to schema
-  console.log('[Database Audit]', params);
-}
+import { logAuditEvent } from "../../shared/audit";
 
 export const list = query({
   args: { workspaceId: v.id("workspaces") },
@@ -120,10 +107,10 @@ export const create = mutation({
       },
     });
 
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId,
-      action: "database.table.created",
+      actorUserId: userId,
+      action: "dbTable.created",
       resourceType: "dbTable",
       resourceId: tableId,
       metadata: { name: args.name, icon: args.icon },
@@ -169,10 +156,10 @@ export const update = mutation({
 
     await ctx.db.patch(args.id, updates);
 
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: table.workspaceId,
-      userId,
-      action: "database.table.updated",
+      actorUserId: userId,
+      action: "dbTable.updated",
       resourceType: "dbTable",
       resourceId: args.id,
       metadata: { changes: Object.keys(updates) },
@@ -219,10 +206,10 @@ export const deleteTable = mutation({
     await ctx.db.delete(args.id);
 
     // CRITICAL: Audit log for deletion
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: table.workspaceId,
-      userId,
-      action: "database.table.deleted",
+      actorUserId: userId,
+      action: "dbTable.deleted",
       resourceType: "dbTable",
       resourceId: args.id,
       metadata: {
@@ -419,10 +406,10 @@ export const duplicate = mutation({
       }
     }
 
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: table.workspaceId,
-      userId,
-      action: "database.table.duplicated",
+      actorUserId: userId,
+      action: "dbTable.duplicated",
       resourceType: "dbTable",
       resourceId: newTableId,
       metadata: {

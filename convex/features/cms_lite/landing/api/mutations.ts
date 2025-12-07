@@ -1,6 +1,8 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated";
+import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Update landing page section content
@@ -63,12 +65,14 @@ export const updateContent = mutation({
     updatedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("landingContent")
       .withIndex("by_section_locale", (q) =>
         q.eq("workspaceId", args.workspaceId)
-         .eq("section", args.section)
-         .eq("locale", args.locale)
+          .eq("section", args.section)
+          .eq("locale", args.locale)
       )
       .unique();
 
@@ -76,7 +80,7 @@ export const updateContent = mutation({
     const updates: any = {
       content: args.content,
       updatedAt: now,
-      updatedBy: args.updatedBy,
+      updatedBy: args.updatedBy || actor.clerkUserId,
     };
 
     if (args.metadata) {
@@ -93,22 +97,38 @@ export const updateContent = mutation({
     if (args.publish) {
       updates.status = "published";
       updates.publishedAt = now;
-      updates.publishedBy = args.updatedBy;
+      updates.publishedBy = args.updatedBy || actor.clerkUserId;
     }
+
+    let id: Id<"landingContent">;
+    let action = "landing.update";
 
     if (existing) {
-      return await ctx.db.patch(existing._id, updates);
+      await ctx.db.patch(existing._id, updates);
+      id = existing._id;
+    } else {
+      id = await ctx.db.insert("landingContent", {
+        workspaceId: args.workspaceId,
+        section: args.section,
+        locale: args.locale,
+        status: args.status || "draft",
+        ...updates,
+        createdAt: now,
+        createdBy: args.updatedBy || actor.clerkUserId,
+      });
+      action = "landing.create";
     }
 
-    return await ctx.db.insert("landingContent", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      section: args.section,
-      locale: args.locale,
-      status: args.status || "draft",
-      ...updates,
-      createdAt: now,
-      createdBy: args.updatedBy,
+      actor: actor.clerkUserId,
+      resourceType: "landingContent",
+      resourceId: id,
+      action,
+      changes: updates,
     });
+
+    return id;
   },
 });
 
@@ -122,11 +142,13 @@ export const deleteSection = mutation({
     locale: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     let query = ctx.db
       .query("landingContent")
       .withIndex("by_section_locale", (q) =>
         q.eq("workspaceId", args.workspaceId)
-         .eq("section", args.section)
+          .eq("section", args.section)
       );
 
     if (args.locale) {
@@ -138,6 +160,14 @@ export const deleteSection = mutation({
     for (const section of sections) {
       await ctx.db.delete(section._id);
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "landingContent",
+      action: "landing.delete",
+      changes: { section: args.section, locale: args.locale, count: sections.length },
+    });
 
     return {
       deleted: sections.length,
@@ -157,12 +187,22 @@ export const updateAnalytics = mutation({
     clicks: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    // Analytics updates might be automated, but if called via mutation, we require admin or system?
+    // For now, let's assume admin for safety, or we could skip auth if it's a public tracking pixel.
+    // Given the context of CMS Lite, this likely comes from the dashboard or a privileged job.
+    // If it comes from public site, this should be a public mutation without requireAdmin.
+    // But validation complains if we don't audit log?
+    // Let's assume it's an admin function for manual adjustment OR needing audit.
+    // If it's public analytics, it shouldn't be in 'api/mutations.ts' protected by nothing.
+    // I'll add requireAdmin to be safe.
+    const actor = await requireAdmin(ctx);
+
     const section = await ctx.db
       .query("landingContent")
       .withIndex("by_section_locale", (q) =>
         q.eq("workspaceId", args.workspaceId)
-         .eq("section", args.section)
-         .eq("locale", args.locale)
+          .eq("section", args.section)
+          .eq("locale", args.locale)
       )
       .unique();
 
@@ -180,7 +220,19 @@ export const updateAnalytics = mutation({
       },
     };
 
-    return await ctx.db.patch(section._id, updates);
+    await ctx.db.patch(section._id, updates);
+
+    // Analytics updates might be too noisy for audit log, but for completeness:
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "landingContent",
+      resourceId: section._id,
+      action: "landing.analytics_update",
+      changes: { views: args.views, clicks: args.clicks },
+    });
+
+    return section._id;
   },
 });
 

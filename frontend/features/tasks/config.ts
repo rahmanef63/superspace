@@ -41,4 +41,8 @@ export default defineFeature({
   },
 
   tags: ['productivity', 'project-management'],
+
+  // Export/Import integration
+  hasExportImport: true,
+  exportConfigPath: 'features/tasks/data/export-config',
 })

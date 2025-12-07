@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../../../../_generated/server";
 import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Create a new page
@@ -30,28 +31,29 @@ export const createPage = mutation({
   },
   handler: async (ctx, args) => {
     const actor = await requireAdmin(ctx);
-    
+
     // Get user's active workspace
     const adminUser = await ctx.db.get(actor.adminUserId);
     if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
       throw new Error("No workspace found for user");
     }
     const workspaceId = adminUser.workspaceIds[0]; // Use first workspace
-    
+
     // Check if slug already exists for this workspace
-    const existing = await ctx.db
+    const existing = await (ctx.db
       .query("cms_lite_pages")
-      .withIndex("by_workspace_slug", (q) => 
-        q.eq("workspaceId", workspaceId).eq("slug", args.slug)
+      .withIndex("by_workspace_slug", (q: any) =>
+        q.eq("workspaceId", workspaceId)
       )
-      .first();
-    
+      .filter((q) => q.eq(q.field("slug"), args.slug))
+      .first());
+
     if (existing) {
       throw new Error(`Page with slug "${args.slug}" already exists in this workspace`);
     }
-    
+
     const now = Date.now();
-    
+
     const pageId = await ctx.db.insert("cms_lite_pages", {
       slug: args.slug,
       locale: args.locale,
@@ -69,7 +71,20 @@ export const createPage = mutation({
       createdBy: actor.clerkUserId,
       updatedBy: actor.clerkUserId,
     });
-    
+
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      action: "cms_lite_pages.create",
+      resourceType: "cms_lite_pages",
+      resourceId: pageId,
+      metadata: {
+        slug: args.slug,
+        title: args.title,
+        pageType: args.pageType,
+      },
+    });
+
     return { pageId };
   },
 });
@@ -103,42 +118,43 @@ export const updatePage = mutation({
   },
   handler: async (ctx, args) => {
     const actor = await requireAdmin(ctx);
-    
+
     // Get user's active workspace
     const adminUser = await ctx.db.get(actor.adminUserId);
     if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
       throw new Error("No workspace found for user");
     }
     const workspaceId = adminUser.workspaceIds[0];
-    
+
     const page = await ctx.db.get(args.pageId);
     if (!page) {
       throw new Error("Page not found");
     }
-    
+
     if (page.workspaceId !== workspaceId) {
       throw new Error("Unauthorized access to page");
     }
-    
+
     // If changing slug, check for conflicts
     if (args.slug && args.slug !== page.slug) {
-      const existing = await ctx.db
+      const existing = await (ctx.db
         .query("cms_lite_pages")
-        .withIndex("by_workspace_slug", (q) => 
-          q.eq("workspaceId", workspaceId).eq("slug", args.slug!)
+        .withIndex("by_workspace_slug", (q: any) =>
+          q.eq("workspaceId", workspaceId)
         )
-        .first();
-      
+        .filter((q) => q.eq(q.field("slug"), args.slug!))
+        .first());
+
       if (existing && existing._id !== args.pageId) {
         throw new Error(`Page with slug "${args.slug}" already exists in this workspace`);
       }
     }
-    
+
     const updates: any = {
       updatedAt: Date.now(),
       updatedBy: actor.clerkUserId,
     };
-    
+
     // Add optional fields if provided
     if (args.slug !== undefined) updates.slug = args.slug;
     if (args.locale !== undefined) updates.locale = args.locale;
@@ -150,9 +166,22 @@ export const updatePage = mutation({
     if (args.metaKeywords !== undefined) updates.metaKeywords = args.metaKeywords;
     if (args.isPublished !== undefined) updates.isPublished = args.isPublished;
     if (args.displayOrder !== undefined) updates.displayOrder = args.displayOrder;
-    
+
     await ctx.db.patch(args.pageId, updates);
-    
+
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      action: "cms_lite_pages.update",
+      resourceType: "cms_lite_pages",
+      resourceId: args.pageId,
+      metadata: {
+        slug: args.slug,
+        title: args.title,
+      },
+      changes: updates
+    });
+
     return { success: true };
   },
 });
@@ -164,25 +193,37 @@ export const deletePage = mutation({
   args: { pageId: v.id("cms_lite_pages") },
   handler: async (ctx, args) => {
     const actor = await requireAdmin(ctx);
-    
+
     // Get user's active workspace
     const adminUser = await ctx.db.get(actor.adminUserId);
     if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
       throw new Error("No workspace found for user");
     }
     const workspaceId = adminUser.workspaceIds[0];
-    
+
     const page = await ctx.db.get(args.pageId);
     if (!page) {
       throw new Error("Page not found");
     }
-    
+
     if (page.workspaceId !== workspaceId) {
       throw new Error("Unauthorized access to page");
     }
-    
+
     await ctx.db.delete(args.pageId);
-    
+
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      action: "cms_lite_pages.delete",
+      resourceType: "cms_lite_pages",
+      resourceId: args.pageId,
+      metadata: {
+        slug: page.slug,
+        title: page.title,
+      },
+    });
+
     return { success: true };
   },
 });

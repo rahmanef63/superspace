@@ -13,6 +13,12 @@ export const createUser = mutation({
     metadata: v.optional(v.record(v.string(), v.any())),
   },
   async handler(ctx, args) {
+    // Permission: Creating users requires authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
     // Check if user already exists
     const existing = await ctx.db
       .query("users")
@@ -24,6 +30,7 @@ export const createUser = mutation({
     }
 
     // Create user
+
     const userId = await ctx.db.insert("users", {
       ...args,
       status: "active",

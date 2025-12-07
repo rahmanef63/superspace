@@ -1,6 +1,8 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated";
+import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Create or update a feature
@@ -29,6 +31,8 @@ export const upsertFeature = mutation({
     updatedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("features")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -36,9 +40,11 @@ export const upsertFeature = mutation({
       .unique();
 
     const now = Date.now();
+    let id: Id<"features">;
+    let action = "features.update";
 
     if (existing) {
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         status: args.status,
         type: args.type,
         displayOrder: args.displayOrder ?? existing.displayOrder,
@@ -48,39 +54,52 @@ export const upsertFeature = mutation({
         dependencies: args.dependencies,
         metadata: args.metadata,
         updatedAt: now,
-        updatedBy: args.updatedBy,
+        updatedBy: args.updatedBy || actor.clerkUserId,
       });
+      id = existing._id;
+    } else {
+      // Find highest display order if not provided
+      let displayOrder = args.displayOrder;
+      if (displayOrder === undefined) {
+        const lastFeature = await ctx.db
+          .query("features")
+          .withIndex("by_display_order", (q) =>
+            q.eq("workspaceId", args.workspaceId)
+          )
+          .order("desc")
+          .first();
+        displayOrder = (lastFeature?.displayOrder || 0) + 1;
+      }
+
+      id = await ctx.db.insert("features", {
+        workspaceId: args.workspaceId,
+        key: args.key,
+        status: args.status,
+        type: args.type,
+        displayOrder,
+        translations: args.translations,
+        settings: args.settings,
+        requiredRoles: args.requiredRoles,
+        dependencies: args.dependencies,
+        metadata: args.metadata,
+        createdAt: now,
+        createdBy: args.updatedBy || actor.clerkUserId,
+        updatedAt: now,
+        updatedBy: args.updatedBy || actor.clerkUserId,
+      });
+      action = "features.create";
     }
 
-    // Find highest display order if not provided
-    let displayOrder = args.displayOrder;
-    if (displayOrder === undefined) {
-      const lastFeature = await ctx.db
-        .query("features")
-        .withIndex("by_display_order", (q) =>
-          q.eq("workspaceId", args.workspaceId)
-        )
-        .order("desc")
-        .first();
-      displayOrder = (lastFeature?.displayOrder || 0) + 1;
-    }
-
-    return await ctx.db.insert("features", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      key: args.key,
-      status: args.status,
-      type: args.type,
-      displayOrder,
-      translations: args.translations,
-      settings: args.settings,
-      requiredRoles: args.requiredRoles,
-      dependencies: args.dependencies,
-      metadata: args.metadata,
-      createdAt: now,
-      createdBy: args.updatedBy,
-      updatedAt: now,
-      updatedBy: args.updatedBy,
+      actor: actor.clerkUserId,
+      resourceType: "feature",
+      resourceId: id,
+      action,
+      changes: { key: args.key, status: args.status },
     });
+
+    return id;
   },
 });
 
@@ -105,6 +124,8 @@ export const upsertGroup = mutation({
     })),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("featureGroups")
       .withIndex("by_workspace_name", (q) =>
@@ -113,9 +134,11 @@ export const upsertGroup = mutation({
       .unique();
 
     const now = Date.now();
+    let id: Id<"featureGroups">;
+    let action = "features.group.update";
 
     if (existing) {
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         status: args.status,
         displayOrder: args.displayOrder ?? existing.displayOrder,
         translations: args.translations,
@@ -123,32 +146,45 @@ export const upsertGroup = mutation({
         metadata: args.metadata,
         updatedAt: now,
       });
+      id = existing._id;
+    } else {
+      // Find highest display order if not provided
+      let displayOrder = args.displayOrder;
+      if (displayOrder === undefined) {
+        const lastGroup = await ctx.db
+          .query("featureGroups")
+          .withIndex("by_display_order", (q) =>
+            q.eq("workspaceId", args.workspaceId)
+          )
+          .order("desc")
+          .first();
+        displayOrder = (lastGroup?.displayOrder || 0) + 1;
+      }
+
+      id = await ctx.db.insert("featureGroups", {
+        workspaceId: args.workspaceId,
+        name: args.name,
+        status: args.status,
+        displayOrder,
+        translations: args.translations,
+        features: args.features,
+        metadata: args.metadata,
+        createdAt: now,
+        updatedAt: now,
+      });
+      action = "features.group.create";
     }
 
-    // Find highest display order if not provided
-    let displayOrder = args.displayOrder;
-    if (displayOrder === undefined) {
-      const lastGroup = await ctx.db
-        .query("featureGroups")
-        .withIndex("by_display_order", (q) =>
-          q.eq("workspaceId", args.workspaceId)
-        )
-        .order("desc")
-        .first();
-      displayOrder = (lastGroup?.displayOrder || 0) + 1;
-    }
-
-    return await ctx.db.insert("featureGroups", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      name: args.name,
-      status: args.status,
-      displayOrder,
-      translations: args.translations,
-      features: args.features,
-      metadata: args.metadata,
-      createdAt: now,
-      updatedAt: now,
+      actor: actor.clerkUserId,
+      resourceType: "featureGroup",
+      resourceId: id,
+      action,
+      changes: { name: args.name, status: args.status },
     });
+
+    return id;
   },
 });
 
@@ -161,6 +197,8 @@ export const deleteFeature = mutation({
     key: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const feature = await ctx.db
       .query("features")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -187,6 +225,16 @@ export const deleteFeature = mutation({
     }
 
     await ctx.db.delete(feature._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "feature",
+      resourceId: feature._id,
+      action: "features.delete",
+      changes: { key: args.key },
+    });
+
     return true;
   },
 });
@@ -200,6 +248,8 @@ export const deleteGroup = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const group = await ctx.db
       .query("featureGroups")
       .withIndex("by_workspace_name", (q) =>
@@ -212,6 +262,16 @@ export const deleteGroup = mutation({
     }
 
     await ctx.db.delete(group._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "featureGroup",
+      resourceId: group._id,
+      action: "features.group.delete",
+      changes: { name: args.name },
+    });
+
     return true;
   },
 });

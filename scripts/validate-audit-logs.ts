@@ -203,12 +203,20 @@ function hasAuditLog(mutationContent: string): {
   const logAuditBatchRegex = /logAuditBatch\s*\(/;
   const hasLogAuditBatch = logAuditBatchRegex.test(mutationContent);
 
+  // Check for logAuditEvent() call (from convex/shared/audit)
+  const logAuditEventRegex = /logAuditEvent\s*\(/;
+  const hasLogAuditEvent = logAuditEventRegex.test(mutationContent);
+
   if (hasLogAudit) {
     return { hasLog: true, details: "logAudit()" };
   }
 
   if (hasLogAuditBatch) {
     return { hasLog: true, details: "logAuditBatch()" };
+  }
+
+  if (hasLogAuditEvent) {
+    return { hasLog: true, details: "logAuditEvent()" };
   }
 
   return { hasLog: false };
@@ -218,8 +226,11 @@ function hasAuditLog(mutationContent: string): {
  * Check if file imports audit logger
  */
 function hasAuditImport(fileContent: string): boolean {
-  const importRegex = /import\s+\{[^}]*(?:logAudit|logAuditBatch)[^}]*\}\s+from\s+["'].*audit\/logger["']/;
-  return importRegex.test(fileContent);
+  // Check for logAudit/logAuditBatch from audit/logger
+  const loggerImportRegex = /import\s+\{[^}]*(?:logAudit|logAuditBatch)[^}]*\}\s+from\s+["'].*audit\/logger["']/;
+  // Check for logAuditEvent from shared/audit
+  const sharedAuditImportRegex = /import\s+\{[^}]*(?:logAuditEvent)[^}]*\}\s+from\s+["'].*shared\/audit["']/;
+  return loggerImportRegex.test(fileContent) || sharedAuditImportRegex.test(fileContent);
 }
 
 /**

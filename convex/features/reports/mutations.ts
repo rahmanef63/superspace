@@ -2,6 +2,7 @@ import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
 import { requireActiveMembership, requirePermission } from "../../auth/helpers"
 import { PERMS } from "../../workspace/permissions"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Reports Mutations
@@ -15,7 +16,8 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     // Require permission
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, args.workspaceId)
+    const actorId = membership?.userId
 
     const itemId = await ctx.db.insert("reports", {
       workspaceId: args.workspaceId,
@@ -24,12 +26,14 @@ export const create = mutation({
       updatedAt: Date.now(),
     })
 
-    // TODO: Add audit log
-    // await logAudit(ctx, {
-    //   action: "reports:create",
-    //   workspaceId: args.workspaceId,
-    //   targetId: itemId,
-    // })
+    await logAuditEvent(ctx, {
+      action: "report.create",
+      workspaceId: args.workspaceId,
+      actorUserId: actorId,
+      resourceType: "report",
+      resourceId: itemId,
+      changes: { name: args.name },
+    })
 
     return itemId
   },
@@ -46,11 +50,21 @@ export const update = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const actorId = membership?.userId
 
     await ctx.db.patch(args.id, {
       name: args.name,
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      action: "report.update",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "report",
+      resourceId: args.id,
+      changes: { name: args.name },
     })
 
     return args.id
@@ -67,9 +81,19 @@ export const remove = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const actorId = membership?.userId
 
     await ctx.db.delete(args.id)
+
+    await logAuditEvent(ctx, {
+      action: "report.delete",
+      workspaceId: item.workspaceId,
+      actorUserId: actorId,
+      resourceType: "report",
+      resourceId: args.id,
+      metadata: { name: item.name },
+    })
 
     return args.id
   },

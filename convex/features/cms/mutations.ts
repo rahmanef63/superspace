@@ -2,20 +2,7 @@ import { mutation } from "../../_generated/server"
 import { v } from "convex/values"
 import { requirePermission, ensureUser } from "../../auth/helpers"
 import { PERMISSIONS } from "../../workspace/permissions"
-
-// TODO: Implement audit logging system
-// Helper function to create audit logs (placeholder)
-async function createAuditLog(ctx: any, params: {
-  workspaceId: any,
-  userId: any,
-  action: string,
-  resourceType: string,
-  resourceId: any,
-  metadata?: any
-}) {
-  // Placeholder - implement when audit_logs table is added
-  console.log('Audit log:', params)
-}
+import { logAuditEvent } from "../../shared/audit"
 
 
 export const createCollection = mutation({
@@ -67,10 +54,10 @@ export const createCollection = mutation({
       updatedAt: now,
     })
 
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "collection.create",
+      actorUserId: userId,
+      action: "cms_collection.created",
       resourceType: "cms_collection",
       resourceId: id,
       metadata: { slug: args.slug, label: args.label },
@@ -110,10 +97,10 @@ export const updateCollection = mutation({
       updatedAt: Date.now(),
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "collection.update",
+      actorUserId: userId,
+      action: "cms_collection.updated",
       resourceType: "cms_collection",
       resourceId: id,
     })
@@ -141,10 +128,10 @@ export const deleteCollection = mutation({
       updatedAt: Date.now(),
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "collection.delete",
+      actorUserId: userId,
+      action: "cms_collection.deleted",
       resourceType: "cms_collection",
       resourceId: args.id,
     })
@@ -215,10 +202,10 @@ export const createEntry = mutation({
       })
     }
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "entry.create",
+      actorUserId: userId,
+      action: "cms_entry.created",
       resourceType: "cms_entry",
       resourceId: id,
       metadata: { collectionId: args.collectionId, slug: args.slug },
@@ -292,10 +279,10 @@ export const updateEntry = mutation({
       }
     }
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "entry.update",
+      actorUserId: userId,
+      action: "cms_entry.updated",
       resourceType: "cms_entry",
       resourceId: args.id,
     })
@@ -342,10 +329,10 @@ export const publishEntry = mutation({
       updatedAt: now,
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "entry.publish",
+      actorUserId: userId,
+      action: "cms_entry.published",
       resourceType: "cms_entry",
       resourceId: args.id,
     })
@@ -391,10 +378,10 @@ export const unpublishEntry = mutation({
       updatedAt: now,
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "entry.unpublish",
+      actorUserId: userId,
+      action: "cms_entry.unpublished",
       resourceType: "cms_entry",
       resourceId: args.id,
     })
@@ -435,10 +422,10 @@ export const revertEntryToVersion = mutation({
       updatedAt: now,
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "entry.revert",
+      actorUserId: userId,
+      action: "cms_entry.reverted",
       resourceType: "cms_entry",
       resourceId: entryId,
       metadata: { versionId: args.versionId, versionNumber: version.versionNumber },
@@ -496,10 +483,10 @@ export const createGlobal = mutation({
       updatedAt: now,
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "global.create",
+      actorUserId: userId,
+      action: "cms_global.created",
       resourceType: "cms_global",
       resourceId: id,
       metadata: { slug: args.slug, label: args.label },
@@ -556,10 +543,10 @@ export const saveGlobal = mutation({
       })
     }
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "global.save",
+      actorUserId: userId,
+      action: "cms_global.saved",
       resourceType: "cms_global",
       resourceId: args.globalId,
     })
@@ -610,10 +597,10 @@ export const uploadMedia = mutation({
       updatedAt: now,
     })
     
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      userId: userId,
-      action: "media.upload",
+      actorUserId: userId,
+      action: "cms_media_asset.uploaded",
       resourceType: "cms_media_asset",
       resourceId: id,
       metadata: { filename: args.filename, size: args.size },

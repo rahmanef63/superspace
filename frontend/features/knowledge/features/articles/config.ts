@@ -36,4 +36,8 @@ export default defineFeature({
   },
 
   tags: ['knowledge', 'articles', 'ai', 'wiki', 'documentation'],
+
+  // Export/Import integration
+  hasExportImport: true,
+  exportConfigPath: 'features/documents/data/export-config',
 })

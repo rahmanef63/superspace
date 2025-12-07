@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { getExistingUserId } from "../../auth/helpers";
+import { getExistingUserId, requireActiveMembership } from "../../auth/helpers";
 import type { Id } from "../../_generated/dataModel";
+import { logAuditEvent } from "../../shared/audit";
+
 
 /**
  * Create a new call record
@@ -15,6 +17,7 @@ export const createCall = mutation({
   },
   returns: v.id("calls"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -51,6 +54,15 @@ export const createCall = mutation({
       status: "joined",
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "call.create",
+      resourceType: "call",
+      resourceId: callId,
+      metadata: { type: args.type, participantCount: args.participantIds.length },
+    });
+
     return callId;
   },
 });
@@ -72,11 +84,11 @@ export const updateCallStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getExistingUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const call = await ctx.db.get(args.callId);
     if (!call) throw new Error("Call not found");
+    await requireActiveMembership(ctx, call.workspaceId);
+    const userId = await getExistingUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const now = Date.now();
     const updates: Record<string, unknown> = { status: args.status };
@@ -93,6 +105,16 @@ export const updateCallStatus = mutation({
     }
 
     await ctx.db.patch(args.callId, updates);
+
+    await logAuditEvent(ctx, {
+      workspaceId: call.workspaceId,
+      actorUserId: userId,
+      action: "call.update_status",
+      resourceType: "call",
+      resourceId: args.callId,
+      changes: { status: args.status },
+    });
+
     return null;
   },
 });
@@ -108,6 +130,7 @@ export const seedSampleCalls = mutation({
   },
   returns: v.array(v.id("calls")),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -169,6 +192,14 @@ export const seedSampleCalls = mutation({
 
       callIds.push(callId);
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "call.seed",
+      resourceType: "call",
+      metadata: { count: callIds.length },
+    });
 
     return callIds;
   },

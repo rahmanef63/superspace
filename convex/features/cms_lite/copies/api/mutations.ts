@@ -1,6 +1,8 @@
 import { mutation } from "../../_generated";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated";
+import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Create or update a copy entry
@@ -21,12 +23,17 @@ export const upsertCopy = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("copies")
       .withIndex("by_workspace_key", (q: any) =>
         q.eq("workspaceId", args.workspaceId).eq("key", args.key)
       )
       .unique();
+
+    let id: Id<"copies">;
+    let action = "copies.update";
 
     if (existing) {
       // Create history entry for tracking changes
@@ -35,11 +42,11 @@ export const upsertCopy = mutation({
         locale: Object.keys(args.translations)[0], // Track the changed locale
         previousContent: existing.translations[Object.keys(args.translations)[0]]?.content || "",
         changeNote: "Updated via API",
-        createdBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy,
+        createdBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy || actor.clerkUserId,
       });
 
       // Update existing copy
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         translations: {
           ...existing.translations,
           ...args.translations,
@@ -48,11 +55,12 @@ export const upsertCopy = mutation({
         tags: args.tags,
         notes: args.notes,
         lastReviewedAt: Date.now(),
-        lastReviewedBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy,
+        lastReviewedBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy || actor.clerkUserId,
       });
+      id = existing._id;
     } else {
       // Create new copy
-      return await ctx.db.insert("copies", {
+      id = await ctx.db.insert("copies", {
         workspaceId: args.workspaceId,
         key: args.key,
         group: args.group,
@@ -61,9 +69,21 @@ export const upsertCopy = mutation({
         tags: args.tags,
         notes: args.notes,
         lastReviewedAt: Date.now(),
-        lastReviewedBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy,
+        lastReviewedBy: args.translations[Object.keys(args.translations)[0]]?.updatedBy || actor.clerkUserId,
       });
+      action = "copies.create";
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "copy",
+      resourceId: id,
+      action,
+      changes: { key: args.key, status: args.status },
+    });
+
+    return id;
   },
 });
 
@@ -79,6 +99,8 @@ export const upsertGroup = mutation({
     status: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("copyGroups")
       .withIndex("by_name", (q: any) =>
@@ -86,12 +108,16 @@ export const upsertGroup = mutation({
       )
       .unique();
 
+    let id: Id<"copyGroups">;
+    let action = "copies.group.update";
+
     if (existing) {
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         displayNames: args.displayNames,
         description: args.description,
         status: args.status,
       });
+      id = existing._id;
     } else {
       // Get count of copies in this group
       const copyCount = (await ctx.db
@@ -101,7 +127,7 @@ export const upsertGroup = mutation({
         )
         .collect()).length;
 
-      return await ctx.db.insert("copyGroups", {
+      id = await ctx.db.insert("copyGroups", {
         workspaceId: args.workspaceId,
         name: args.name,
         displayNames: args.displayNames,
@@ -109,7 +135,19 @@ export const upsertGroup = mutation({
         status: args.status,
         copyCount: copyCount,
       });
+      action = "copies.group.create";
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "copyGroup",
+      resourceId: id,
+      action,
+      changes: { name: args.name },
+    });
+
+    return id;
   },
 });
 
@@ -118,10 +156,22 @@ export const upsertGroup = mutation({
  */
 export const deleteCopy = mutation({
   args: {
+    workspaceId: v.string(),
     copyId: v.id("copies"),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
     await ctx.db.delete(args.copyId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "copy",
+      resourceId: args.copyId,
+      action: "copies.delete",
+      changes: {},
+    });
+
     return true;
   },
 });
@@ -135,6 +185,8 @@ export const deleteGroup = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     // First delete the group
     const group = await ctx.db
       .query("copyGroups")
@@ -158,6 +210,15 @@ export const deleteGroup = mutation({
     for (const copy of copies) {
       await ctx.db.delete(copy._id);
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "copyGroup",
+      resourceId: group?._id ?? "unknown",
+      action: "copies.group.delete",
+      changes: { name: args.name, copyCount: copies.length },
+    });
 
     return true;
   },

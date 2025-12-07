@@ -17,6 +17,7 @@ import type { Id } from "../../_generated/dataModel";
 import { ensureUser, requirePermission } from "../../auth/helpers";
 import { PERMISSIONS } from "../../workspace/permissions";
 import { transformValue } from "./transformations";
+import { logAuditEvent } from "../../shared/audit";
 
 export const changeFieldType = mutation({
   args: {
@@ -122,11 +123,11 @@ export const changeFieldType = mutation({
     await ctx.db.patch(args.fieldId, fieldUpdate);
 
     // Create audit log
-    await createAuditLog(ctx, {
+    await logAuditEvent(ctx, {
       workspaceId: table.workspaceId,
-      userId,
-      action: 'FIELD_TYPE_CHANGED',
-      resourceType: 'dbField',
+      actorUserId: userId,
+      action: "dbField.type_changed",
+      resourceType: "dbField",
       resourceId: args.fieldId,
       metadata: {
         fieldName: field.name,
@@ -146,20 +147,3 @@ export const changeFieldType = mutation({
   },
 });
 
-// Audit log helper
-async function createAuditLog(ctx: any, params: {
-  workspaceId: any,
-  userId: any,
-  action: string,
-  resourceType: string,
-  resourceId: any,
-  metadata?: any
-}) {
-  console.log('[Database Audit - Type Change]', {
-    action: params.action,
-    field: params.metadata?.fieldName,
-    conversion: `${params.metadata?.oldType} → ${params.metadata?.newType}`,
-    stats: params.metadata?.transformStats,
-    generatedOptions: params.metadata?.generatedOptions,
-  });
-}

@@ -6,11 +6,17 @@ import { FileText, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocumentRecord } from "../types";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface DocumentsTreeProps {
   documents: DocumentRecord[];
   selectedId?: Id<"documents"> | null;
   onSelect?: (id: Id<"documents">) => void;
   className?: string;
+  // Selection Mode Props
+  selectionMode?: boolean;
+  selectedIds?: Id<"documents">[];
+  onToggleSelect?: (id: Id<"documents">) => void;
 }
 
 interface TreeNode {
@@ -60,35 +66,57 @@ export function DocumentsTree({
   selectedId,
   onSelect,
   className,
+  selectionMode = false,
+  selectedIds = [],
+  onToggleSelect,
 }: DocumentsTreeProps) {
   const tree = useMemo(() => buildDocumentTree(documents), [documents]);
 
   const renderNode = (node: TreeNode, depth = 0) => {
     const { document, children } = node;
-    const isSelected = selectedId ? String(selectedId) === String(document._id) : false;
+    const isActive = selectedId ? String(selectedId) === String(document._id) : false;
+    const isChecked = selectedIds.includes(document._id);
     const hasChildren = children.length > 0;
+
+    const handleClick = (e: React.MouseEvent) => {
+      if (selectionMode) {
+        e.preventDefault();
+        onToggleSelect?.(document._id);
+      } else {
+        onSelect?.(document._id);
+      }
+    };
 
     return (
       <div key={String(document._id)}>
         <button
           type="button"
-          onClick={() => onSelect?.(document._id)}
+          onClick={handleClick}
           className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition",
-            isSelected
+            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition group",
+            isActive && !selectionMode
               ? "bg-primary/10 text-primary"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
           style={{ paddingLeft: `${depth * 18 + 8}px` }}
         >
-          <span className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {selectionMode && (
+              <Checkbox
+                checked={isChecked}
+                onCheckedChange={() => onToggleSelect?.(document._id)}
+                className="mr-1 h-4 w-4"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+
             {hasChildren ? (
-              <Folder className="h-4 w-4 text-primary/80" />
+              <Folder className={cn("h-4 w-4 shrink-0", isActive && !selectionMode ? "text-primary/80" : "text-muted-foreground")} />
             ) : (
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <FileText className={cn("h-4 w-4 shrink-0", isActive && !selectionMode ? "text-primary/80" : "text-muted-foreground")} />
             )}
             <span className="truncate">{document.title || "Untitled"}</span>
-          </span>
+          </div>
         </button>
 
         {children.length > 0 && (

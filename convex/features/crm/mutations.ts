@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requireActiveMembership } from "../../auth/helpers";
+import { logAuditEvent } from "../../shared/audit";
+
 
 /**
  * Create a new CRM customer
@@ -24,15 +26,16 @@ export const createCustomer = mutation({
   },
   returns: v.id("crmCustomers"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Check if customer with this email already exists
-    const existing = await ctx.db
+    const existing = await (ctx.db
       .query("crmCustomers")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q: any) => q.eq("email", args.email))
       .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
-      .first();
+      .first());
 
     if (existing) {
       throw new Error("Customer with this email already exists");
@@ -77,6 +80,19 @@ export const createCustomer = mutation({
       createdBy: userId,
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "crm_customer.create",
+      resourceType: "crmCustomer",
+      resourceId: customerId,
+      metadata: {
+        email: args.email,
+        company: args.company,
+        status: args.status,
+      },
+    });
+
     return customerId;
   },
 });
@@ -110,11 +126,11 @@ export const updateCustomer = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const customer = await ctx.db.get(args.customerId);
     if (!customer) throw new Error("Customer not found");
+    await requireActiveMembership(ctx, customer.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const updates: any = {};
     if (args.name !== undefined) updates.name = args.name;
@@ -135,12 +151,13 @@ export const updateCustomer = mutation({
 
     // If assignee changed, add them to conversation
     if (args.assignedTo && customer.conversationId) {
-      const existingParticipant = await ctx.db
+      const existingParticipant = await (ctx.db
         .query("conversationParticipants")
-        .withIndex("by_user_conversation", (q) =>
-          q.eq("userId", args.assignedTo!).eq("conversationId", customer.conversationId!)
+        .withIndex("by_user_conversation", (q: any) =>
+          q.eq("userId", args.assignedTo!)
         )
-        .first();
+        .filter((q) => q.eq(q.field("conversationId"), customer.conversationId!))
+        .first());
 
       if (!existingParticipant) {
         await ctx.db.insert("conversationParticipants", {
@@ -152,6 +169,15 @@ export const updateCustomer = mutation({
         });
       }
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: customer.workspaceId,
+      actorUserId: userId,
+      action: "crm_customer.update",
+      resourceType: "crmCustomer",
+      resourceId: args.customerId,
+      changes: updates,
+    });
 
     return null;
   },
@@ -166,11 +192,12 @@ export const deleteCustomer = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const customer = await ctx.db.get(args.customerId);
+    if (!customer) throw new Error("Customer not found");
+    await requireActiveMembership(ctx, customer.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const customer = await ctx.db.get(args.customerId);
-    if (!customer) throw new Error("Customer not found");
 
     // Note: We don't delete the conversation, just mark it as inactive
     if (customer.conversationId) {
@@ -180,6 +207,15 @@ export const deleteCustomer = mutation({
     }
 
     await ctx.db.delete(args.customerId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: customer.workspaceId,
+      actorUserId: userId,
+      action: "crm_customer.delete",
+      resourceType: "crmCustomer",
+      resourceId: args.customerId,
+      metadata: { name: customer.name, email: customer.email },
+    });
 
     return null;
   },

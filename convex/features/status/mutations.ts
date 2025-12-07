@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { getExistingUserId } from "../../auth/helpers";
+import { getExistingUserId, requireActiveMembership } from "../../auth/helpers";
 import type { Id } from "../../_generated/dataModel";
+import { logAuditEvent } from "../../shared/audit";
+
 
 /**
  * Create a new status
@@ -20,6 +22,7 @@ export const createStatus = mutation({
   },
   returns: v.id("statuses"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -44,6 +47,15 @@ export const createStatus = mutation({
       },
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "status.create",
+      resourceType: "status",
+      resourceId: statusId,
+      metadata: { type: args.type },
+    });
+
     return statusId;
   },
 });
@@ -57,19 +69,20 @@ export const viewStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const status = await ctx.db.get(args.statusId);
+    if (!status) throw new Error("Status not found");
+    await requireActiveMembership(ctx, status.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const status = await ctx.db.get(args.statusId);
-    if (!status) throw new Error("Status not found");
-
     // Check if already viewed
-    const existingView = await ctx.db
+    const existingView = await (ctx.db
       .query("statusViews")
-      .withIndex("by_status_viewer", (q) =>
-        q.eq("statusId", args.statusId).eq("viewerId", userId)
+      .withIndex("by_status_viewer", (q: any) =>
+        q.eq("statusId", args.statusId)
       )
-      .first();
+      .filter((q) => q.eq(q.field("viewerId"), userId))
+      .first());
 
     if (!existingView) {
       await ctx.db.insert("statusViews", {
@@ -84,6 +97,14 @@ export const viewStatus = mutation({
       });
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: status.workspaceId,
+      actorUserId: userId,
+      action: "status.view",
+      resourceType: "status",
+      resourceId: args.statusId,
+    });
+
     return null;
   },
 });
@@ -97,21 +118,17 @@ export const deleteStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const status = await ctx.db.get(args.statusId);
+    if (!status) throw new Error("Status not found");
+    await requireActiveMembership(ctx, status.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const status = await ctx.db.get(args.statusId);
-    if (!status) throw new Error("Status not found");
-
-    if (status.userId !== userId) {
-      throw new Error("Not authorized to delete this status");
-    }
-
     // Delete all views first
-    const views = await ctx.db
+    const views = await (ctx.db
       .query("statusViews")
-      .withIndex("by_status", (q) => q.eq("statusId", args.statusId))
-      .collect();
+      .withIndex("by_status", (q: any) => q.eq("statusId", args.statusId))
+      .collect());
 
     for (const view of views) {
       await ctx.db.delete(view._id);
@@ -120,9 +137,19 @@ export const deleteStatus = mutation({
     // Delete the status
     await ctx.db.delete(args.statusId);
 
+    await logAuditEvent(ctx, {
+      workspaceId: status.workspaceId,
+      actorUserId: userId,
+      action: "status.delete",
+      resourceType: "status",
+      resourceId: args.statusId,
+      metadata: { deletedViews: views.length },
+    });
+
     return null;
   },
 });
+
 
 /**
  * Seed sample status data for development/testing
@@ -134,6 +161,7 @@ export const seedSampleStatuses = mutation({
   },
   returns: v.array(v.id("statuses")),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await getExistingUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -190,6 +218,15 @@ export const seedSampleStatuses = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "status.seed",
+      resourceType: "status",
+      metadata: { count: statusIds.length },
+    });
+
     return statusIds;
   },
 });
+

@@ -14,6 +14,7 @@ import { mutation } from "../../../_generated/server";
 import { ensureUser, requirePermission, hasPermission, requireActiveMembership } from "../../../auth/helpers";
 import type { Id } from "../../../_generated/dataModel";
 import { PERMS } from "../../../workspace/permissions";
+import { logAuditEvent } from "../../../shared/audit";
 
 /**
  * Role propagation strategies
@@ -79,7 +80,7 @@ export const inviteToHierarchy = mutation({
               .query("roles")
               .withIndex("by_workspace_slug", (q) => q.eq("workspaceId", child._id).eq("slug", baseRoleSlug))
               .first();
-            
+
             if (childRole) {
               roleMap.set(String(child._id), childRole._id);
             } else {
@@ -100,12 +101,12 @@ export const inviteToHierarchy = mutation({
               .query("roles")
               .withIndex("by_workspace", (q) => q.eq("workspaceId", child._id))
               .collect();
-            
+
             // Find closest role at or above target level
             const sortedRoles = childRoles.sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
-            const targetRole = sortedRoles.find((r) => (r.level ?? 0) >= targetLevel) 
+            const targetRole = sortedRoles.find((r) => (r.level ?? 0) >= targetLevel)
               || sortedRoles[sortedRoles.length - 1]; // Fallback to lowest privilege
-            
+
             if (targetRole) {
               roleMap.set(String(child._id), targetRole._id);
               await collectChildren(child._id, depth + 1, targetRole.level ?? targetLevel);
@@ -235,6 +236,19 @@ export const inviteToHierarchy = mutation({
       ),
       createdAt: Date.now(),
       message: args.message,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: inviterId,
+      action: "user.invite_hierarchy",
+      resourceType: "hierarchyInvitation",
+      resourceId: hierarchyInvitationId,
+      metadata: {
+        inviteeEmail: args.inviteeEmail,
+        workspaceCount: targetWorkspaceIds.length,
+        successCount: results.filter((r) => r.success).length
+      },
     });
 
     return {
@@ -372,6 +386,18 @@ export const bulkInviteFriends = mutation({
       });
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: inviterId,
+      action: "user.bulk_invite",
+      resourceType: "workspace",
+      resourceId: args.workspaceId,
+      metadata: {
+        inviteCount: args.friendIds.length,
+        successCount: results.filter((r) => r.success).length
+      },
+    });
+
     return {
       results,
       totalInvites: args.friendIds.length,
@@ -420,6 +446,15 @@ export const createTeam = mutation({
       createdBy: userId,
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "team.create",
+      resourceType: "userTeam",
+      resourceId: teamId,
+      changes: { name: args.name },
+    });
+
     return teamId;
   },
 });
@@ -460,6 +495,15 @@ export const addTeamMember = mutation({
       addedBy: currentUserId,
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: team.workspaceId,
+      actorUserId: currentUserId,
+      action: "team.add_member",
+      resourceType: "userTeam",
+      resourceId: args.teamId,
+      metadata: { addedUserId: args.userId, role: args.role },
+    });
+
     return membershipId;
   },
 });
@@ -491,6 +535,15 @@ export const removeTeamMember = mutation({
     }
 
     await ctx.db.delete(membership._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: team.workspaceId,
+      actorUserId: currentUserId,
+      action: "team.remove_member",
+      resourceType: "userTeam",
+      resourceId: args.teamId,
+      metadata: { removedUserId: args.userId },
+    });
 
     return true;
   },
@@ -593,6 +646,19 @@ export const inviteTeamToWorkspaces = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: team.workspaceId,
+      actorUserId: inviterId,
+      action: "team.invite_to_workspaces",
+      resourceType: "userTeam",
+      resourceId: args.teamId,
+      metadata: {
+        workspaceCount: args.workspaceIds.length,
+        memberCount: teamMemberships.length,
+        successCount: results.filter((r) => r.success).length
+      },
+    });
+
     return {
       results,
       totalInvites: teamMemberships.length * args.workspaceIds.length,
@@ -676,6 +742,15 @@ export const createRoleHierarchyLink = mutation({
       createdAt: Date.now(),
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "role_hierarchy.create",
+      resourceType: "roleHierarchyLink",
+      resourceId: linkId,
+      metadata: { parentRoleId: args.parentRoleId, childRoleId: args.childRoleId },
+    });
+
     return linkId;
   },
 });
@@ -697,6 +772,14 @@ export const deleteRoleHierarchyLink = mutation({
     await requirePermission(ctx, link.workspaceId, PERMS.MANAGE_ROLES);
 
     await ctx.db.delete(args.linkId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: link.workspaceId,
+      actorUserId: userId,
+      action: "role_hierarchy.delete",
+      resourceType: "roleHierarchyLink",
+      resourceId: args.linkId,
+    });
 
     return true;
   },

@@ -3,7 +3,7 @@ import type { MutationCtx } from "../../_generated";
 import { v } from "convex/values";
 import type { Doc, Id } from "../../_generated";
 import { requireAdmin, requireEditor } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 import { productObject, serializeProduct } from "./queries";
 
 type ProductDoc = Doc<"products">;
@@ -74,11 +74,21 @@ function buildProductWritePayload(
   };
 }
 
+// Helper to get workspace context
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
+
 export const createProduct = mutation({
   args: baseProductArgs,
   returns: productObject,
   handler: async (ctx: MutationCtx, args: ProductWriteArgs) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const conflict = await ctx.db
       .query("products")
@@ -98,11 +108,12 @@ export const createProduct = mutation({
       throw new Error("Failed to load product after creation");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "product",
-      entityId: productId,
-      action: "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "product",
+      resourceId: productId,
+      action: "product.create",
       changes: {
         slug: product.slug,
         status: product.status,
@@ -126,6 +137,7 @@ export const updateProduct = mutation({
     },
   ) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const product = await ctx.db.get(args.id);
     if (!product) {
@@ -149,11 +161,12 @@ export const updateProduct = mutation({
       throw new Error("Failed to load product after update");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "product",
-      entityId: args.id,
-      action: "update",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "product",
+      resourceId: args.id,
+      action: "product.update",
       changes: {
         titleEn: updated.titleEn,
         status: updated.status,
@@ -173,6 +186,7 @@ export const deleteProduct = mutation({
   }),
   handler: async (ctx: MutationCtx, { id }: { id: Id<"products"> }) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const product = await ctx.db.get(id);
     if (!product) {
@@ -181,11 +195,12 @@ export const deleteProduct = mutation({
 
     await ctx.db.delete(id);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "product",
-      entityId: id,
-      action: "delete",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "product",
+      resourceId: id,
+      action: "product.delete",
     });
 
     return { success: true };
@@ -216,6 +231,7 @@ export const bulkUpdateProducts = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     if (args.ids.length === 0) {
       return { success: true, affected: 0 };
@@ -233,33 +249,36 @@ export const bulkUpdateProducts = mutation({
         case "activate": {
           await ctx.db.patch(id, { available: true, updatedBy: actor.clerkUserId });
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "product",
-            entityId: id,
-            action: "activate",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "product",
+            resourceId: id,
+            action: "product.activate",
           });
           break;
         }
         case "deactivate": {
           await ctx.db.patch(id, { available: false, updatedBy: actor.clerkUserId });
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "product",
-            entityId: id,
-            action: "deactivate",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "product",
+            resourceId: id,
+            action: "product.deactivate",
           });
           break;
         }
         case "delete": {
           await ctx.db.delete(id);
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "product",
-            entityId: id,
-            action: "delete",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "product",
+            resourceId: id,
+            action: "product.delete",
           });
           break;
         }
@@ -271,11 +290,12 @@ export const bulkUpdateProducts = mutation({
               updatedBy: actor.clerkUserId,
             });
             affected += 1;
-            await recordAuditEvent(ctx, {
-              actorId: actor.clerkUserId,
-              entity: "product",
-              entityId: id,
-              action: "update_price",
+            await logAuditEvent(ctx, {
+              workspaceId,
+              actor: actor.clerkUserId,
+              resourceType: "product",
+              resourceId: id,
+              action: "product.update_price",
               changes: {
                 previousPrice: product.price,
                 newPrice,
@@ -321,6 +341,7 @@ export const importProducts = mutation({
   }),
   handler: async (ctx: MutationCtx, args: { data: ProductWriteArgs[] }) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     let imported = 0;
     let skipped = 0;
@@ -346,11 +367,12 @@ export const importProducts = mutation({
           buildProductWritePayload(item, actor.clerkUserId),
         );
 
-        await recordAuditEvent(ctx, {
-          actorId: actor.clerkUserId,
-          entity: "product",
-          entityId: productId,
-          action: "import",
+        await logAuditEvent(ctx, {
+          workspaceId,
+          actor: actor.clerkUserId,
+          resourceType: "product",
+          resourceId: productId,
+          action: "product.import",
           changes: {
             slug: item.slug,
           },

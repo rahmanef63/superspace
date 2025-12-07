@@ -3,7 +3,7 @@ import type { MutationCtx } from "../../_generated";
 import { v } from "convex/values";
 import type { Doc, Id } from "../../_generated";
 import { requireAdmin, requireEditor } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 import { serializePortfolio } from "./queries";
 
 type PortfolioDoc = Doc<"portfolioItems">;
@@ -28,6 +28,14 @@ const baseArgs = {
   metaKeywords: v.optional(v.union(v.array(v.string()), v.null())),
   category: v.optional(v.union(v.string(), v.null())),
 };
+
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
 
 async function removeImages(
   ctx: MutationCtx,
@@ -100,6 +108,7 @@ export const createPortfolio = mutation({
     },
   ) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const conflict = await ctx.db
       .query("portfolioItems")
@@ -132,11 +141,12 @@ export const createPortfolio = mutation({
       throw new Error("Failed to load portfolio item after creation");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "portfolio",
-      entityId: itemId,
-      action: "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "portfolio",
+      resourceId: itemId,
+      action: "portfolio.create",
       changes: {
         slug: item.slug,
         locale: item.locale,
@@ -207,6 +217,7 @@ export const updatePortfolio = mutation({
     },
   ) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const existing = await ctx.db.get(args.id);
     if (!existing) {
@@ -244,11 +255,12 @@ export const updatePortfolio = mutation({
       throw new Error("Failed to load portfolio item after update");
     }
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "portfolio",
-      entityId: args.id,
-      action: "update",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "portfolio",
+      resourceId: args.id,
+      action: "portfolio.update",
       changes: {
         title: updated.title,
         status: updated.status,
@@ -282,6 +294,7 @@ export const deletePortfolio = mutation({
   }),
   handler: async (ctx: MutationCtx, { id }: { id: Id<"portfolioItems"> }) => {
     const actor = await requireEditor(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const existing = await ctx.db.get(id);
     if (!existing) {
@@ -291,11 +304,12 @@ export const deletePortfolio = mutation({
     await removeImages(ctx, id);
     await ctx.db.delete(id);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "portfolio",
-      entityId: id,
-      action: "delete",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "portfolio",
+      resourceId: id,
+      action: "portfolio.delete",
     });
 
     return { success: true };
@@ -321,6 +335,7 @@ export const bulkUpdatePortfolio = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     if (args.ids.length === 0) {
       return { success: true, affected: 0 };
@@ -339,11 +354,12 @@ export const bulkUpdatePortfolio = mutation({
           await removeImages(ctx, id);
           await ctx.db.delete(id);
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "portfolio",
-            entityId: id,
-            action: "delete",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "portfolio",
+            resourceId: id,
+            action: "portfolio.delete",
           });
           break;
         }
@@ -356,11 +372,12 @@ export const bulkUpdatePortfolio = mutation({
             updatedBy: actor.clerkUserId,
           });
           affected += 1;
-          await recordAuditEvent(ctx, {
-            actorId: actor.clerkUserId,
-            entity: "portfolio",
-            entityId: id,
-            action: "update_category",
+          await logAuditEvent(ctx, {
+            workspaceId,
+            actor: actor.clerkUserId,
+            resourceType: "portfolio",
+            resourceId: id,
+            action: "portfolio.update_category",
             changes: {
               category: args.category,
             },

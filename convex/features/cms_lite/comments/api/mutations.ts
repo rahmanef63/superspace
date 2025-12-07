@@ -1,5 +1,8 @@
 import { mutation } from "../../_generated";
 import { v, ConvexError } from "convex/values";
+import { logAuditEvent } from "../../../lib/audit";
+import { requireAdmin } from "../../../lib/rbac";
+
 
 /**
  * Create a new comment thread
@@ -59,6 +62,15 @@ export const createThread = mutation({
         createdBy: identity.subject,
       });
     }
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: identity.subject,
+      resourceType: "commentThread",
+      resourceId: threadId,
+      action: "comments.create_thread",
+      changes: { title: args.title, entityType: args.entityType, entityId: args.entityId },
+    });
 
     return { threadId, commentId };
   },
@@ -138,6 +150,15 @@ export const addComment = mutation({
       });
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: thread.workspaceId,
+      actor: identity.subject,
+      resourceType: "comment",
+      resourceId: commentId,
+      action: "comments.add_comment",
+      changes: { threadId: args.threadId },
+    });
+
     return { commentId };
   },
 });
@@ -164,9 +185,23 @@ export const updateCommentStatus = mutation({
       throw new ConvexError("Comment not found");
     }
 
+    const thread = await ctx.db.get(comment.threadId);
+    if (!thread) {
+      throw new ConvexError("Thread not found for comment");
+    }
+
     await ctx.db.patch(args.commentId, {
       status: args.status,
       updatedBy: identity.subject,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: thread.workspaceId,
+      actor: identity.subject,
+      resourceType: "comment",
+      resourceId: args.commentId,
+      action: "comments.update_status",
+      changes: { status: args.status },
     });
 
     return null;
@@ -193,6 +228,11 @@ export const addReaction = mutation({
       throw new ConvexError("Comment not found");
     }
 
+    const thread = await ctx.db.get(comment.threadId);
+    if (!thread) {
+      throw new ConvexError("Thread not found for comment");
+    }
+
     const reactions = comment.reactions || [];
     const existingReaction = reactions.find(
       (r) => r.userId === identity.subject && r.type === args.type,
@@ -208,6 +248,15 @@ export const addReaction = mutation({
       await ctx.db.patch(args.commentId, {
         reactions,
         updatedBy: identity.subject,
+      });
+
+      await logAuditEvent(ctx, {
+        workspaceId: thread.workspaceId,
+        actor: identity.subject,
+        resourceType: "comment",
+        resourceId: args.commentId,
+        action: "comments.add_reaction",
+        changes: { type: args.type },
       });
     }
 

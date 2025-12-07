@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { ensureUser } from "../../auth/helpers";
+import { ensureUser, requireActiveMembership } from "../../auth/helpers";
+import { logAuditEvent } from "../../shared/audit";
 
 /**
  * Create a new workflow
@@ -25,8 +26,10 @@ export const createWorkflow = mutation({
   },
   returns: v.id("workflows"),
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
+
 
     const workflowId = await ctx.db.insert("workflows", {
       workspaceId: args.workspaceId,
@@ -36,6 +39,18 @@ export const createWorkflow = mutation({
       status: "draft",
       definition: args.definition,
       createdBy: userId,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "workflow.create",
+      resourceType: "workflow",
+      resourceId: workflowId,
+      changes: {
+        name: args.name,
+        trigger: args.trigger,
+      },
     });
 
     return workflowId;
@@ -71,15 +86,11 @@ export const updateWorkflow = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const workflow = await ctx.db.get(args.workflowId);
     if (!workflow) throw new Error("Workflow not found");
-
-    if (workflow.createdBy !== userId) {
-      throw new Error("Not authorized");
-    }
+    await requireActiveMembership(ctx, workflow.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const updates: any = {};
     if (args.name !== undefined) updates.name = args.name;
@@ -89,6 +100,15 @@ export const updateWorkflow = mutation({
     if (args.definition !== undefined) updates.definition = args.definition;
 
     await ctx.db.patch(args.workflowId, updates);
+
+    await logAuditEvent(ctx, {
+      workspaceId: workflow.workspaceId,
+      actorUserId: userId,
+      action: "workflow.update",
+      resourceType: "workflow",
+      resourceId: args.workflowId,
+      changes: updates,
+    });
 
     return null;
   },
@@ -103,11 +123,11 @@ export const executeWorkflow = mutation({
   },
   returns: v.id("workflowExecutions"),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const workflow = await ctx.db.get(args.workflowId);
     if (!workflow) throw new Error("Workflow not found");
+    await requireActiveMembership(ctx, workflow.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     if (workflow.status !== "active") {
       throw new Error("Workflow is not active");
@@ -149,6 +169,15 @@ export const executeWorkflow = mutation({
       }
     }, 1000);
 
+    await logAuditEvent(ctx, {
+      workspaceId: workflow.workspaceId,
+      actorUserId: userId,
+      action: "workflow.execute",
+      resourceType: "workflow",
+      resourceId: args.workflowId,
+      metadata: { executionId },
+    });
+
     return executionId;
   },
 });
@@ -162,11 +191,11 @@ export const cancelExecution = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
     const execution = await ctx.db.get(args.executionId);
     if (!execution) throw new Error("Execution not found");
+    await requireActiveMembership(ctx, execution.workspaceId);
+    const userId = await ensureUser(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     if (execution.status !== "running") {
       throw new Error("Execution is not running");
@@ -176,6 +205,15 @@ export const cancelExecution = mutation({
       status: "cancelled",
       completedAt: Date.now(),
       error: "Cancelled by user",
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: execution.workspaceId,
+      actorUserId: userId,
+      action: "workflow.execution.cancel",
+      resourceType: "workflowExecution",
+      resourceId: args.executionId,
+      metadata: { workflowId: execution.workflowId },
     });
 
     return null;
@@ -191,28 +229,33 @@ export const deleteWorkflow = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const workflow = await ctx.db.get(args.workflowId);
+    if (!workflow) throw new Error("Workflow not found");
+    await requireActiveMembership(ctx, workflow.workspaceId);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const workflow = await ctx.db.get(args.workflowId);
-    if (!workflow) throw new Error("Workflow not found");
-
-    if (workflow.createdBy !== userId) {
-      throw new Error("Not authorized");
-    }
 
     // Check if there are running executions
-    const runningExecutions = await ctx.db
+    const runningExecutions = await (ctx.db
       .query("workflowExecutions")
-      .withIndex("by_workflow", (q) => q.eq("workflowId", args.workflowId))
+      .withIndex("by_workflow", (q: any) => q.eq("workflowId", args.workflowId))
       .filter((q) => q.eq(q.field("status"), "running"))
-      .collect();
+      .collect());
 
     if (runningExecutions.length > 0) {
       throw new Error("Cannot delete workflow with running executions");
     }
 
     await ctx.db.delete(args.workflowId);
+
+    await logAuditEvent(ctx, {
+      workspaceId: workflow.workspaceId,
+      actorUserId: userId,
+      action: "workflow.delete",
+      resourceType: "workflow",
+      resourceId: args.workflowId,
+    });
 
     return null;
   },

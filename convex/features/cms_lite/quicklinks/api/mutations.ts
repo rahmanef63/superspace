@@ -2,7 +2,7 @@ import { mutation } from "../../_generated";
 import type { MutationCtx, Id } from "../../_generated";
 import { v } from "convex/values";
 import { requireAdmin } from "../../../lib/rbac";
-import { recordAuditEvent } from "../../../lib/audit";
+import { logAuditEvent } from "../../../lib/audit";
 
 const quicklinkArgs = {
   title: v.string(),
@@ -11,6 +11,14 @@ const quicklinkArgs = {
   displayOrder: v.number(),
   active: v.boolean(),
 };
+
+async function getWorkspaceContext(ctx: MutationCtx, adminUserId: Id<"adminUsers">) {
+  const adminUser = await ctx.db.get(adminUserId);
+  if (!adminUser || !adminUser.workspaceIds || adminUser.workspaceIds.length === 0) {
+    throw new Error("No workspace found for user");
+  }
+  return adminUser.workspaceIds[0];
+}
 
 export const createQuicklink = mutation({
   args: quicklinkArgs,
@@ -28,6 +36,7 @@ export const createQuicklink = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const id = await ctx.db.insert("quicklinks", {
       title: args.title,
@@ -37,11 +46,12 @@ export const createQuicklink = mutation({
       active: args.active,
     });
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "quicklinks",
-      entityId: id,
-      action: "create",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "quicklinks",
+      resourceId: id,
+      action: "quicklink.create",
       changes: {
         title: args.title,
         displayOrder: args.displayOrder,
@@ -76,6 +86,7 @@ export const updateQuicklink = mutation({
     },
   ) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const existing = await ctx.db.get(args.id);
     if (!existing) {
@@ -95,11 +106,12 @@ export const updateQuicklink = mutation({
 
     await ctx.db.patch(args.id, patch);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "quicklinks",
-      entityId: args.id,
-      action: "update",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "quicklinks",
+      resourceId: args.id,
+      action: "quicklink.update",
       changes: patch,
     });
 
@@ -116,6 +128,7 @@ export const deleteQuicklink = mutation({
   }),
   handler: async (ctx: MutationCtx, { id }: { id: Id<"quicklinks"> }) => {
     const actor = await requireAdmin(ctx);
+    const workspaceId = await getWorkspaceContext(ctx, actor.adminUserId);
 
     const existing = await ctx.db.get(id);
     if (!existing) {
@@ -124,11 +137,12 @@ export const deleteQuicklink = mutation({
 
     await ctx.db.delete(id);
 
-    await recordAuditEvent(ctx, {
-      actorId: actor.clerkUserId,
-      entity: "quicklinks",
-      entityId: id,
-      action: "delete",
+    await logAuditEvent(ctx, {
+      workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "quicklinks",
+      resourceId: id,
+      action: "quicklink.delete",
     });
 
     return { success: true };

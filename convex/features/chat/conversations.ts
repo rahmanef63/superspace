@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation } from "../../_generated/server";
 import { ensureUser, getExistingUserId, requirePermission, resolveCandidateUserIds } from "../../auth/helpers";
 import { PERMS } from "../../workspace/permissions";
+import { logAuditEvent } from "../../shared/audit";
 
 // Get workspace conversations for current user
 export const getWorkspaceConversations = query({
@@ -314,6 +315,19 @@ export const createConversation = mutation({
       }
     }
 
+    // Audit log
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "conversation.created",
+      resourceType: "conversations",
+      resourceId: conversationId,
+      metadata: { 
+        type: args.type,
+        participantCount: args.participantIds.length + 1,
+      },
+    });
+
     return conversationId;
   },
 });
@@ -433,6 +447,21 @@ export const leaveConversation = mutation({
 
     // Mark self inactive
     await ctx.db.patch(myParticipation._id, { isActive: false });
+
+    // Audit log (only for workspace conversations)
+    if (conversation.workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId: conversation.workspaceId,
+        actorUserId: currentUserId,
+        action: "conversation.left",
+        resourceType: "conversations",
+        resourceId: args.conversationId,
+        metadata: { 
+          wasAdmin: myParticipation.role === "admin",
+          remainingParticipants: otherParticipants.length,
+        },
+      });
+    }
 
     // If now zero participants, optionally deactivate the conversation
     const remaining = await ctx.db
@@ -555,6 +584,22 @@ export const updateConversation = mutation({
     if (args.metadata !== undefined) updates.metadata = args.metadata;
 
     await ctx.db.patch(args.conversationId, updates);
+
+    // Audit log (only for workspace conversations)
+    if (conversation.workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId: conversation.workspaceId,
+        actorUserId: userId,
+        action: "conversation.updated",
+        resourceType: "conversations",
+        resourceId: args.conversationId,
+        metadata: { 
+          nameChanged: args.name !== undefined,
+          metadataChanged: args.metadata !== undefined,
+        },
+      });
+    }
+
     return args.conversationId;
   },
 });
@@ -628,13 +673,28 @@ export const addParticipant = mutation({
     }
 
     // Add participant
-    await ctx.db.insert("conversationParticipants", {
+    const participantId = await ctx.db.insert("conversationParticipants", {
       conversationId: args.conversationId,
       userId: args.userId,
       role: "member",
       joinedAt: Date.now(),
       isActive: true,
     });
+
+    // Audit log (only for workspace conversations)
+    if (conversation.workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId: conversation.workspaceId,
+        actorUserId: currentUserId,
+        action: "conversationParticipant.added",
+        resourceType: "conversationParticipants",
+        resourceId: participantId,
+        metadata: { 
+          conversationId: args.conversationId,
+          addedUserId: args.userId,
+        },
+      });
+    }
 
     return args.conversationId;
   },
@@ -685,6 +745,21 @@ export const removeParticipant = mutation({
     await ctx.db.patch(participationToRemove._id, {
       isActive: false,
     });
+
+    // Audit log (only for workspace conversations)
+    if (conversation.workspaceId) {
+      await logAuditEvent(ctx, {
+        workspaceId: conversation.workspaceId,
+        actorUserId: currentUserId,
+        action: "conversationParticipant.removed",
+        resourceType: "conversationParticipants",
+        resourceId: participationToRemove._id,
+        metadata: { 
+          conversationId: args.conversationId,
+          removedUserId: args.userId,
+        },
+      });
+    }
 
     return args.conversationId;
   },

@@ -14,6 +14,9 @@ import { useAIStore, type AISession, type AIMessage } from "../stores"
 import { useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings"
 import { toast } from "sonner"
 
+// Re-export sub-agent router hook
+export { useSubAgentRouter } from "./useSubAgentRouter"
+
 // ============================================================================
 // Initialize AI Hook (like useInitializeChat)
 // ============================================================================
@@ -36,17 +39,17 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
     api.features.ai.queries.listChatSessions,
     userId
       ? {
-          workspaceId: globalMode ? undefined : effectiveWorkspaceId ?? undefined,
-          userId,
-          status: "active",
-          global: globalMode,
-        }
+        workspaceId: globalMode ? undefined : effectiveWorkspaceId ?? undefined,
+        userId,
+        status: "active",
+        global: globalMode,
+      }
       : "skip"
   );
 
   useEffect(() => {
     if (!effectiveWorkspaceId || !userId) return;
-    
+
     const key = `${effectiveWorkspaceId}-${userId}`;
     if (initializedRef.current === key) return;
 
@@ -60,7 +63,7 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
       setLoading(true);
       return;
     }
-    
+
     // Transform Convex sessions to store format
     const transformedSessions: AISession[] = sessions.map((s: any) => ({
       _id: s._id,
@@ -80,7 +83,7 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
       createdAt: s.createdAt,
       updatedAt: s.updatedAt,
     }));
-    
+
     setSessions(transformedSessions);
     setLoading(false);
   }, [sessions, setSessions, setLoading]);
@@ -205,8 +208,8 @@ export const useAIActions = () => {
   }, [workspaceId, userId, globalMode, createSessionMutation, addSession]);
 
   const sendMessage = useCallback(async (
-    content: string, 
-    knowledgeContext?: string, 
+    content: string,
+    knowledgeContext?: string,
     sessionIdOverride?: Id<"aiChatSessions">,
     options?: {
       attachments?: any[],
@@ -215,7 +218,7 @@ export const useAIActions = () => {
   ) => {
     // Allow passing sessionId directly for immediate use after session creation
     const targetSessionId: Id<"aiChatSessions"> | null = sessionIdOverride ?? selectedSessionId;
-    
+
     if (!targetSessionId) {
       console.error("No session selected");
       return null;
@@ -225,7 +228,7 @@ export const useAIActions = () => {
     const sessionId = targetSessionId;
 
     // Get the target session from store
-    const targetSession = sessionIdOverride 
+    const targetSession = sessionIdOverride
       ? sessions.find((s: AISession) => s._id === sessionIdOverride)
       : selectedSession;
 
@@ -275,7 +278,7 @@ export const useAIActions = () => {
 
       // Build system prompt with knowledge context
       const systemMessages: { role: 'system'; content: string }[] = [];
-      
+
       if (knowledgeContext && !globalMode) {
         systemMessages.push({
           role: 'system',
@@ -372,10 +375,10 @@ export const useAIActions = () => {
       const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
       console.error("AI chat error:", error);
       setError(errorMessage);
-      
+
       // Parse error for user-friendly message
       const parsedError = parseAIError(error instanceof Error ? error : errorMessage, provider);
-      
+
       toast.error(parsedError.title, {
         description: parsedError.message,
         duration: parsedError.retryDelay ? (parsedError.retryDelay + 5) * 1000 : 8000,
@@ -384,7 +387,7 @@ export const useAIActions = () => {
           onClick: () => window.open(parsedError.actionUrl, '_blank'),
         } : undefined,
       });
-      
+
       return null;
     } finally {
       setSending(false);
@@ -489,10 +492,10 @@ export const useAIConversations = () => {
       prev.map((conv) =>
         conv.id === conversationId
           ? {
-              ...conv,
-              messages: [...conv.messages, message],
-              updatedAt: new Date().toISOString(),
-            }
+            ...conv,
+            messages: [...conv.messages, message],
+            updatedAt: new Date().toISOString(),
+          }
           : conv,
       ),
     )

@@ -1,6 +1,8 @@
 import { api, mutation } from "../../_generated";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated";
+import { requireAdmin } from "../../../lib/rbac";
+import { logAuditEvent } from "../../../lib/audit";
 
 /**
  * Create or update a navigation item
@@ -57,6 +59,8 @@ export const upsertItem = mutation({
     updatedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("navigationItems")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -64,9 +68,11 @@ export const upsertItem = mutation({
       .unique();
 
     const now = Date.now();
+    let id: Id<"navigationItems">;
+    let action = "navigation.update_item";
 
     if (existing) {
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         type: args.type,
         status: args.status,
         displayOrder: args.displayOrder ?? existing.displayOrder,
@@ -79,47 +85,60 @@ export const upsertItem = mutation({
         data: args.data,
         metadata: args.metadata,
         updatedAt: now,
-        updatedBy: args.updatedBy,
+        updatedBy: args.updatedBy || actor.clerkUserId,
       });
+      id = existing._id;
+    } else {
+      // Find highest display order if not provided
+      let displayOrder = args.displayOrder;
+      if (displayOrder === undefined) {
+        const siblings = await ctx.db
+          .query("navigationItems")
+          .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+          .collect();
+
+        const relevantSiblings = siblings.filter((item) =>
+          args.parentKey ? item.parentKey === args.parentKey : !item.parentKey,
+        );
+        const maxOrder = relevantSiblings.reduce(
+          (currentMax, item) => Math.max(currentMax, item.displayOrder ?? 0),
+          0,
+        );
+        displayOrder = maxOrder + 1;
+      }
+
+      id = await ctx.db.insert("navigationItems", {
+        workspaceId: args.workspaceId,
+        key: args.key,
+        type: args.type,
+        status: args.status,
+        displayOrder,
+        parentKey: args.parentKey,
+        translations: args.translations,
+        path: args.path,
+        isExternal: args.isExternal ?? false,
+        target: args.target,
+        icon: args.icon,
+        data: args.data,
+        metadata: args.metadata,
+        createdAt: now,
+        createdBy: args.updatedBy || actor.clerkUserId,
+        updatedAt: now,
+        updatedBy: args.updatedBy || actor.clerkUserId,
+      });
+      action = "navigation.create_item";
     }
 
-    // Find highest display order if not provided
-    let displayOrder = args.displayOrder;
-    if (displayOrder === undefined) {
-      const siblings = await ctx.db
-        .query("navigationItems")
-        .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
-        .collect();
-
-      const relevantSiblings = siblings.filter((item) =>
-        args.parentKey ? item.parentKey === args.parentKey : !item.parentKey,
-      );
-      const maxOrder = relevantSiblings.reduce(
-        (currentMax, item) => Math.max(currentMax, item.displayOrder ?? 0),
-        0,
-      );
-      displayOrder = maxOrder + 1;
-    }
-
-    return await ctx.db.insert("navigationItems", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      key: args.key,
-      type: args.type,
-      status: args.status,
-      displayOrder,
-      parentKey: args.parentKey,
-      translations: args.translations,
-      path: args.path,
-      isExternal: args.isExternal ?? false,
-      target: args.target,
-      icon: args.icon,
-      data: args.data,
-      metadata: args.metadata,
-      createdAt: now,
-      createdBy: args.updatedBy,
-      updatedAt: now,
-      updatedBy: args.updatedBy,
+      actor: actor.clerkUserId,
+      resourceType: "navigationItem",
+      resourceId: id,
+      action,
+      changes: { key: args.key, type: args.type },
     });
+
+    return id;
   },
 });
 
@@ -150,6 +169,8 @@ export const upsertGroup = mutation({
     })),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const existing = await ctx.db
       .query("navigationGroups")
       .withIndex("by_workspace_name", (q) =>
@@ -158,9 +179,11 @@ export const upsertGroup = mutation({
       .unique();
 
     const now = Date.now();
+    let id: Id<"navigationGroups">;
+    let action = "navigation.update_group";
 
     if (existing) {
-      return await ctx.db.patch(existing._id, {
+      await ctx.db.patch(existing._id, {
         status: args.status,
         displayOrder: args.displayOrder ?? existing.displayOrder,
         translations: args.translations,
@@ -169,31 +192,44 @@ export const upsertGroup = mutation({
         metadata: args.metadata,
         updatedAt: now,
       });
+      id = existing._id;
+    } else {
+      // Find highest display order if not provided
+      let displayOrder = args.displayOrder;
+      if (displayOrder === undefined) {
+        const lastGroup = await ctx.db
+          .query("navigationGroups")
+          .withIndex("by_order", (q) => q.eq("workspaceId", args.workspaceId))
+          .order("desc")
+          .first();
+        displayOrder = (lastGroup?.displayOrder || 0) + 1;
+      }
+
+      id = await ctx.db.insert("navigationGroups", {
+        workspaceId: args.workspaceId,
+        name: args.name,
+        status: args.status,
+        displayOrder,
+        translations: args.translations,
+        items: args.items,
+        settings: args.settings,
+        metadata: args.metadata,
+        createdAt: now,
+        updatedAt: now,
+      });
+      action = "navigation.create_group";
     }
 
-    // Find highest display order if not provided
-    let displayOrder = args.displayOrder;
-    if (displayOrder === undefined) {
-      const lastGroup = await ctx.db
-        .query("navigationGroups")
-        .withIndex("by_order", (q) => q.eq("workspaceId", args.workspaceId))
-        .order("desc")
-        .first();
-      displayOrder = (lastGroup?.displayOrder || 0) + 1;
-    }
-
-    return await ctx.db.insert("navigationGroups", {
+    await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
-      name: args.name,
-      status: args.status,
-      displayOrder,
-      translations: args.translations,
-      items: args.items,
-      settings: args.settings,
-      metadata: args.metadata,
-      createdAt: now,
-      updatedAt: now,
+      actor: actor.clerkUserId,
+      resourceType: "navigationGroup",
+      resourceId: id,
+      action,
+      changes: { name: args.name, status: args.status },
     });
+
+    return id;
   },
 });
 
@@ -206,6 +242,8 @@ export const deleteItem = mutation({
     key: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     // Delete the item
     const item = await ctx.db
       .query("navigationItems")
@@ -249,6 +287,16 @@ export const deleteItem = mutation({
     }
 
     await ctx.db.delete(item._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "navigationItem",
+      resourceId: item._id,
+      action: "navigation.delete_item",
+      changes: { key: args.key, deletedChildren: children.length },
+    });
+
     return true;
   },
 });
@@ -262,6 +310,8 @@ export const deleteGroup = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    const actor = await requireAdmin(ctx);
+
     const group = await ctx.db
       .query("navigationGroups")
       .withIndex("by_workspace_name", (q) =>
@@ -274,6 +324,16 @@ export const deleteGroup = mutation({
     }
 
     await ctx.db.delete(group._id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: actor.clerkUserId,
+      resourceType: "navigationGroup",
+      resourceId: group._id,
+      action: "navigation.delete_group",
+      changes: { name: args.name },
+    });
+
     return true;
   },
 });

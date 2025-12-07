@@ -12,14 +12,14 @@ const extendedAuthTables = {
     name: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
     avatarUrl: v.optional(v.string()),
-  email: v.string(),
-  // `status` may be missing on legacy users; treat as optional during
-  // configuration. Runtime code should handle defaulting (e.g. to "active").
-  status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("blocked"))),
-  // Allow legacy user documents without a Clerk ID. The application will
-  // resolve or link identities at runtime; consider migrating these records
-  // to include `clerkId` for full parity.
-  clerkId: v.optional(v.string()),
+    email: v.string(),
+    // `status` may be missing on legacy users; treat as optional during
+    // configuration. Runtime code should handle defaulting (e.g. to "active").
+    status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("blocked"))),
+    // `clerkId` for full parity.
+    clerkId: v.optional(v.string()),
+    // Current active workspace for the user (optional)
+    workspaceId: v.optional(v.id("workspaces")),
   })
     .index("by_email", ["email"])
     .index("by_clerk_id", ["clerkId"]),

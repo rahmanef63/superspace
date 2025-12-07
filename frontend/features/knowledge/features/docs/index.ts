@@ -17,11 +17,9 @@ export * from "@/frontend/features/documents/api";
 export {
   CreateDocumentDialog,
   DocumentsListView,
-  DocumentsListCompact,
   DocumentDetailView,
   DocumentEditorOnly,
   DocumentsView,
-  DocumentsThreeColumnLayout,
   DocumentsBreadcrumbs,
   DocumentsTree,
   DocumentPresenceIndicator,

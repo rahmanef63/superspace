@@ -114,6 +114,19 @@ export const createStorageToken = mutation({
       expiresAt: Date.now() + (args.expiresIn || 3600000), // Default 1 hour
     });
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actor: membership.userId,
+      actorUserId: membership.userDocId,
+      action: "storage.token.create",
+      resourceType: "storageToken",
+      resourceId: token,
+      metadata: {
+        fileId: args.fileId,
+        type: args.type,
+      },
+    });
+
     return token;
   },
 });

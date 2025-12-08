@@ -28,7 +28,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
   const invitations = useQuery(api.workspace.invitations.getUserInvitations, {});
   const workspace = useQuery(
     api.workspace.workspaces.getWorkspace,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   const canInviteMembers = workspace?.role?.permissions.includes("invite_members");

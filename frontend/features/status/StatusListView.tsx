@@ -29,7 +29,7 @@ const useStatusUpdates = () => {
 
   const rawStatuses = useQuery(
     api.features.status.queries.getStatusesByUser,
-    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
+    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : undefined
   );
 
   const statuses: StatusUpdate[] = (rawStatuses ?? []).map((item) => ({

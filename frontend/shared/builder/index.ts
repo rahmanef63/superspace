@@ -35,6 +35,7 @@ export { ChatAI } from './inspector/ChatAI'
 // ============================================================
 export { UnifiedLibrary } from './library/UnifiedLibrary'
 export { TemplateLibrary, addSelectionAsTemplate } from './library/TemplateLibrary'
+export type { TemplateProvider } from './library/TemplateLibrary'
 export { DraggableLibraryItem } from './library/DraggableLibraryItem'
 
 // ============================================================

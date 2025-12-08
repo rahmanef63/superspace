@@ -30,14 +30,17 @@ import reportsConfig from '@/frontend/features/reports/config'
 import tasksConfig from '@/frontend/features/tasks/config'
 import supportConfig from '@/frontend/features/support/config'
 import projectsConfig from '@/frontend/features/projects/config'
-import crmConfig from '@/frontend/features/crm/config'
 import notificationsConfig from '@/frontend/features/notifications/config'
 import userSettingsConfig from '@/frontend/features/user-settings/config'
 import builderConfig from '@/frontend/features/builder/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import automationConfig from '@/frontend/features/automation/config'
 import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
+import hrConfig from '@/frontend/features/hr/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
+import accountingConfig from '@/frontend/features/accounting/config'
+import inventoryConfig from '@/frontend/features/inventory/config'
+import crmConfig from '@/frontend/features/crm/config'
 import platformAdminConfig from '@/frontend/features/platform-admin/config'
 
 const featureConfigs: FeatureConfig[] = [
@@ -61,14 +64,17 @@ const featureConfigs: FeatureConfig[] = [
   tasksConfig,
   supportConfig,
   projectsConfig,
-  crmConfig,
   notificationsConfig,
   userSettingsConfig,
   builderConfig,
   analyticsConfig,
   automationConfig,
   workspaceSettingsConfig,
+  hrConfig,
   cmsLiteConfig,
+  accountingConfig,
+  inventoryConfig,
+  crmConfig,
   platformAdminConfig,
 ]
 /**

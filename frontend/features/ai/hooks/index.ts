@@ -179,7 +179,7 @@ export const useAIActions = () => {
     try {
       const session = await createSessionMutation({
         workspaceId: globalMode ? undefined : workspaceId ?? undefined,
-        userId,
+        userId: userId as unknown as Id<"users">,
         title: title || "New Chat",
         isGlobal: globalMode,
       });

@@ -19,7 +19,7 @@ const useCallHistory = () => {
 
   const rawCalls = useQuery(
     api.features.calls.queries.getMyCallHistory,
-    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
+    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : undefined
   );
 
   const calls: CallSummary[] = (rawCalls ?? []).map((call) => ({
@@ -47,7 +47,7 @@ export function CallsView() {
   // Fetch call detail from Convex when a call is selected
   const rawCallDetail = useQuery(
     api.features.calls.queries.getCall,
-    selectedCallId ? { callId: selectedCallId as Id<"calls"> } : "skip"
+    selectedCallId ? { callId: selectedCallId as Id<"calls"> } : undefined
   );
 
   // Transform Convex call data to CallDetail format for the detail view

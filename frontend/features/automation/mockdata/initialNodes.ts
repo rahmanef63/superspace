@@ -1,5 +1,7 @@
 import type { Node, Edge } from 'reactflow';
-import { generateId } from '@/frontend/shared/builder';
+
+// Simple ID generator
+const generateId = () => Math.random().toString(36).substring(2, 9);
 
 export const INITIAL_AUTOMATION_NODES: Node[] = [
   {

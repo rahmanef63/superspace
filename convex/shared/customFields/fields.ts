@@ -94,7 +94,7 @@ export const getCustomFields = query({
     if (!includeInactive) {
       q = q.filter((f) => f.eq(f.field("isActive"), true));
     }
-    return q.order("order").collect();
+    return q.order("asc").collect();
   },
 });
 

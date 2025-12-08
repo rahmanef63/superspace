@@ -18,12 +18,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AISession } from "@/frontend/shared/communications/chat/types/ai";
+import type { AISessionInfoSection } from "./AISessionInfoDrawer";
 
 // ============================================================================
 // Types
 // ============================================================================
-
-export type AISessionInfoSection = "overview" | "settings" | "knowledge" | "export";
 
 export interface AISessionInfoPanelProps {
   session: AISession | null;

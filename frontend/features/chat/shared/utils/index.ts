@@ -42,10 +42,7 @@ export function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function truncateText(text: string, maxLength: number = 50): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-}
+// truncateText is exported from @/frontend/shared/communications - don't duplicate here
 
 // Validation utilities
 export function isValidChatId(chatId: string | null): chatId is string {

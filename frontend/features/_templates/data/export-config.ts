@@ -123,10 +123,10 @@ export const exportConfig: FeatureExportConfig = {
     // })
 
     // Filter based on request type
-    let data = [] // Your data here
+    let data: Array<Record<string, unknown>> = [] // Your data here
 
     if (request.dataType === "selected" && request.selectedIds) {
-      data = data.filter(item => request.selectedIds!.includes(item._id))
+      data = data.filter(item => request.selectedIds!.includes(item._id as string))
     }
 
     // Apply filters
@@ -141,13 +141,13 @@ export const exportConfig: FeatureExportConfig = {
     // Apply sorting
     if (request.sortBy) {
       data.sort((a, b) => {
-        const aVal = a[request.sortBy as keyof typeof a]
-        const bVal = b[request.sortBy as keyof typeof b]
+        const aVal = a[request.sortBy as string] as string | number | boolean | null | undefined
+        const bVal = b[request.sortBy as string] as string | number | boolean | null | undefined
 
         if (request.sortOrder === "desc") {
-          return bVal > aVal ? 1 : -1
+          return (bVal ?? '') > (aVal ?? '') ? 1 : -1
         }
-        return aVal > bVal ? 1 : -1
+        return (aVal ?? '') > (bVal ?? '') ? 1 : -1
       })
     }
 

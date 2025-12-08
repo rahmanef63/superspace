@@ -324,7 +324,7 @@ export default defineFeature({
 `
 }
 
-function generateFrontendPage(slug: string, name: string): string {
+function generateFrontendPage(slug: string, name: string, icon: string): string {
   const componentName = slug
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -333,45 +333,82 @@ function generateFrontendPage(slug: string, name: string): string {
   return `"use client"
 
 import React from "react"
+import { ${icon}, Plus, Settings } from "lucide-react"
+import type { Id } from "@convex/_generated/dataModel"
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import { use${componentName} } from "../hooks/use${componentName}"
+
+interface ${componentName}PageProps {
+  workspaceId?: Id<"workspaces"> | null
+}
 
 /**
  * ${name} Page Component
+ * 
+ * Pattern: Feature page with shared layout components
+ * @see docs/guides/FEATURE_CREATION_TEMPLATE.md
+ * @see docs/00_BASE_KNOWLEDGE.md - Pattern 4: React Component with Convex
  */
-export default function ${componentName}Page() {
-  const { isLoading, error, data } = use${componentName}()
+export default function ${componentName}Page({ workspaceId }: ${componentName}PageProps) {
+  // ✅ Use hook with workspaceId - this is the correct pattern
+  const { isLoading, data } = use${componentName}(workspaceId)
 
+  // ✅ Handle no workspace
+  if (!workspaceId) {
+    return (
+      <PageContainer centered>
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">No Workspace Selected</h2>
+          <p className="mt-2 text-muted-foreground">
+            Please select a workspace to view ${name}
+          </p>
+        </div>
+      </PageContainer>
+    )
+  }
+
+  // ✅ Handle loading
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <PageContainer centered>
         <div className="text-muted-foreground">Loading ${name.toLowerCase()}...</div>
-      </div>
+      </PageContainer>
     )
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-destructive">Error: {error.message}</div>
-      </div>
-    )
-  }
-
+  // ✅ Main content with proper scroll wrapper
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">${name}</h1>
-        <p className="text-muted-foreground mt-2">
-          Welcome to ${name}
-        </p>
-      </div>
+    <div className="flex h-full flex-col">
+      <FeatureHeader
+        icon={${icon}}
+        title="${name}"
+        subtitle="${name} feature description"
+        badge={{ text: "Beta", variant: "secondary" }}
+        primaryAction={{
+          label: "Add Item",
+          icon: Plus,
+          onClick: () => {},
+        }}
+        secondaryActions={[
+          {
+            id: "settings",
+            label: "Settings",
+            icon: Settings,
+            onClick: () => {},
+          },
+        ]}
+      />
 
-      <div className="flex-1">
-        {/* TODO: Implement your feature UI here */}
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-muted-foreground">
-            Start building your ${name.toLowerCase()} feature here!
-          </p>
+      {/* ✅ Scrollable content area */}
+      <div className="flex-1 overflow-auto p-6">
+        <div className="space-y-4">
+          {/* TODO: Implement your feature UI here */}
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <p className="text-muted-foreground">
+              Start building your ${name.toLowerCase()} feature here!
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -386,30 +423,41 @@ function generateHook(slug: string, name: string): string {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")
 
-  return `import { useState, useEffect } from "react"
-import { useQuery } from "convex/react"
+  // Convert slug to camelCase for Convex path (convex doesn't support kebab-case)
+  const convexSlug = slug.includes('-')
+    ? slug.split('-').map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('')
+    : slug
+
+  return `import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import type { Id } from "@convex/_generated/dataModel"
 
 /**
  * Hook for ${name} feature
+ * 
+ * Pattern: Use Convex query directly, no manual loading state
+ * The query returns undefined while loading, data when ready
+ * 
+ * @see docs/guides/FEATURE_CREATION_TEMPLATE.md
+ * @see docs/00_BASE_KNOWLEDGE.md - Pattern 4: React Component with Convex
  */
-export function use${componentName}() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+export function use${componentName}(workspaceId: Id<"workspaces"> | null | undefined) {
+  // ✅ Query data from Convex - returns undefined while loading
+  const data = useQuery(
+    workspaceId ? api.features.${convexSlug}.queries.getData : "skip",
+    workspaceId ? { workspaceId } : "skip"
+  )
 
-  // TODO: Replace with your actual Convex query
-  // const data = useQuery(api.features.${slug}.queries.get${componentName}, {})
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 500)
-    return () => clearTimeout(timer)
-  }, [])
+  // ✅ Mutations
+  const createItem = useMutation(api.features.${convexSlug}.mutations.createItem)
 
   return {
-    isLoading,
-    error,
-    data: null, // TODO: Return actual data from Convex query
+    // State - undefined = loading, null = no data, otherwise = data
+    isLoading: data === undefined && workspaceId !== null && workspaceId !== undefined,
+    data,
+    
+    // Actions
+    createItem,
   }
 }
 `
@@ -440,9 +488,9 @@ export interface ${typeName}Config {
 }
 
 function generateConvexQueries(slug: string): string {
-  return `import { query } from "@/convex/_generated/server"
-import { v } from "convex/values"
-import { requireActiveMembership } from "../../../auth/helpers"
+  return `import { v } from "convex/values"
+import { query } from "../../_generated/server"
+import { requireActiveMembership } from "../../auth/helpers"
 
 /**
  * Queries for ${slug} feature
@@ -468,10 +516,10 @@ export const getData = query({
 }
 
 function generateConvexMutations(slug: string): string {
-  return `import { mutation } from "@/convex/_generated/server"
-import { v } from "convex/values"
-import { requirePermission } from "../../../auth/helpers"
-import { PERMS } from "../../../workspace/permissions"
+  return `import { v } from "convex/values"
+import { mutation } from "../../_generated/server"
+import { requirePermission } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 
 /**
  * Mutations for ${slug} feature
@@ -610,10 +658,24 @@ async function main() {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join("")
 
-    writeFileSync(join(viewsDir, `${componentName}Page.tsx`), generateFrontendPage(slug, name!))
+    // Create the main page component in views/
+    writeFileSync(join(viewsDir, `${componentName}Page.tsx`), generateFrontendPage(slug, name!, options.icon!))
+    
+    // Create page.tsx as the consistent entry point (re-exports from views/)
+    const pageEntryContent = `/**
+ * ${name} Feature - Page Entry Point
+ * 
+ * This is the main entry point for the ${name} feature.
+ * Re-exports from views/${componentName}Page.tsx for consistent imports.
+ */
+export { default } from './views/${componentName}Page'
+`
+    writeFileSync(join(featureDir, "page.tsx"), pageEntryContent)
+    
     writeFileSync(join(hooksDir, `use${componentName}.ts`), generateHook(slug, name!))
     writeFileSync(join(typesDir, "index.ts"), generateTypes(slug))
 
+    console.log(`   ✅ Created: frontend/features/${slug}/page.tsx (entry point)`)
     console.log(`   ✅ Created: frontend/features/${slug}/views/${componentName}Page.tsx`)
     console.log(`   ✅ Created: frontend/features/${slug}/hooks/use${componentName}.ts`)
     console.log(`   ✅ Created: frontend/features/${slug}/types/index.ts`)
@@ -622,14 +684,21 @@ async function main() {
   // 3. Generate Convex handlers (if enabled)
   if (hasConvex) {
     console.log("\n3️⃣  Generating Convex handlers...")
-    const convexDir = join(rootDir, "convex", "features", slug)
+    // Convex does not support dashes in folder names, convert to camelCase
+    const convexSlug = slug.includes('-') 
+      ? slug.split('-').map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('')
+      : slug
+    const convexDir = join(rootDir, "convex", "features", convexSlug)
     mkdirSync(convexDir, { recursive: true })
 
     writeFileSync(join(convexDir, "queries.ts"), generateConvexQueries(slug))
     writeFileSync(join(convexDir, "mutations.ts"), generateConvexMutations(slug))
 
-    console.log(`   ✅ Created: convex/features/${slug}/queries.ts`)
-    console.log(`   ✅ Created: convex/features/${slug}/mutations.ts`)
+    console.log(`   ✅ Created: convex/features/${convexSlug}/queries.ts`)
+    console.log(`   ✅ Created: convex/features/${convexSlug}/mutations.ts`)
+    if (slug !== convexSlug) {
+      console.log(`   ℹ️  Note: Convex folder uses camelCase (${convexSlug}) because dashes are not supported`)
+    }
   }
 
   // 4. Generate tests (if enabled)

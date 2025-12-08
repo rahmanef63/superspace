@@ -24,7 +24,7 @@ export function useTasks(workspaceId?: Id<"workspaces"> | null) {
 
   const tasksQuery = useQuery(
     api.features.tasks.queries.list,
-    workspaceId ? { workspaceId } : "skip",
+    workspaceId ? { workspaceId } : undefined,
   )
 
   const createTaskMutation = useMutation(api.features.tasks.mutations.create as any)

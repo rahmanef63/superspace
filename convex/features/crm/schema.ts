@@ -637,11 +637,13 @@ export default defineSchema({
       v.literal("in-progress"),
       v.literal("completed"),
       v.literal("cancelled"),
-      v.literal("deferred")
+      v.literal("deferred"),
+      v.literal("todo") // Legacy status from existing data
     ),
     priority: v.union(
       v.literal("low"),
       v.literal("normal"),
+      v.literal("medium"), // Legacy priority from existing data
       v.literal("high"),
       v.literal("urgent")
     ),
@@ -652,31 +654,31 @@ export default defineSchema({
     account: v.optional(v.id("accounts")),
     opportunity: v.optional(v.id("opportunities")),
 
-    // Assignment
-    assignedTo: v.id("users"),
-    createdByUser: v.id("users"),
+    // Assignment (optional for backward compatibility)
+    assignedTo: v.optional(v.id("users")),
+    createdByUser: v.optional(v.id("users")),
 
     // Dates
-    dueDate: v.number(),
+    dueDate: v.optional(v.number()),
     startDate: v.optional(v.number()),
     completedDate: v.optional(v.number()),
 
-    // Task type
-    type: v.id("taskTypes"),
+    // Task type (optional for backward compatibility)
+    type: v.optional(v.id("taskTypes")),
 
-    // Progress
-    progress: v.number(), // 0-100
+    // Progress (optional, defaults to 0)
+    progress: v.optional(v.number()), // 0-100
 
-    // Dependencies
-    dependsOn: v.array(v.id("tasks")),
+    // Dependencies (optional for backward compatibility)
+    dependsOn: v.optional(v.array(v.id("tasks"))),
 
     // Additional info
     notes: v.optional(v.string()),
-    tags: v.array(v.string()),
+    tags: v.optional(v.array(v.string())),
 
-    // Reminders
+    // Reminders (optional for backward compatibility)
     reminderDate: v.optional(v.number()),
-    reminderSent: v.boolean(),
+    reminderSent: v.optional(v.boolean()),
 
     // Workspace and audit
     workspaceId: v.id("workspaces"),

@@ -9,12 +9,12 @@ import type { MenuItem, AvailableFeatureMenu } from "../types";
 export function useMenuStoreData(workspaceId: Id<"workspaces"> | null) {
   const menuItems = useQuery(
     menuStoreApi.getWorkspaceMenuItems,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   ) as MenuItem[] | undefined;
 
   const availableFeatures = useQuery(
     menuStoreApi.getAvailableFeatureMenus,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   ) as AvailableFeatureMenu[] | undefined;
 
   return {

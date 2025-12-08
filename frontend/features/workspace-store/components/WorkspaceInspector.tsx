@@ -15,12 +15,12 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
-import { 
-  User, 
-  Calendar, 
-  Clock, 
-  Pencil, 
-  Check, 
+import {
+  User,
+  Calendar,
+  Clock,
+  Pencil,
+  Check,
   X,
   Building2,
   Home,
@@ -205,7 +205,7 @@ function EditableField({ label, value, onSave, type = "text", placeholder }: Edi
   return (
     <div className="space-y-1 group">
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div 
+      <div
         className="flex items-start justify-between gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
         onClick={() => setIsEditing(true)}
       >
@@ -222,11 +222,11 @@ function EditableField({ label, value, onSave, type = "text", placeholder }: Edi
 // Main Component
 // ============================================================================
 
-export function WorkspaceInspector({ 
-  workspace, 
+export function WorkspaceInspector({
+  workspace,
   onUpdate,
   onShowFeatures,
-  className 
+  className
 }: WorkspaceInspectorProps) {
   // Query owner user info
   const ownerUser = useQuery(
@@ -236,11 +236,13 @@ export function WorkspaceInspector({
 
   if (!workspace) {
     return (
-      <div className={cn("flex flex-col h-full items-center justify-center p-6 text-center", className)}>
-        <Info className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h3 className="font-medium text-muted-foreground">No Workspace Selected</h3>
-        <p className="text-sm text-muted-foreground/70 mt-1">
-          Select a workspace from the left panel to view its details
+      <div className={cn("flex flex-col h-full items-center justify-center p-8 text-center animate-in fade-in-50 duration-500", className)}>
+        <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 ring-1 ring-border/50">
+          <Info className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+        <h3 className="font-semibold text-xl tracking-tight mb-2">No Workspace Selected</h3>
+        <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
+          Select a workspace from the list to view its details or create a new one.
         </p>
       </div>
     )
@@ -255,7 +257,7 @@ export function WorkspaceInspector({
   const TypeIcon = TYPE_ICONS[workspace.type] || Briefcase
   const iconName = workspace.icon || "Briefcase"
   const color = workspace.color || "#6366f1"
-  
+
   // Resolve owner display name
   const ownerDisplayName = ownerUser?.name || ownerUser?.email || "Unknown"
 
@@ -267,7 +269,7 @@ export function WorkspaceInspector({
           {/* Editable Icon - Centered & Larger */}
           <Popover>
             <PopoverTrigger asChild>
-              <button 
+              <button
                 className="flex h-20 w-20 items-center justify-center rounded-xl text-white shrink-0 hover:opacity-80 transition-opacity shadow-lg"
                 style={{ backgroundColor: color }}
               >
@@ -295,7 +297,7 @@ export function WorkspaceInspector({
               </div>
             </PopoverContent>
           </Popover>
-          
+
           {/* Name & Type Badge - Below Icon */}
           <h2 className="text-xl font-semibold mt-4">{workspace.name}</h2>
           <div className="flex items-center gap-2 mt-2">
@@ -307,11 +309,11 @@ export function WorkspaceInspector({
               <Badge variant="secondary" className="text-xs">Main</Badge>
             )}
           </div>
-          
+
           {/* Show Features Button - Below badges */}
           {onShowFeatures && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={onShowFeatures}
             >
@@ -331,7 +333,7 @@ export function WorkspaceInspector({
             onSave={(value) => handleUpdate("name", value)}
             placeholder="Workspace name"
           />
-          
+
           <EditableField
             label="Description"
             value={workspace.description || ""}
@@ -372,7 +374,7 @@ export function WorkspaceInspector({
         {/* Metadata (Read-only) */}
         <div className="space-y-3">
           <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Details</h4>
-          
+
           {/* Owner */}
           <div className="flex items-center gap-3 text-sm">
             <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -381,31 +383,31 @@ export function WorkspaceInspector({
               {ownerDisplayName}
             </span>
           </div>
-          
+
           {/* Created */}
           <div className="flex items-center gap-3 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <span className="text-muted-foreground">Created:</span>
             <span className="font-medium">
-              {workspace._creationTime 
+              {workspace._creationTime
                 ? format(new Date(workspace._creationTime), "MMM d, yyyy 'at' h:mm a")
                 : "Unknown"
               }
             </span>
           </div>
-          
+
           {/* Updated */}
           <div className="flex items-center gap-3 text-sm">
             <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <span className="text-muted-foreground">Updated:</span>
             <span className="font-medium">
-              {workspace.updatedAt 
+              {workspace.updatedAt
                 ? format(new Date(workspace.updatedAt), "MMM d, yyyy 'at' h:mm a")
                 : "Never"
               }
             </span>
           </div>
-          
+
           {/* Workspace ID */}
           <div className="flex items-center gap-3 text-sm">
             <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -421,7 +423,7 @@ export function WorkspaceInspector({
         {/* Visibility Settings */}
         <div className="space-y-4">
           <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Visibility</h4>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {workspace.isPublic ? (
@@ -434,7 +436,7 @@ export function WorkspaceInspector({
                   {workspace.isPublic ? "Public" : "Private"}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {workspace.isPublic 
+                  {workspace.isPublic
                     ? "Anyone can find and request to join"
                     : "Only invited members can access"
                   }
@@ -451,7 +453,7 @@ export function WorkspaceInspector({
         <Separator />
 
         {/* Danger Zone */}
-        <DangerZone 
+        <DangerZone
           workspaceId={workspace.id as Id<"workspaces">}
           workspaceName={workspace.name}
         />
@@ -503,8 +505,8 @@ function DangerZone({ workspaceId, workspaceName }: DangerZoneProps) {
     try {
       await resetWorkspace({ workspaceId, mode: resetMode })
       toast.success("Workspace reset", {
-        description: resetMode === 'clean' 
-          ? "All data has been cleared" 
+        description: resetMode === 'clean'
+          ? "All data has been cleared"
           : "Menus have been replaced with defaults",
       })
       setShowResetDialog(false)
@@ -616,7 +618,7 @@ function DangerZone({ workspaceId, workspaceName }: DangerZoneProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete "{workspaceName}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the workspace 
+              This action cannot be undone. This will permanently delete the workspace
               and all its data, including documents, tasks, members, and settings.
             </AlertDialogDescription>
           </AlertDialogHeader>

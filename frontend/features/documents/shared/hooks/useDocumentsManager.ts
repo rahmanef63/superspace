@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import { useWorkspaceDocuments } from "../../api/documents";
 import type {

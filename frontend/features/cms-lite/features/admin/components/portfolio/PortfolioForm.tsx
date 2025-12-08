@@ -5,6 +5,7 @@ import { Input, Textarea, Select } from "../../../../shared/components/Form";
 import { ImageEditor } from "../../../../shared/components/ImageEditor";
 import { BulkImageUpload, UploadedImage } from "../../../../shared/components/BulkImageUpload";
 import { Plus, X, GripVertical } from "lucide-react";
+import type { PortfolioItem } from "../../../../types/cms-types";
 
 
 interface PortfolioFormProps {
@@ -46,7 +47,7 @@ export function PortfolioForm({ isOpen, onClose, onSave, item }: PortfolioFormPr
         title: item.title,
         description: item.description || "",
         tags: item.tags,
-        images: item.images.map((img, idx) => ({
+        images: item.images.map((img: { imageUrl: string; altText?: string }, idx: number) => ({
           imageUrl: img.imageUrl,
           altText: img.altText || "",
           displayOrder: idx,

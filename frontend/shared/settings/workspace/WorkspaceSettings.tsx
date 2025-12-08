@@ -13,7 +13,7 @@ import {
   Settings2,
   Bot,
   Camera,
-  GitBranch,
+  Download,
 } from "lucide-react"
 import type { Id } from "@convex/_generated/dataModel"
 import {
@@ -28,7 +28,7 @@ import { SettingsRegistryProvider } from "../SettingsRegistry"
 import type { SettingsCategory } from "../types"
 import { GeneralSettings } from "./GeneralSettings"
 import { DangerZoneSettings } from "./DangerZoneSettings"
-import { HierarchySettings } from "./HierarchySettings"
+import { ImportMigrationSettings } from "./ImportMigrationSettings"
 
 type StaticFeatureBuilders = NonNullable<FeatureSettingsSyncProps["staticBuilders"]>
 
@@ -138,11 +138,11 @@ export function WorkspaceSettings({ workspaceId }: WorkspaceSettingsProps) {
         component: () => <GeneralSettings workspaceId={workspaceId} />,
       },
       {
-        id: "hierarchy",
-        label: "Hierarchy",
-        icon: GitBranch,
-        order: 10,
-        component: () => <HierarchySettings workspaceId={workspaceId} />,
+        id: "import",
+        label: "Import",
+        icon: Download,
+        order: 20,
+        component: () => <ImportMigrationSettings workspaceId={workspaceId} />,
       },
       {
         id: "danger-zone",

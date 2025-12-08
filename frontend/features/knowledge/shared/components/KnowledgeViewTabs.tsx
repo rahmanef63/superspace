@@ -49,7 +49,7 @@ export function KnowledgeViewTabs({
   // Get document counts for badges
   const documentCounts = useQuery(
     (api as any)["features/knowledge/api/knowledgeForAI"].getDocumentCounts,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   if (!workspaceId) {

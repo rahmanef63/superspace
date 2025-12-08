@@ -33,7 +33,7 @@ export type SupportDashboardProps = {
 const useSupportTickets = (workspaceId: Id<"workspaces"> | null) => {
   const rawTickets = useQuery(
     api.features.support.queries.getWorkspaceTickets,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   const tickets: Ticket[] = (rawTickets ?? []).map(ticket => ({

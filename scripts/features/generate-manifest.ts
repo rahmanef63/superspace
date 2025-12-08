@@ -42,14 +42,14 @@ function resolveComponentImport(feature: FeatureMetadata): ComponentImportConfig
     : [feature.id]
 
   for (const slug of candidateSlugs) {
-    // Priority 1: Check views/{Component}.tsx (recommended structure)
-    if (fileExists("frontend", "features", slug, "views", `${component}.tsx`)) {
-      return { path: `@/frontend/features/${slug}/views/${component}` }
-    }
-
-    // Priority 2: Check page.tsx (flat structure)
+    // Priority 1: Check page.tsx (recommended - consistent entry point)
     if (fileExists("frontend", "features", slug, "page.tsx")) {
       return { path: `@/frontend/features/${slug}/page` }
+    }
+
+    // Priority 2: Check views/{Component}.tsx (fallback for legacy structure)
+    if (fileExists("frontend", "features", slug, "views", `${component}.tsx`)) {
+      return { path: `@/frontend/features/${slug}/views/${component}` }
     }
 
     // Priority 3: Check index.ts with named export

@@ -26,7 +26,7 @@ export function InvitationModal({ workspaceId, type, onClose }: InvitationModalP
   
   const roles = useQuery(
     api.workspace.roles.getAllRoles,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   const handleSubmit = async (e: React.FormEvent) => {

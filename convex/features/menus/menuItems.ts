@@ -1179,19 +1179,43 @@ export const getAvailableFeatureMenus = query({
 
     if (systemFeatures.length > 0) {
       // Use systemFeatures table (Platform Admin controlled)
-      availableFeatures = systemFeatures.map((feature) => ({
-        slug: feature.featureId,
-        name: feature.name,
-        description: feature.description,
-        icon: feature.icon,
-        version: feature.version,
-        category: feature.category,
-        tags: feature.tags,
-        status: normalizeFeatureStatus(feature.status),
-        isReady: feature.isReady,
-        expectedRelease: feature.expectedRelease,
-        featureType: feature.featureType,
-      }))
+      // But also merge with OPTIONAL_FEATURES_CATALOG to ensure all features are available
+      const systemFeatureMap = new Map(systemFeatures.map(f => [f.featureId, f]))
+      
+      // Start with catalog features
+      availableFeatures = OPTIONAL_FEATURES_CATALOG.map((feature) => {
+        // Check if there's an override from systemFeatures
+        const override = systemFeatureMap.get(feature.slug)
+        if (override) {
+          return {
+            slug: override.featureId,
+            name: override.name,
+            description: override.description,
+            icon: override.icon,
+            version: override.version,
+            category: override.category,
+            tags: override.tags,
+            status: normalizeFeatureStatus(override.status),
+            isReady: override.isReady,
+            expectedRelease: override.expectedRelease,
+            featureType: override.featureType,
+          }
+        }
+        // Use catalog default
+        return {
+          slug: feature.slug,
+          name: feature.name,
+          description: feature.description,
+          icon: feature.icon,
+          version: feature.version,
+          category: feature.category,
+          tags: feature.tags,
+          status: normalizeFeatureStatus(feature.status),
+          isReady: feature.isReady,
+          expectedRelease: feature.expectedRelease,
+          featureType: feature.featureType,
+        }
+      })
     } else {
       // Fallback to OPTIONAL_FEATURES_CATALOG if no system features configured
       availableFeatures = OPTIONAL_FEATURES_CATALOG.map((feature) => ({

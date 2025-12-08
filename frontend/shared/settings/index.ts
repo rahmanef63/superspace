@@ -20,6 +20,7 @@
 // ============================================================
 export { SettingsView } from './SettingsView'
 export { SettingsPopup } from './SettingsPopup'
+export { SettingsPageWithTabs } from './SettingsPageWithTabs'
 export { SettingsRegistryProvider, useSettingsRegistry, useRegisterFeatureSettings } from './SettingsRegistry'
 export { default as SettingsPage } from './page'
 

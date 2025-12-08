@@ -4,6 +4,7 @@ import { Instagram, Mail, Phone } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { useBackend } from "../shared/hooks/useBackend";
+import type { Settings } from "../types/cms-types";
 
 
 export default function Footer() {

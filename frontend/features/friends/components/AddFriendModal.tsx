@@ -45,7 +45,7 @@ export function AddFriendModal({ workspaceId, onClose }: AddFriendModalProps) {
   // Get workspace members
   const workspaceMembers = useQuery(
     api.workspace.workspaces.getWorkspaceMembers, 
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   const filteredMembers = (workspaceMembers as WorkspaceMemberSummary[] | undefined)?.filter((member: WorkspaceMemberSummary) => 

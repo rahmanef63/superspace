@@ -22,7 +22,7 @@ export function useCalendar(workspaceId?: Id<"workspaces"> | null) {
 
   const eventsQuery = useQuery(
     api.features.calendar.queries.list as any,
-    workspaceId ? { workspaceId } : "skip",
+    workspaceId ? { workspaceId } : undefined,
   )
 
   const createEventMutation = useMutation(api.features.calendar.mutations.create as any)
@@ -33,19 +33,19 @@ export function useCalendar(workspaceId?: Id<"workspaces"> | null) {
 
   const events = useMemo<CalendarEvent[]>(() => {
     if (!eventsQuery) return []
-    return eventsQuery.map((event) => ({
-      id: event._id,
-      workspaceId: event.workspaceId,
-      title: event.title,
-      description: event.description ?? null,
-      location: event.location ?? null,
-      startsAt: event.startsAt,
-      endsAt: event.endsAt ?? null,
-      allDay: event.allDay ?? false,
-      createdBy: event.createdBy ?? null,
-      updatedBy: event.updatedBy ?? null,
-      createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
+    return eventsQuery.map((event: Record<string, unknown>) => ({
+      id: event._id as string,
+      workspaceId: event.workspaceId as string,
+      title: event.title as string,
+      description: (event.description as string) ?? null,
+      location: (event.location as string) ?? null,
+      startsAt: event.startsAt as number,
+      endsAt: (event.endsAt as number) ?? null,
+      allDay: (event.allDay as boolean) ?? false,
+      createdBy: (event.createdBy as string) ?? null,
+      updatedBy: (event.updatedBy as string) ?? null,
+      createdAt: event.createdAt as number,
+      updatedAt: event.updatedAt as number,
     }))
   }, [eventsQuery])
 

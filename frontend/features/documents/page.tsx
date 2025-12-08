@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { Id } from "@convex/_generated/dataModel";
 import { PageContainer } from "@/frontend/shared/ui/layout/container";

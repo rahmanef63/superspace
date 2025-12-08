@@ -66,7 +66,7 @@ export function useKnowledgeDocumentCounts(
 ) {
   return useQuery(
     (api as any)["features/knowledge/api/knowledgeForAI"].getDocumentCounts,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 }
 

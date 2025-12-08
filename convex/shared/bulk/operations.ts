@@ -98,6 +98,9 @@ export const validateBulkOperation = mutation({
     data: v.optional(v.array(v.any())),
     updates: v.optional(v.array(v.any())),
     workspaceId: v.id("workspaces"),
+    options: v.optional(v.object({
+      allowPartial: v.optional(v.boolean()),
+    })),
   },
   handler: async (ctx, args) => {
     // Get viewer identity
@@ -122,7 +125,7 @@ export const validateBulkOperation = mutation({
           validationResults.push({ index: i, valid: validation.valid, errors: validation.errors });
         }
       } catch (error) {
-        validationResults.push({ index: i, valid: false, errors: [error.message] });
+        validationResults.push({ index: i, valid: false, errors: [(error as Error).message] });
       }
     }
 

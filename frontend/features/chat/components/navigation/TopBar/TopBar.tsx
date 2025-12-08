@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { TopBarHeader } from "./TopBarHeader";
 import { TopBarActions } from "./TopBarActions";
 import { MemberInfoDrawer } from "@/frontend/shared/communications";
 import { useMemberInfo } from "@/frontend/features/chat/shared/hooks";
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface MemberSummary {
   id: string;
@@ -40,9 +42,10 @@ export function TopBar({
 }: TopBarProps) {
   const [isMemberInfoOpen, setIsMemberInfoOpen] = useState(false);
   const hasMember = Boolean(contact);
+  const { workspaceId } = useWorkspaceContext();
   
   // Use member info hook for actions and state
-  const memberInfo = useMemberInfo(contact?.id ?? "");
+  const memberInfo = useMemberInfo(contact?.id);
   const { 
     isFavorite, 
     isBlocked, 
@@ -52,6 +55,37 @@ export function TopBar({
     unblockMember,
     reportMember 
   } = memberInfo;
+
+  // Wrap action callbacks to provide required arguments
+  const handleAddToFavorites = useCallback(() => {
+    if (contact?.id && workspaceId) {
+      addToFavorites(contact.id, workspaceId as Id<"workspaces">);
+    }
+  }, [contact?.id, workspaceId, addToFavorites]);
+
+  const handleRemoveFromFavorites = useCallback(() => {
+    if (contact?.id && workspaceId) {
+      removeFromFavorites(contact.id, workspaceId as Id<"workspaces">);
+    }
+  }, [contact?.id, workspaceId, removeFromFavorites]);
+
+  const handleBlock = useCallback(() => {
+    if (contact?.id) {
+      blockMember(contact.id);
+    }
+  }, [contact?.id, blockMember]);
+
+  const handleUnblock = useCallback(() => {
+    if (contact?.id) {
+      unblockMember(contact.id);
+    }
+  }, [contact?.id, unblockMember]);
+
+  const handleReport = useCallback(() => {
+    if (contact?.id) {
+      reportMember(contact.id, "Reported from chat header");
+    }
+  }, [contact?.id, reportMember]);
 
   const handleMemberInfoClick = () => {
     if (!hasMember) return;
@@ -93,11 +127,11 @@ export function TopBar({
           side="right"
           isFavorite={isFavorite}
           isBlocked={isBlocked}
-          onAddToFavorites={addToFavorites}
-          onRemoveFromFavorites={removeFromFavorites}
-          onBlock={blockMember}
-          onUnblock={unblockMember}
-          onReport={reportMember}
+          onAddToFavorites={handleAddToFavorites}
+          onRemoveFromFavorites={handleRemoveFromFavorites}
+          onBlock={handleBlock}
+          onUnblock={handleUnblock}
+          onReport={handleReport}
         />
       )}
     </>

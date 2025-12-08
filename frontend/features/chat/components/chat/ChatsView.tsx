@@ -101,28 +101,6 @@ export function ChatsView() {
   // Desktop: Right panel content with toggle buttons
   const rightPanelContent = (
     <div className="flex flex-col h-full">
-      {/* Quick actions bar with panel toggles */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/20">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleToggleLeftPanel}
-          className="h-8 w-8 p-0"
-          title={leftPanelCollapsed ? "Show chat list" : "Hide chat list"}
-        >
-          <PanelLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-xs text-muted-foreground font-medium">Panels</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleToggleRightPanel}
-          className="h-8 w-8 p-0"
-          title={rightPanelCollapsed ? "Show contact info" : "Hide contact info"}
-        >
-          <PanelRight className="h-4 w-4" />
-        </Button>
-      </div>
       
       {/* Member info panel content */}
       <div className="flex-1 min-h-0 overflow-hidden">

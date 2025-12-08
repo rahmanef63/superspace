@@ -12,7 +12,6 @@ import { ChatListItem } from "./ChatListItem";
 import { SearchBar } from "../ui/SearchBar";
 import { useWhatsAppStore } from "../../shared/hooks";
 import { PLACEHOLDERS } from "../../shared/constants";
-import type { Chat } from "@/frontend/shared/foundation";
 
 interface ChatListSidebarProps {
   showArchived?: boolean;
@@ -36,13 +35,15 @@ export function ChatListSidebar({ showArchived = false }: ChatListSidebarProps) 
   const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
   const setSelectedChat = useWhatsAppStore((s) => s.setSelectedChat);
 
-  const filteredChats = chats.filter((chat: Chat) => {
-    const matchesSearch = chat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
-    if (showArchived) {
-      return matchesSearch && chat.isArchived;
-    }
-    return matchesSearch && !chat.isArchived;
+  const normalizedQuery = searchQuery.toLowerCase();
+
+  const filteredChats = chats.filter((chat) => {
+    const lastMessage = chat.lastMessage?.toLowerCase?.() ?? "";
+    const matchesSearch =
+      chat.name.toLowerCase().includes(normalizedQuery) ||
+      lastMessage.includes(normalizedQuery);
+    const isArchived = Boolean(chat.isArchived);
+    return showArchived ? matchesSearch && isArchived : matchesSearch && !isArchived;
   });
 
   // For mobile usage outside of SidebarProvider

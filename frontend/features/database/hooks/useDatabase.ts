@@ -20,7 +20,7 @@ export function useDatabaseRecord(
 } {
   const queryResult: any = useQuery(
     (api.features.database.queries as any).get,
-    tableId ? { id: tableId } : "skip",
+    tableId ? { id: tableId } : undefined,
   );
 
   const record = useMemo<DatabaseRecord | null>(() => {
@@ -64,7 +64,7 @@ export function useDatabaseSidebar(
 } {
   const result = useQuery(
     (api.features.database.queries as any).list,
-    workspaceId ? { workspaceId } : "skip",
+    workspaceId ? { workspaceId } : undefined,
   ) as TableDoc[] | undefined;
 
   return {

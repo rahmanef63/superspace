@@ -27,7 +27,7 @@ export function useSystemFeatures() {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const features = useQuery(
     api.features.system.admin.getSystemFeatures,
-    isPlatformAdmin ? {} : "skip"
+    isPlatformAdmin ? {} : undefined
   )
   
   return {
@@ -103,7 +103,7 @@ export function useCustomFeatures() {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const features = useQuery(
     api.features.custom.admin.getAllCustomFeatures,
-    isPlatformAdmin ? {} : "skip"
+    isPlatformAdmin ? {} : undefined
   )
   
   return {
@@ -120,7 +120,7 @@ export function useAllWorkspaces() {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const workspaces = useQuery(
     api.features.custom.admin.getAllWorkspaces,
-    isPlatformAdmin ? {} : "skip"
+    isPlatformAdmin ? {} : undefined
   )
   
   return {
@@ -137,7 +137,7 @@ export function useFeatureAccess(workspaceId: Id<"workspaces"> | null) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const access = useQuery(
     api.features.custom.admin.getWorkspaceFeatureAccess,
-    isPlatformAdmin && workspaceId ? { workspaceId } : "skip"
+    isPlatformAdmin && workspaceId ? { workspaceId } : undefined
   )
   
   return {
@@ -180,7 +180,7 @@ export function useBundleCategories() {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const bundles = useQuery(
     api.features.bundles.mutations.list,
-    isPlatformAdmin ? {} : "skip"
+    isPlatformAdmin ? {} : undefined
   )
   
   return {
@@ -197,7 +197,7 @@ export function useFeatureBundles(featureId: string | null) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
   const memberships = useQuery(
     api.features.bundles.mutations.getFeatureBundles,
-    isPlatformAdmin && featureId ? { featureId } : "skip"
+    isPlatformAdmin && featureId ? { featureId } : undefined
   )
   
   return {

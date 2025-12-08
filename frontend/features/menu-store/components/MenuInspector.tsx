@@ -11,10 +11,10 @@
 import * as React from "react"
 import type { Id } from "@/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
-import { 
-  Info, 
-  Copy, 
-  Share2, 
+import {
+  Info,
+  Copy,
+  Share2,
   Trash2,
   Tag,
   Link,
@@ -158,7 +158,7 @@ function EditableField({ label, value, onSave, type = "text", placeholder }: Edi
   return (
     <div className="space-y-1 group">
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div 
+      <div
         className="flex items-start justify-between gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
         onClick={() => setIsEditing(true)}
       >
@@ -175,24 +175,26 @@ function EditableField({ label, value, onSave, type = "text", placeholder }: Edi
 // Main Component
 // ============================================================================
 
-export function MenuInspector({ 
-  menuItem, 
+export function MenuInspector({
+  menuItem,
   onUpdate,
   onDuplicate,
   onShare,
   onDelete,
   onShowFeatures,
   isPreviewOpen,
-  className 
+  className
 }: MenuInspectorProps) {
   // Empty state
   if (!menuItem) {
     return (
-      <div className={cn("flex flex-col h-full items-center justify-center p-6 text-center", className)}>
-        <Info className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h3 className="font-medium text-muted-foreground">No Menu Selected</h3>
-        <p className="text-sm text-muted-foreground/70 mt-1">
-          Select a menu item from the left panel to view its details
+      <div className={cn("flex flex-col h-full items-center justify-center p-8 text-center animate-in fade-in-50 duration-500", className)}>
+        <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 ring-1 ring-border/50">
+          <Info className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+        <h3 className="font-semibold text-xl tracking-tight mb-2">No Menu Selected</h3>
+        <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
+          Select a menu item from the tree to view its details, or create a new one.
         </p>
       </div>
     )
@@ -200,7 +202,7 @@ export function MenuInspector({
 
   // Get feature type config
   const featureType = menuItem.metadata?.featureType as string | undefined
-  const featureTypeConfig = featureType && featureType in FEATURE_TYPES 
+  const featureTypeConfig = featureType && featureType in FEATURE_TYPES
     ? FEATURE_TYPES[featureType as keyof typeof FEATURE_TYPES]
     : null
 
@@ -217,7 +219,7 @@ export function MenuInspector({
       default: return "Hash"
     }
   }
-  
+
   const iconName = (menuItem as any).icon || getDefaultIcon(menuItem.type)
   const color = menuItem.metadata?.color || "#6366f1"
 
@@ -229,11 +231,11 @@ export function MenuInspector({
 
   const handleMetadataUpdate = async (field: string, value: unknown) => {
     if (onUpdate) {
-      await onUpdate(menuItem._id, { 
-        metadata: { 
-          ...menuItem.metadata, 
-          [field]: value 
-        } 
+      await onUpdate(menuItem._id, {
+        metadata: {
+          ...menuItem.metadata,
+          [field]: value
+        }
       } as Partial<MenuItem>)
     }
   }
@@ -246,7 +248,7 @@ export function MenuInspector({
           {/* Editable Icon - Centered & Larger */}
           <Popover>
             <PopoverTrigger asChild>
-              <button 
+              <button
                 className="flex h-20 w-20 items-center justify-center rounded-xl text-white shrink-0 hover:opacity-80 transition-opacity shadow-lg"
                 style={{ backgroundColor: color }}
               >
@@ -274,10 +276,10 @@ export function MenuInspector({
               </div>
             </PopoverContent>
           </Popover>
-          
+
           {/* Name & Type Badge - Below Icon */}
           <h2 className="text-xl font-semibold mt-4">{menuItem.name}</h2>
-          
+
           {/* Badges */}
           <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
             <Badge variant="outline" className="text-xs" style={{ borderColor: color, color }}>
@@ -296,11 +298,11 @@ export function MenuInspector({
               </Badge>
             )}
           </div>
-          
+
           {/* Show Features Button */}
           {onShowFeatures && (
-            <Button 
-              variant={isPreviewOpen ? "default" : "outline"} 
+            <Button
+              variant={isPreviewOpen ? "default" : "outline"}
               className="mt-4"
               onClick={() => onShowFeatures(menuItem)}
             >
@@ -329,7 +331,7 @@ export function MenuInspector({
             onSave={(value) => handleUpdate("name", value)}
             placeholder="Menu item name"
           />
-          
+
           <EditableField
             label="Description"
             value={menuItem.metadata?.description || ""}
@@ -337,14 +339,14 @@ export function MenuInspector({
             type="textarea"
             placeholder="Add a description..."
           />
-          
+
           <EditableField
             label="Slug"
             value={menuItem.slug}
             onSave={(value) => handleUpdate("slug", value)}
             placeholder="menu-slug"
           />
-          
+
           {menuItem.path !== undefined && (
             <EditableField
               label="Path"
@@ -362,9 +364,9 @@ export function MenuInspector({
           <Label className="text-xs text-muted-foreground">Actions</Label>
           <div className="flex flex-wrap gap-2">
             {onDuplicate && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onDuplicate(menuItem)}
                 className="gap-1.5"
               >
@@ -373,9 +375,9 @@ export function MenuInspector({
               </Button>
             )}
             {onShare && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onShare(menuItem)}
                 className="gap-1.5"
               >
@@ -384,9 +386,9 @@ export function MenuInspector({
               </Button>
             )}
             {onDelete && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onDelete(menuItem._id)}
                 className="gap-1.5 text-destructive hover:text-destructive"
               >
@@ -402,7 +404,7 @@ export function MenuInspector({
         {/* Metadata (Read-only) */}
         <div className="space-y-3">
           <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Details</h4>
-          
+
           {/* Version */}
           {menuItem.metadata?.version && (
             <div className="flex items-center gap-3 text-sm">
@@ -411,7 +413,7 @@ export function MenuInspector({
               <span className="font-mono">v{menuItem.metadata.version}</span>
             </div>
           )}
-          
+
           {/* Category */}
           {menuItem.metadata?.category && (
             <div className="flex items-center gap-3 text-sm">
@@ -422,7 +424,7 @@ export function MenuInspector({
               </Badge>
             </div>
           )}
-          
+
           {/* Menu ID */}
           <div className="flex items-center gap-3 text-sm">
             <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />

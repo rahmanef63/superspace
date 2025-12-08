@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { DocumentRecord } from "../shared/types";
@@ -6,7 +6,7 @@ import type { DocumentRecord } from "../shared/types";
 export const useWorkspaceDocuments = (workspaceId?: Id<"workspaces"> | null) => {
   return useQuery(
     (api as any)["features/docs/documents"].getWorkspaceDocuments,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   ) as DocumentRecord[] | undefined;
 };
 
@@ -27,7 +27,7 @@ export const useDocumentSearch = (
 export const useGlobalDocumentSearch = (query?: string) =>
   useQuery(
     (api as any)["features/docs/documents"].search,
-    query !== undefined ? { query } : "skip"
+    query !== undefined ? { query } : undefined
   ) as DocumentRecord[] | undefined;
 
 export const useCreateDocument = () => useMutation((api as any)["features/docs/documents"].create);

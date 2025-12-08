@@ -28,12 +28,12 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
   // Query workspace data
   const workspace = useQuery(
     api.workspace.workspaces.getWorkspace,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   )
 
   const members = useQuery(
     api.workspace.workspaces.getWorkspaceMembers,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   )
 
   // Loading state

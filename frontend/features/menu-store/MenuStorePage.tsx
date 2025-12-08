@@ -13,6 +13,7 @@
 "use client"
 
 import * as React from "react"
+import { cn } from "@/lib/utils"
 import { useQuery } from "convex/react"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useMenuStoreData, useMenuStoreMutations, useMenuStoreState } from "./hooks"
@@ -20,16 +21,16 @@ import { RenameDialog, ShareDialog } from "./dialogs"
 import { MenuItemCard, FeatureCard, MenuInspector } from "./components"
 import { filterMenuItems, getOriginalFeatureType, getFeatureType } from "./lib"
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container"
-import { 
-  FeatureHeader, 
+import {
+  FeatureHeader,
   ContainerHeader,
   HeaderControls,
   type FilterChip,
 } from "@/frontend/shared/ui/layout/header"
 import { FeatureListPanel, PreviewPanel, getAllFeaturePreviews, hasFeaturePreview } from "@/frontend/shared/preview"
 import { DragDropMenuTree } from "@/frontend/shared/ui"
-import { 
-  Menu, Plus, RefreshCw, TreeDeciduous, LayoutGrid, Eye, X, Info, Layers, 
+import {
+  Menu, Plus, RefreshCw, TreeDeciduous, LayoutGrid, Eye, X, Info, Layers,
   Download, Settings, Loader2, Package, Check, Lock, EyeOff, FolderPlus, Sliders
 } from "lucide-react"
 import { FEATURE_TYPES, STATUS_BADGE_VARIANTS } from "./constants"
@@ -58,6 +59,8 @@ interface AvailableFeaturesContentProps {
   installingFeatures: Set<string>
   onInstall: (slug: string) => void
   onPreview?: (slug: string) => void
+  onSettings?: (slug: string) => void
+  onAction?: (slug: string) => void
   activePreviewId: string | null
 }
 
@@ -66,6 +69,8 @@ function AvailableFeaturesContent({
   installingFeatures,
   onInstall,
   onPreview,
+  onSettings,
+  onAction,
   activePreviewId,
 }: AvailableFeaturesContentProps) {
   if (!features || features.length === 0) {
@@ -89,6 +94,8 @@ function AvailableFeaturesContent({
           isInstalling={installingFeatures.has(feature.slug)}
           onInstall={onInstall}
           onPreview={onPreview}
+          onSettings={onSettings}
+          onAction={onAction}
           isPreviewActive={activePreviewId === feature.slug}
         />
       ))}
@@ -166,13 +173,15 @@ function ImportSectionContent({
 }
 
 // ============================================================================
-// Menu Grid Item Component (with Preview button)
+// Menu Grid Item Component (with Settings, Preview, Action buttons)
 // ============================================================================
 
 interface MenuGridItemProps {
   item: MenuItem
   isSelected: boolean
   onSelect: (id: Id<"menuItems">) => void
+  onSettings?: (slug: string) => void
+  onPreview?: (slug: string) => void
   onShowFeatures?: () => void
   isSystem?: boolean
 }
@@ -181,16 +190,18 @@ function MenuGridItem({
   item,
   isSelected,
   onSelect,
+  onSettings,
+  onPreview,
   onShowFeatures,
   isSystem = false,
 }: MenuGridItemProps) {
   const featureType = getFeatureType(item)
-  
+  const hasValidSlug = item.slug && item.slug !== "#"
+
   return (
     <div
-      className={`group relative p-2.5 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${
-        isSelected ? "ring-2 ring-primary bg-muted/30" : ""
-      } ${isSystem ? "border-destructive/20 bg-destructive/5" : ""}`}
+      className={`group relative p-2.5 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${isSelected ? "ring-2 ring-primary bg-muted/30" : ""
+        } ${isSystem ? "border-destructive/20 bg-destructive/5" : ""}`}
       onClick={() => onSelect(item._id)}
     >
       <div className="flex items-center gap-2">
@@ -200,23 +211,56 @@ function MenuGridItem({
           <Menu className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         )}
         <span className="text-sm font-medium truncate flex-1">{item.name}</span>
-        
-        {/* Preview Button - Only for non-system items */}
-        {!isSystem && onShowFeatures && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation()
-              onShowFeatures()
-            }}
-          >
-            <Eye className="h-3.5 w-3.5" />
-          </Button>
+
+        {/* 3 Hover Buttons - Settings, Preview, Action (for non-system items) */}
+        {!isSystem && hasValidSlug && (
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onSettings && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSettings(item.slug)
+                }}
+                title="Settings"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            {onPreview && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onPreview(item.slug)
+                }}
+                title="Preview"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            {onShowFeatures && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onShowFeatures()
+                }}
+                title="View Details"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         )}
       </div>
-      
+
       <div className="mt-1.5 flex items-center gap-1 flex-wrap">
         {featureType === "system" && (
           <Badge variant="destructive" className="text-[10px]">System</Badge>
@@ -282,15 +326,15 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   const [centerPanelMode, setCenterPanelMode] = React.useState<"inspector" | "available" | "settings" | "import">("inspector")
 
   // Filtered menu items - separate system and non-system
-  const filteredItems = React.useMemo(() => 
+  const filteredItems = React.useMemo(() =>
     filterMenuItems(menuItems, state.searchQuery)
-  , [menuItems, state.searchQuery])
-  
+    , [menuItems, state.searchQuery])
+
   // Separate system menus from regular menus
   const { systemMenus, regularMenus } = React.useMemo(() => {
     const system: MenuItem[] = []
     const regular: MenuItem[] = []
-    
+
     filteredItems.forEach(item => {
       const featureType = getFeatureType(item)
       if (featureType === "system") {
@@ -299,7 +343,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
         regular.push(item)
       }
     })
-    
+
     return { systemMenus: system, regularMenus: regular }
   }, [filteredItems])
 
@@ -324,27 +368,33 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   }, [selectedFeatureId, previewVisible])
 
   // Handle feature settings toggle
-  const handleToggleSettings = React.useCallback((featureSlug: string, featureName?: string) => {
-    if (selectedSettingsFeatureSlug === featureSlug && settingsVisible) {
-      setSettingsVisible(false)
-      setRightPanelCollapsed(true)
-    } else {
-      setSelectedSettingsFeatureSlug(featureSlug)
-      setSettingsVisible(true)
-      setPreviewVisible(false) // Close preview if open
-      setRightPanelMode("settings")
-      setRightPanelCollapsed(false)
+  // Handle feature settings toggle - Switch to Center Panel Settings Tab
+  const handleToggleSettings = React.useCallback((featureSlug: string) => {
+    // Find and select the item
+    const item = menuItems?.find(i => i.slug === featureSlug)
+    if (item) {
+      setSelectedItemId(item._id)
     }
-  }, [selectedSettingsFeatureSlug, settingsVisible])
+    // Switch to settings tab in center panel
+    setCenterPanelMode("settings")
+    // Close right panel if it was showing settings
+    if (rightPanelMode === "settings") {
+      setRightPanelCollapsed(true)
+    }
+  }, [menuItems, setSelectedItemId, rightPanelMode])
 
   // Handlers
   const handleDeleteItem = React.useCallback(async (itemId: Id<"menuItems">) => {
     await mutations.deleteMenuItem(itemId, () => {
       if (state.selectedItemId === itemId) {
         setSelectedItemId(undefined)
+        // Switch back to inspector if we were in settings of deleted item
+        if (centerPanelMode === "settings") {
+          setCenterPanelMode("inspector")
+        }
       }
     })
-  }, [mutations, state.selectedItemId, setSelectedItemId])
+  }, [mutations, state.selectedItemId, setSelectedItemId, centerPanelMode])
 
   const handleInstallFeature = React.useCallback(async (slug: string) => {
     if (!workspaceId) return
@@ -397,19 +447,19 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   // Handler for creating a new folder with auto-naming
   const handleCreateFolder = React.useCallback(async () => {
     if (!workspaceId || !menuItems) return
-    
+
     // Find existing "New Folder" names to auto-increment
     const existingFolderNames = menuItems
       .filter(item => item.name.startsWith("New Folder"))
       .map(item => item.name)
-    
+
     let folderName = "New Folder"
     let counter = 1
     while (existingFolderNames.includes(folderName)) {
       folderName = `New Folder (${counter})`
       counter++
     }
-    
+
     try {
       const newItemId = await mutations.createMenuItem(workspaceId, {
         name: folderName,
@@ -478,7 +528,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             </Button>
           </div>
         </div>
-        
+
         {/* Search with Create Folder button */}
         <div className="px-3 pb-2 flex items-center gap-2">
           <div className="flex-1">
@@ -503,7 +553,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
           </Button>
         </div>
       </div>
-      
+
       {/* Tree/Grid Content */}
       <ScrollArea className="flex-1 min-h-0">
         {state.viewMode === "tree" ? (
@@ -512,6 +562,12 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
               workspaceId={workspaceId}
               onItemSelect={setSelectedItemId}
               selectedItemId={state.selectedItemId}
+              onSettings={handleToggleSettings}
+              onPreview={handleTogglePreview}
+              onShowDetails={(itemId) => {
+                setSelectedItemId(itemId)
+                setCenterPanelMode("inspector")
+              }}
             />
           </div>
         ) : (
@@ -529,6 +585,8 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
                       item={item}
                       isSelected={state.selectedItemId === item._id}
                       onSelect={setSelectedItemId}
+                      onSettings={handleToggleSettings}
+                      onPreview={handleTogglePreview}
                       onShowFeatures={() => {
                         setSelectedItemId(item._id)
                         setCenterPanelMode("inspector")
@@ -538,7 +596,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
                 </div>
               </div>
             )}
-            
+
             {/* System Menus - Separated with border */}
             {systemMenus.length > 0 && (
               <div className="space-y-2 pt-2 border-t border-dashed border-destructive/30">
@@ -571,9 +629,9 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
       {/* Panel Header with Tabs */}
       <div className="flex-shrink-0 border-b bg-muted/30">
         <ContainerHeader
-          title={centerPanelMode === "inspector" 
-            ? "Inspector" 
-            : centerPanelMode === "available" 
+          title={centerPanelMode === "inspector"
+            ? "Inspector"
+            : centerPanelMode === "available"
               ? "Available Features"
               : centerPanelMode === "settings"
                 ? "Feature Settings"
@@ -589,35 +647,78 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
           }
           icon={centerPanelMode === "inspector" ? Info : centerPanelMode === "available" ? Package : centerPanelMode === "settings" ? Sliders : Download}
         />
-        
-        {/* Mode Tabs */}
+
+        {/* Unified Toolbar */}
         <div className="px-3 pb-2">
-          <Tabs 
-            value={centerPanelMode} 
-            onValueChange={(v) => setCenterPanelMode(v as typeof centerPanelMode)}
-          >
-            <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="inspector" className="text-xs">
-                <Info className="h-3.5 w-3.5 mr-1" />
+          <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50">
+            {/* Contextual Group */}
+            <div className="flex flex-1 gap-1">
+              <Button
+                variant={centerPanelMode === "inspector" ? "secondary" : "ghost"}
+                size="sm"
+                className={cn(
+                  "flex-1 text-xs h-7 px-2 font-medium transition-all",
+                  centerPanelMode === "inspector" && "bg-background shadow-sm text-foreground",
+                  !state.selectedItemId && "opacity-50"
+                )}
+                onClick={() => setCenterPanelMode("inspector")}
+                disabled={!state.selectedItemId}
+                title={!state.selectedItemId ? "Select a menu item first" : "View Details"}
+              >
+                <Info className="h-3.5 w-3.5 mr-1.5" />
                 Inspector
-              </TabsTrigger>
-              <TabsTrigger value="available" className="text-xs">
-                <Package className="h-3.5 w-3.5 mr-1" />
-                Available
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="text-xs">
-                <Sliders className="h-3.5 w-3.5 mr-1" />
+              </Button>
+              <Button
+                variant={centerPanelMode === "settings" ? "secondary" : "ghost"}
+                size="sm"
+                className={cn(
+                  "flex-1 text-xs h-7 px-2 font-medium transition-all",
+                  centerPanelMode === "settings" && "bg-background shadow-sm text-foreground",
+                  !state.selectedItemId && "opacity-50"
+                )}
+                onClick={() => setCenterPanelMode("settings")}
+                disabled={!state.selectedItemId}
+                title={!state.selectedItemId ? "Select a menu item first" : "Feature Settings"}
+              >
+                <Sliders className="h-3.5 w-3.5 mr-1.5" />
                 Settings
-              </TabsTrigger>
-              <TabsTrigger value="import" className="text-xs">
-                <Download className="h-3.5 w-3.5 mr-1" />
+              </Button>
+            </div>
+
+            {/* Visual Divider */}
+            <div className="w-px h-4 bg-border mx-1" />
+
+            {/* Global Group */}
+            <div className="flex flex-1 gap-1">
+              <Button
+                variant={centerPanelMode === "available" ? "secondary" : "ghost"}
+                size="sm"
+                className={cn(
+                  "flex-1 text-xs h-7 px-2 font-medium transition-all",
+                  centerPanelMode === "available" && "bg-background shadow-sm text-foreground"
+                )}
+                onClick={() => setCenterPanelMode("available")}
+              >
+                <Package className="h-3.5 w-3.5 mr-1.5" />
+                Available
+              </Button>
+              <Button
+                variant={centerPanelMode === "import" ? "secondary" : "ghost"}
+                size="sm"
+                className={cn(
+                  "flex-1 text-xs h-7 px-2 font-medium transition-all",
+                  centerPanelMode === "import" && "bg-background shadow-sm text-foreground"
+                )}
+                onClick={() => setCenterPanelMode("import")}
+              >
+                <Download className="h-3.5 w-3.5 mr-1.5" />
                 Import
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-      
+
       {/* Panel Content */}
       <div className="flex-1 min-h-0 overflow-auto">
         {centerPanelMode === "inspector" && (
@@ -642,7 +743,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             isPreviewOpen={previewVisible && selectedMenuItem?.slug === selectedFeatureId}
           />
         )}
-        
+
         {centerPanelMode === "available" && (
           <div className="p-4">
             <AvailableFeaturesContent
@@ -650,6 +751,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
               installingFeatures={state.installingFeatures}
               onInstall={handleInstallFeature}
               onPreview={handleTogglePreview}
+              onSettings={handleToggleSettings}
               activePreviewId={previewVisible ? selectedFeatureId : null}
             />
           </div>
@@ -657,18 +759,26 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
 
         {centerPanelMode === "settings" && (
           <div className="h-full">
-            <FeatureSettingsListPanel
-              menuItems={menuItems ?? []}
-              onToggleSettings={(featureSlug, featureName) => {
-                handleToggleSettings(featureSlug, featureName)
-              }}
-              activeSettingsSlug={settingsVisible ? selectedSettingsFeatureSlug : null}
-              searchable
-              showCounts
-            />
+            {selectedMenuItem?.slug && selectedMenuItem.slug !== "#" ? (
+              <FeatureSettingsPanel
+                featureSlug={selectedMenuItem.slug}
+                featureName={selectedMenuItem.name}
+                showBackButton={false}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center animate-in fade-in-50 duration-500">
+                <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 ring-1 ring-border/50">
+                  <Sliders className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+                <h3 className="font-semibold text-xl tracking-tight mb-2">Configure Feature</h3>
+                <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
+                  Select a feature from the menu tree or grid to access its configuration settings.
+                </p>
+              </div>
+            )}
           </div>
         )}
-        
+
         {centerPanelMode === "import" && (
           <div className="p-4">
             <ImportSectionContent
@@ -700,8 +810,8 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
       {/* Panel Header - adapts based on mode */}
       <div className="flex-shrink-0 border-b bg-muted/30">
         <ContainerHeader
-          title={rightPanelMode === "settings" 
-            ? (selectedSettingsMenuItem?.name ?? "Settings") 
+          title={rightPanelMode === "settings"
+            ? (selectedSettingsMenuItem?.name ?? "Settings")
             : (selectedFeatureConfig?.name ?? "Preview")
           }
           subtitle={rightPanelMode === "settings"
@@ -730,33 +840,18 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
           }
         />
       </div>
-      
+
       {/* Content - Show Preview or Settings based on mode */}
       <div className="flex-1 min-h-0 overflow-auto">
-        {rightPanelMode === "settings" && settingsVisible && selectedSettingsFeatureSlug ? (
-          <SettingsRegistryProvider>
-            <FeatureSettingsSync workspaceId={workspaceId} />
-            <FeatureSettingsPanel
-              featureSlug={selectedSettingsFeatureSlug}
-              featureName={selectedSettingsMenuItem?.name}
-              onClose={() => {
-                setSettingsVisible(false)
-                setRightPanelCollapsed(true)
-              }}
-              showBackButton={false}
-            />
-          </SettingsRegistryProvider>
-        ) : (
-          <PreviewPanel
-            featureId={selectedFeatureId}
-            visible={previewVisible}
-            onClose={() => {
-              setPreviewVisible(false)
-              setRightPanelCollapsed(true)
-            }}
-            hideHeader
-          />
-        )}
+        <PreviewPanel
+          featureId={selectedFeatureId}
+          visible={previewVisible}
+          onClose={() => {
+            setPreviewVisible(false)
+            setRightPanelCollapsed(true)
+          }}
+          hideHeader
+        />
       </div>
     </div>
   )
@@ -785,42 +880,45 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
           ]}
         />
       </div>
-      
+
       {/* Three Column Layout */}
       <div className="flex-1 min-h-0">
-        <ThreeColumnLayoutAdvanced
-          left={leftPanelContent}
-          center={centerPanelContent}
-          right={rightPanelContent}
-          // Labels
-          leftLabel="Menu Tree"
-          centerLabel="Details"
-          rightLabel="Preview"
-          // Widths - flexible for desktop preview (like workspace-store)
-          leftWidth={280}
-          rightWidth={500}
-          centerMinWidth={200}
-          minSideWidth={180}
-          maxSideWidth={1200}
-          collapsedWidth={44}
-          // Space distribution - prioritize right panel for preview
-          spaceDistribution="right-priority"
-          // Features
-          resizable={true}
-          showCollapseButtons={true}
-          persistState={true}
-          storageKey="menu-store-layout"
-          // Responsive
-          collapseLeftAt={900}
-          collapseRightAt={1100}
-          stackAt={640}
-          // Default states
-          defaultLeftCollapsed={false}
-          rightCollapsed={rightPanelCollapsed}
-          onRightCollapsedChange={setRightPanelCollapsed}
-        />
+        <SettingsRegistryProvider>
+          <FeatureSettingsSync workspaceId={workspaceId} />
+          <ThreeColumnLayoutAdvanced
+            left={leftPanelContent}
+            center={centerPanelContent}
+            right={rightPanelContent}
+            // Labels
+            leftLabel="Menu Tree"
+            centerLabel="Details"
+            rightLabel="Preview"
+            // Widths - flexible for desktop preview (like workspace-store)
+            leftWidth={280}
+            rightWidth={500}
+            centerMinWidth={200}
+            minSideWidth={180}
+            maxSideWidth={1200}
+            collapsedWidth={44}
+            // Space distribution - prioritize right panel for preview
+            spaceDistribution="right-priority"
+            // Features
+            resizable={true}
+            showCollapseButtons={true}
+            persistState={true}
+            storageKey="menu-store-layout"
+            // Responsive
+            collapseLeftAt={900}
+            collapseRightAt={1100}
+            stackAt={640}
+            // Default states
+            defaultLeftCollapsed={false}
+            rightCollapsed={rightPanelCollapsed}
+            onRightCollapsedChange={setRightPanelCollapsed}
+          />
+        </SettingsRegistryProvider>
       </div>
-      
+
       {/* Dialogs */}
       <RenameDialog
         state={state.renameDialog}
@@ -828,9 +926,9 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
         onNameChange={setRenameDialogName}
         onConfirm={handleRenameConfirm}
       />
-      <ShareDialog 
-        state={state.shareDialog} 
-        onClose={closeShareDialog} 
+      <ShareDialog
+        state={state.shareDialog}
+        onClose={closeShareDialog}
       />
     </div>
   )

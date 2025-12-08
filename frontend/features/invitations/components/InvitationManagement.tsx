@@ -29,7 +29,7 @@ export function InvitationManagement({ workspaceId, onBack }: InvitationManageme
 
   const workspace = useQuery(
     api.workspace.workspaces.getWorkspace,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 
   const invitations = useQuery(api.workspace.invitations.getUserInvitations, {});

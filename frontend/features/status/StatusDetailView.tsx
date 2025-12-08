@@ -30,7 +30,7 @@ interface StatusDetail {
 const useStatusDetail = (statusId?: string) => {
   const rawStatus = useQuery(
     api.features.status.queries.getStatus,
-    statusId ? { statusId: statusId as Id<"statuses"> } : "skip"
+    statusId ? { statusId: statusId as Id<"statuses"> } : undefined
   );
 
   if (!rawStatus) {

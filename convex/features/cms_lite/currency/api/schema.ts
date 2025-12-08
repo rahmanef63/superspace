@@ -1,8 +1,9 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// Note: Using cms_lite prefix to avoid collision with accounting/schema.ts
 export const tables = {
-  currencySettings: defineTable({
+  cms_lite_currencySettings: defineTable({
     workspaceId: v.string(),
     // Base currency for the workspace (e.g., USD)
     baseCurrency: v.string(),
@@ -21,7 +22,7 @@ export const tables = {
   })
     .index("by_workspace", ["workspaceId"]),
 
-  exchangeRates: defineTable({
+  cms_lite_exchangeRates: defineTable({
     workspaceId: v.string(),
     // Currency pair
     fromCurrency: v.string(),

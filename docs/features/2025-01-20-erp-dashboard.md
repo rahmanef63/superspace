@@ -1,5 +1,21 @@
 # Dashboard/Overview Module Product Requirements Document (PRD)
 
+## Implementation Status
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| Database Schema | - | 🔄 Pending (uses existing tables) |
+| Frontend | `frontend/features/overview/` | 🔄 Basic |
+| Frontend ERP | `frontend/features/erp-dashboard/` | 🔄 Pending |
+
+### Notes
+- Dashboard module aggregates data from all ERP modules
+- Currently uses basic overview feature at `frontend/features/overview/`
+- Full ERP Dashboard with widgets, KPIs, and analytics pending
+- Will integrate with analytics and reporting features
+
+---
+
 ## 1. Executive Summary
 
 ### 1.1 Overview

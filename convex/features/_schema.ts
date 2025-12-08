@@ -46,6 +46,18 @@ import { userManagementTables } from "./userManagement/api/schema";
 import salesTables from "./sales/schema";
 import inventoryTables from "./inventory/schema";
 import crmErpTables from "./crm/schema";
+import hrTables from "./hr/schema";
+import accountingTables from "./accounting/schema";
+
+// Feature Modules
+import formsTables from "./forms/schema";
+import approvalsTables from "./approvals/schema";
+import auditLogTables from "./auditLog/schema";
+import biTables from "./bi/schema";
+import importExportTables from "./importExport/schema";
+import integrationsTables from "./integrations/schema";
+import marketingTables from "./marketing/schema";
+import posTables from "./pos/schema";
 
 // Shared Features
 import searchTables from "../shared/search/schema";
@@ -109,6 +121,18 @@ export const featureTables = {
   ...tables(salesTables),
   ...tables(inventoryTables),
   ...tables(crmErpTables),
+  ...tables(hrTables),
+  ...tables(accountingTables),
+
+  // Feature Modules
+  ...tables(formsTables),
+  ...tables(approvalsTables),
+  ...tables(auditLogTables),
+  ...tables(biTables),
+  ...tables(importExportTables),
+  ...tables(integrationsTables),
+  ...tables(marketingTables),
+  ...tables(posTables),
 
   // Shared Features
   ...tables(searchTables),

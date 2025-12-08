@@ -13,7 +13,7 @@ import {
   Play,
   Pause 
 } from "lucide-react";
-import type { MediaItem } from "@/frontend/shared/foundation";
+import type { MediaItem } from "../../shared/types/core";
 
 interface MediaViewerProps {
   mediaItems: MediaItem[];

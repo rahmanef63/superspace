@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Download, Share, MoreVertical } from "lucide-react";
-import type { MediaItem } from "@/frontend/shared/foundation";
+import type { MediaItem } from "../../shared/types/core";
 
 interface MediaGridProps {
   mediaItems?: MediaItem[];

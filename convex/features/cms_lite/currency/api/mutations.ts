@@ -21,7 +21,7 @@ export const updateSettings = mutation({
     const actor = await requireAdmin(ctx);
 
     const existing = await ctx.db
-      .query("currencySettings")
+      .query("cms_lite_currencySettings")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
       .unique();
 
@@ -44,7 +44,7 @@ export const updateSettings = mutation({
       id = existing._id;
       action = "currency.update_settings";
     } else {
-      id = await ctx.db.insert("currencySettings", {
+      id = await ctx.db.insert("cms_lite_currencySettings", {
         workspaceId: args.workspaceId,
         ...payload,
         createdBy: args.actorId ?? actor.clerkUserId,
@@ -75,7 +75,7 @@ export const fetchAndUpdateRates = mutation({
     const actor = await requireAdmin(ctx);
 
     const settings = await ctx.db
-      .query("currencySettings")
+      .query("cms_lite_currencySettings")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
       .unique();
 
@@ -117,7 +117,7 @@ export const setRate = mutation({
     const actor = await requireAdmin(ctx);
 
     const existing = await ctx.db
-      .query("exchangeRates")
+      .query("cms_lite_exchangeRates")
       .withIndex("by_pair", (q: any) =>
         q.eq("workspaceId", args.workspaceId)
           .eq("fromCurrency", args.fromCurrency)
@@ -141,7 +141,7 @@ export const setRate = mutation({
       id = existing._id;
       action = "currency.update_rate";
     } else {
-      id = await ctx.db.insert("exchangeRates", {
+      id = await ctx.db.insert("cms_lite_exchangeRates", {
         workspaceId: args.workspaceId,
         fromCurrency: args.fromCurrency,
         toCurrency: args.toCurrency,
@@ -181,7 +181,7 @@ export const importRates = mutation({
 
     for (const rate of args.rates) {
       const existing = await ctx.db
-        .query("exchangeRates")
+        .query("cms_lite_exchangeRates")
         .withIndex("by_pair", (q: any) =>
           q.eq("workspaceId", args.workspaceId)
             .eq("fromCurrency", rate.fromCurrency)
@@ -200,7 +200,7 @@ export const importRates = mutation({
       if (existing) {
         await ctx.db.patch(existing._id, payload);
       } else {
-        await ctx.db.insert("exchangeRates", {
+        await ctx.db.insert("cms_lite_exchangeRates", {
           workspaceId: args.workspaceId,
           fromCurrency: rate.fromCurrency,
           toCurrency: rate.toCurrency,

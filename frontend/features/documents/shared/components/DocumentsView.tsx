@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useState, useEffect, useMemo, Suspense } from "react";
 import type { Id } from "@convex/_generated/dataModel";

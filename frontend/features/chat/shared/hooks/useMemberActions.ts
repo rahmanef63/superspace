@@ -19,74 +19,71 @@ import { useCallback } from "react";
  * Hook to get member profile
  */
 export function useMemberProfile(memberId: Id<"users"> | string | undefined) {
-  // Skip if no valid memberId
-  const validId = memberId && memberId.length > 0 ? memberId as Id<"users"> : undefined;
-  return useQuery(
-    api.user.memberActions.getMemberProfile,
-    validId ? { userId: validId } : "skip"
-  );
+  // Skip if no valid memberId - use "skip" to properly skip the query
+  const args = memberId && memberId.length > 0 
+    ? { userId: memberId as string } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.getMemberProfile, args);
 }
 
 /**
  * Hook to check if member is favorite
  */
 export function useIsMemberFavorite(memberId: Id<"users"> | string | undefined) {
-  const validId = memberId && memberId.length > 0 ? memberId as Id<"users"> : undefined;
-  return useQuery(
-    api.user.memberActions.isMemberFavorite,
-    validId ? { memberId: validId } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId: memberId as string } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.isMemberFavorite, args);
 }
 
 /**
  * Hook to check if member is blocked
  */
 export function useIsMemberBlocked(memberId: Id<"users"> | string | undefined) {
-  const validId = memberId && memberId.length > 0 ? memberId as Id<"users"> : undefined;
-  return useQuery(
-    api.user.memberActions.isMemberBlocked,
-    validId ? { memberId: validId } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId: memberId as string } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.isMemberBlocked, args);
 }
 
 /**
  * Hook for shared media with member
  */
 export function useSharedMedia(memberId: string | undefined, limit?: number) {
-  return useQuery(
-    api.user.memberActions.getSharedMedia,
-    memberId ? { memberId, limit } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId, limit } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.getSharedMedia, args);
 }
 
 /**
  * Hook for shared files with member
  */
 export function useSharedFiles(memberId: string | undefined, limit?: number) {
-  return useQuery(
-    api.user.memberActions.getSharedFiles,
-    memberId ? { memberId, limit } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId, limit } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.getSharedFiles, args);
 }
 
 /**
  * Hook for shared links with member
  */
 export function useSharedLinks(memberId: string | undefined, limit?: number) {
-  return useQuery(
-    api.user.memberActions.getSharedLinks,
-    memberId ? { memberId, limit } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId, limit } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.getSharedLinks, args);
 }
 
 /**
  * Hook for common groups with member
  */
 export function useCommonGroups(memberId: string | undefined) {
-  return useQuery(
-    api.user.memberActions.getCommonGroups,
-    memberId ? { memberId } : "skip"
-  );
+  const args = memberId && memberId.length > 0 
+    ? { memberId } 
+    : "skip" as const;
+  return useQuery(api.user.memberActions.getCommonGroups, args);
 }
 
 /**

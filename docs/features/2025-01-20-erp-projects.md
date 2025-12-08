@@ -1,5 +1,29 @@
 # Projects Module Product Requirements Document (PRD)
 
+## Implementation Status
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| Basic Schema | `convex/features/projects/api/schema.ts` | ✅ Basic |
+| ERP Schema | `convex/features/projects/schema.ts` | 🔄 Pending (full ERP) |
+| Frontend | `frontend/features/projects/` | ✅ Basic |
+| Frontend ERP | `frontend/features/erp-projects/` | 🔄 Pending |
+
+### Implemented Tables (Basic)
+- `projects` - Basic project records
+- `projectMembers` - Project team members
+
+### Pending ERP Tables
+- `projectTasks` - Task management
+- `projectMilestones` - Milestone tracking
+- `projectTimesheets` - Time tracking
+- `projectBudgets` - Budget management
+- `projectResources` - Resource allocation
+- `projectRisks` - Risk management
+- `projectTemplates` - Project templates
+
+---
+
 ## 1. Executive Summary
 
 ### 1.1 Overview

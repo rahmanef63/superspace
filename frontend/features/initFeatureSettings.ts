@@ -18,8 +18,22 @@ import "@/frontend/features/documents/init"
 import "@/frontend/features/projects/init"
 import "@/frontend/features/reports/init"
 
+// Data features
+import "@/frontend/features/database/init"
+import "@/frontend/features/crm/init"
+import "@/frontend/features/calendar/init"
+import "@/frontend/features/knowledge/init"
+import "@/frontend/features/inventory/init"
+
 // AI features
 import "@/frontend/features/ai/init"
+
+// Business features
+import "@/frontend/features/analytics/init"
+import "@/frontend/features/contacts/init"
+import "@/frontend/features/forms/init"
+import "@/frontend/features/marketing/init"
+import "@/frontend/features/automation/init"
 
 // System features
 import "@/frontend/features/notifications/init"

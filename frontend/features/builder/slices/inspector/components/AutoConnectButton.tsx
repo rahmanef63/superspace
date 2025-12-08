@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui';
-import type { CMSNode, CMSEdge } from '@/frontend/shared/foundation';
+import type { CMSNode, CMSEdge } from '@/frontend/features/builder/shared/types';
 import { getWidgetConfig } from '@/frontend/features/builder/shared/registry';
 import { uid } from '@/lib/utils';
 

@@ -1,6 +1,7 @@
 /**
  * Comments Schema
  * Provides commenting functionality across all ERP modules
+ * Aligned with docs/api/schema.ts comments table structure
  */
 
 import { defineSchema, defineTable } from "convex/server";
@@ -12,51 +13,38 @@ export default defineSchema({
     workspaceId: v.id("workspaces"),
 
     // Reference to the commented entity
-    entityType: v.string(), // e.g., "invoices", "tasks", "projects"
-    entityId: v.id("_table"),
+    entityType: v.string(), // e.g., "document", "page", "task", "project", "file", "dbRow"
+    entityId: v.string(), // Changed to string to match docs schema
 
-    // Thread management
-    threadId: v.optional(v.id("comments")), // For nested comments
-    replyToId: v.optional(v.id("comments")), // Direct reply to
+    // Author
+    authorId: v.id("users"), // Changed from createdBy to authorId for consistency
 
     // Comment content
     content: v.string(),
-    format: v.optional(v.union(
-      v.literal("plain"),
-      v.literal("markdown"),
-      v.literal("html")
-    )),
 
-    // Metadata
-    mentions: v.array(v.id("users")),
-    tags: v.array(v.string()),
-    attachments: v.array(v.id("_storage")),
+    // Thread management (parent/child)
+    parentId: v.optional(v.id("comments")),
 
     // Status
-    isEdited: v.boolean(),
-    isDeleted: v.boolean(),
     isResolved: v.boolean(),
-    isPinned: v.boolean(),
 
-    // Moderation
-    isReported: v.boolean(),
-    reportReason: v.optional(v.string()),
-    moderatedById: v.optional(v.id("users")),
-    moderatedAt: v.optional(v.number()),
+    // Metadata
+    mentions: v.optional(v.array(v.id("users"))),
+    attachments: v.optional(v.array(v.id("_storage"))),
 
-    // Reactions
-    reactions: v.array(v.object({
-      userId: v.id("users"),
-      emoji: v.string(),
-      createdAt: v.number(),
+    // Position in document (for inline comments)
+    position: v.optional(v.object({
+      start: v.number(),
+      end: v.number(),
     })),
 
-    // Audit
-    createdAt: v.number(),
-    createdBy: v.id("users"),
-    updatedAt: v.optional(v.number()),
-    updatedBy: v.optional(v.id("users")),
-  }),
+    // Additional metadata
+    metadata: v.optional(v.any()),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_entity", ["entityType", "entityId"])
+    .index("by_author", ["authorId"])
+    .index("by_parent", ["parentId"]),
 
   // Comment subscriptions
   commentSubscriptions: defineTable({
@@ -65,7 +53,7 @@ export default defineSchema({
     // Subscription details
     userId: v.id("users"),
     entityType: v.string(),
-    entityId: v.id("_table"),
+    entityId: v.string(), // Changed to string for consistency
 
     // Notification preferences
     isActive: v.boolean(),
@@ -76,7 +64,10 @@ export default defineSchema({
     // Subscription metadata
     subscribedAt: v.number(),
     lastNotifiedAt: v.optional(v.number()),
-  }),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_user", ["userId"])
+    .index("by_entity", ["entityType", "entityId"]),
 
   // Comment threads summary
   commentThreads: defineTable({
@@ -84,7 +75,7 @@ export default defineSchema({
 
     // Thread reference
     entityType: v.string(),
-    entityId: v.id("_table"),
+    entityId: v.string(), // Changed to string for consistency
 
     // Thread statistics
     commentCount: v.number(),
@@ -114,7 +105,9 @@ export default defineSchema({
     // Audit
     createdAt: v.number(),
     updatedAt: v.number(),
-  }),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_entity", ["entityType", "entityId"]),
 
   // Comment analytics
   commentAnalytics: defineTable({
@@ -143,7 +136,7 @@ export default defineSchema({
     // Top entities
     mostCommentedEntities: v.array(v.object({
       entityType: v.string(),
-      entityId: v.id("_table"),
+      entityId: v.string(), // Changed to string
       count: v.number(),
     })),
 
@@ -154,5 +147,7 @@ export default defineSchema({
     })),
 
     createdAt: v.number(),
-  }),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_period", ["period", "date"]),
 });

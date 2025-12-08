@@ -78,7 +78,6 @@ export function AIListView({
       await updateSessionMutation({
         sessionId: sessionId as Id<"aiChatSessions">,
         title: data.name,
-        metadata: data.description ? { topic: data.description } : undefined,
       });
       renameSession(sessionId as Id<"aiChatSessions">, data.name || "Untitled", data.description);
       toast.success("Session renamed");
@@ -95,7 +94,7 @@ export function AIListView({
     try {
       await updateSessionMutation({
         sessionId: sessionId as Id<"aiChatSessions">,
-        metadata: { isPinned },
+        status: isPinned ? "pinned" : "active",
       });
       pinSession(sessionId as Id<"aiChatSessions">, isPinned);
     } catch (e) {
@@ -108,7 +107,7 @@ export function AIListView({
     try {
       await updateSessionMutation({
         sessionId: sessionId as Id<"aiChatSessions">,
-        metadata: { isFavorite },
+        status: isFavorite ? "favorite" : "active",
       });
       favoriteSession(sessionId as Id<"aiChatSessions">, isFavorite);
     } catch (e) {

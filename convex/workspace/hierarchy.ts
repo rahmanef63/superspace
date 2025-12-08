@@ -914,7 +914,7 @@ export const validateMyWorkspaceHierarchy = query({
             break
           }
           visited.add(String(currentId))
-          const parent = await ctx.db.get(currentId)
+          const parent: Awaited<ReturnType<typeof ctx.db.get>> = await ctx.db.get(currentId)
           if (!parent) break
           currentId = parent.parentWorkspaceId
           depth++
@@ -1088,7 +1088,7 @@ async function checkCircularReference(
     }
     visited.add(String(currentId))
     
-    const workspace = await ctx.db.get(currentId)
+    const workspace: Awaited<ReturnType<typeof ctx.db.get>> = await ctx.db.get(currentId)
     if (!workspace) break
     
     // If parent's ancestor is the child, linking would create cycle

@@ -14,8 +14,7 @@ export { default as config } from './config';
 // Re-export shared types and components
 export * from './shared';
 
-// Re-export sub-features
-export * from './features/profile';
-export * from './features/docs';
-export * from './features/articles';
-export * from './features/workspace-context';
+// Re-export sub-features (excluding types already in shared to avoid conflicts)
+export { useProfileContext, ProfileContextProvider, KnowledgeProfilePage } from './features/profile';
+export { useArticles, ArticlesList, ArticlesEditor } from './features/articles';
+export { useWorkspaceKnowledgeContext } from './features/workspace-context';

@@ -1,0 +1,44 @@
+import { defineFeature } from '@/lib/features/defineFeature'
+
+/**
+ * Forms Feature Configuration
+ *
+ * Form builder for data collection.
+ */
+export default defineFeature({
+  id: 'forms',
+  name: 'Forms',
+  description: 'Build custom forms for data collection',
+
+  ui: {
+    icon: 'FileText',
+    path: '/dashboard/forms',
+    component: 'FormsPage',
+    category: 'productivity',
+    order: 13,
+  },
+
+  technical: {
+    featureType: 'optional',
+    hasUI: true,
+    hasConvex: true,
+    hasTests: true,
+    version: '1.0.0',
+  },
+
+  status: {
+    state: 'development',
+    isReady: false,
+    expectedRelease: 'Q2 2025',
+  },
+
+  bundles: {
+    core: [],
+    recommended: ['business-pro'],
+    optional: ['startup', 'education', 'custom'],
+  },
+
+  tags: ['forms', 'data-collection', 'surveys'],
+
+  permissions: ['forms.view', 'forms.create', 'forms.update', 'forms.delete', 'forms.submissions'],
+})

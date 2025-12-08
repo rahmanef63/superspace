@@ -7,6 +7,20 @@ This document outlines the comprehensive ERP (Enterprise Resource Planning) syst
 ## Module Structure
 
 All ERP modules follow this pattern:
+
+### Backend (Convex)
+```
+convex/features/{module}/
+├── schema.ts                    # Database schema
+├── api/
+│   ├── schema.ts               # Additional tables (if needed)
+│   ├── queries.ts              # Read operations
+│   └── mutations.ts            # Write operations
+├── index.ts                     # Module exports
+└── types.ts                     # TypeScript types
+```
+
+### Frontend
 ```
 frontend/features/erp-{module}/
 ├── config.ts                    # Main module config
@@ -20,6 +34,18 @@ frontend/features/erp-{module}/
 └── settings/                    # Module settings
 ```
 
+## Implementation Status
+
+| Module | Backend Schema | Frontend | Status |
+|--------|---------------|----------|--------|
+| Sales | `convex/features/sales/schema.ts` | `frontend/features/sales/` | ✅ Implemented |
+| Inventory | `convex/features/inventory/schema.ts` | `frontend/features/inventory/` | ✅ Implemented |
+| CRM | `convex/features/crm/schema.ts` | `frontend/features/crm/` | ✅ Implemented |
+| HR | `convex/features/hr/schema.ts` | `frontend/features/hr/` | ✅ Schema Ready |
+| Accounting | `convex/features/accounting/schema.ts` | `frontend/features/accounting/` | ✅ Schema Ready |
+| Projects | `convex/features/projects/api/schema.ts` | `frontend/features/projects/` | 🔄 Basic |
+| Dashboard | - | `frontend/features/overview/` | 🔄 Basic |
+
 ## ERP Registry Configuration
 
 ```typescript
@@ -31,11 +57,11 @@ export const erpBundle = {
   version: '1.0.0',
   modules: [
     // Core ERP Modules
-    'erp-sales',
-    'erp-inventory',
-    'erp-crm',
-    'erp-hr',
-    'erp-accounting',
+    'sales',
+    'inventory',
+    'crm',
+    'hr',
+    'accounting',
     'erp-projects',
     'erp-dashboard',
 
@@ -58,508 +84,508 @@ export const erpBundle = {
 
 ## Module Definitions
 
-### 1. Sales Module (erp-sales)
+### 1. Sales Module (sales)
 
-**Main Module ID:** `erp-sales`
+**Main Module ID:** `sales`
 **Category:** Business Operations
 **Icon:** ShoppingCart
 **Order:** 100
 
 #### Sub-Modules:
 
-1. **Quotations** (`erp-sales-quotations`)
+1. **Quotations** (`sales-quotations`)
    - Create and manage price quotes
    - Quote to invoice conversion
    - Template management
    - Validity tracking
 
-2. **Recurring Invoices** (`erp-sales-recurring`)
+2. **Recurring Invoices** (`sales-recurring`)
    - Subscription billing
    - Automated invoicing
    - Payment schedules
    - Dunning management
 
-3. **Payment Gateways** (`erp-sales-payments`)
+3. **Payment Gateways** (`sales-payments`)
    - Stripe integration
    - PayPal support
    - Payment reconciliation
    - Multi-method support
 
-4. **Invoice Templates** (`erp-sales-templates`)
+4. **Invoice Templates** (`sales-templates`)
    - Customizable templates
    - Brand support
    - Multi-language
    - PDF generation
 
-5. **Email Automation** (`erp-sales-email`)
+5. **Email Automation** (`sales-email`)
    - Automated sending
    - Reminders
    - Follow-ups
    - Email tracking
 
-6. **Credit Notes** (`erp-sales-credits`)
+6. **Credit Notes** (`sales-credits`)
    - Refund management
    - Adjustments
    - Credit application
    - Approval workflow
 
-7. **Multi-Currency** (`erp-sales-currency`)
+7. **Multi-Currency** (`sales-currency`)
    - Currency conversion
    - Exchange rates
    - Multi-currency reporting
    - Fx gains/losses
 
-8. **Payment Plans** (`erp-sales-plans`)
+8. **Payment Plans** (`sales-plans`)
    - Installment tracking
    - Payment schedules
    - Late fees
    - Plan management
 
-9. **Sales Orders** (`erp-sales-orders`)
+9. **Sales Orders** (`sales-orders`)
    - Order processing
    - Order tracking
    - Fulfillment
    - Order lifecycle
 
-10. **Discount Management** (`erp-sales-discounts`)
+10. **Discount Management** (`sales-discounts`)
     - Coupon codes
     - Volume discounts
     - Promotional pricing
     - Discount rules
 
-11. **Tax Configuration** (`erp-sales-tax`)
+11. **Tax Configuration** (`sales-tax`)
     - Tax rates
     - Tax exemptions
     - Multi-jurisdiction
     - Tax reports
 
-12. **Approval Workflow** (`erp-sales-approval`)
+12. **Approval Workflow** (`sales-approval`)
     - Multi-level approval
     - Approval rules
     - Delegation
     - Audit trail
 
-13. **Sales Analytics** (`erp-sales-analytics`)
+13. **Sales Analytics** (`sales-analytics`)
     - Revenue trends
     - Sales forecasting
     - Performance metrics
     - Custom reports
 
-### 2. Inventory Module (erp-inventory)
+### 2. Inventory Module (inventory)
 
-**Main Module ID:** `erp-inventory`
+**Main Module ID:** `inventory`
 **Category:** Operations
 **Icon:** Package
 **Order:** 110
 
 #### Sub-Modules:
 
-1. **Barcode/QR Code** (`erp-inventory-barcodes`)
+1. **Barcode/QR Code** (`inventory-barcodes`)
    - Scanning interface
    - Code generation
    - Mobile support
    - Bulk operations
 
-2. **Stock Transfers** (`erp-inventory-transfers`)
+2. **Stock Transfers** (`inventory-transfers`)
    - Inter-warehouse moves
    - Transfer tracking
    - Approval workflow
    - Transfer history
 
-3. **Stock Adjustments** (`erp-inventory-adjustments`)
+3. **Stock Adjustments** (`inventory-adjustments`)
    - Write-offs
    - Stock corrections
    - Reason tracking
    - Approval required
 
-4. **Reorder Points** (`erp-inventory-reorder`)
+4. **Reorder Points** (`inventory-reorder`)
    - Automated suggestions
    - Min/max levels
    - Lead time tracking
    - Supplier integration
 
-5. **Batch/Lot Tracking** (`erp-inventory-batch`)
+5. **Batch/Lot Tracking** (`inventory-batch`)
    - Expiry management
    - Batch numbers
    - Traceability
    - Recall management
 
-6. **Serial Numbers** (`erp-inventory-serial`)
+6. **Serial Numbers** (`inventory-serial`)
    - Individual tracking
    - Warranty management
    - Serial history
    - Unique identification
 
-7. **Stock Valuation** (`erp-inventory-valuation`)
+7. **Stock Valuation** (`inventory-valuation`)
    - FIFO/LIFO/Weighted
    - Valuation methods
    - Cost tracking
    - Inventory reports
 
-8. **Demand Forecasting** (`erp-inventory-forecast`)
+8. **Demand Forecasting** (`inventory-forecast`)
    - AI predictions
    - Seasonal trends
    - Demand planning
    - Forecast accuracy
 
-9. **Cycle Counting** (`erp-inventory-cycle`)
+9. **Cycle Counting** (`inventory-cycle`)
    - Regular audits
    - Count schedules
    - Discrepancy tracking
    - Approval workflow
 
-10. **Product Bundles** (`erp-inventory-bundles`)
+10. **Product Bundles** (`inventory-bundles`)
     - Kitting
     - Bill of Materials
     - Bundle pricing
     - Component tracking
 
-11. **Multi-location** (`erp-inventory-locations`)
+11. **Multi-location** (`inventory-locations`)
     - Warehouse management
     - Location tracking
     - Zone management
     - Picking optimization
 
-12. **Stock Reservations** (`erp-inventory-reservations`)
+12. **Stock Reservations** (`inventory-reservations`)
     - Order reservations
     - Reservation rules
     - Release management
     - Reserved stock reports
 
-13. **Supplier Management** (`erp-inventory-suppliers`)
+13. **Supplier Management** (`inventory-suppliers`)
     - Vendor profiles
     - Lead times
     - Performance tracking
     - Purchase history
 
-14. **Stock Alerts** (`erp-inventory-alerts`)
+14. **Stock Alerts** (`inventory-alerts`)
     - Low stock notifications
     - Reorder alerts
     - Expiry warnings
     - Custom alerts
 
-### 3. CRM Module (erp-crm)
+### 3. CRM Module (crm)
 
-**Main Module ID:** `erp-crm`
+**Main Module ID:** `crm`
 **Category:** Customer Management
 **Icon:** Users
 **Order:** 120
 
 #### Sub-Modules:
 
-1. **Sales Pipeline** (`erp-crm-pipeline`)
+1. **Sales Pipeline** (`crm-pipeline`)
    - Visual Kanban board
    - Deal stages
    - Drag and drop
    - Pipeline analytics
 
-2. **Lead Scoring** (`erp-crm-scoring`)
+2. **Lead Scoring** (`crm-scoring`)
    - AI-powered scoring
    - Custom scoring rules
    - Lead qualification
    - Score tracking
 
-3. **Email Integration** (`erp-crm-email`)
+3. **Email Integration** (`crm-email`)
    - Gmail/Outlook sync
    - Email tracking
    - Templates
    - Campaign management
 
-4. **Activity Timeline** (`erp-crm-timeline`)
+4. **Activity Timeline** (`crm-timeline`)
    - Complete history
    - Activity logging
    - Interaction tracking
    - Timeline view
 
-5. **Contact Segmentation** (`erp-crm-segments`)
+5. **Contact Segmentation** (`crm-segments`)
    - Tags and labels
    - Custom fields
    - Dynamic segments
    - Bulk operations
 
-6. **Email Campaigns** (`erp-crm-campaigns`)
+6. **Email Campaigns** (`crm-campaigns`)
    - Bulk email
    - Template builder
    - Campaign analytics
    - A/B testing
 
-7. **Deal Management** (`erp-crm-deals`)
+7. **Deal Management** (`crm-deals`)
    - Opportunity tracking
    - Deal pipeline
    - Forecasting
    - Win/loss analysis
 
-8. **Sales Forecasting** (`erp-crm-forecast`)
+8. **Sales Forecasting** (`crm-forecast`)
    - Revenue predictions
    - Probability weighting
    - Forecast reports
    - Goal tracking
 
-9. **Customer Portal** (`erp-crm-portal`)
+9. **Customer Portal** (`crm-portal`)
    - Self-service
    - Account access
    - Support tickets
    - Document sharing
 
-10. **Contract Management** (`erp-crm-contracts`)
+10. **Contract Management** (`crm-contracts`)
     - Contract lifecycle
     - Renewal tracking
     - Terms management
     - Digital signatures
 
-11. **Customer Feedback** (`erp-crm-feedback`)
+11. **Customer Feedback** (`crm-feedback`)
     - Surveys
     - NPS tracking
     - Reviews
     - Feedback analysis
 
-12. **Social Media** (`erp-crm-social`)
+12. **Social Media** (`crm-social`)
     - LinkedIn integration
     - Twitter tracking
     - Social mentions
     - Brand monitoring
 
-13. **Call Logging** (`erp-crm-calls`)
+13. **Call Logging** (`crm-calls`)
     - Call tracking
     - Call notes
     - Call recording
     - Voicemail integration
 
-14. **Meeting Scheduler** (`erp-crm-meetings`)
+14. **Meeting Scheduler** (`crm-meetings`)
     - Calendar integration
     - Meeting types
     - Availability tracking
     - Video conferencing
 
-15. **Sales Automation** (`erp-crm-automation`)
+15. **Sales Automation** (`crm-automation`)
     - Workflow builder
     - Trigger actions
     - Automation rules
     - Process optimization
 
-16. **Territory Management** (`erp-crm-territories`)
+16. **Territory Management** (`crm-territories`)
     - Sales assignments
     - Territory mapping
     - Performance by region
     - Lead routing
 
-### 4. HR Module (erp-hr)
+### 4. HR Module (hr)
 
-**Main Module ID:** `erp-hr`
+**Main Module ID:** `hr`
 **Category:** Human Resources
 **Icon:** UserCheck
 **Order:** 130
 
 #### Sub-Modules:
 
-1. **Attendance Tracking** (`erp-hr-attendance`)
+1. **Attendance Tracking** (`hr-attendance`)
    - Clock in/out
    - Biometric support
    - Timesheets
    - Attendance reports
 
-2. **Leave Management** (`erp-hr-leave`)
+2. **Leave Management** (`hr-leave`)
    - Leave requests
    - Approval workflow
    - Leave balances
    - Calendar integration
 
-3. **Payroll Processing** (`erp-hr-payroll`)
+3. **Payroll Processing** (`hr-payroll`)
    - Salary calculation
    - Deductions
    - Payslip generation
    - Tax calculations
 
-4. **Performance Reviews** (`erp-hr-performance`)
+4. **Performance Reviews** (`hr-performance`)
    - 360° feedback
    - KPI tracking
    - Review cycles
    - Goal management
 
-5. **Recruitment** (`erp-hr-recruitment`)
+5. **Recruitment** (`hr-recruitment`)
    - Job postings
    - Applicant tracking
    - Interview scheduling
    - Onboarding workflow
 
-6. **Employee Onboarding** (`erp-hr-onboarding`)
+6. **Employee Onboarding** (`hr-onboarding`)
    - Checklists
    - Document collection
    - Training assignment
    - Buddy system
 
-7. **Training Management** (`erp-hr-training`)
+7. **Training Management** (`hr-training`)
    - Course catalog
    - Certifications
    - Training records
    - Skill tracking
 
-8. **Employee Self-Service** (`erp-hr-ess`)
+8. **Employee Self-Service** (`hr-ess`)
    - Employee portal
    - Profile management
    - Document access
    - Request submission
 
-9. **Expense Claims** (`erp-hr-expenses`)
+9. **Expense Claims** (`hr-expenses`)
    - Receipt upload
    - Expense categories
    - Approval workflow
    - Reimbursement
 
-10. **Asset Management** (`erp-hr-assets`)
+10. **Asset Management** (`hr-assets`)
     - Equipment tracking
     - Assignment records
     - Maintenance schedules
     - Asset lifecycle
 
-11. **Document Management** (`erp-hr-documents`)
+11. **Document Management** (`hr-documents`)
     - Contract storage
     - Policy library
     - Document templates
     - Secure access
 
-12. **Org Chart** (`erp-hr-orgchart`)
+12. **Org Chart** (`hr-orgchart`)
     - Visual hierarchy
     - Reporting lines
     - Team structure
     - Position details
 
-13. **Shift Scheduling** (`erp-hr-scheduling`)
+13. **Shift Scheduling** (`hr-scheduling`)
     - Roster management
     - Shift swapping
     - Overtime tracking
     - Scheduling rules
 
-14. **Benefits Admin** (`erp-hr-benefits`)
+14. **Benefits Admin** (`hr-benefits`)
     - Insurance management
     - Perks tracking
     - Benefit enrollment
     - Deduction management
 
-15. **Exit Management** (`erp-hr-exit`)
+15. **Exit Management** (`hr-exit`)
     - Offboarding process
     - Exit interviews
     - Knowledge transfer
     - Account deactivation
 
-16. **HR Analytics** (`erp-hr-analytics`)
+16. **HR Analytics** (`hr-analytics`)
     - Turnover metrics
     - Demographics
     - Headcount tracking
     - HR dashboards
 
-17. **Compliance** (`erp-hr-compliance`)
+17. **Compliance** (`hr-compliance`)
     - Certification tracking
     - License management
     - Compliance reports
     - Audit readiness
 
-### 5. Accounting Module (erp-accounting)
+### 5. Accounting Module (accounting)
 
-**Main Module ID:** `erp-accounting`
+**Main Module ID:** `accounting`
 **Category:** Finance
 **Icon:** Calculator
 **Order:** 140
 
 #### Sub-Modules:
 
-1. **Bank Reconciliation** (`erp-accounting-reconciliation`)
+1. **Bank Reconciliation** (`accounting-reconciliation`)
    - Auto-matching
    - Manual reconciliation
    - Discrepancy tracking
    - Reconciliation reports
 
-2. **Multi-Currency** (`erp-accounting-currency`)
+2. **Multi-Currency** (`accounting-currency`)
    - Foreign exchange
    - Currency accounts
    - Fx gains/losses
    - Exchange rate updates
 
-3. **Budget Management** (`erp-accounting-budget`)
+3. **Budget Management** (`accounting-budget`)
    - Budget creation
    - Budget vs actual
    - Budget reports
    - Variance analysis
 
-4. **Fixed Assets** (`erp-accounting-assets`)
+4. **Fixed Assets** (`accounting-assets`)
    - Asset register
    - Depreciation tracking
    - Asset disposal
    - Asset reports
 
-5. **Expense Categories** (`erp-accounting-categories`)
+5. **Expense Categories** (`accounting-categories`)
    - Category management
    - Custom categories
    - Expense rules
    - Category reports
 
-6. **Financial Reports** (`erp-accounting-reports`)
+6. **Financial Reports** (`accounting-reports`)
    - P&L Statement
    - Balance Sheet
    - Cash Flow
    - Trial Balance
 
-7. **Tax Filing** (`erp-accounting-tax`)
+7. **Tax Filing** (`accounting-tax`)
    - VAT/GST returns
    - Tax calculations
    - Tax reports
    - Compliance tracking
 
-8. **Accounts Payable** (`erp-accounting-payable`)
+8. **Accounts Payable** (`accounting-payable`)
    - Vendor bills
    - Payment processing
    - Vendor management
    - Aging reports
 
-9. **Accounts Receivable** (`erp-accounting-receivable`)
+9. **Accounts Receivable** (`accounting-receivable`)
    - Customer invoices
    - Payment tracking
    - Credit limits
    - Collection management
 
-10. **Bank Feeds** (`erp-accounting-feeds`)
+10. **Bank Feeds** (`accounting-feeds`)
     - Transaction import
     - Auto-categorization
     - Feed management
     - Error handling
 
-11. **Recurring Transactions** (`erp-accounting-recurring`)
+11. **Recurring Transactions** (`accounting-recurring`)
     - Automated entries
     - Recurring templates
     - Schedule management
     - Transaction review
 
-12. **Financial Year** (`erp-accounting-fy`)
+12. **Financial Year** (`accounting-fy`)
     - Period management
     - Year-end closing
     - Historical data
     - Period locking
 
-13. **Cost Centers** (`erp-accounting-costcenters`)
+13. **Cost Centers** (`accounting-costcenters`)
     - Department accounting
     - Cost allocation
     - Center reports
     - Budget tracking
 
-14. **Intercompany** (`erp-accounting-intercompany`)
+14. **Intercompany** (`accounting-intercompany`)
     - Multi-entity
     - Cross-company transactions
     - Elimination entries
     - Consolidated reports
 
-15. **Audit Trail** (`erp-accounting-audit`)
+15. **Audit Trail** (`accounting-audit`)
     - Transaction history
     - Change tracking
     - Audit logs
     - Compliance reports
 
-16. **Financial Dashboards** (`erp-accounting-dashboards`)
+16. **Financial Dashboards** (`accounting-dashboards`)
     - Real-time metrics
     - KPI tracking
     - Custom dashboards
     - Executive views
 
-17. **Payment Reminders** (`erp-accounting-reminders`)
+17. **Payment Reminders** (`accounting-reminders`)
     - Automated follow-ups
     - Reminder templates
     - Overdue tracking
@@ -954,11 +980,11 @@ These features should be created in `convex/shared/` for use across all ERP modu
 ## Configuration Example
 
 ```typescript
-// Example: frontend/features/erp-sales/config.ts
+// Example: frontend/features/sales/config.ts
 import { defineFeature } from '@/lib/features/defineFeature'
 
 export default defineFeature({
-  id: 'erp-sales',
+  id: 'sales',
   name: 'Sales & Invoicing',
   description: 'Complete sales management with quotes, invoices, and payment processing',
   ui: {
@@ -974,7 +1000,7 @@ export default defineFeature({
     hasConvex: true,
     hasTests: true,
     version: '1.0.0',
-    dependencies: ['erp-crm', 'erp-inventory'],
+    dependencies: ['crm', 'inventory'],
   },
   status: {
     state: 'development',

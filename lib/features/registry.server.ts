@@ -48,10 +48,29 @@ export async function loadFeatures(): Promise<FeatureConfig[]> {
   }
 
   const rootDir = process.cwd()
-  const configFiles = glob.sync('frontend/features/*/config.ts', {
+  // Support both config.ts and config/index.ts patterns
+  const configFilesRoot = glob.sync('frontend/features/*/config.ts', {
     cwd: rootDir,
     absolute: true,
   })
+  const configFilesNested = glob.sync('frontend/features/*/config/index.ts', {
+    cwd: rootDir,
+    absolute: true,
+  })
+  // Combine and dedupe (prefer root config.ts if both exist)
+  const seenDirs = new Set<string>()
+  const configFiles: string[] = []
+  for (const f of configFilesRoot) {
+    const featureDir = path.dirname(f)
+    seenDirs.add(featureDir)
+    configFiles.push(f)
+  }
+  for (const f of configFilesNested) {
+    const featureDir = path.dirname(path.dirname(f)) // config/index.ts -> feature dir
+    if (!seenDirs.has(featureDir)) {
+      configFiles.push(f)
+    }
+  }
 
   const features: FeatureConfig[] = []
   const metaMap = new Map<string, FeatureMeta>()
@@ -62,7 +81,10 @@ export async function loadFeatures(): Promise<FeatureConfig[]> {
       const module = await import(configPath)
       if (module.default) {
         const feature = module.default as FeatureConfig
-        const featureDir = path.dirname(configPath)
+        // Handle both config.ts and config/index.ts paths
+        const featureDir = configPath.endsWith('config/index.ts') 
+          ? path.dirname(path.dirname(configPath))
+          : path.dirname(configPath)
         const meta: FeatureMeta = {
           slug: path.basename(featureDir),
           featureDir,
@@ -91,10 +113,29 @@ export async function loadFeatures(): Promise<FeatureConfig[]> {
  */
 export function loadFeaturesSync(): FeatureConfig[] {
   const rootDir = process.cwd()
-  const configFiles = glob.sync('frontend/features/*/config.ts', {
+  // Support both config.ts and config/index.ts patterns
+  const configFilesRoot = glob.sync('frontend/features/*/config.ts', {
     cwd: rootDir,
     absolute: true,
   })
+  const configFilesNested = glob.sync('frontend/features/*/config/index.ts', {
+    cwd: rootDir,
+    absolute: true,
+  })
+  // Combine and dedupe (prefer root config.ts if both exist)
+  const seenDirs = new Set<string>()
+  const configFiles: string[] = []
+  for (const f of configFilesRoot) {
+    const featureDir = path.dirname(f)
+    seenDirs.add(featureDir)
+    configFiles.push(f)
+  }
+  for (const f of configFilesNested) {
+    const featureDir = path.dirname(path.dirname(f)) // config/index.ts -> feature dir
+    if (!seenDirs.has(featureDir)) {
+      configFiles.push(f)
+    }
+  }
 
   const features: FeatureConfig[] = []
   const metaMap = new Map<string, FeatureMeta>()
@@ -106,7 +147,10 @@ export function loadFeaturesSync(): FeatureConfig[] {
       const module = require(configPath)
       if (module.default) {
         const feature = module.default as FeatureConfig
-        const featureDir = path.dirname(configPath)
+        // Handle both config.ts and config/index.ts paths
+        const featureDir = configPath.endsWith('config/index.ts') || configPath.endsWith('config\\index.ts')
+          ? path.dirname(path.dirname(configPath))
+          : path.dirname(configPath)
         const meta: FeatureMeta = {
           slug: path.basename(featureDir),
           featureDir,

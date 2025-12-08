@@ -1,16 +1,20 @@
-import { defineFeature } from '@/lib/features/defineFeature'
+/**
+ * ERP CRM Module Configuration
+ */
+
+import { defineFeature } from "@/lib/features/defineFeature"
 
 export default defineFeature({
   id: 'crm',
   name: 'CRM',
-  description: 'Customer relationship management with integrated chat',
+  description: 'Customer Relationship Management with contacts, leads, opportunities, and sales pipeline',
 
   ui: {
-    icon: 'Contact',
-    path: '/dashboard/crm',
-    component: 'CRMPage',
-    category: 'productivity',
-    order: 17,
+    icon: 'Users',
+    path: '/dashboard/erp/crm',
+    component: 'CrmPage',
+    category: 'administration',
+    order: 120,
   },
 
   technical: {
@@ -21,19 +25,26 @@ export default defineFeature({
     version: '1.0.0',
   },
 
+  dependencies: ['notifications'],
+
   status: {
     state: 'stable',
     isReady: true,
   },
 
-  // Bundle membership
   bundles: {
     core: [],
-    recommended: ['sales-crm', 'business-pro', 'digital-agency'],
-    optional: [
-      'startup', 'project-management',
-    ],
+    recommended: ["business-pro", "sales-crm", "digital-agency"],
+    optional: ["startup"],
   },
 
-  tags: ['crm', 'customers', 'sales'],
+  permissions: [
+    'erp.crm.view',
+    'erp.crm.create',
+    'erp.crm.edit',
+    'erp.crm.delete',
+    'erp.crm.export',
+  ],
+
+  tags: ["erp", "crm", "customers", "leads", "sales"],
 })

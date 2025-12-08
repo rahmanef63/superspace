@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import usePresence from "@convex-dev/presence/react";
 import { api } from "@convex/_generated/api";

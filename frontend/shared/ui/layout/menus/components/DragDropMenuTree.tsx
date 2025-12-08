@@ -8,6 +8,9 @@ import {
   Copy,
   ArrowUpCircle,
   Shield,
+  Settings,
+  Eye,
+  Info,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -40,7 +43,14 @@ export function DragDropMenuTree({
   onItemSelect,
   selectedItemId,
   featureConfig,
-}: DragDropMenuTreeProps) {
+  onSettings,
+  onPreview,
+  onShowDetails,
+}: DragDropMenuTreeProps & {
+  onSettings?: (slug: string) => void
+  onPreview?: (slug: string) => void
+  onShowDetails?: (itemId: Id<"menuItems">) => void
+}) {
   const context = useOptionalSecondaryMenuContext()
   const mergedConfig = useMemo<SecondaryMenuFeatureConfig>(
     () => ({
@@ -421,6 +431,54 @@ export function DragDropMenuTree({
             </div>
           )}
 
+          {/* 3 Hover Buttons - Settings, Preview, View Details */}
+          {item.slug && item.slug !== "#" && (
+            <div className="z-20 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onSettings && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSettings(item.slug)
+                  }}
+                  title="Settings"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {onPreview && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onPreview(item.slug)
+                  }}
+                  title="Preview"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {onShowDetails && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onShowDetails(item._id)
+                  }}
+                  title="View Details"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -490,12 +548,14 @@ export function DragDropMenuTree({
           </DropdownMenu>
         </div>
 
-        {hasChildren && isExpanded && (
-          <div className="space-y-1">
-            {item.children?.map((child) => renderTreeItem(child, level + 1))}
-          </div>
-        )}
-      </div>
+        {
+          hasChildren && isExpanded && (
+            <div className="space-y-1">
+              {item.children?.map((child) => renderTreeItem(child, level + 1))}
+            </div>
+          )
+        }
+      </div >
     )
   }
 
@@ -511,10 +571,10 @@ export function DragDropMenuTree({
           style={
             dropPreview?.id === 'root'
               ? {
-                  borderColor: ACCENT_COLORS.boundary,
-                  backgroundColor: ACCENT_COLORS.background,
-                  opacity: 0.16,
-                }
+                borderColor: ACCENT_COLORS.boundary,
+                backgroundColor: ACCENT_COLORS.background,
+                opacity: 0.16,
+              }
               : undefined
           }
           onDragOver={(event) => {

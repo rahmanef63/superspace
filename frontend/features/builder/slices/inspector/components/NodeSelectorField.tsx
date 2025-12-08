@@ -1,5 +1,5 @@
 import React from 'react';
-import type { CMSNode } from '@/frontend/shared/foundation';
+import type { CMSNode } from '@/frontend/features/builder/shared/types';
 import { Select } from '@/components/ui';
 import { getWidgetConfig } from '@/frontend/features/builder/shared/registry';
 

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { action } from "../../_generated";
-import { requirePermission } from "../../../shared/auth";
-import { PERMS } from "../../../shared/schema";
-import { logAuditEvent } from "../../../shared/audit";
+import { requirePermission } from "../../../../shared/auth";
+import { PERMS } from "../../../../shared/schema";
+import { logAuditEvent } from "../../../../shared/audit";
 import type { ActionCtxWithDb } from "../../../../auth/helpers";
 
 type NavigationTranslationArray = Array<{

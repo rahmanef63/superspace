@@ -14,7 +14,7 @@ import type { Id } from "@convex/_generated/dataModel";
 export const useWorkspaceContext = (workspaceId: Id<"workspaces"> | null | undefined) => {
   return useQuery(
     (api as any)["features/knowledge/api/workspaceContext"].getWorkspaceContext,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 };
 
@@ -33,7 +33,7 @@ export const useUpdateWorkspaceContext = () => {
 export const useWorkspaceContextForAI = (workspaceId: Id<"workspaces"> | null | undefined) => {
   return useQuery(
     (api as any)["features/knowledge/api/workspaceContext"].getWorkspaceContextForAI,
-    workspaceId ? { workspaceId } : "skip"
+    workspaceId ? { workspaceId } : undefined
   );
 };
 

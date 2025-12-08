@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { InspectorField as IField, CMSNode, CMSEdge } from '@/frontend/shared/foundation';
+import type { InspectorField as IField } from '@/frontend/shared/foundation';
+import type { CMSNode, CMSEdge } from '@/frontend/features/builder/shared/types';
 import { Input, Label, Select, Switch } from '@/components/ui';
 import { NodeSelectorField } from './NodeSelectorField';
 import { AutoConnectButton } from './AutoConnectButton';

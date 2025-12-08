@@ -1,4 +1,4 @@
-import type { AIMessage, AIConversation, AISettings } from "../types"
+import type { AIMessageData as AIMessage, AIConversation, AISettings } from "../types"
 
 export class AIService {
   private baseUrl: string

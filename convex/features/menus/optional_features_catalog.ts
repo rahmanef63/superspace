@@ -107,22 +107,6 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
-    "slug": "crm",
-    "name": "CRM",
-    "description": "Customer relationship management with integrated chat",
-    "icon": "Contact",
-    "version": "1.0.0",
-    "category": "productivity",
-    "tags": [
-      "crm",
-      "customers",
-      "sales"
-    ],
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
     "slug": "notifications",
     "name": "Notifications",
     "description": "System notifications and activity feed",
@@ -191,6 +175,94 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "automation.create",
     "originalRequiresPermission": "automation.create",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "hr",
+    "name": "HR Management",
+    "description": "Human Resources Management",
+    "icon": "Users",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "hr",
+      "administration"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "accounting",
+    "name": "Accounting",
+    "description": "Financial Management and Accounting",
+    "icon": "Calculator",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "accounting",
+      "administration"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "sales",
+    "name": "Sales & Invoicing",
+    "description": "Complete sales management solution with quotes, invoices, recurring billing, payment processing, and sales analytics",
+    "icon": "ShoppingCart",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "erp",
+      "sales",
+      "invoicing",
+      "payments"
+    ],
+    "requiresPermission": "erp.sales.view",
+    "originalRequiresPermission": "erp.sales.view",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "inventory",
+    "name": "Inventory Management",
+    "description": "Comprehensive inventory management with multi-warehouse support, stock tracking, and demand forecasting",
+    "icon": "Package",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "erp",
+      "inventory",
+      "warehouse",
+      "stock"
+    ],
+    "requiresPermission": "erp.inventory.view",
+    "originalRequiresPermission": "erp.inventory.view",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "crm",
+    "name": "CRM",
+    "description": "Customer Relationship Management with contacts, leads, opportunities, and sales pipeline",
+    "icon": "Users",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "erp",
+      "crm",
+      "customers",
+      "leads",
+      "sales"
+    ],
+    "requiresPermission": "erp.crm.view",
+    "originalRequiresPermission": "erp.crm.view",
     "status": "stable",
     "isReady": true,
     "featureType": "optional"

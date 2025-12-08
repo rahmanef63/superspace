@@ -1,1 +1,1 @@
-﻿export * from "./useDocumentsManager";
+export * from "./useDocumentsManager";

@@ -56,10 +56,12 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
     },
 
     editMessage: async (roomId, messageId, patch) => {
+      const content = typeof patch.content === 'string' 
+        ? patch.content 
+        : (patch.content?.markdown ?? patch.content?.text ?? "");
       const result = await editMessageMutation({
-        conversationId: roomId as Id<"conversations">,
         messageId: messageId as Id<"messages">,
-        content: patch.content?.markdown ?? patch.content?.text ?? patch.content ?? "",
+        content,
       });
 
       return result as any;
@@ -67,9 +69,7 @@ export function useConvexChatDataSource(workspaceId: Id<"workspaces"> | null): C
 
     deleteMessage: async (roomId, messageId, hard) => {
       await deleteMessageMutation({
-        conversationId: roomId as Id<"conversations">,
         messageId: messageId as Id<"messages">,
-        hard,
       });
     },
 
@@ -130,7 +130,7 @@ export function useChatMessages(roomId: string | undefined) {
 export function useChatRoom(roomId: string | undefined) {
   const room = useQuery(
     api.features.chat.conversations.getConversation,
-    roomId ? { conversationId: roomId as Id<"conversations"> } : "skip"
+    roomId ? { conversationId: roomId as Id<"conversations"> } : undefined
   );
 
   return room;
@@ -142,7 +142,7 @@ export function useChatRoom(roomId: string | undefined) {
 export function useChatParticipants(roomId: string | undefined) {
   const conversation = useQuery(
     api.features.chat.conversations.getConversation,
-    roomId ? { conversationId: roomId as Id<"conversations"> } : "skip"
+    roomId ? { conversationId: roomId as Id<"conversations"> } : undefined
   );
 
   return (conversation?.participants as any) || [];

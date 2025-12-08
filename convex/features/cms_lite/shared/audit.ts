@@ -1,1 +1,1 @@
-export * from "../../shared/audit";
+export * from "../../../shared/audit";

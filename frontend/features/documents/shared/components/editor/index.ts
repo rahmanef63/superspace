@@ -1,4 +1,4 @@
-﻿// Editor implementations
+// Editor implementations
 export * from "./BlockNoteDocumentEditor";
 export * from "./TiptapDocumentEditor";
 export * from "./TiptapCanvas";

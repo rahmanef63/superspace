@@ -6,14 +6,67 @@
  * Renders the active settings component with responsive layout
  */
 
-import React from "react"
-import { ArrowLeft } from "lucide-react"
+import React, { Component, type ReactNode, type ErrorInfo } from "react"
+import { ArrowLeft, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useSettingsRegistry } from "../SettingsRegistry"
 import { DynamicSettingsSidebar } from "./DynamicSettingsSidebar"
 import type { SettingsCategory } from "../types"
+
+// Error boundary for individual settings components
+class SettingsErrorBoundary extends Component<
+  { children: ReactNode; categoryId: string; onReset?: () => void },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: ReactNode; categoryId: string; onReset?: () => void }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error(`Settings component "${this.props.categoryId}" failed:`, error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+          <div className="max-w-md space-y-4">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+            <h2 className="text-xl font-semibold">Settings Failed to Load</h2>
+            <p className="text-sm text-muted-foreground">
+              This settings section encountered an error and couldn't be displayed.
+            </p>
+            <details className="text-left text-xs bg-muted p-3 rounded-md">
+              <summary className="cursor-pointer font-medium">Technical Details</summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap">
+                {this.state.error?.message || "Unknown error"}
+              </pre>
+            </details>
+            <Button
+              variant="outline"
+              onClick={() => {
+                this.setState({ hasError: false, error: undefined })
+                this.props.onReset?.()
+              }}
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 export interface DynamicSettingsViewProps {
   /** Page title */
@@ -112,7 +165,7 @@ export function DynamicSettingsView({
 
   return (
     <div className={cn("flex flex-col w-full h-full bg-background", className)}>
-      
+
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
@@ -129,9 +182,9 @@ export function DynamicSettingsView({
         />
 
         {/* Content */}
-        <div
+        <ScrollArea
           className={cn(
-            "flex-1 bg-background overflow-y-auto",
+            "flex-1 bg-background",
             isMobile && showSidebar && "hidden"
           )}
         >
@@ -152,7 +205,9 @@ export function DynamicSettingsView({
 
           {/* Active Settings Component */}
           {ActiveComponent ? (
-            <ActiveComponent />
+            <SettingsErrorBoundary categoryId={activeCategory || "unknown"}>
+              <ActiveComponent />
+            </SettingsErrorBoundary>
           ) : (
             <div className="flex items-center justify-center h-full p-8">
               <div className="text-center">
@@ -163,7 +218,7 @@ export function DynamicSettingsView({
               </div>
             </div>
           )}
-        </div>
+        </ScrollArea>
       </div>
     </div>
   )

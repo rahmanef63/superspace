@@ -10,6 +10,7 @@
 "use client"
 
 import * as React from "react"
+import { useThreeColumnLayoutSafe } from "@/frontend/shared/ui/layout/container"
 import {
     Hash,
     Volume2,
@@ -85,7 +86,7 @@ import {
     useCategories,
     useChannels,
     useSelectedChannelId,
-    useDirectConversations,
+    useDirectConversations as useDirectConversationsStore,
     useSelectedDirectId,
     useViewMode,
     useCommunicationWorkspaceId,
@@ -95,6 +96,9 @@ import {
     type ChannelCategory,
     type DirectConversation,
 } from "../shared"
+
+// Backend hook for fetching conversations
+import { useDirectConversations as useDirectConversationsQuery } from "../hooks/useDirectMessages"
 
 // Channel type icons
 const channelIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -144,12 +148,24 @@ export function CommunicationSidebar({
     const categories = useCategories()
     const channels = useChannels()
     const selectedChannelId = useSelectedChannelId()
-    const conversations = useDirectConversations()
+
+    // Fetch conversations from backend hook
+    const { conversations: backendConversations, isLoading: conversationsLoading } = useDirectConversationsQuery({
+        workspaceId: workspaceId as any
+    })
+
+    // Use backend conversations if available, fallback to store for client-side state
+    const storeConversations = useDirectConversationsStore()
+    const conversations = backendConversations.length > 0 ? backendConversations : storeConversations
+
     const selectedDirectId = useSelectedDirectId()
     const viewMode = useViewMode()
     const communicationWorkspaceId = useCommunicationWorkspaceId()
     const isPrivateMode = useIsPrivateMode()
     const isPrivateDMs = useIsPrivateDMs()
+
+    // Layout context for mobile navigation
+    const layoutContext = useThreeColumnLayoutSafe()
 
     const selectChannel = useCommunicationsStore(state => state.selectChannel)
     const selectDirectConversation = useCommunicationsStore(state => state.selectDirectConversation)
@@ -159,6 +175,19 @@ export function CommunicationSidebar({
     const setCommunicationWorkspace = useCommunicationsStore(state => state.setCommunicationWorkspace)
     const togglePrivateMode = useCommunicationsStore(state => state.togglePrivateMode)
     const togglePrivateDMs = useCommunicationsStore(state => state.togglePrivateDMs)
+
+    // Wrapped handlers that also trigger mobile navigation
+    const handleSelectChannel = React.useCallback((channelId: string) => {
+        selectChannel(channelId)
+        // On mobile, navigate to center panel after selecting
+        layoutContext?.toggleLeft?.()
+    }, [selectChannel, layoutContext])
+
+    const handleSelectDirectConversation = React.useCallback((conversationId: string) => {
+        selectDirectConversation(conversationId)
+        // On mobile, navigate to center panel after selecting
+        layoutContext?.toggleLeft?.()
+    }, [selectDirectConversation, layoutContext])
 
     // Track collapsed categories
     const [collapsedCategories, setCollapsedCategories] = React.useState<Set<string>>(new Set())
@@ -269,6 +298,8 @@ export function CommunicationSidebar({
             setViewMode("call")
         }
         selectChannel(channel.id)
+        // On mobile, navigate to center panel after selecting
+        layoutContext?.toggleLeft?.()
     }
 
     const handleBack = () => {
@@ -436,7 +467,7 @@ export function CommunicationSidebar({
                             collapsedCategories={collapsedCategories}
                             voiceUsers={voiceUsers}
                             onToggleCategory={toggleCategory}
-                            onSelectChannel={selectChannel}
+                            onSelectChannel={handleSelectChannel}
                             onVoiceChannelClick={handleVoiceChannelClick}
                             onAddChannel={() => openModal("create-channel")}
                         />
@@ -444,7 +475,7 @@ export function CommunicationSidebar({
                         <ConversationList
                             conversations={filteredConversations || conversations}
                             selectedId={selectedDirectId}
-                            onSelect={selectDirectConversation}
+                            onSelect={handleSelectDirectConversation}
                             onNewDM={() => setShowNewDMDialog(true)}
                         />
                     )}

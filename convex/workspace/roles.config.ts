@@ -68,6 +68,7 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
       PERMS.CREATE_CONVERSATIONS,
       PERMS.MANAGE_CONVERSATIONS,
       PERMS.VIEW_WORKSPACE,
+      PERMS.COMMUNICATIONS_VIEW,
     ],
     cmsPermissions: [
       "system.manage_users",
@@ -107,6 +108,7 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
       PERMS.CREATE_CONVERSATIONS,
       PERMS.MANAGE_CONVERSATIONS,
       PERMS.VIEW_WORKSPACE,
+      PERMS.COMMUNICATIONS_VIEW,
     ],
     cmsPermissions: [
       "workspace.manage",
@@ -138,6 +140,7 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
       PERMS.DOCUMENTS_EDIT,
       PERMS.CREATE_CONVERSATIONS,
       PERMS.VIEW_WORKSPACE,
+      PERMS.COMMUNICATIONS_VIEW,
     ],
     cmsPermissions: [
       "content.create",
@@ -157,7 +160,7 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
     color: "#6b7280",
     level: 70,
     isDefault: true,
-    workspacePermissions: [PERMS.CREATE_CONVERSATIONS, PERMS.VIEW_WORKSPACE],
+    workspacePermissions: [PERMS.CREATE_CONVERSATIONS, PERMS.VIEW_WORKSPACE, PERMS.COMMUNICATIONS_VIEW],
     cmsPermissions: ["settings.view", "storage.view", "cart.use"],
   },
   {

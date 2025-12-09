@@ -39,6 +39,7 @@ import {
 
 // Communications store
 import { useCommunicationsStore } from "../shared"
+import { useDirectMessageMutations } from "../hooks/useDirectMessages"
 
 // Contacts API (formerly Contacts)
 import { useContactsApi } from "@/frontend/features/contact/api"
@@ -47,6 +48,7 @@ import { useContactsApi } from "@/frontend/features/contact/api"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import type { Id } from "@/convex/_generated/dataModel"
 
 // Helper function to get initials
 const getInitials = (name?: string | null, email?: string | null): string => {
@@ -102,6 +104,10 @@ export function NewDMDialog({ open, onOpenChange }: NewDMDialogProps) {
     const selectDirectConversation = useCommunicationsStore(state => state.selectDirectConversation)
     const setViewMode = useCommunicationsStore(state => state.setViewMode)
 
+    // Backend mutations
+    const { createConversation } = useDirectMessageMutations()
+    const [isCreating, setIsCreating] = React.useState(false)
+
     // Get contacts (Contacts)
     const { Contacts } = useContactsApi()
 
@@ -144,67 +150,52 @@ export function NewDMDialog({ open, onOpenChange }: NewDMDialogProps) {
         )
     }, [searchQuery])
 
-    const handleSelectContact = (contact: any) => {
-        const participantId = contact.Contact?._id || contact._id
-        // Create DM conversation with contact
-        const newConversation = {
-            id: `dm-${Date.now()}`,
-            type: "direct" as const,
-            participants: [
-                {
-                    id: participantId,
-                    conversationId: `dm-${Date.now()}`,
-                    userId: participantId,
-                    user: {
-                        id: participantId,
-                        name: contact.Contact?.name || contact.name,
-                        avatar: contact.Contact?.image || contact.image,
-                        status: "online" as const,
-                    },
-                    joinedAt: new Date().toISOString(),
-                }
-            ],
-            participantIds: [participantId],
-            createdBy: "current-user",
-            name: contact.Contact?.name || contact.name || "Direct Message",
-            createdAt: new Date().toISOString(),
-        }
+    const handleSelectContact = async (contact: any) => {
+        if (isCreating) return
+        setIsCreating(true)
 
-        addDirectConversation(newConversation)
-        selectDirectConversation(newConversation.id)
-        setViewMode("dm")
-        onOpenChange(false)
+        try {
+            const participantId = contact.Contact?._id || contact._id
+
+            // Call backend to create or get existing conversation
+            const conversationId = await createConversation({
+                participantIds: [participantId as Id<"users">],
+                workspaceId: workspaceId as Id<"workspaces"> | undefined,
+            })
+
+            if (conversationId) {
+                selectDirectConversation(String(conversationId))
+                setViewMode("dm")
+            }
+            onOpenChange(false)
+        } catch (error) {
+            console.error("Failed to create conversation:", error)
+        } finally {
+            setIsCreating(false)
+        }
     }
 
-    const handleSelectMember = (member: any) => {
-        // Create DM conversation with workspace member
-        const newConversation = {
-            id: `dm-${Date.now()}`,
-            type: "direct" as const,
-            participants: [
-                {
-                    id: member.userId,
-                    conversationId: `dm-${Date.now()}`,
-                    userId: member.userId,
-                    user: {
-                        id: member.userId,
-                        name: member.name,
-                        avatar: member.image,
-                        status: "online" as const,
-                    },
-                    joinedAt: new Date().toISOString(),
-                }
-            ],
-            participantIds: [member.userId],
-            createdBy: "current-user",
-            name: member.name || "Direct Message",
-            createdAt: new Date().toISOString(),
-        }
+    const handleSelectMember = async (member: any) => {
+        if (isCreating) return
+        setIsCreating(true)
 
-        addDirectConversation(newConversation)
-        selectDirectConversation(newConversation.id)
-        setViewMode("dm")
-        onOpenChange(false)
+        try {
+            // Call backend to create or get existing conversation
+            const conversationId = await createConversation({
+                participantIds: [member.userId as Id<"users">],
+                workspaceId: workspaceId as Id<"workspaces"> | undefined,
+            })
+
+            if (conversationId) {
+                selectDirectConversation(String(conversationId))
+                setViewMode("dm")
+            }
+            onOpenChange(false)
+        } catch (error) {
+            console.error("Failed to create conversation:", error)
+        } finally {
+            setIsCreating(false)
+        }
     }
 
     const handleSelectAI = (bot: typeof AI_BOTS[0]) => {

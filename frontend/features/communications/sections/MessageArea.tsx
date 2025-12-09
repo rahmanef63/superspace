@@ -30,8 +30,23 @@ import {
   useSelectedChannelId,
   useTypingIndicators,
   useRightPanelOpen,
+  useSelectedDirectId,
+  useDirectConversations as useDirectConversationsStore,
+  useDirectMessages as useDirectMessagesStore,
   type Message,
+  type DirectMessage,
+  type DirectConversation,
+  type Channel,
 } from "../shared"
+
+// Hooks for backend mutations and queries
+import {
+  useDirectMessageMutations,
+  useDirectConversations as useDirectConversationsQuery,
+  useDirectMessages as useDirectMessagesQuery,
+} from "../hooks/useDirectMessages"
+import { useCommunications } from "../hooks/useCommunications"
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
 interface MessageAreaProps {
   type: "channel" | "direct"
@@ -39,15 +54,39 @@ interface MessageAreaProps {
 }
 
 export function MessageArea({ type, className }: MessageAreaProps) {
+  // Backend mutations and workspace context
+  const { sendMessage: sendDMMessage } = useDirectMessageMutations()
+  const { workspaceId } = useWorkspaceContext()
+  const { sendMessage: sendChannelMessage } = useCommunications(workspaceId)
+
+  // Channel state
   const selectedChannel = useSelectedChannel()
   const selectedChannelId = useSelectedChannelId()
-  const messages = useChannelMessages(selectedChannelId || "")
-  const typingUsers = useTypingIndicators(selectedChannelId || "")
+  const channelMessages = useChannelMessages(selectedChannelId || "")
+
+  // DM state - fetch from backend
+  const selectedDirectId = useSelectedDirectId()
+  const { conversations: backendConversations } = useDirectConversationsQuery({
+    workspaceId: workspaceId as any
+  })
+  const { messages: backendMessages, isLoading: messagesLoading } = useDirectMessagesQuery({
+    conversationId: selectedDirectId || undefined
+  })
+
+  // Determine active selection based on type
+  const selectedId = type === "channel" ? selectedChannelId : selectedDirectId
+  const selectedItem = type === "channel"
+    ? selectedChannel
+    : backendConversations.find(c => c.id === selectedDirectId) || null
+
+  // Use backend messages for DMs, store messages for channels
+  const messages = (type === "channel" ? channelMessages : backendMessages) as Message[]
+
+  const typingUsers = useTypingIndicators(selectedId || "")
   const rightPanelOpen = useRightPanelOpen()
 
   const setRightPanelContent = useCommunicationsStore(state => state.setRightPanelContent)
   const toggleRightPanel = useCommunicationsStore(state => state.toggleRightPanel)
-  const addMessage = useCommunicationsStore(state => state.addMessage)
   const setActiveCall = useCommunicationsStore(state => state.setActiveCall)
   const setViewMode = useCommunicationsStore(state => state.setViewMode)
 
@@ -114,70 +153,59 @@ export function MessageArea({ type, className }: MessageAreaProps) {
   }
 
   // Handle message send
-  const handleSendMessage = (content: string, attachments?: File[]) => {
-    if (!selectedChannelId) return
+  const handleSendMessage = async (content: string, attachments?: File[]) => {
+    if (!selectedId) return
 
-    const createdAt = new Date().toISOString()
-
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      channelId: selectedChannelId,
-      content,
-      senderId: "user-current",
-      senderType: "user",
-      sender: {
-        id: "user-current",
-        name: "You",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=You",
-      },
-      type: "text",
-      createdAt,
-      timestamp: new Date(createdAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-      }),
-      attachments: attachments?.map((file, i) => ({
-        id: `att-${Date.now()}-${i}`,
-        name: file.name,
-        type: (file.type.startsWith("image/") ? "image" :
-          file.type.startsWith("video/") ? "video" :
-            file.type.startsWith("audio/") ? "audio" : "file") as "image" | "video" | "audio" | "file",
-        size: file.size,
-      })) || [],
-      reactions: [],
-      isEdited: false,
-      isPinned: false,
-      replyToId: replyingTo?.id,
-      replyTo: replyingTo || undefined,
+    try {
+      if (type === "channel") {
+        // For channels, use the channel message mutation
+        await sendChannelMessage({
+          conversationId: selectedId as any,
+          content,
+          type: "text",
+          replyToId: replyingTo?.id as any,
+        })
+      } else {
+        // For DMs, use the direct message mutation
+        await sendDMMessage({
+          conversationId: selectedId,
+          content,
+          type: "text",
+          replyToId: replyingTo?.id,
+        })
+      }
+      setReplyingTo(null)
+    } catch (error) {
+      console.error("Failed to send message:", error)
     }
-
-    addMessage(selectedChannelId, newMessage)
-    setReplyingTo(null)
   }
 
   // Start a call
   const handleStartCall = (isVideo = false) => {
-    if (!selectedChannel) return
+    if (!selectedItem) return
+
+    // Generate call ID
+    const callId = `call-${Date.now()}`
 
     setActiveCall({
-      id: `call-${Date.now()}`,
-      channelId: selectedChannel.id,
+      id: callId,
+      channelId: selectedItem.id,
       workspaceId: "ws-default",
       type: isVideo ? "video" : "audio",
       status: "active",
       initiatorId: "user-current",
-      title: `${selectedChannel.name} Call`,
+      title: `${selectedItem.name} Call`,
       startedAt: new Date().toISOString(),
     })
     setViewMode("call")
   }
 
-  if (!selectedChannel) {
+  if (!selectedItem) {
     return (
       <div className={cn("flex items-center justify-center h-full", className)}>
         <div className="text-center">
           <Hash className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-          <h3 className="font-semibold text-lg mb-2">No Channel Selected</h3>
+          <h3 className="font-semibold text-lg mb-2">No {type === "channel" ? "Channel" : "Conversation"} Selected</h3>
           <p className="text-muted-foreground text-sm max-w-sm">
             Select a {type === "channel" ? "channel" : "conversation"} from the sidebar to start chatting
           </p>
@@ -189,8 +217,9 @@ export function MessageArea({ type, className }: MessageAreaProps) {
   return (
     <div className={cn("flex flex-col h-full bg-background", className)}>
       {/* Header */}
+      {/* Header */}
       <ChannelHeader
-        channel={selectedChannel}
+        channel={selectedItem as Channel}
         memberCount={5}
         pinnedCount={2}
         onMembersClick={() => {
@@ -215,11 +244,11 @@ export function MessageArea({ type, className }: MessageAreaProps) {
                 <Hash className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-bold text-2xl mb-2">
-                Welcome to #{selectedChannel.name}!
+                Welcome to #{selectedItem.name}!
               </h3>
               <p className="text-muted-foreground max-w-md">
-                This is the start of the #{selectedChannel.name} channel.
-                {selectedChannel.description && ` ${selectedChannel.description}`}
+                This is the start of the #{selectedItem.name} {type === "channel" ? "channel" : "conversation"}.
+                {(selectedItem as any).description && ` ${(selectedItem as any).description}`}
               </p>
             </div>
           ) : (
@@ -290,8 +319,8 @@ export function MessageArea({ type, className }: MessageAreaProps) {
       {/* Message Input */}
       <div className="px-4 pb-4 pt-2 shrink-0">
         <MessageComposer
-          channelName={selectedChannel.name}
-          channelId={selectedChannelId || ""}
+          channelName={selectedItem.name}
+          channelId={selectedId || ""}
           replyTo={replyingTo}
           onCancelReply={() => setReplyingTo(null)}
           onSend={handleSendMessage}

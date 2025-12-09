@@ -43,7 +43,7 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
   const addChat = useWhatsAppStore((s) => s.addChat)
 
   const { workspaceId } = useWorkspaceContext()
-  const Contacts = useQuery(api.user.Contacts.getUserContacts) as any[] | undefined
+  const Contacts = useQuery(api.user.contacts.getUserContacts) as any[] | undefined
   const me = useQuery(api.auth.auth.loggedInUser) as any
 
   // Mutations for CRUD operations
@@ -298,9 +298,22 @@ export function ChatListView({ showArchived = false, variant = "standalone" }: C
             const list = (Contacts as any[]) || []
             const meId = String((me as any)?._id || "")
             return list.map((row: any) => {
-              const u = (row && (row.Contact || row)) || {}
-              // Resolve the Contact's user id; avoid using Contactship._id
-              const candidateUserId = u?._id || ((row?.user1Id && String(row.user1Id) !== meId) ? row.user1Id : row?.user2Id)
+              // The query returns { ...contactship, contact: user }
+              // We need to handle both the populated 'contact' field and fallback logic
+              const u = row.contact || row.Contact || row
+
+              // If u is the contact object (User), u._id is the User ID.
+              // If u is the Contactship row (fallback), we try to find the other user ID.
+              const isUserObj = u.email || u.name // Heuristic to check if u is a User object
+
+              let candidateUserId = u._id
+              if (!isUserObj && row.user1Id && row.user2Id) {
+                candidateUserId = String(row.user1Id) !== meId ? row.user1Id : row.user2Id
+              } else if (u === row && (row.user1Id || row.user2Id)) {
+                // Fallback if structure is unexpected
+                candidateUserId = String(row.user1Id) !== meId ? row.user1Id : row.user2Id
+              }
+
               const id = candidateUserId
               const nameRaw = u.name || u.fullName || (u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.firstName) || ""
               const email = u.email || u.emailAddress || u.primaryEmail || (u.emailAddresses?.[0]?.emailAddress) || ""

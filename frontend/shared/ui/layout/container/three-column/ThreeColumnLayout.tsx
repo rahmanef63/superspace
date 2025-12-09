@@ -13,7 +13,16 @@
 "use client"
 
 import * as React from "react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { 
+  PanelLeftOpen, 
+  PanelLeftClose, 
+  PanelRightOpen, 
+  PanelRightClose,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import { ResizeHandle } from "../ResizeHandle"
 import { ThreeColumnContext } from "./context"
 import { usePersistedState, useResponsiveCollapse, useStackedLayout } from "./hooks"
@@ -65,6 +74,13 @@ export function ThreeColumnLayoutAdvanced({
 }: ThreeColumnLayoutAdvancedProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
+  // Stack layout for mobile - check this FIRST
+  const isStacked = useStackedLayout(stackAt)
+
+  // Mobile navigation state (separate from desktop collapse state)
+  // On mobile: 'left' = show list, 'center' = show main content, 'right' = show detail
+  const [mobileView, setMobileView] = React.useState<'left' | 'center' | 'right'>('left')
+
   // Persisted state
   const [persistedState, setPersistedState] = usePersistedState(
     storageKey,
@@ -72,7 +88,7 @@ export function ThreeColumnLayoutAdvanced({
     persistState
   )
 
-  // Internal collapse state (uncontrolled)
+  // Internal collapse state (uncontrolled) - for DESKTOP only
   const [internalLeftCollapsed, setInternalLeftCollapsed] = React.useState(
     persistState ? persistedState.leftCollapsed : defaultLeftCollapsed
   )
@@ -80,14 +96,11 @@ export function ThreeColumnLayoutAdvanced({
     persistState ? persistedState.rightCollapsed : defaultRightCollapsed
   )
 
-  // Auto-collapse based on responsive breakpoints
-  const autoLeftCollapsed = useResponsiveCollapse(collapseLeftAt)
-  const autoRightCollapsed = useResponsiveCollapse(collapseRightAt)
+  // Auto-collapse based on responsive breakpoints - DESKTOP only
+  const autoLeftCollapsed = useResponsiveCollapse(isStacked ? undefined : collapseLeftAt)
+  const autoRightCollapsed = useResponsiveCollapse(isStacked ? undefined : collapseRightAt)
 
-  // Stack layout for mobile
-  const isStacked = useStackedLayout(stackAt)
-
-  // Determine actual collapse state
+  // Determine actual collapse state - DESKTOP only
   const isLeftControlled = controlledLeftCollapsed !== undefined
   const isRightControlled = controlledRightCollapsed !== undefined
 
@@ -177,66 +190,92 @@ export function ThreeColumnLayoutAdvanced({
     toggleRight,
   }), [leftCollapsed, rightCollapsed, toggleLeft, toggleRight])
 
-  // Stacked layout for mobile
+  // Mobile stacked layout - full screen navigation with back/forward
   if (isStacked) {
+    // Mobile navigation handlers
+    const goToCenter = () => setMobileView('center')
+    const goToLeft = () => setMobileView('left')
+    const goToRight = () => setMobileView('right')
+
+    // Also update context for external components that might use toggleLeft/toggleRight
+    const mobileContextValue = {
+      leftCollapsed: mobileView !== 'left',
+      rightCollapsed: mobileView !== 'right',
+      toggleLeft: mobileView === 'left' ? goToCenter : goToLeft,
+      toggleRight: mobileView === 'right' ? goToCenter : goToRight,
+    }
+
     return (
-      <ThreeColumnContext.Provider value={contextValue}>
+      <ThreeColumnContext.Provider value={mobileContextValue}>
         <div 
           ref={containerRef}
-          className={cn("flex flex-col w-full h-full", className)}
+          className={cn("relative flex flex-col w-full h-full overflow-hidden", className)}
         >
-          {!leftCollapsed && (
-            <div className="border-b" style={{ height: "auto", maxHeight: "30vh" }}>
-              <PanelHeader
-                side="left"
-                collapsed={leftCollapsed}
-                onToggle={toggleLeft}
-                label={leftLabel}
-                showButton={showCollapseButtons}
-              />
-              <div className="overflow-auto" style={{ height: "calc(100% - 40px)" }}>
+          {/* LEFT PANEL - Full screen list view */}
+          {mobileView === 'left' && (
+            <div className="absolute inset-0 flex flex-col bg-background z-10">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30 flex-shrink-0">
+                <span className="text-base font-semibold">{leftLabel}</span>
+              </div>
+              {/* Content - clicking items should call goToCenter via toggleLeft from context */}
+              <div className="flex-1 overflow-auto">
                 {left}
               </div>
             </div>
           )}
 
-          <div className="flex-1 overflow-auto">
-            {center}
-          </div>
-
-          {!rightCollapsed && (
-            <div className="border-t" style={{ height: "auto", maxHeight: "30vh" }}>
-              <PanelHeader
-                side="right"
-                collapsed={rightCollapsed}
-                onToggle={toggleRight}
-                label={rightLabel}
-                showButton={showCollapseButtons}
-              />
-              <div className="overflow-auto" style={{ height: "calc(100% - 40px)" }}>
-                {right}
+          {/* CENTER PANEL - Full screen main content with back button */}
+          {mobileView === 'center' && (
+            <div className="absolute inset-0 flex flex-col bg-background z-20">
+              {/* Header with back button */}
+              <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goToLeft}
+                  className="h-9 w-9"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <span className="text-base font-semibold flex-1">{centerLabel}</span>
+                {right && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={goToRight}
+                    className="h-9 w-9"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-auto">
+                {center}
               </div>
             </div>
           )}
 
-          {(leftCollapsed || rightCollapsed) && (
-            <div className="fixed bottom-4 right-4 flex gap-2 z-50">
-              {leftCollapsed && showCollapseButtons && (
-                <CollapseButton
-                  side="left"
-                  collapsed={true}
-                  onClick={toggleLeft}
-                  label={leftLabel}
-                />
-              )}
-              {rightCollapsed && showCollapseButtons && (
-                <CollapseButton
-                  side="right"
-                  collapsed={true}
-                  onClick={toggleRight}
-                  label={rightLabel}
-                />
-              )}
+          {/* RIGHT PANEL - Full screen detail view with back button */}
+          {mobileView === 'right' && right && (
+            <div className="absolute inset-0 flex flex-col bg-background z-30">
+              {/* Header with back button */}
+              <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goToCenter}
+                  className="h-9 w-9"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <span className="text-base font-semibold flex-1">{rightLabel}</span>
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-auto">
+                {right}
+              </div>
             </div>
           )}
         </div>

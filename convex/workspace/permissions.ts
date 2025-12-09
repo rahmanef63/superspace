@@ -30,6 +30,7 @@ export const PERMS = {
   MANAGE_CONVERSATIONS: "manage_conversations",
 
   VIEW_WORKSPACE: "view_workspace",
+  COMMUNICATIONS_VIEW: "communications.view",
 
   // Database Permissions
   DATABASE_READ: "database.read",

@@ -9,6 +9,7 @@
 "use client"
 
 import * as React from "react"
+import { useThreeColumnLayoutSafe } from "@/frontend/shared/ui/layout/container"
 import { cn } from "@/lib/utils"
 import { Plus, Search } from "lucide-react"
 
@@ -41,8 +42,16 @@ export function DirectSidebar({ className }: DirectSidebarProps) {
   const conversations = useDirectConversations()
   const selectedId = useSelectedDirectId()
   const selectDirectConversation = useCommunicationsStore(state => state.selectDirectConversation)
+  const layoutContext = useThreeColumnLayoutSafe()
   
   const [search, setSearch] = React.useState("")
+
+  // Wrapped handler for mobile navigation
+  const handleSelectConversation = React.useCallback((conversationId: string) => {
+    selectDirectConversation(conversationId)
+    // On mobile, navigate to center panel after selecting
+    layoutContext?.toggleLeft?.()
+  }, [selectDirectConversation, layoutContext])
   
   // Filter conversations
   const filteredConversations = React.useMemo(() => {
@@ -68,13 +77,13 @@ export function DirectSidebar({ className }: DirectSidebarProps) {
               key={conv.id}
               conversation={conv}
               isSelected={conv.id === selectedId}
-              onClick={() => selectDirectConversation(conv.id)}
+              onClick={() => handleSelectConversation(conv.id)}
             />
           ))}
         </div>
       ),
     }]
-  }, [filteredConversations, selectedId, selectDirectConversation])
+  }, [filteredConversations, selectedId, handleSelectConversation])
 
   // Header content
   const headerContent = (

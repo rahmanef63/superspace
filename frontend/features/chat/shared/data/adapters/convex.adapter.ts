@@ -54,23 +54,33 @@ export class ConvexChatRepository extends AbstractChatRepository {
       const tags: string[] = [];
       tags.push(isGroup ? 'Group' : 'Direct');
       tags.push(c.workspaceId ? 'Workspace' : 'Global');
-      if (c.type === 'personal') tags.push('Friends');
+      if (c.type === 'personal') tags.push('Contacts');
+
+      const otherParticipant = (c.participants || []).find(
+        (p: any) => String(p.user?._id) !== String(this.currentUserId)
+      );
+      const derivedName =
+        c.name ||
+        (isGroup
+          ? 'Group'
+          : otherParticipant?.user?.name || 'Direct Chat');
+      const derivedAvatar =
+        c.metadata?.avatar ||
+        (isGroup ? undefined : otherParticipant?.user?.avatarUrl);
+
       return {
         id: String(c._id),
-        name:
-          c.name ||
-          (isGroup
-            ? 'Group'
-            : c.participants?.find((p: any) => String(p.user?._id) !== String(this.currentUserId))?.user?.name || 'Direct Chat'),
+        name: derivedName,
         lastMessage: lastMsg?.content || '',
         timestamp: formatTime(lastMsg?._creationTime),
         unreadCount: c.unreadCount || 0,
         isPinned: c.metadata?.isPinned || false,
         isMuted: c.metadata?.isMuted || false,
         isGroup,
-        avatar: c.metadata?.avatar,
+        avatar: derivedAvatar,
         participants: (c.participants || []).map((p: any) => String(p.user?._id)),
         tags,
+        description: c.metadata?.description,
       } as Chat;
     });
 
@@ -96,7 +106,7 @@ export class ConvexChatRepository extends AbstractChatRepository {
         timestamp: formatTime(m._creationTime),
         variant: String(m.senderId) === String(me) ? 'sent' : 'received',
         type: (m.type as any) || 'text',
-        mediaUrl: undefined,
+        mediaUrl: m.attachmentUrl || undefined,
         fileName: m.metadata?.fileName,
         fileSize: m.metadata?.fileSize ? String(m.metadata.fileSize) : undefined,
       }));

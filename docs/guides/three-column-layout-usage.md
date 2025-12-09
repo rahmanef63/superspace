@@ -129,7 +129,7 @@ export function AIView() {
 ✅ **Keyboard shortcuts** - Cmd+B (left), Cmd+Shift+B (right)
 ✅ **Persist state** - Simpan collapse state di localStorage
 ✅ **Smooth animations** - Transisi smooth saat collapse/expand
-✅ **Accessibility** - Keyboard navigable, screen reader friendly
+✅ **Accessibility** - Keyboard navigable, screen reader Contactly
 
 ## Best Practices
 

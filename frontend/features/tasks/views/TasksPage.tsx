@@ -10,6 +10,9 @@ import {
   User,
   Flag,
   Trash2,
+  Settings,
+  Download,
+  Filter,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -26,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { FeatureBadge } from "@/frontend/shared/ui"
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
 
@@ -102,6 +105,7 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <div className="text-center">
+          <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-xl font-semibold">No Workspace Selected</h2>
           <p className="mt-2 text-muted-foreground">
             Select a workspace to start managing tasks.
@@ -164,59 +168,77 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b bg-background p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CheckSquare className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold">Tasks</h1>
-              <p className="text-sm text-muted-foreground">
-                Track work, manage owners, and stay ahead of deadlines.
-              </p>
-            </div>
-          </div>
-          <FeatureBadge status="beta" />
+    <div className="flex h-full flex-col p-6 gap-6">
+      <FeatureHeader
+        icon={CheckSquare}
+        title="Tasks"
+        subtitle="Track work, manage owners, and stay ahead of deadlines"
+        badge={{ text: "Beta", variant: "secondary" }}
+        primaryAction={{
+          label: "New Task",
+          icon: Plus,
+          onClick: () => {},
+        }}
+        secondaryActions={[
+          {
+            id: "filter",
+            label: "Filter",
+            icon: Filter,
+            onClick: () => {},
+          },
+          {
+            id: "export",
+            label: "Export",
+            icon: Download,
+            onClick: () => {},
+          },
+          {
+            id: "settings",
+            label: "Settings",
+            icon: Settings,
+            onClick: () => {},
+          },
+        ]}
+      />
+
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={filterStatus === "all" ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setFilterStatus("all")}
+          >
+            All
+          </Button>
+          <Button
+            variant={filterStatus === "active" ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setFilterStatus("active")}
+          >
+            Active
+          </Button>
+          <Button
+            variant={filterStatus === "completed" ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setFilterStatus("completed")}
+          >
+            Completed
+          </Button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant={filterStatus === "all" ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("all")}
-            >
-              All
-            </Button>
-            <Button
-              variant={filterStatus === "active" ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("active")}
-            >
-              Active
-            </Button>
-            <Button
-              variant={filterStatus === "completed" ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("completed")}
-            >
-              Completed
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleCreateTask}
-              disabled={isCreating}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {isCreating ? "Creating..." : "Create Task"}
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleCreateTask}
+            disabled={isCreating}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {isCreating ? "Creating..." : "Create Task"}
+          </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto">
         {error ? (
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Something went wrong</AlertTitle>

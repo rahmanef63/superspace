@@ -200,8 +200,8 @@ export function SettingsPageWithTabs({
         onValueChange={(v) => setActiveTab(v as typeof activeTab)}
         className="flex-1 flex flex-col min-h-0"
       >
-        <div className="border-b px-6">
-          <TabsList className="h-12 bg-transparent p-0 gap-4">
+        <div className="border-b px-4 sm:px-6 overflow-x-auto no-scrollbar">
+          <TabsList className="h-12 bg-transparent p-0 gap-4 w-full sm:w-auto justify-start">
             <TabsTrigger
               value="personal"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none px-4 py-3"

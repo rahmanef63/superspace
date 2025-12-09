@@ -58,7 +58,13 @@ function SignedInNavUserContent({
     if (isMobile) {
       setOpenMobile(false)
     }
-    onSettingsClick?.()
+
+    if (onSettingsClick) {
+      onSettingsClick()
+    } else {
+      // Default: Open settings drawer
+      window.dispatchEvent(new Event("open-settings"))
+    }
   }
 
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor
@@ -89,21 +95,17 @@ function SignedInNavUserContent({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="min-w-56 rounded-lg" align="end" side={isMobile ? "bottom" : "top"}>
-            {/* Only show Profile if component is provided */}
-            {ProfileSettings && (
-              <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-            )}
-            {/* Only show Settings if callback is provided */}
-            {onSettingsClick && (
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-            )}
-            
+            <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
+
+            {/* Settings (Always visible now) */}
+            <DropdownMenuItem onClick={handleSettingsClick}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+
             {/* Theme Toggle */}
             <DropdownMenuSeparator />
             <DropdownMenuSub>
@@ -128,7 +130,7 @@ function SignedInNavUserContent({
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            
+
             <DropdownMenuSeparator />
             <SafeSignOutButton>
               <DropdownMenuItem>
@@ -140,19 +142,35 @@ function SignedInNavUserContent({
         </DropdownMenu>
       </SidebarMenuItem>
 
-      {/* Only render dialog if ProfileSettings component is provided */}
-      {ProfileSettings && (
-        <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Profile Settings</DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto">
+      {/* Profile Dialog (Custom or Default) */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Profile Settings</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto">
+            {ProfileSettings ? (
               <ProfileSettings />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+            ) : (
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={clerkUser?.imageUrl} />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-lg font-medium">{clerkUser?.fullName}</h3>
+                    <p className="text-sm text-muted-foreground">{clerkUser?.primaryEmailAddress?.emailAddress}</p>
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Profile editing is managed via your identity provider.
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

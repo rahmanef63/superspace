@@ -273,7 +273,7 @@ const configs = import.meta.glob("../properties/*/config.ts", { eager: true });
 6. ✅ **User Experience:** Click-to-call, quick status selection, maps links
 7. ✅ **Type Safety:** Full TypeScript with PropertyConfig interface
 8. ✅ **Zero Config:** Auto-discovery ready
-9. ✅ **Accessibility:** Semantic HTML, ARIA-friendly components
+9. ✅ **Accessibility:** Semantic HTML, ARIA-Contactly components
 10. ✅ **Responsive:** Mobile-optimized with proper input types
 
 ---

@@ -814,7 +814,7 @@ export function AIPersonalizationSettings() {
           onValueChange={(value) => updateSetting("personalityTone", value as typeof settings.personalityTone)}
           options={[
             { value: "professional", label: "Professional" },
-            { value: "friendly", label: "Friendly" },
+            { value: "Contactly", label: "Contactly" },
             { value: "casual", label: "Casual" },
             { value: "formal", label: "Formal" },
           ]}

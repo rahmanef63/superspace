@@ -38,7 +38,7 @@ export type {
 export { ThreeColumnContext, useThreeColumnLayout, useThreeColumnLayoutSafe } from "./context"
 
 // Hooks
-export { usePersistedState, useResponsiveCollapse, useStackedLayout } from "./hooks"
+export { usePersistedState, useResponsiveCollapse, useStackedLayout, useWindowWidth } from "./hooks"
 
 // Components
 export { ThreeColumnLayoutAdvanced } from "./ThreeColumnLayout"

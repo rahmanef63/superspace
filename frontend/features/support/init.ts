@@ -3,7 +3,7 @@
  * Registers support-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Ticket, MessageSquare, Clock, Bell } from "lucide-react"
 import {
   SupportTicketSettings,

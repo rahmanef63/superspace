@@ -3,7 +3,7 @@
  * 
  * Orchestration mutations for unified user management:
  * - inviteToHierarchy: Bulk invite to workspace + children
- * - bulkInviteFriends: Quick invite multiple friends
+ * - bulkInviteContacts: Quick invite multiple Contacts
  * - Team management mutations
  * 
  * @module convex/features/user-management/api/mutations
@@ -261,13 +261,13 @@ export const inviteToHierarchy = mutation({
 });
 
 /**
- * Bulk invite friends to workspace
- * Quick invite multiple friends to a workspace at once
+ * Bulk invite Contacts to workspace
+ * Quick invite multiple Contacts to a workspace at once
  */
-export const bulkInviteFriends = mutation({
+export const bulkInviteContacts = mutation({
   args: {
     workspaceId: v.id("workspaces"),
-    friendIds: v.array(v.id("users")),
+    ContactIds: v.array(v.id("users")),
     roleId: v.id("roles"),
     message: v.optional(v.string()),
   },
@@ -279,41 +279,41 @@ export const bulkInviteFriends = mutation({
     await requirePermission(ctx, args.workspaceId, PERMS.INVITE_MEMBERS);
 
     const results: Array<{
-      friendId: string;
+      ContactId: string;
       success: boolean;
       invitationId?: string;
       error?: string;
     }> = [];
 
-    // Verify friendship for each friend
-    for (const friendId of args.friendIds) {
-      // Check if they are actually friends
-      const friendship1 = await ctx.db
-        .query("friendships")
-        .withIndex("by_users", (q) => q.eq("user1Id", inviterId).eq("user2Id", friendId))
+    // Verify Contactship for each Contact
+    for (const ContactId of args.ContactIds) {
+      // Check if they are actually Contacts
+      const Contactship1 = await ctx.db
+        .query("socialContacts")
+        .withIndex("by_users", (q) => q.eq("user1Id", inviterId).eq("user2Id", ContactId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .first();
 
-      const friendship2 = await ctx.db
-        .query("friendships")
-        .withIndex("by_users", (q) => q.eq("user1Id", friendId).eq("user2Id", inviterId))
+      const Contactship2 = await ctx.db
+        .query("socialContacts")
+        .withIndex("by_users", (q) => q.eq("user1Id", ContactId).eq("user2Id", inviterId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .first();
 
-      if (!friendship1 && !friendship2) {
+      if (!Contactship1 && !Contactship2) {
         results.push({
-          friendId: String(friendId),
+          ContactId: String(ContactId),
           success: false,
-          error: "Not a friend",
+          error: "Not a Contact",
         });
         continue;
       }
 
-      // Get friend's email
-      const friend = await ctx.db.get(friendId);
-      if (!friend) {
+      // Get Contact's email
+      const Contact = await ctx.db.get(ContactId);
+      if (!Contact) {
         results.push({
-          friendId: String(friendId),
+          ContactId: String(ContactId),
           success: false,
           error: "User not found",
         });
@@ -324,13 +324,13 @@ export const bulkInviteFriends = mutation({
       const existingMembership = await ctx.db
         .query("workspaceMemberships")
         .withIndex("by_user_workspace", (q) =>
-          q.eq("userId", friendId).eq("workspaceId", args.workspaceId)
+          q.eq("userId", ContactId).eq("workspaceId", args.workspaceId)
         )
         .first();
 
       if (existingMembership && existingMembership.status === "active") {
         results.push({
-          friendId: String(friendId),
+          ContactId: String(ContactId),
           success: false,
           error: "Already a member",
         });
@@ -340,7 +340,7 @@ export const bulkInviteFriends = mutation({
       // Check for existing pending invitation
       const existingInvitation = await ctx.db
         .query("invitations")
-        .withIndex("by_invitee_id", (q) => q.eq("inviteeId", friendId))
+        .withIndex("by_invitee_id", (q) => q.eq("inviteeId", ContactId))
         .filter((q) =>
           q.and(
             q.eq(q.field("workspaceId"), args.workspaceId),
@@ -351,7 +351,7 @@ export const bulkInviteFriends = mutation({
 
       if (existingInvitation) {
         results.push({
-          friendId: String(friendId),
+          ContactId: String(ContactId),
           success: false,
           error: "Invitation already pending",
         });
@@ -370,8 +370,8 @@ export const bulkInviteFriends = mutation({
         type: "workspace",
         workspaceId: args.workspaceId,
         inviterId,
-        inviteeEmail: friend.email,
-        inviteeId: friendId,
+        inviteeEmail: Contact.email,
+        inviteeId: ContactId,
         roleId: args.roleId,
         status: "pending",
         message: args.message,
@@ -380,7 +380,7 @@ export const bulkInviteFriends = mutation({
       });
 
       results.push({
-        friendId: String(friendId),
+        ContactId: String(ContactId),
         success: true,
         invitationId: String(invitationId),
       });
@@ -393,14 +393,14 @@ export const bulkInviteFriends = mutation({
       resourceType: "workspace",
       resourceId: args.workspaceId,
       metadata: {
-        inviteCount: args.friendIds.length,
+        inviteCount: args.ContactIds.length,
         successCount: results.filter((r) => r.success).length
       },
     });
 
     return {
       results,
-      totalInvites: args.friendIds.length,
+      totalInvites: args.ContactIds.length,
       successCount: results.filter((r) => r.success).length,
     };
   },

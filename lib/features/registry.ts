@@ -11,32 +11,39 @@
 import type { FeatureConfig } from './defineFeature'
 
 import overviewConfig from '@/frontend/features/overview/config'
+import communicationsConfig from '@/frontend/features/communications/config'
 import chatConfig from '@/frontend/features/chat/config'
 import callsConfig from '@/frontend/features/calls/config'
 import statusConfig from '@/frontend/features/status/config'
 import membersConfig from '@/frontend/features/members/config'
 import aiConfig from '@/frontend/features/ai/config'
 import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
-import starredConfig from '@/frontend/features/starred/config'
 import knowledgeConfig from '@/frontend/features/knowledge/config'
-import friendsConfig from '@/frontend/features/friends/config'
-import archivedConfig from '@/frontend/features/archived/config'
+import contactConfig from '@/frontend/features/contact/config'
 import databaseConfig from '@/frontend/features/database/config'
 import documentsConfig from '@/frontend/features/documents/config'
 import menuStoreConfig from '@/frontend/features/menu-store/config'
+import calendarConfig from '@/frontend/features/calendar/config'
 import invitationsConfig from '@/frontend/features/invitations/config'
 import userManagementConfig from '@/frontend/features/user-management/config'
 import reportsConfig from '@/frontend/features/reports/config'
 import tasksConfig from '@/frontend/features/tasks/config'
+import formsConfig from '@/frontend/features/forms/config'
+import approvalsConfig from '@/frontend/features/approvals/config'
 import supportConfig from '@/frontend/features/support/config'
 import projectsConfig from '@/frontend/features/projects/config'
-import notificationsConfig from '@/frontend/features/notifications/config'
-import userSettingsConfig from '@/frontend/features/user-settings/config'
+import auditLogConfig from '@/frontend/features/audit-log/config'
+import importExportConfig from '@/frontend/features/import-export/config'
+import integrationsConfig from '@/frontend/features/integrations/config'
+import posConfig from '@/frontend/features/pos/config'
 import builderConfig from '@/frontend/features/builder/config'
+import marketingConfig from '@/frontend/features/marketing/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
+import biConfig from '@/frontend/features/bi/config'
 import automationConfig from '@/frontend/features/automation/config'
-import workspaceSettingsConfig from '@/frontend/features/workspace-settings/config'
+import salesConfig from '@/frontend/features/sales/config'
 import hrConfig from '@/frontend/features/hr/config'
+import contentConfig from '@/frontend/features/content/config'
 import cmsLiteConfig from '@/frontend/features/cms-lite/config'
 import accountingConfig from '@/frontend/features/accounting/config'
 import inventoryConfig from '@/frontend/features/inventory/config'
@@ -45,32 +52,39 @@ import platformAdminConfig from '@/frontend/features/platform-admin/config'
 
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
+  communicationsConfig,
   chatConfig,
   callsConfig,
   statusConfig,
   membersConfig,
   aiConfig,
   workspaceStoreConfig,
-  starredConfig,
   knowledgeConfig,
-  friendsConfig,
-  archivedConfig,
+  contactConfig,
   databaseConfig,
   documentsConfig,
   menuStoreConfig,
+  calendarConfig,
   invitationsConfig,
   userManagementConfig,
   reportsConfig,
   tasksConfig,
+  formsConfig,
+  approvalsConfig,
   supportConfig,
   projectsConfig,
-  notificationsConfig,
-  userSettingsConfig,
+  auditLogConfig,
+  importExportConfig,
+  integrationsConfig,
+  posConfig,
   builderConfig,
+  marketingConfig,
   analyticsConfig,
+  biConfig,
   automationConfig,
-  workspaceSettingsConfig,
+  salesConfig,
   hrConfig,
+  contentConfig,
   cmsLiteConfig,
   accountingConfig,
   inventoryConfig,

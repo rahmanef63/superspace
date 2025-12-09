@@ -67,7 +67,7 @@ export const getWorkspaceConversations = query({
         const unreadCount = await ctx.db
           .query("messages")
           .withIndex("by_conversation", (q) => q.eq("conversationId", (conv._id as any)))
-          .filter((q) => 
+          .filter((q) =>
             q.and(
               q.eq(q.field("deletedAt"), undefined),
               q.gt(q.field("_creationTime"), participation.lastReadAt || 0)
@@ -179,7 +179,7 @@ export const getConversation = query({
     for (const idStr of candidateIds) {
       const p = await ctx.db
         .query("conversationParticipants")
-        .withIndex("by_user_conversation", (q) => 
+        .withIndex("by_user_conversation", (q) =>
           q.eq("userId", idStr as any).eq("conversationId", args.conversationId)
         )
         .filter((q) => q.eq(q.field("isActive"), true))
@@ -233,25 +233,25 @@ export const createConversation = mutation({
     const userId = await ensureUser(ctx);
     await requirePermission(ctx, args.workspaceId, PERMS.CREATE_CONVERSATIONS);
 
-    // For personal chats, verify friendship
+    // For personal chats, verify Contactship
     if (args.type === "personal" && args.participantIds.length === 1) {
       const otherUserId = args.participantIds[0];
-      
-      // Check if they are friends
-      const friendship = await ctx.db
-        .query("friendships")
+
+      // Check if they are Contacts
+      const Contactship = await ctx.db
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", userId).eq("user2Id", otherUserId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .first();
 
-      const reverseFriendship = await ctx.db
-        .query("friendships")
+      const reverseContactship = await ctx.db
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", otherUserId).eq("user2Id", userId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .first();
 
-      if (!friendship && !reverseFriendship) {
-        throw new Error("Can only create direct chats with friends");
+      if (!Contactship && !reverseContactship) {
+        throw new Error("Can only create direct chats with Contacts");
       }
 
       // Check if conversation already exists
@@ -286,10 +286,10 @@ export const createConversation = mutation({
       isActive: true,
       metadata: (args.type === "ai")
         ? {
-            ...(args.metadata || {}),
-            aiModel: args.metadata?.aiModel || "gpt-4.1-nano",
-            systemPrompt: args.metadata?.systemPrompt || "You are a helpful assistant for this workspace.",
-          }
+          ...(args.metadata || {}),
+          aiModel: args.metadata?.aiModel || "gpt-4.1-nano",
+          systemPrompt: args.metadata?.systemPrompt || "You are a helpful assistant for this workspace.",
+        }
         : args.metadata,
     });
 
@@ -322,7 +322,7 @@ export const createConversation = mutation({
       action: "conversation.created",
       resourceType: "conversations",
       resourceId: conversationId,
-      metadata: { 
+      metadata: {
         type: args.type,
         participantCount: args.participantIds.length + 1,
       },
@@ -332,7 +332,7 @@ export const createConversation = mutation({
   },
 });
 
-// Create or get a global direct conversation with a friend
+// Create or get a global direct conversation with a Contact
 export const createOrGetDirectGlobal = mutation({
   args: { otherUserId: v.id("users") },
   handler: async (ctx, args) => {
@@ -342,19 +342,19 @@ export const createOrGetDirectGlobal = mutation({
       throw new Error("Cannot chat with yourself");
     }
 
-    // Verify friendship in either direction
-    const friendship = await ctx.db
-      .query("friendships")
+    // Verify Contactship in either direction
+    const Contactship = await ctx.db
+      .query("socialContacts")
       .withIndex("by_users", (q) => q.eq("user1Id", userId).eq("user2Id", args.otherUserId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
-    const reverseFriendship = await ctx.db
-      .query("friendships")
+    const reverseContactship = await ctx.db
+      .query("socialContacts")
       .withIndex("by_users", (q) => q.eq("user1Id", args.otherUserId).eq("user2Id", userId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
-    if (!friendship && !reverseFriendship) {
-      throw new Error("You can only start chats with friends");
+    if (!Contactship && !reverseContactship) {
+      throw new Error("You can only start chats with Contacts");
     }
 
     // Check for existing global personal conv
@@ -456,7 +456,7 @@ export const leaveConversation = mutation({
         action: "conversation.left",
         resourceType: "conversations",
         resourceId: args.conversationId,
-        metadata: { 
+        metadata: {
           wasAdmin: myParticipation.role === "admin",
           remainingParticipants: otherParticipants.length,
         },
@@ -571,7 +571,7 @@ export const updateConversation = mutation({
     // Check if user is participant
     const participation = await ctx.db
       .query("conversationParticipants")
-      .withIndex("by_user_conversation", (q) => 
+      .withIndex("by_user_conversation", (q) =>
         q.eq("userId", userId).eq("conversationId", args.conversationId)
       )
       .filter((q) => q.eq(q.field("isActive"), true))
@@ -593,7 +593,7 @@ export const updateConversation = mutation({
         action: "conversation.updated",
         resourceType: "conversations",
         resourceId: args.conversationId,
-        metadata: { 
+        metadata: {
           nameChanged: args.name !== undefined,
           metadataChanged: args.metadata !== undefined,
         },
@@ -615,7 +615,7 @@ export const markAsRead = mutation({
     for (const idStr of candidateIds) {
       const p = await ctx.db
         .query("conversationParticipants")
-        .withIndex("by_user_conversation", (q) => 
+        .withIndex("by_user_conversation", (q) =>
           q.eq("userId", idStr as any).eq("conversationId", args.conversationId)
         )
         .filter((q) => q.eq(q.field("isActive"), true))
@@ -649,7 +649,7 @@ export const addParticipant = mutation({
     // Check if current user is admin
     const currentParticipation = await ctx.db
       .query("conversationParticipants")
-      .withIndex("by_user_conversation", (q) => 
+      .withIndex("by_user_conversation", (q) =>
         q.eq("userId", currentUserId).eq("conversationId", args.conversationId)
       )
       .filter((q) => q.eq(q.field("isActive"), true))
@@ -662,7 +662,7 @@ export const addParticipant = mutation({
     // Check if user is already a participant
     const existingParticipation = await ctx.db
       .query("conversationParticipants")
-      .withIndex("by_user_conversation", (q) => 
+      .withIndex("by_user_conversation", (q) =>
         q.eq("userId", args.userId).eq("conversationId", args.conversationId)
       )
       .filter((q) => q.eq(q.field("isActive"), true))
@@ -689,7 +689,7 @@ export const addParticipant = mutation({
         action: "conversationParticipant.added",
         resourceType: "conversationParticipants",
         resourceId: participantId,
-        metadata: { 
+        metadata: {
           conversationId: args.conversationId,
           addedUserId: args.userId,
         },
@@ -716,7 +716,7 @@ export const removeParticipant = mutation({
     // Check if current user is admin or removing themselves
     const currentParticipation = await ctx.db
       .query("conversationParticipants")
-      .withIndex("by_user_conversation", (q) => 
+      .withIndex("by_user_conversation", (q) =>
         q.eq("userId", currentUserId).eq("conversationId", args.conversationId)
       )
       .filter((q) => q.eq(q.field("isActive"), true))
@@ -731,7 +731,7 @@ export const removeParticipant = mutation({
     // Find participant to remove
     const participationToRemove = await ctx.db
       .query("conversationParticipants")
-      .withIndex("by_user_conversation", (q) => 
+      .withIndex("by_user_conversation", (q) =>
         q.eq("userId", args.userId).eq("conversationId", args.conversationId)
       )
       .filter((q) => q.eq(q.field("isActive"), true))
@@ -754,7 +754,7 @@ export const removeParticipant = mutation({
         action: "conversationParticipant.removed",
         resourceType: "conversationParticipants",
         resourceId: participationToRemove._id,
-        metadata: { 
+        metadata: {
           conversationId: args.conversationId,
           removedUserId: args.userId,
         },

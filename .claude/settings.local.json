@@ -12,7 +12,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm run type-check:*)",
       "Bash(npx convex dev:*)",
-      "Bash(pnpm ls:*)"
+      "Bash(pnpm ls:*)",
+      "Bash(npm run)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

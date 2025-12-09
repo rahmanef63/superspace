@@ -3,7 +3,7 @@
  * Registers reports-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { FileBarChart, Calendar, FileText, Palette } from "lucide-react"
 import {
   ReportsGeneralSettings,

@@ -18,7 +18,7 @@ export const datePropertyMenuConfig: PropertyTypeMenuConfig = {
       icon: Calendar,
       submenu: [
         { id: 'format-full', label: 'Full date', icon: undefined },
-        { id: 'format-friendly', label: 'Friendly', icon: undefined },
+        { id: 'format-Contactly', label: 'Contactly', icon: undefined },
         { id: 'format-us', label: 'US (MM/DD/YYYY)', icon: undefined },
         { id: 'format-european', label: 'European (DD/MM/YYYY)', icon: undefined },
         { id: 'format-iso', label: 'ISO (YYYY-MM-DD)', icon: undefined },

@@ -136,7 +136,7 @@ Available categories (defined in schema):
 | `productivity` | Work & tasks | Task management |
 | `collaboration` | Teamwork | Shared docs |
 | `administration` | Settings & control | User management |
-| `social` | Social features | Friends, profiles |
+| `social` | Social features | Contacts, profiles |
 | `creativity` | Creative tools | Design, content |
 | `analytics` | Data & insights | Dashboards |
 

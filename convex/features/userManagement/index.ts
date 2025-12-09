@@ -4,7 +4,7 @@
  * Unified user management that composes existing systems:
  * - Members (workspaceMemberships)
  * - Invitations (invitations)
- * - Friends (friendships)
+ * - Contacts (contacts)
  * - Teams (userTeams)
  * 
  * @module convex/features/userManagement

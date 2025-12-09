@@ -1,1 +1,1 @@
-export { useCurrentUser } from "@/frontend/features/user-settings/api";
+export { useCurrentUser } from "@/frontend/shared/settings/user-settings/api";

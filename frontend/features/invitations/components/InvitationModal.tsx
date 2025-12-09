@@ -90,7 +90,7 @@ export function InvitationModal({ workspaceId, type, onClose }: InvitationModalP
               <UserPlus className="w-5 h-5 text-green-600" />
             )}
             <h2 className="text-lg font-semibold">
-              {type === "workspace" ? "Invite to Workspace" : "Send Friend Request"}
+              {type === "workspace" ? "Invite to Workspace" : "Send Contact Request"}
             </h2>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -150,7 +150,7 @@ export function InvitationModal({ workspaceId, type, onClose }: InvitationModalP
               placeholder={
                 type === "workspace" 
                   ? "Add a personal message to your workspace invitation..."
-                  : "Add a personal message to your friend request..."
+                  : "Add a personal message to your Contact request..."
               }
             />
           </div>

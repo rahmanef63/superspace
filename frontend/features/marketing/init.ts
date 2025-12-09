@@ -2,7 +2,7 @@
  * Marketing Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Megaphone, Target, Mail, BarChart3 } from "lucide-react"
 import {
     MarketingGeneralSettings,

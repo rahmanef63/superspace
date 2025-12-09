@@ -13,17 +13,28 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import type { MemberProfile } from "@/frontend/shared/communications/chat/types/member";
+import type {
+  CommonGroup,
+  SharedFileItem,
+  SharedLinkItem,
+  SharedMediaItem,
+} from "@/frontend/shared/communications/chat/components/member/types";
 
 /**
  * Hook to get member profile
  */
 export function useMemberProfile(memberId: Id<"users"> | string | undefined) {
   // Skip if no valid memberId - use "skip" to properly skip the query
-  const args = memberId && memberId.length > 0 
-    ? { userId: memberId as string } 
-    : "skip" as const;
-  return useQuery(api.user.memberActions.getMemberProfile, args);
+  const args =
+    memberId && memberId.length > 0
+      ? ({ userId: memberId as string } as const)
+      : ("skip" as const);
+  return useQuery(api.user.memberActions.getMemberProfile, args) as
+    | (MemberProfile & { presenceLabel?: string })
+    | null
+    | undefined;
 }
 
 /**
@@ -49,41 +60,65 @@ export function useIsMemberBlocked(memberId: Id<"users"> | string | undefined) {
 /**
  * Hook for shared media with member
  */
-export function useSharedMedia(memberId: string | undefined, limit?: number) {
-  const args = memberId && memberId.length > 0 
-    ? { memberId, limit } 
-    : "skip" as const;
-  return useQuery(api.user.memberActions.getSharedMedia, args);
+export function useSharedMedia(
+  memberId: string | undefined,
+  conversationId?: string | Id<"conversations">,
+  limit?: number,
+) {
+  const shouldQuery = Boolean(memberId?.length || conversationId);
+  const args = shouldQuery
+    ? ({ memberId, conversationId, limit } as const)
+    : ("skip" as const);
+  return useQuery(api.user.memberActions.getSharedMedia, args) as
+    | SharedMediaItem[]
+    | undefined;
 }
 
 /**
  * Hook for shared files with member
  */
-export function useSharedFiles(memberId: string | undefined, limit?: number) {
-  const args = memberId && memberId.length > 0 
-    ? { memberId, limit } 
-    : "skip" as const;
-  return useQuery(api.user.memberActions.getSharedFiles, args);
+export function useSharedFiles(
+  memberId: string | undefined,
+  conversationId?: string | Id<"conversations">,
+  limit?: number,
+) {
+  const shouldQuery = Boolean(memberId?.length || conversationId);
+  const args = shouldQuery
+    ? ({ memberId, conversationId, limit } as const)
+    : ("skip" as const);
+  return useQuery(api.user.memberActions.getSharedFiles, args) as
+    | SharedFileItem[]
+    | undefined;
 }
 
 /**
  * Hook for shared links with member
  */
-export function useSharedLinks(memberId: string | undefined, limit?: number) {
-  const args = memberId && memberId.length > 0 
-    ? { memberId, limit } 
-    : "skip" as const;
-  return useQuery(api.user.memberActions.getSharedLinks, args);
+export function useSharedLinks(
+  memberId: string | undefined,
+  conversationId?: string | Id<"conversations">,
+  limit?: number,
+) {
+  const shouldQuery = Boolean(memberId?.length || conversationId);
+  const args = shouldQuery
+    ? ({ memberId, conversationId, limit } as const)
+    : ("skip" as const);
+  return useQuery(api.user.memberActions.getSharedLinks, args) as
+    | SharedLinkItem[]
+    | undefined;
 }
 
 /**
  * Hook for common groups with member
  */
 export function useCommonGroups(memberId: string | undefined) {
-  const args = memberId && memberId.length > 0 
-    ? { memberId } 
-    : "skip" as const;
-  return useQuery(api.user.memberActions.getCommonGroups, args);
+  const args =
+    memberId && memberId.length > 0
+      ? ({ memberId } as const)
+      : ("skip" as const);
+  return useQuery(api.user.memberActions.getCommonGroups, args) as
+    | CommonGroup[]
+    | undefined;
 }
 
 /**
@@ -173,15 +208,30 @@ export function useMemberActions() {
 /**
  * Combined hook for member info with all data and actions
  */
-export function useMemberInfo(memberId: string | undefined) {
+export function useMemberInfo(
+  memberId: string | undefined,
+  conversationId?: string | Id<"conversations">,
+) {
   const profile = useMemberProfile(memberId);
   const isFavorite = useIsMemberFavorite(memberId);
   const isBlocked = useIsMemberBlocked(memberId);
-  const sharedMedia = useSharedMedia(memberId);
-  const sharedFiles = useSharedFiles(memberId);
-  const sharedLinks = useSharedLinks(memberId);
+  const sharedMedia = useSharedMedia(memberId, conversationId);
+  const sharedFiles = useSharedFiles(memberId, conversationId);
+  const sharedLinks = useSharedLinks(memberId, conversationId);
   const commonGroups = useCommonGroups(memberId);
   const actions = useMemberActions();
+
+  const loading = useMemo(
+    () => ({
+      profile: Boolean(memberId && profile === undefined),
+      sharedMedia: Boolean((memberId || conversationId) && sharedMedia === undefined),
+      sharedFiles: Boolean((memberId || conversationId) && sharedFiles === undefined),
+      sharedLinks: Boolean((memberId || conversationId) && sharedLinks === undefined),
+      commonGroups: Boolean(memberId && commonGroups === undefined),
+      status: Boolean(memberId && (isFavorite === undefined || isBlocked === undefined)),
+    }),
+    [memberId, conversationId, profile, sharedMedia, sharedFiles, sharedLinks, commonGroups, isFavorite, isBlocked],
+  );
 
   return {
     profile,
@@ -191,6 +241,7 @@ export function useMemberInfo(memberId: string | undefined) {
     sharedFiles,
     sharedLinks,
     commonGroups,
+    loading,
     ...actions,
   };
 }

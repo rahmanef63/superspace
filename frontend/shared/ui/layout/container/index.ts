@@ -8,7 +8,7 @@
  * - Nested combinations
  * - Resizable panels with drag handles
  * - Responsive breakpoint support
- * - AI-friendly configuration
+ * - AI-Contactly configuration
  * 
  * @example
  * ```tsx
@@ -107,6 +107,7 @@ export {
   usePersistedState,
   useResponsiveCollapse,
   useStackedLayout,
+  useWindowWidth,
 } from "./three-column"
 export type { 
   ThreeColumnLayoutAdvancedProps,

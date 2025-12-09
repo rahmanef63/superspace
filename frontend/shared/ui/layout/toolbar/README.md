@@ -40,7 +40,7 @@ frontend/shared/ui/layout/toolbar/
 - **Mobile-first** - All tools adapt automatically
 - **Breakpoint control** - Hide/show tools per breakpoint
 - **Collapse on mobile** - Dropdown fallbacks for space
-- **Touch-friendly** - Proper sizing for mobile
+- **Touch-Contactly** - Proper sizing for mobile
 
 ### ✅ **Developer Experience**
 - **Type-safe** - Full TypeScript support with Zod validation

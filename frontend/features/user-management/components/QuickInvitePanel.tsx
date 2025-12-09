@@ -2,7 +2,7 @@
  * QuickInvitePanel
  * 
  * Provides quick invite features:
- * - Invite friends to workspace with checkboxes
+ * - Invite Contacts to workspace with checkboxes
  * - Invite to hierarchy (workspace + children)
  * - Bulk team invitations
  */
@@ -42,9 +42,9 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
-import type { FriendForQuickInvite, Team, PropagationStrategy } from "../types";
+import type { ContactForQuickInvite, Team, PropagationStrategy } from "../types";
 import { 
-  useBulkInviteFriends, 
+  useBulkInviteContacts, 
   useInviteToHierarchy,
   useInviteTeamToWorkspaces,
   useRoles,
@@ -53,20 +53,20 @@ import { useToast } from "@/hooks/use-toast";
 
 interface QuickInvitePanelProps {
   workspaceId: Id<"workspaces">;
-  friends: FriendForQuickInvite[];
+  Contacts: ContactForQuickInvite[];
   teams: Team[];
   className?: string;
 }
 
 export function QuickInvitePanel({
   workspaceId,
-  friends,
+  Contacts,
   teams,
   className,
 }: QuickInvitePanelProps) {
   // State
-  const [mode, setMode] = React.useState<"friends" | "hierarchy" | "team">("friends");
-  const [selectedFriendIds, setSelectedFriendIds] = React.useState<Set<string>>(new Set());
+  const [mode, setMode] = React.useState<"Contacts" | "hierarchy" | "team">("Contacts");
+  const [selectedContactIds, setSelectedContactIds] = React.useState<Set<string>>(new Set());
   const [selectedTeamId, setSelectedTeamId] = React.useState<string>("");
   const [selectedRoleId, setSelectedRoleId] = React.useState<string>("");
   const [hierarchyEmail, setHierarchyEmail] = React.useState("");
@@ -79,41 +79,41 @@ export function QuickInvitePanel({
 
   // Hooks
   const roles = useRoles(workspaceId);
-  const bulkInviteFriends = useBulkInviteFriends();
+  const bulkInviteContacts = useBulkInviteContacts();
   const inviteToHierarchy = useInviteToHierarchy();
   const inviteTeamToWorkspaces = useInviteTeamToWorkspaces();
   const { toast } = useToast();
 
-  // Filter friends
-  const filteredFriends = React.useMemo(() => {
-    if (!searchQuery) return friends;
+  // Filter Contacts
+  const filteredContacts = React.useMemo(() => {
+    if (!searchQuery) return Contacts;
     const query = searchQuery.toLowerCase();
-    return friends.filter(
+    return Contacts.filter(
       (f) =>
         f.name?.toLowerCase().includes(query) ||
         f.email?.toLowerCase().includes(query)
     );
-  }, [friends, searchQuery]);
+  }, [Contacts, searchQuery]);
 
-  // Available (non-pending) friends
-  const availableFriends = filteredFriends.filter((f) => !f.hasPendingInvite);
+  // Available (non-pending) Contacts
+  const availableContacts = filteredContacts.filter((f) => !f.hasPendingInvite);
 
-  const toggleFriendSelection = (friendId: string) => {
-    const newSet = new Set(selectedFriendIds);
-    if (newSet.has(friendId)) {
-      newSet.delete(friendId);
+  const toggleContactSelection = (ContactId: string) => {
+    const newSet = new Set(selectedContactIds);
+    if (newSet.has(ContactId)) {
+      newSet.delete(ContactId);
     } else {
-      newSet.add(friendId);
+      newSet.add(ContactId);
     }
-    setSelectedFriendIds(newSet);
+    setSelectedContactIds(newSet);
   };
 
-  const selectAllFriends = () => {
-    setSelectedFriendIds(new Set(availableFriends.map((f) => String(f._id))));
+  const selectAllContacts = () => {
+    setSelectedContactIds(new Set(availableContacts.map((f) => String(f._id))));
   };
 
   const clearSelection = () => {
-    setSelectedFriendIds(new Set());
+    setSelectedContactIds(new Set());
   };
 
   const getInitials = (name?: string) => {
@@ -126,15 +126,15 @@ export function QuickInvitePanel({
       .slice(0, 2);
   };
 
-  // Handle bulk invite friends
-  const handleBulkInviteFriends = async () => {
-    if (selectedFriendIds.size === 0 || !selectedRoleId) return;
+  // Handle bulk invite Contacts
+  const handleBulkInviteContacts = async () => {
+    if (selectedContactIds.size === 0 || !selectedRoleId) return;
 
     setIsSubmitting(true);
     try {
-      const result = await bulkInviteFriends({
+      const result = await bulkInviteContacts({
         workspaceId,
-        friendIds: Array.from(selectedFriendIds) as Id<"users">[],
+        ContactIds: Array.from(selectedContactIds) as Id<"users">[],
         roleId: selectedRoleId as Id<"roles">,
         message: message || undefined,
       });
@@ -144,7 +144,7 @@ export function QuickInvitePanel({
         description: `Successfully sent ${result.successCount} of ${result.totalInvites} invitations.`,
       });
 
-      setSelectedFriendIds(new Set());
+      setSelectedContactIds(new Set());
       setMessage("");
     } catch (error) {
       toast({
@@ -229,12 +229,12 @@ export function QuickInvitePanel({
         <div className="flex gap-2 mb-4">
           <Button
             size="sm"
-            variant={mode === "friends" ? "default" : "outline"}
-            onClick={() => setMode("friends")}
+            variant={mode === "Contacts" ? "default" : "outline"}
+            onClick={() => setMode("Contacts")}
             className="flex-1 gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
-            Friends
+            Contacts
           </Button>
           <Button
             size="sm"
@@ -286,16 +286,16 @@ export function QuickInvitePanel({
           </div>
 
           {/* Mode-specific form */}
-          {mode === "friends" && (
+          {mode === "Contacts" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label>Select friends to invite</Label>
+                <Label>Select Contacts to invite</Label>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-6 text-xs"
-                    onClick={selectAllFriends}
+                    onClick={selectAllContacts}
                   >
                     Select all
                   </Button>
@@ -312,7 +312,7 @@ export function QuickInvitePanel({
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search friends..."
+                  placeholder="Search Contacts..."
                   className="pl-8 h-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -430,13 +430,13 @@ export function QuickInvitePanel({
             disabled={
               isSubmitting ||
               !selectedRoleId ||
-              (mode === "friends" && selectedFriendIds.size === 0) ||
+              (mode === "Contacts" && selectedContactIds.size === 0) ||
               (mode === "hierarchy" && !hierarchyEmail) ||
               (mode === "team" && !selectedTeamId)
             }
             onClick={
-              mode === "friends"
-                ? handleBulkInviteFriends
+              mode === "Contacts"
+                ? handleBulkInviteContacts
                 : mode === "hierarchy"
                 ? handleHierarchyInvite
                 : handleTeamInvite
@@ -447,96 +447,96 @@ export function QuickInvitePanel({
             ) : (
               <Send className="w-4 h-4" />
             )}
-            {mode === "friends" && `Invite ${selectedFriendIds.size} friends`}
+            {mode === "Contacts" && `Invite ${selectedContactIds.size} Contacts`}
             {mode === "hierarchy" && "Send hierarchy invitation"}
             {mode === "team" && "Invite entire team"}
           </Button>
         </div>
       </div>
 
-      {/* Right: Friends list (for friends mode) */}
-      {mode === "friends" && (
+      {/* Right: Contacts list (for Contacts mode) */}
+      {mode === "Contacts" && (
         <div className="w-1/2 flex flex-col border-l pl-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-sm">
-              Available Friends ({availableFriends.length})
+              Available Contacts ({availableContacts.length})
             </h3>
-            {selectedFriendIds.size > 0 && (
+            {selectedContactIds.size > 0 && (
               <Badge variant="secondary">
-                {selectedFriendIds.size} selected
+                {selectedContactIds.size} selected
               </Badge>
             )}
           </div>
           <ScrollArea className="flex-1">
             <div className="space-y-1 pr-3">
-              {availableFriends.length === 0 ? (
+              {availableContacts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <UserPlus className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No friends available to invite</p>
+                  <p className="text-sm">No Contacts available to invite</p>
                   <p className="text-xs">
-                    All your friends are already members or have pending invitations
+                    All your Contacts are already members or have pending invitations
                   </p>
                 </div>
               ) : (
-                availableFriends.map((friend) => (
+                availableContacts.map((Contact) => (
                   <div
-                    key={String(friend._id)}
+                    key={String(Contact._id)}
                     className={cn(
                       "flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors",
-                      selectedFriendIds.has(String(friend._id))
+                      selectedContactIds.has(String(Contact._id))
                         ? "bg-primary/10 border border-primary/30"
                         : "hover:bg-muted/50"
                     )}
-                    onClick={() => toggleFriendSelection(String(friend._id))}
+                    onClick={() => toggleContactSelection(String(Contact._id))}
                   >
                     <Checkbox
-                      checked={selectedFriendIds.has(String(friend._id))}
-                      onCheckedChange={() => toggleFriendSelection(String(friend._id))}
+                      checked={selectedContactIds.has(String(Contact._id))}
+                      onCheckedChange={() => toggleContactSelection(String(Contact._id))}
                     />
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={friend.avatarUrl} />
+                      <AvatarImage src={Contact.avatarUrl} />
                       <AvatarFallback className="text-xs">
-                        {getInitials(friend.name)}
+                        {getInitials(Contact.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">
-                        {friend.name ?? "Unknown"}
+                        {Contact.name ?? "Unknown"}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
-                        {friend.email}
+                        {Contact.email}
                       </div>
                     </div>
                   </div>
                 ))
               )}
 
-              {/* Friends with pending invites */}
-              {filteredFriends.some((f) => f.hasPendingInvite) && (
+              {/* Contacts with pending invites */}
+              {filteredContacts.some((f) => f.hasPendingInvite) && (
                 <>
                   <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mt-4 mb-2">
                     Pending Invitations
                   </div>
-                  {filteredFriends
+                  {filteredContacts
                     .filter((f) => f.hasPendingInvite)
-                    .map((friend) => (
+                    .map((Contact) => (
                       <div
-                        key={String(friend._id)}
+                        key={String(Contact._id)}
                         className="flex items-center gap-3 p-2 rounded-md opacity-50"
                       >
                         <Checkbox disabled checked={false} />
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={friend.avatarUrl} />
+                          <AvatarImage src={Contact.avatarUrl} />
                           <AvatarFallback className="text-xs">
-                            {getInitials(friend.name)}
+                            {getInitials(Contact.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">
-                            {friend.name ?? "Unknown"}
+                            {Contact.name ?? "Unknown"}
                           </div>
                           <div className="text-xs text-muted-foreground truncate">
-                            {friend.email}
+                            {Contact.email}
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs">

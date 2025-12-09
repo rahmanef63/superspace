@@ -1,7 +1,7 @@
 /**
  * TeamListPanel
  * 
- * Displays teams and friends list for quick management.
+ * Displays teams and Contacts list for quick management.
  * Allows creating teams and adding members.
  */
 
@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Id } from "@convex/_generated/dataModel";
 import type { Team, HierarchyMemberOverview, TeamMember } from "../types";
-import { useCreateTeam, useFriends, useTeamMembers } from "../api";
+import { useCreateTeam, useContacts, useTeamMembers } from "../api";
 import { useToast } from "@/hooks/use-toast";
 
 interface TeamListPanelProps {
@@ -65,7 +65,7 @@ export function TeamListPanel({
   const [newTeamName, setNewTeamName] = React.useState("");
   const [newTeamDescription, setNewTeamDescription] = React.useState("");
   
-  const friends = useFriends();
+  const Contacts = useContacts();
   const teamMembers = useTeamMembers(selectedTeamId ?? undefined);
   const createTeam = useCreateTeam();
   const { toast } = useToast();
@@ -241,7 +241,7 @@ export function TeamListPanel({
         </ScrollArea>
       </div>
 
-      {/* Right: Team members or Friends */}
+      {/* Right: Team members or Contacts */}
       <div className="w-1/2 flex flex-col border-l pl-4">
         {selectedTeamId ? (
           <>
@@ -295,35 +295,35 @@ export function TeamListPanel({
         ) : (
           <>
             <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">
-              Friends ({friends?.length ?? 0})
+              Contacts ({Contacts?.length ?? 0})
             </h3>
             <ScrollArea className="flex-1">
               <div className="space-y-2 pr-3">
-                {!friends || friends.length === 0 ? (
+                {!Contacts || Contacts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No friends yet</p>
-                    <p className="text-xs">Add friends to quickly invite them to workspaces</p>
+                    <p className="text-sm">No Contacts yet</p>
+                    <p className="text-xs">Add Contacts to quickly invite them to workspaces</p>
                   </div>
                 ) : (
-                  friends.map((friendship: any) => (
+                  Contacts.map((Contactship: any) => (
                     <div
-                      key={String(friendship._id)}
+                      key={String(Contactship._id)}
                       className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-2.5">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={friendship.friend?.avatarUrl ?? undefined} />
+                          <AvatarImage src={Contactship.Contact?.avatarUrl ?? undefined} />
                           <AvatarFallback className="text-xs">
-                            {getInitials(friendship.friend?.name ?? "?")}
+                            {getInitials(Contactship.Contact?.name ?? "?")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="text-sm font-medium">
-                            {friendship.friend?.name ?? "Unknown"}
+                            {Contactship.Contact?.name ?? "Unknown"}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {friendship.friend?.email}
+                            {Contactship.Contact?.email}
                           </div>
                         </div>
                       </div>

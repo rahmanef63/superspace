@@ -2,7 +2,7 @@
 
 import type { Id } from "@convex/_generated/dataModel";
 import { PageContainer } from "@/frontend/shared/ui/layout/container";
-import Message from "./Message";
+import ChatPage from "./views/ChatPage";
 
 export interface MessagePageProps {
   workspaceId?: Id<"workspaces"> | null;
@@ -11,7 +11,7 @@ export interface MessagePageProps {
 export default function MessagePage({ workspaceId }: MessagePageProps) {
   return (
     <PageContainer maxWidth="full" padding={false} fullHeight>
-      <Message workspaceId={workspaceId ?? null} />
+      <ChatPage workspaceId={workspaceId ?? null} />
     </PageContainer>
   );
 }

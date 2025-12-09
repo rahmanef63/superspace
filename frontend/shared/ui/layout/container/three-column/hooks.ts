@@ -8,101 +8,152 @@ import * as React from "react"
 
 /**
  * Persisted state hook with localStorage
+ * Uses lazy initialization to avoid hydration mismatches
  */
 export function usePersistedState<T>(
   key: string,
   defaultValue: T,
   enabled: boolean
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [state, setState] = React.useState<T>(defaultValue)
-  const [isHydrated, setIsHydrated] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsHydrated(true)
-    if (!enabled) return
+  // Use lazy initialization to read from localStorage only on client
+  const [state, setState] = React.useState<T>(() => {
+    // Server-side or disabled: return default
+    if (typeof window === "undefined" || !enabled) {
+      return defaultValue
+    }
+    
     try {
       const stored = localStorage.getItem(key)
       if (stored) {
-        setState(JSON.parse(stored))
+        return JSON.parse(stored)
       }
     } catch {
       // Ignore storage errors
     }
-  }, [key, enabled])
+    return defaultValue
+  })
 
+  // Sync to localStorage when state changes
+  const isFirstMount = React.useRef(true)
   React.useEffect(() => {
-    if (!enabled || !isHydrated) return
+    // Skip on first mount to avoid writing default value immediately
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    
+    if (!enabled || typeof window === "undefined") return
+    
     try {
       localStorage.setItem(key, JSON.stringify(state))
     } catch {
       // Ignore storage errors
     }
-  }, [key, state, enabled, isHydrated])
+  }, [key, state, enabled])
 
   return [state, setState]
 }
 
 /**
- * Responsive collapse hook
+ * Responsive collapse hook - simplified version
+ * Only returns whether the viewport is below the breakpoint
  */
-export function useResponsiveCollapse(
-  collapseAt: number | undefined,
-  externalCollapsed: boolean | undefined,
-  onCollapsedChange: ((collapsed: boolean) => void) | undefined
-) {
-  const [autoCollapsed, setAutoCollapsed] = React.useState(false)
-  
-  // Use refs to avoid infinite loops from callbacks in dependency array
-  const callbackRef = React.useRef(onCollapsedChange)
-  const autoCollapsedRef = React.useRef(autoCollapsed)
-  
-  // Keep refs updated
-  React.useEffect(() => {
-    callbackRef.current = onCollapsedChange
-  }, [onCollapsedChange])
-  
-  React.useEffect(() => {
-    autoCollapsedRef.current = autoCollapsed
-  }, [autoCollapsed])
+export function useResponsiveCollapse(collapseAt: number | undefined) {
+  // Start with false for SSR, will update immediately on client
+  const [shouldCollapse, setShouldCollapse] = React.useState(false)
+  const [hasMounted, setHasMounted] = React.useState(false)
 
+  // Use useEffect for hydration-safe initialization
   React.useEffect(() => {
+    setHasMounted(true)
+    
     if (!collapseAt || typeof window === "undefined") return
 
+    // Check immediately on mount
+    const checkWidth = () => {
+      const newValue = window.innerWidth < collapseAt
+      setShouldCollapse(newValue)
+    }
+    
+    checkWidth()
+
+    // Debounce resize for performance
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
     const handleResize = () => {
-      const shouldCollapse = window.innerWidth < collapseAt
-      if (shouldCollapse !== autoCollapsedRef.current) {
-        setAutoCollapsed(shouldCollapse)
-        if (externalCollapsed === undefined) {
-          callbackRef.current?.(shouldCollapse)
-        }
-      }
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(checkWidth, 50) // Faster response
     }
 
-    handleResize()
     window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [collapseAt, externalCollapsed]) // Remove autoCollapsed and onCollapsedChange from deps
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [collapseAt])
 
-  return autoCollapsed
+  return shouldCollapse
 }
 
 /**
  * Stacked layout hook for mobile
  */
 export function useStackedLayout(stackAt: number | undefined) {
+  // Start with false for SSR, will update immediately on client
   const [isStacked, setIsStacked] = React.useState(false)
 
   React.useEffect(() => {
     if (!stackAt || typeof window === "undefined") return
 
-    const handleResize = () => {
+    // Check immediately on mount
+    const checkWidth = () => {
       setIsStacked(window.innerWidth < stackAt)
     }
+    
+    checkWidth()
 
-    handleResize()
+    // Debounce resize for performance
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const handleResize = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(checkWidth, 50) // Faster response
+    }
+
     window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [stackAt])
 
   return isStacked
+}
+
+/**
+ * Custom hook to get current window width for responsive behavior
+ */
+export function useWindowWidth() {
+  const [width, setWidth] = React.useState(() => {
+    if (typeof window === "undefined") return 1024 // Default for SSR
+    return window.innerWidth
+  })
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const handleResize = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        setWidth(window.innerWidth)
+      }, 100)
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [])
+
+  return width
 }

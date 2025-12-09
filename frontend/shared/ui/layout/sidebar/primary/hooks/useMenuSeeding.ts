@@ -17,7 +17,7 @@ const REQUIRED_MENU_SLUGS = [
   "settings",
   "profile",
   "members",
-  "friends",
+  "Contacts",
   "documents",
   "canvas",
   "menus",

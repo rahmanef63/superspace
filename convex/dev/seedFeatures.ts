@@ -119,17 +119,17 @@ export const FEATURE_DEFINITIONS = {
     },
     requiresPermission: PERMS.MANAGE_MEMBERS,
   },
-  "friends": {
-    name: "Friends",
-    slug: "friends",
+  "Contacts": {
+    name: "Contacts",
+    slug: "Contacts",
     type: "route" as const,
     icon: "Heart",
-    path: "/friends",
-    component: "FriendsPage",
+    path: "/Contacts",
+    component: "ContactsPage",
     order: 6,
     version: "1.0.0",
     metadata: {
-      description: "Manage your friends",
+      description: "Manage your Contacts",
       category: "social",
     },
   },

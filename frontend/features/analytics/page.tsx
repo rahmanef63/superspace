@@ -1,14 +1,12 @@
-"use client";
+"use client"
 
-import type { Id } from "@convex/_generated/dataModel";
-import AnalyticsFeature from "./index";
+import type { Id } from "@convex/_generated/dataModel"
+import AnalyticsPage from "./views/AnalyticsPage"
 
 export interface AnalyticsPageProps {
-  workspaceId?: Id<"workspaces"> | null;
+  workspaceId?: Id<"workspaces"> | null
 }
 
-export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
-  void workspaceId;
-
-  return <AnalyticsFeature />;
+export default function Page({ workspaceId }: AnalyticsPageProps) {
+  return <AnalyticsPage workspaceId={workspaceId} />
 }

@@ -104,7 +104,7 @@ This document outlines a comprehensive plan to validate all SuperSpace features,
 | 18 | `projects` | `projects` | ✅ | ⚠️ Needs tests |
 | 19 | `reports` | `reports` | ✅ | ✅ Has tests |
 | 20 | `shared` | Utilities | N/A | N/A |
-| 21 | `social` | `friends`, `invites` | ✅ | ⚠️ Needs tests |
+| 21 | `social` | `Contacts`, `invites` | ✅ | ⚠️ Needs tests |
 | 22 | `status` | `userStatus` | ✅ | ⚠️ Needs tests |
 | 23 | `support` | `tickets` | ✅ | ⚠️ Needs tests |
 | 24 | `tasks` | `tasks` | ✅ | ✅ Has tests |

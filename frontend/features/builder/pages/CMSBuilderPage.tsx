@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
   Card,
   CardTitle,
   Button,
   Input,
   Label,
 } from '@/components/ui';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { ThreeColumnLayoutAdvanced } from '@/frontend/shared/ui/layout/container';
 import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, type NodeTypes } from 'reactflow';
 import 'reactflow/dist/style.css';
 import {
@@ -187,7 +186,7 @@ const CMSBuilderPageInner: React.FC = () => {
   const [tplEdges, setTplEdges] = useState<any[]>([]);
 
   // Selection context menu
-  const [ctxMenu, setCtxMenu] = useState<{x: number; y: number; open: boolean}>({ x: 0, y: 0, open: false });
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; open: boolean }>({ x: 0, y: 0, open: false });
   const selectedIds = useMemo(() => nodes.filter((n: any) => n.selected).map(n => n.id), [nodes]);
 
   useEffect(() => {
@@ -358,7 +357,7 @@ const CMSBuilderPageInner: React.FC = () => {
           {pinnedIds.map((id) => (
             <Card key={id} className="p-2">
               <div className="flex items-center justify-between mb-1">
-                <div className="text-[11px] text-muted-foreground">Node {id.slice(1,5)}</div>
+                <div className="text-[11px] text-muted-foreground">Node {id.slice(1, 5)}</div>
                 <Button size="sm" variant="outline" onClick={() => unpin(id)}>Unpin</Button>
               </div>
               <Renderer
@@ -370,7 +369,7 @@ const CMSBuilderPageInner: React.FC = () => {
                 commands={commands}
                 menuOverride={menuOverride}
                 setMenuOverride={setMenuOverride}
-                onSelectNode={previewMode === "design" ? setSelectedNodeId : () => {}}
+                onSelectNode={previewMode === "design" ? setSelectedNodeId : () => { }}
                 selectedId={selectedNodeId}
                 designMode={previewMode === "design"}
                 rootId={id}
@@ -406,7 +405,7 @@ const CMSBuilderPageInner: React.FC = () => {
           commands={commands}
           menuOverride={menuOverride}
           setMenuOverride={setMenuOverride}
-          onSelectNode={previewMode === "design" ? setSelectedNodeId : () => {}}
+          onSelectNode={previewMode === "design" ? setSelectedNodeId : () => { }}
           selectedId={selectedNodeId}
           designMode={previewMode === "design"}
           rootId={rootIdForPreview}
@@ -417,7 +416,7 @@ const CMSBuilderPageInner: React.FC = () => {
 
   const renderTemplateCanvas = () => {
     if (!openTemplateKey) return null;
-    
+
     return (
       <div className="h-full w-full bg-muted">
         <ReactFlowProvider>
@@ -496,20 +495,19 @@ const CMSBuilderPageInner: React.FC = () => {
         </div>
       )}
 
-      {/* Main 3-pane layout */}
-      <div className="flex-1 p-3 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-          <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
+      {/* Main 3-pane layout using ThreeColumnLayoutAdvanced */}
+      <div className="flex-1 overflow-hidden">
+        <ThreeColumnLayoutAdvanced
+          left={
             <LeftTabs
               active={leftTab}
               setActive={setLeftTab}
               onOpenTemplate={handleOpenTemplate}
               onAddWidget={addFromLibrary}
             />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={55} minSize={40}>
-            <Card className="h-full overflow-hidden">
+          }
+          center={
+            <Card className="h-full overflow-hidden border-0 rounded-none">
               {/* Canvas tabs */}
               <div className="h-10 border-b flex items-center gap-2 px-3">
                 <Button variant={!openTemplateKey ? 'primary' : 'ghost'} size="sm" className="h-7" onClick={() => setOpenTemplateKey(null)}>Main Canvas</Button>
@@ -521,7 +519,7 @@ const CMSBuilderPageInner: React.FC = () => {
               </div>
 
               {layoutTab === "split" && (
-                <ResizablePanelGroup direction="vertical">
+                <ResizablePanelGroup direction="vertical" className="h-[calc(100%-40px)]">
                   <ResizablePanel defaultSize={55}>
                     {!openTemplateKey ? renderCanvas() : renderTemplateCanvas()}
                   </ResizablePanel>
@@ -531,13 +529,20 @@ const CMSBuilderPageInner: React.FC = () => {
                   </ResizablePanel>
                 </ResizablePanelGroup>
               )}
-              {layoutTab === "canvas" && (!openTemplateKey ? renderCanvas() : renderTemplateCanvas())}
-              {layoutTab === "preview" && renderPreview()}
+              {layoutTab === "canvas" && (
+                <div className="h-[calc(100%-40px)]">
+                  {!openTemplateKey ? renderCanvas() : renderTemplateCanvas()}
+                </div>
+              )}
+              {layoutTab === "preview" && (
+                <div className="h-[calc(100%-40px)]">
+                  {renderPreview()}
+                </div>
+              )}
             </Card>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
-            <Card className="h-full flex flex-col">
+          }
+          right={
+            <Card className="h-full flex flex-col border-0 rounded-none">
               <div className="p-4 border-b flex items-center justify-between">
                 <CardTitle>Inspector</CardTitle>
                 <div className="flex gap-2">
@@ -555,16 +560,25 @@ const CMSBuilderPageInner: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              <UnifiedInspector 
-                feature="cms" 
+              <UnifiedInspector
+                feature="cms"
                 customRenderers={{
                   navNode: CMSInspectorRenderer,
                   card: CMSInspectorRenderer
                 }}
               />
             </Card>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          }
+          leftWidth={280}
+          rightWidth={350}
+          resizable={true}
+          showCollapseButtons={true}
+          persistState={true}
+          storageKey="builder-layout"
+          leftLabel="Library"
+          centerLabel="Canvas"
+          rightLabel="Inspector"
+        />
       </div>
     </div>
   );

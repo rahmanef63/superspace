@@ -17,6 +17,7 @@ import Link from "next/link"
 import {
   Header,
 } from "./Header"
+import { GlobalUtilityButtons } from "../chrome/GlobalUtilityButtons"
 import { HEADER_PRESETS, type HeaderAction, type HeaderMetaItem, type BreadcrumbItem } from "./types"
 
 const isHeaderActionConfig = (action: HeaderAction | React.ReactNode): action is HeaderAction => (
@@ -545,11 +546,16 @@ export const StandardFeatureHeader: React.FC<StandardFeatureHeaderProps> = ({
         )}
 
         {/* Action Buttons */}
-        {actions && (
-          <Header.Actions className="shrink-0 ml-0">
-            {actions}
-          </Header.Actions>
-        )}
+        <div className="flex items-center gap-2">
+          {actions && (
+            <Header.Actions className="shrink-0 ml-0">
+              {actions}
+            </Header.Actions>
+          )}
+
+          {/* Global Utilities (Always Present) */}
+          <GlobalUtilityButtons className="border-l pl-2 ml-2" />
+        </div>
       </div>
     </Header>
   )

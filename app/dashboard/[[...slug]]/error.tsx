@@ -20,7 +20,7 @@ import { IconRefresh } from "@tabler/icons-react"
  * - Must be a Client Component ("use client")
  * - Provide reset functionality for recoverable errors
  * - Log errors for debugging (optional)
- * - Show user-friendly error messages
+ * - Show user-Contactly error messages
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/error
  */

@@ -1,7 +1,8 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const friendRequests = defineTable({
+// Social contact requests (user-to-user connection requests)
+export const socialContactRequests = defineTable({
   senderId: v.id("users"),
   receiverId: v.id("users"),
   status: v.union(
@@ -19,7 +20,8 @@ export const friendRequests = defineTable({
   .index("by_sender_receiver", ["senderId", "receiverId"])
   .index("by_status", ["status"]);
 
-export const friendships = defineTable({
+// Social contacts (user-to-user connections, formerly "friendships")
+export const socialContacts = defineTable({
   user1Id: v.id("users"),
   user2Id: v.id("users"),
   status: v.union(v.literal("active"), v.literal("blocked")),
@@ -50,7 +52,7 @@ export const starredItems = defineTable({
   .index("by_item", ["itemType", "itemId"]);
 
 export const socialTables = {
-  friendRequests,
-  friendships,
+  socialContactRequests,
+  socialContacts,
   starredItems,
 };

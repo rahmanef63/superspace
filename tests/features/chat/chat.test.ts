@@ -128,8 +128,8 @@ describe("Chat Feature", () => {
         expect(true).toBe(true);
       });
 
-      it("should verify friendship for personal chats", () => {
-        // Personal chats require friendship verification
+      it("should verify Contactship for personal chats", () => {
+        // Personal chats require Contactship verification
         expect(true).toBe(true);
       });
 
@@ -553,8 +553,8 @@ describe("Chat Feature", () => {
       expect(globalConversation.workspaceId).toBeUndefined();
     });
 
-    it("should require friendship for global DMs", () => {
-      // Friendship verification for createOrGetDirectGlobal
+    it("should require Contactship for global DMs", () => {
+      // Contactship verification for createOrGetDirectGlobal
       expect(true).toBe(true);
     });
   });

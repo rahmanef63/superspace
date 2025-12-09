@@ -23,6 +23,36 @@ export const DEFAULT_MENU_ITEMS = [
     }
   },
   {
+    name: "Communications" as const,
+    slug: "communications" as const,
+    type: "route" as const,
+    icon: "MessageSquare" as const,
+    path: "/dashboard/communications",
+    component: "CommunicationsPage" as const,
+    order: 1,
+    metadata: {
+      description: "Unified communication platform with channels, direct messages, voice/video calls, and AI integrations",
+      version: "1.0.0",
+      category: "communication" as const,
+      tags: [
+        "communication",
+        "chat",
+        "channels",
+        "calls",
+        "voice",
+        "video",
+        "messaging",
+        "dm",
+        "ai"
+      ],
+      featureType: "default" as const,
+      originalFeatureType: "default" as const,
+      requiresPermission: "communications.view",
+      originalRequiresPermission: "communications.view"
+    },
+    requiresPermission: "communications.view"
+  },
+  {
     name: "Chat" as const,
     slug: "chat" as const,
     type: "route" as const,
@@ -110,27 +140,6 @@ export const DEFAULT_MENU_ITEMS = [
     requiresPermission: "MANAGE_WORKSPACES"
   },
   {
-    name: "Starred" as const,
-    slug: "starred" as const,
-    type: "route" as const,
-    icon: "Star" as const,
-    path: "/dashboard/starred",
-    component: "StarredPage" as const,
-    order: 5,
-    metadata: {
-      description: "Starred messages",
-      version: "2.0.0",
-      category: "communication" as const,
-      tags: [
-        "starred",
-        "bookmarks",
-        "favorites"
-      ],
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
     name: "Knowledge" as const,
     slug: "knowledge" as const,
     type: "route" as const,
@@ -158,42 +167,22 @@ export const DEFAULT_MENU_ITEMS = [
     requiresPermission: "knowledge.view"
   },
   {
-    name: "Friends" as const,
-    slug: "friends" as const,
+    name: "Contacts" as const,
+    slug: "contacts" as const,
     type: "route" as const,
-    icon: "Heart" as const,
-    path: "/dashboard/friends",
-    component: "FriendsPage" as const,
+    icon: "Contact" as const,
+    path: "/dashboard/contacts",
+    component: "ContactsPage" as const,
     order: 5,
     metadata: {
-      description: "Manage your friends and connections",
+      description: "Manage your contacts and connections",
       version: "1.0.0",
       category: "social" as const,
       tags: [
         "social",
         "connections",
-        "networking"
-      ],
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
-    name: "Archived" as const,
-    slug: "archived" as const,
-    type: "route" as const,
-    icon: "Archive" as const,
-    path: "/dashboard/archived",
-    component: "ArchivedPage" as const,
-    order: 6,
-    metadata: {
-      description: "Archived chats",
-      version: "2.0.0",
-      category: "communication" as const,
-      tags: [
-        "archive",
-        "history",
-        "storage"
+        "networking",
+        "contacts"
       ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
@@ -322,47 +311,23 @@ export const DEFAULT_MENU_ITEMS = [
     requiresPermission: "MANAGE_MEMBERS"
   },
   {
-    name: "Profile" as const,
-    slug: "user-settings",
+    name: "Content Library",
+    slug: "content" as const,
     type: "route" as const,
-    icon: "User" as const,
-    path: "/dashboard/user-settings",
-    component: "ProfilePage" as const,
-    order: 20,
+    icon: "Library" as const,
+    path: "/dashboard/content",
+    component: "ContentPage" as const,
+    order: 100,
     metadata: {
-      description: "Manage your user profile and preferences (Deprecated - use Knowledge > Profile or Settings)",
+      description: "Centralized content management for images, videos, audio, and documents with AI generation capabilities.",
       version: "1.0.0",
-      category: "administration" as const,
+      category: "creativity" as const,
       tags: [
-        "profile",
-        "settings",
-        "user",
-        "deprecated"
+        "content",
+        "creativity"
       ],
       featureType: "default" as const,
       originalFeatureType: "default" as const
-    }
-  },
-  {
-    name: "Settings" as const,
-    slug: "settings" as const,
-    type: "route" as const,
-    icon: "Settings" as const,
-    path: "/dashboard/settings",
-    component: "SettingsPage" as const,
-    order: 99,
-    metadata: {
-      description: "Personal preferences, account settings, and app configuration",
-      version: "2.0.0",
-      category: "administration" as const,
-      tags: [
-        "personal",
-        "settings",
-        "preferences",
-        "account"
-      ],
-      featureType: "system" as const,
-      originalFeatureType: "system" as const
     }
   },
   {

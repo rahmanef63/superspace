@@ -1,0 +1,253 @@
+import { v } from "convex/values"
+import { mutation } from "../../_generated/server"
+import { requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
+import type { Id } from "../../_generated/dataModel"
+
+/**
+ * Mutations for analytics feature
+ */
+
+// Track analytics event
+export const trackEvent = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    eventType: v.string(),
+    eventName: v.string(),
+    properties: v.optional(v.record(v.string(), v.any())),
+    metadata: v.optional(v.object({
+      userAgent: v.optional(v.string()),
+      referrer: v.optional(v.string()),
+      path: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    const userId = candidateIds.length > 0 ? candidateIds[0] as Id<"users"> : undefined
+
+    const id = await ctx.db.insert("analyticsEvents", {
+      workspaceId: args.workspaceId,
+      eventType: args.eventType,
+      eventName: args.eventName,
+      properties: args.properties,
+      userId,
+      timestamp: Date.now(),
+      metadata: args.metadata,
+    })
+
+    return { id, success: true }
+  },
+})
+
+// Create widget
+export const createWidget = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    type: v.union(
+      v.literal("metric"),
+      v.literal("chart"),
+      v.literal("table"),
+      v.literal("trend")
+    ),
+    config: v.object({
+      dataSource: v.string(),
+      metric: v.string(),
+      filters: v.optional(v.array(v.object({
+        field: v.string(),
+        operator: v.string(),
+        value: v.any(),
+      }))),
+      groupBy: v.optional(v.string()),
+      timeRange: v.optional(v.union(
+        v.literal("today"),
+        v.literal("7d"),
+        v.literal("30d"),
+        v.literal("90d"),
+        v.literal("custom")
+      )),
+      chartType: v.optional(v.union(
+        v.literal("line"),
+        v.literal("bar"),
+        v.literal("pie"),
+        v.literal("area"),
+        v.literal("donut")
+      )),
+    }),
+    position: v.object({
+      x: v.number(),
+      y: v.number(),
+      w: v.number(),
+      h: v.number(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    if (candidateIds.length === 0) throw new Error("Not authenticated")
+
+    const userId = candidateIds[0] as Id<"users">
+
+    const id = await ctx.db.insert("analyticsWidgets", {
+      workspaceId: args.workspaceId,
+      name: args.name,
+      type: args.type,
+      config: args.config,
+      position: args.position,
+      createdBy: userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    return { id, success: true }
+  },
+})
+
+// Update widget
+export const updateWidget = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    widgetId: v.id("analyticsWidgets"),
+    name: v.optional(v.string()),
+    config: v.optional(v.object({
+      dataSource: v.string(),
+      metric: v.string(),
+      filters: v.optional(v.array(v.object({
+        field: v.string(),
+        operator: v.string(),
+        value: v.any(),
+      }))),
+      groupBy: v.optional(v.string()),
+      timeRange: v.optional(v.union(
+        v.literal("today"),
+        v.literal("7d"),
+        v.literal("30d"),
+        v.literal("90d"),
+        v.literal("custom")
+      )),
+      chartType: v.optional(v.union(
+        v.literal("line"),
+        v.literal("bar"),
+        v.literal("pie"),
+        v.literal("area"),
+        v.literal("donut")
+      )),
+    })),
+    position: v.optional(v.object({
+      x: v.number(),
+      y: v.number(),
+      w: v.number(),
+      h: v.number(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const widget = await ctx.db.get(args.widgetId)
+    if (!widget || widget.workspaceId !== args.workspaceId) {
+      throw new Error("Widget not found")
+    }
+
+    const updates: Record<string, any> = { updatedAt: Date.now() }
+    if (args.name !== undefined) updates.name = args.name
+    if (args.config !== undefined) updates.config = args.config
+    if (args.position !== undefined) updates.position = args.position
+
+    await ctx.db.patch(args.widgetId, updates)
+
+    return { success: true }
+  },
+})
+
+// Delete widget
+export const deleteWidget = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    widgetId: v.id("analyticsWidgets"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const widget = await ctx.db.get(args.widgetId)
+    if (!widget || widget.workspaceId !== args.workspaceId) {
+      throw new Error("Widget not found")
+    }
+
+    await ctx.db.delete(args.widgetId)
+
+    return { success: true }
+  },
+})
+
+// Create report
+export const createReport = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    type: v.union(
+      v.literal("summary"),
+      v.literal("detailed"),
+      v.literal("comparison"),
+      v.literal("trend")
+    ),
+    config: v.object({
+      dataSources: v.array(v.string()),
+      metrics: v.array(v.string()),
+      dimensions: v.optional(v.array(v.string())),
+      filters: v.optional(v.array(v.object({
+        field: v.string(),
+        operator: v.string(),
+        value: v.any(),
+      }))),
+      timeRange: v.object({
+        type: v.string(),
+        start: v.optional(v.number()),
+        end: v.optional(v.number()),
+      }),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    if (candidateIds.length === 0) throw new Error("Not authenticated")
+
+    const userId = candidateIds[0] as Id<"users">
+
+    const id = await ctx.db.insert("analyticsReports", {
+      workspaceId: args.workspaceId,
+      name: args.name,
+      description: args.description,
+      type: args.type,
+      config: args.config,
+      createdBy: userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    return { id, success: true }
+  },
+})
+
+// Delete report
+export const deleteReport = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    reportId: v.id("analyticsReports"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const report = await ctx.db.get(args.reportId)
+    if (!report || report.workspaceId !== args.workspaceId) {
+      throw new Error("Report not found")
+    }
+
+    await ctx.db.delete(args.reportId)
+
+    return { success: true }
+  },
+})

@@ -4,7 +4,7 @@
  * and initializes the sub-agent system.
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Bot, Sliders, Shield, Sparkles, Key } from "lucide-react"
 import {
   AIGeneralSettings,

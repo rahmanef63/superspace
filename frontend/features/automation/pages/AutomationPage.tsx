@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import type { Id } from "@convex/_generated/dataModel";
 import { SharedCanvasProvider } from '@/frontend/shared/builder';
 import {
   ResizablePanelGroup,
@@ -22,7 +23,14 @@ const nodeTypes = {
   automationNode: AutomationNode,
 };
 
-const AutomationLayout: React.FC = () => {
+interface AutomationLayoutProps {
+  workspaceId: Id<"workspaces">;
+}
+
+const AutomationLayout: React.FC<AutomationLayoutProps> = ({ workspaceId }) => {
+  // workspaceId can be used for saving/loading workspace-specific automations
+  void workspaceId; // Will be used when we add persistence
+  
   return (
     <div className="h-full w-full bg-gray-100 text-gray-900 flex flex-col">
       {/* Top Bar */}
@@ -78,7 +86,11 @@ const AutomationLayout: React.FC = () => {
   );
 };
 
-export const AutomationPage: React.FC = () => {
+export interface AutomationPageProps {
+  workspaceId: Id<"workspaces">;
+}
+
+export const AutomationPage: React.FC<AutomationPageProps> = ({ workspaceId }) => {
   const { registerComponent, registerFeatureTabs } = useCrossFeatureRegistry();
 
   useEffect(() => {
@@ -89,7 +101,7 @@ export const AutomationPage: React.FC = () => {
   return (
     <SharedCanvasProvider initialMode="automation">
       <DnDProvider>
-        <AutomationLayout />
+        <AutomationLayout workspaceId={workspaceId} />
       </DnDProvider>
     </SharedCanvasProvider>
   );

@@ -20,6 +20,7 @@ export interface WhatsAppStore {
   setActiveTab: (tab: TabType) => void;
   setSelectedChat: (chatId: string | null) => void;
   toggleSidebar: () => void;
+  addChat: (chat: Chat) => void;
   addMessage: (chatId: string, message: Message) => void;
   sendMessage: (chatId: string, text: string) => Promise<void>;
   loadChats: () => Promise<void>;

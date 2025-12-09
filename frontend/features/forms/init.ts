@@ -2,7 +2,7 @@
  * Forms Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { FileText, Palette, Send, Shield } from "lucide-react"
 import {
     FormsGeneralSettings,

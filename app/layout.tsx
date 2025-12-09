@@ -9,6 +9,9 @@ import { Toaster } from "sonner"
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { SafeClerkProvider } from "@/components/SafeClerkProvider"
 
+// Initialize feature settings and registries
+import "@/frontend/features/initFeatureSettings"
+
 export const metadata: Metadata = {
   title: "SuperSpace App",
   description: "Super workspace platform",

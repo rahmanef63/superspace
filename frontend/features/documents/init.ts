@@ -3,7 +3,7 @@
  * Registers documents settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { FileText, Share2, Users, Download } from "lucide-react"
 import {
   DocumentsEditorSettings,
@@ -43,6 +43,33 @@ registerFeatureSettings("documents", () => [
   },
 ])
 
+import { registerCreateActions } from "@/frontend/shared/foundation/registries/create-registry"
+import { registerCommands } from "@/frontend/shared/foundation/registries/command-registry"
+
+registerCreateActions("documents", [
+  {
+    id: "create-document",
+    label: "Document",
+    icon: FileText,
+    description: "Create a new collaborative document",
+    shortcut: "N D",
+    onClick: () => window.dispatchEvent(new Event("open-create-document-dialog")),
+    order: 10
+  }
+])
+
+registerCommands("documents", [
+  {
+    id: "create-document-cmd",
+    label: "Create New Document",
+    icon: FileText,
+    shortcut: "N D",
+    group: "actions",
+    keywords: ["new", "doc", "page"],
+    action: () => window.dispatchEvent(new Event("open-create-document-dialog"))
+  }
+])
+
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Documents feature settings registered")
+  console.log("✅ Documents feature settings & actions registered")
 }

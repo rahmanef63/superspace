@@ -406,7 +406,7 @@ Settings
 ✅ **Clean Separation** - Each feature owns its settings
 ✅ **Type-Safe** - Full TypeScript support
 ✅ **Permission-Aware** - Settings respect RBAC
-✅ **Mobile-Friendly** - Responsive out of the box
+✅ **Mobile-Contactly** - Responsive out of the box
 ✅ **Maintainable** - Easy to add/remove features
 
 ---

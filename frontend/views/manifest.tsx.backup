@@ -117,12 +117,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/starred/page")),
   },
   {
-    id: "friends",
-    componentId: "FriendsPage",
-    title: "Friends",
-    description: "Manage your friends and connections",
+    id: "Contacts",
+    componentId: "ContactsPage",
+    title: "Contacts",
+    description: "Manage your Contacts and connections",
     icon: Heart,
-    component: lazy(() => import("@/frontend/features/friends/page")),
+    component: lazy(() => import("@/frontend/features/Contacts/page")),
   },
   {
     id: "archived",

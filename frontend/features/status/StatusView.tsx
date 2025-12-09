@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
-import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
+import { TopBar } from "@/frontend/features/chat/sections/center/TopBar";
 import { StatusListView } from "./StatusListView";
 import { StatusDetailView } from "./StatusDetailView";
 import { SecondarySidebarLayout } from "@/frontend/shared/ui";

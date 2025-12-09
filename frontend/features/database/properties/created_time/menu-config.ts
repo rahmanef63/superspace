@@ -18,7 +18,7 @@ export const createdTimePropertyMenuConfig: PropertyTypeMenuConfig = {
       icon: Calendar,
       submenu: [
         { id: 'format-full', label: 'Full date', icon: undefined },
-        { id: 'format-friendly', label: 'Friendly', icon: undefined },
+        { id: 'format-Contactly', label: 'Contactly', icon: undefined },
         { id: 'format-relative', label: 'Relative', icon: undefined },
       ],
     },

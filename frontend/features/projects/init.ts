@@ -3,7 +3,7 @@
  * Registers projects-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { LayoutGrid, Users, Calendar, Workflow } from "lucide-react"
 import {
   ProjectsDisplaySettings,

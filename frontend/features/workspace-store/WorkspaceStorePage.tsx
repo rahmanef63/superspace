@@ -867,10 +867,10 @@ export function WorkspaceStorePage() {
           showCollapseButtons={true}
           persistState={true}
           storageKey="workspace-store-layout"
-          // Responsive
-          collapseLeftAt={900}
-          collapseRightAt={1100}
-          stackAt={640}
+          // Responsive - right panel collapses first, left panel stays visible longer
+          collapseRightAt={1024}
+          collapseLeftAt={640}
+          stackAt={480}
           // Default states - right panel controlled for preview toggle
           defaultLeftCollapsed={false}
           rightCollapsed={rightPanelCollapsed}

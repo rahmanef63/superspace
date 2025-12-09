@@ -98,7 +98,7 @@ export function InvitationsList({ onInvite }: InvitationsListProps) {
           {[
             { key: "all", label: "All Types", icon: Mail },
             { key: "workspace", label: "Workspace", icon: Users },
-            { key: "personal", label: "Friends", icon: UserPlus },
+            { key: "personal", label: "Contacts", icon: UserPlus },
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}

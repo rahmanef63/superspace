@@ -13,25 +13,25 @@ import type { Id } from "@convex/_generated/dataModel";
 // ============================================================================
 
 // Members API
-export { 
-  useMembers, 
-  useRoles, 
-  useAddMember, 
-  useRemoveMember, 
+export {
+  useMembers,
+  useRoles,
+  useAddMember,
+  useRemoveMember,
   useUpdateMemberRole,
   useHasPermission,
 } from "@/frontend/features/members/api";
 
-// Friends API
+// Contacts API
 export {
-  useFriends,
-  usePendingFriendRequests,
-  useSentFriendRequests,
-  useSendFriendRequest,
-  useAcceptFriendRequest,
-  useDeclineFriendRequest,
-  useRemoveFriend,
-} from "@/frontend/features/friends/api";
+  useContacts,
+  usePendingContactRequests,
+  useSentContactRequests,
+  useSendContactRequest,
+  useAcceptContactRequest,
+  useDeclineContactRequest,
+  useRemoveContact,
+} from "@/frontend/features/contact/api";
 
 // Invitations API
 export {
@@ -76,13 +76,13 @@ export const useHierarchyMemberOverview = (
 };
 
 /**
- * Get friends available for quick invite to workspace
+ * Get Contacts available for quick invite to workspace
  */
-export const useFriendsForQuickInvite = (
+export const useContactsForQuickInvite = (
   workspaceId: Id<"workspaces"> | undefined
 ) => {
   return useQuery(
-    (api as any)["features/userManagement/api/queries"].getFriendsForQuickInvite,
+    (api as any)["features/userManagement/api/queries"].getContactsForQuickInvite,
     workspaceId ? { workspaceId } : "skip"
   );
 };
@@ -137,11 +137,11 @@ export const useInviteToHierarchy = () => {
 };
 
 /**
- * Bulk invite friends to workspace
+ * Bulk invite Contacts to workspace
  */
-export const useBulkInviteFriends = () => {
+export const useBulkInviteContacts = () => {
   return useMutation(
-    (api as any)["features/userManagement/api/mutations"].bulkInviteFriends
+    (api as any)["features/userManagement/api/mutations"].bulkInviteContacts
   );
 };
 
@@ -210,13 +210,13 @@ export const useUserManagementApi = (workspaceId: Id<"workspaces"> | undefined) 
   // Queries
   const matrix = useUserWorkspaceMatrix(workspaceId);
   const overview = useHierarchyMemberOverview(workspaceId);
-  const friendsForInvite = useFriendsForQuickInvite(workspaceId);
+  const ContactsForInvite = useContactsForQuickInvite(workspaceId);
   const teams = useWorkspaceTeams(workspaceId);
   const roleHierarchy = useRoleHierarchy(workspaceId);
 
   // Mutations
   const inviteToHierarchy = useInviteToHierarchy();
-  const bulkInviteFriends = useBulkInviteFriends();
+  const bulkInviteContacts = useBulkInviteContacts();
   const createTeam = useCreateTeam();
   const addTeamMember = useAddTeamMember();
   const removeTeamMember = useRemoveTeamMember();
@@ -228,13 +228,13 @@ export const useUserManagementApi = (workspaceId: Id<"workspaces"> | undefined) 
     // Data
     matrix,
     overview,
-    friendsForInvite,
+    ContactsForInvite,
     teams,
     roleHierarchy,
-    
+
     // Actions
     inviteToHierarchy,
-    bulkInviteFriends,
+    bulkInviteContacts,
     createTeam,
     addTeamMember,
     removeTeamMember,

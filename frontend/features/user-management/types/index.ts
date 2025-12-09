@@ -122,9 +122,9 @@ export interface InviteToHierarchyParams {
   message?: string;
 }
 
-export interface BulkInviteFriendsParams {
+export interface BulkInviteContactsParams {
   workspaceId: Id<"workspaces">;
-  friendIds: Id<"users">[];
+  ContactIds: Id<"users">[];
   roleId: Id<"roles">;
   message?: string;
 }
@@ -178,7 +178,7 @@ export interface HierarchyMemberOverview {
 // Quick Invite Types
 // ============================================================================
 
-export interface FriendForQuickInvite {
+export interface ContactForQuickInvite {
   _id: Id<"users">;
   name?: string;
   email?: string;

@@ -5,7 +5,7 @@
  * Import this file at app initialization to enable calls settings
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Phone, Mic, PhoneCall, Circle } from "lucide-react"
 import {
   CallsQualitySettings,

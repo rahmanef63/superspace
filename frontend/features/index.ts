@@ -19,10 +19,10 @@ export { default as AIDetailView } from "./ai/AIDetailView";
 export type { AIChatContainerProps } from "./ai/components/AIChatContainer";
 
 // Comments/Threads (new)
-export { CommentsPanel } from "./comments/components/CommentsPanel";
-export { useComments } from "./comments/hooks/useComments";
-export type { CommentsPanelProps } from "./comments/components/CommentsPanel";
-export type { CommentsState } from "./comments/hooks/useComments";
+export { CommentsPanel } from "../shared/foundation/utils/comments/components/CommentsPanel";
+export { useComments } from "../shared/foundation/utils/comments/hooks/useComments";
+export type { CommentsPanelProps } from "../shared/foundation/utils/comments/components/CommentsPanel";
+export type { CommentsState } from "../shared/foundation/utils/comments/hooks/useComments";
 
 // Support/Helpdesk (new)
 export { SupportChatContainer } from "./support/components/SupportChatContainer";
@@ -43,8 +43,8 @@ export { CRMChatContainer } from "./crm/components/CRMChatContainer";
 export type { CRMChatContainerProps } from "./crm/components/CRMChatContainer";
 
 // Notifications (new)
-export { NotificationFeed } from "./notifications/components/NotificationFeed";
-export type { NotificationFeedProps } from "./notifications/components/NotificationFeed";
+export { NotificationFeed } from "../shared/foundation/utils/notifications/components/NotificationFeed";
+export type { NotificationFeedProps } from "../shared/foundation/utils/notifications/components/NotificationFeed";
 
 // Workflow (new)
 export { WorkflowAssistantChat } from "./workflow";

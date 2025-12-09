@@ -21,20 +21,28 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
   init: (repo: ChatRepository, workspaceId: string | null) => set({ repo, workspaceId }),
   setGlobalMode: (global: boolean) => set({ globalMode: global }),
   setActiveTab: (tab: TabType) => set({ activeTab: tab }),
-  
+
   setSelectedChat: (chatId: string | null) => set({ selectedChatId: chatId }),
-  
-  toggleSidebar: () => set((state) => ({ 
-    sidebarCollapsed: !state.sidebarCollapsed 
+
+  toggleSidebar: () => set((state) => ({
+    sidebarCollapsed: !state.sidebarCollapsed
   })),
-  
+
+  addChat: (chat: Chat) => set((state) => {
+    // Prevent duplicates
+    if (state.chats.some((c) => c.id === chat.id)) {
+      return state;
+    }
+    return { chats: [chat, ...state.chats] };
+  }),
+
   addMessage: (chatId: string, message: Message) => set((state) => ({
     messages: {
       ...state.messages,
       [chatId]: [...(state.messages[chatId] || []), message],
     },
   })),
-  
+
   loadChats: async () => {
     const chatRepository = get().repo;
     if (!chatRepository) return;
@@ -44,10 +52,10 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
         chatRepository.getChats({ global: Boolean(get().globalMode) }),
         chatRepository.getArchivedChats({ global: Boolean(get().globalMode) }),
       ]);
-      set({ 
-        chats: chats, 
-        archivedChats: archivedChats, 
-        isLoading: false 
+      set({
+        chats: chats,
+        archivedChats: archivedChats,
+        isLoading: false
       });
     } catch (error) {
       console.error('Failed to load chats:', error);
@@ -75,24 +83,24 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
       if (!repo) return;
       const message = await repo.sendMessage(chatId, text);
       get().addMessage(chatId, message);
-      
+
       // Simulate message status updates
       setTimeout(() => {
         set((state) => ({
           messages: {
             ...state.messages,
-            [chatId]: state.messages[chatId]?.map(m => 
+            [chatId]: state.messages[chatId]?.map(m =>
               m.id === message.id ? { ...m, status: 'sent' } : m
             ) || [],
           },
         }));
       }, MESSAGE_STATUS_TIMEOUT.SENT);
-      
+
       setTimeout(() => {
         set((state) => ({
           messages: {
             ...state.messages,
-            [chatId]: state.messages[chatId]?.map(m => 
+            [chatId]: state.messages[chatId]?.map(m =>
               m.id === message.id ? { ...m, status: 'delivered' } : m
             ) || [],
           },
@@ -104,7 +112,7 @@ export const useWhatsAppStore = create<WhatsAppStore>()((set, get) => ({
         set((state) => ({
           messages: {
             ...state.messages,
-            [chatId]: state.messages[chatId]?.map(m => 
+            [chatId]: state.messages[chatId]?.map(m =>
               m.id === message.id ? { ...m, status: 'read' } : m
             ) || [],
           },

@@ -2,7 +2,7 @@
  * Analytics Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { BarChart3, Layout, Database, Download } from "lucide-react"
 import {
     AnalyticsGeneralSettings,

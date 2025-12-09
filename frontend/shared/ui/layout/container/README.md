@@ -10,7 +10,7 @@ Declarative, JSON-driven layout system for flexible panel arrangements.
 - **Nested layouts**: Combine any layouts recursively
 - **Resizable panels**: Drag handles between panels
 - **Responsive support**: Different layouts per breakpoint
-- **AI-friendly**: Pure configuration, easily generated
+- **AI-Contactly**: Pure configuration, easily generated
 
 ## Usage
 

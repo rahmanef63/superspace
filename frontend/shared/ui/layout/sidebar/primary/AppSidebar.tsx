@@ -16,20 +16,22 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { NavSystem } from "./NavSystem"
 import { NavSecondary } from "./NavSecondary"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
-import { 
-  CreateWorkspaceDialog, 
-  EditWorkspaceDialog, 
-  DeleteWorkspaceDialog 
+import {
+  CreateWorkspaceDialog,
+  EditWorkspaceDialog,
+  DeleteWorkspaceDialog
 } from "@/frontend/features/workspace-store/components/WorkspaceDialogs"
 import type { WorkspaceStoreItem, WorkspaceType } from "@/frontend/features/workspace-store/types"
 
 // Import extracted hooks
-import { 
-  useWorkspaceCRUD, 
-  useNavItems, 
-  useMenuSeeding, 
-  useSystemNavItems 
+import {
+  useWorkspaceCRUD,
+  useNavItems,
+  useMenuSeeding,
+  useSystemNavItems
 } from "./hooks"
+import { CommandMenu } from "@/frontend/shared/foundation/utils/system/command-menu"
+import { GlobalOverlays } from "../../chrome/GlobalOverlays"
 
 export interface AppSidebarProps {
   workspaceId?: Id<"workspaces"> | null
@@ -45,7 +47,7 @@ export function AppSidebar({
   workspaceId,
   onWorkspaceChange,
   activeView,
-  onViewChange = () => {},
+  onViewChange = () => { },
   side = "left",
   variant = "sidebar",
   collapsible = "icon",
@@ -53,7 +55,7 @@ export function AppSidebar({
   const pathname = usePathname()
   const router = useRouter()
   const { workspaceId: ctxWorkspaceId, setWorkspaceId, currentWorkspace: contextWorkspace } = useWorkspaceContext()
-  
+
   // Derive active view from pathname
   const derivedActiveView = React.useMemo(() => {
     if (!pathname) return "overview"
@@ -62,21 +64,21 @@ export function AppSidebar({
     const view = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : "overview"
     return view
   }, [pathname])
-  
+
   const effectiveActiveView = activeView ?? derivedActiveView
   const handleViewChange = onViewChange ?? ((view: string) => router.push(`/dashboard/${view}`))
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
-  
+
   // Query user workspaces
   const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
-  
+
   // Use extracted hooks for navigation and CRUD
   const { navItems, systemItems, menuItems } = useNavItems(effectiveWorkspaceId)
   const finalSystemItems = useSystemNavItems(systemItems)
-  
+
   // Auto-seed menu items
   useMenuSeeding(effectiveWorkspaceId, menuItems)
-  
+
   // Workspace CRUD hook
   const {
     createDialogOpen,
@@ -130,7 +132,7 @@ export function AppSidebar({
     return (
       <Sidebar collapsible={collapsible} side={side} variant={variant}>
         <SidebarContent>
-          <div className="p-4 text-center text-gray-500">Loading...</div>
+          <div className="p-4 flex items-center justify-center text-gray-500 mx-auto ">Loading...</div>
         </SidebarContent>
       </Sidebar>
     )
@@ -159,7 +161,7 @@ export function AppSidebar({
           <WorkspaceSwitcher
             workspaces={[]}
             currentWorkspace={undefined}
-            onWorkspaceSelect={() => {}}
+            onWorkspaceSelect={() => { }}
             isLoading={false}
           />
         </SidebarHeader>
@@ -226,10 +228,10 @@ export function AppSidebar({
         <NavSecondary />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser onSettingsClick={() => handleViewChange('settings')} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
-      
+
       {/* Workspace CRUD Dialogs */}
       <CreateWorkspaceDialog
         open={createDialogOpen}
@@ -237,20 +239,22 @@ export function AppSidebar({
         onSubmit={handleCreateSubmit}
         parentWorkspace={createParentWorkspace}
       />
-      
+
       <EditWorkspaceDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         workspace={editWorkspaceItem}
         onSubmit={handleEditSubmit}
       />
-      
+
       <DeleteWorkspaceDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         workspace={deleteWorkspaceItem}
         onConfirm={handleDeleteConfirm}
       />
+      <CommandMenu />
+      <GlobalOverlays />
     </Sidebar>
   )
 }

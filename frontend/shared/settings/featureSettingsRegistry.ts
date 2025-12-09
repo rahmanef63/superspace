@@ -1,3 +1,5 @@
+// Feature settings registry - works on both client and server
+
 /**
  * Feature Settings Registry
  * Allows features to register their settings components dynamically

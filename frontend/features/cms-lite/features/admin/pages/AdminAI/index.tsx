@@ -434,7 +434,7 @@ export default function AdminAI() {
                   onChange={(value) => setFormData({ ...formData, personality: value })}
                   options={[
                     { value: "professional", label: "Professional" },
-                    { value: "friendly", label: "Friendly" },
+                    { value: "Contactly", label: "Contactly" },
                     { value: "casual", label: "Casual" },
                     { value: "enthusiastic", label: "Enthusiastic" },
                     { value: "formal", label: "Formal" },

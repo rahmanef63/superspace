@@ -65,11 +65,11 @@ export interface ThreeColumnLayoutAdvancedProps {
   rightLabel?: string
   
   // Responsive
-  /** Breakpoint to collapse left panel automatically (px) */
+  /** Breakpoint to collapse left panel automatically (px). Default: 640 (mobile only) */
   collapseLeftAt?: number
-  /** Breakpoint to collapse right panel automatically (px) */
+  /** Breakpoint to collapse right panel automatically (px). Default: 1024 (collapses first) */
   collapseRightAt?: number
-  /** Breakpoint to stack vertically (px) */
+  /** Breakpoint to stack vertically (px). Default: 480. Set to 0 to disable. */
   stackAt?: number
 }
 

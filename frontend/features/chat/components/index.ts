@@ -1,7 +1,6 @@
 export * from "../../ai/"
 export * from "../../calls"
 export * from "./chat"
-export * from "./member"
 export * from "./media"
 export * from "./navigation"
 export * from "../settings"

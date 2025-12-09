@@ -397,7 +397,7 @@ The Dashboard/Overview Module serves as the central command center for the entir
 
 #### 3.13.2 Functional Requirements
 - Mobile-optimized views
-- Touch-friendly interface
+- Touch-Contactly interface
 - Offline capability
 - Push notifications
 - Quick actions

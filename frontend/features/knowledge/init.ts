@@ -3,7 +3,7 @@
  * Registers knowledge settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { BookOpen, Edit3, FolderTree, Search } from "lucide-react"
 import {
     KnowledgeGeneralSettings,

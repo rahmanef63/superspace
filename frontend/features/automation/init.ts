@@ -2,7 +2,7 @@
  * Automation Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Zap, Play, Bell, FileText } from "lucide-react"
 import {
     AutomationGeneralSettings,

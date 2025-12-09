@@ -78,6 +78,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { useBundleCategories, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
+import { useTableSortAndFilter, ColumnDef } from "../hooks/useTableSortAndFilter"
+import { EnhancedTableHeader } from "./EnhancedTableHeader"
 import type { Id } from "@/convex/_generated/dataModel"
 import { ColorPickerSimple } from "@/components/ui/shadcn-io/color-picker/ColorPickerSimple"
 import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
@@ -155,16 +157,59 @@ const defaultFormState: BundleFormState = {
 
 export function BundleCategoriesTable() {
   const { bundles, isLoading } = useBundleCategories()
-  const { 
-    createBundle, 
-    updateBundle, 
-    removeBundle, 
-    seedBundles 
+  const {
+    createBundle,
+    updateBundle,
+    removeBundle,
+    seedBundles
   } = useBundleCategoryMutations()
 
+  // Define columns for sorting and filtering
+  const columns: ColumnDef<BundleCategoryData>[] = [
+    {
+      key: "name",
+      label: "Bundle",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "bundleId",
+      label: "Bundle ID",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "category",
+      label: "Category",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "createdAt",
+      label: "Created",
+      sortable: true,
+      sortFn: (a, b) => a.createdAt - b.createdAt,
+    },
+  ]
+
+  // Use the sorting and filtering hook
+  const {
+    searchQuery,
+    filters,
+    sortConfig,
+    setSearchQuery,
+    handleSort,
+    handleFilter,
+    clearFilters,
+    hasActiveFilters,
+    processedData: filteredBundles,
+  } = useTableSortAndFilter({
+    data: bundles,
+    columns,
+    initialFilters: { category: "all" },
+  })
+
   // State
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [editingBundle, setEditingBundle] = useState<BundleCategoryData | null>(null)
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
@@ -175,21 +220,6 @@ export function BundleCategoriesTable() {
   // Form state
   const [editForm, setEditForm] = useState<BundleFormState>(defaultFormState)
   const [newBundle, setNewBundle] = useState<BundleFormState>(defaultFormState)
-
-  // Filtered bundles
-  const filteredBundles = useMemo(() => {
-    return bundles.filter((bundle: BundleCategoryData) => {
-      const matchesSearch =
-        bundle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bundle.bundleId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bundle.description?.toLowerCase().includes(searchQuery.toLowerCase())
-
-      const matchesCategory =
-        categoryFilter === "all" || bundle.category === categoryFilter
-
-      return matchesSearch && matchesCategory
-    })
-  }, [bundles, searchQuery, categoryFilter])
 
   // Handlers
   const handleOpenEdit = (bundle: BundleCategoryData) => {
@@ -363,7 +393,10 @@ export function BundleCategoriesTable() {
         </div>
 
         {/* Category Filter */}
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+        <Select
+          value={filters.category || "all"}
+          onValueChange={(v) => handleFilter("category", v === "all" ? null : v)}
+        >
           <SelectTrigger className="w-[150px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Category" />
@@ -377,6 +410,12 @@ export function BundleCategoriesTable() {
             ))}
           </SelectContent>
         </Select>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="icon" onClick={clearFilters}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 ml-auto">
@@ -420,8 +459,23 @@ export function BundleCategoriesTable() {
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>Bundle</TableHead>
-              <TableHead className="w-[120px]">Category</TableHead>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "name" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "name"}
+                onSort={() => handleSort("name")}
+              >
+                Bundle
+              </EnhancedTableHeader>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "category" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "category"}
+                onSort={() => handleSort("category")}
+                className="w-[120px]"
+              >
+                Category
+              </EnhancedTableHeader>
               <TableHead className="w-[80px]">Color</TableHead>
               <TableHead className="w-[100px]">Workspace Types</TableHead>
               <TableHead className="w-[70px] text-center">Public</TableHead>

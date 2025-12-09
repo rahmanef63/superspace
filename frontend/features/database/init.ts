@@ -3,7 +3,7 @@
  * Registers database settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Database, Layout, Zap, Edit3, Download } from "lucide-react"
 import {
     DatabaseGeneralSettings,

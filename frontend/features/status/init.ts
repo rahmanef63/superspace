@@ -5,7 +5,7 @@
  * Import this file at app initialization to enable status settings
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Camera, Eye, Lock, Image as ImageIcon } from "lucide-react"
 import {
   StatusGeneralSettings,

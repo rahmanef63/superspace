@@ -1,3 +1,3 @@
 // Navigation Components
-export * from './TopBar';
+export * from '../../sections/center/TopBar';
 export * from './MobileHeader';

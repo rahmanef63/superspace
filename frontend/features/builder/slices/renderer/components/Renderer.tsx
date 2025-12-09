@@ -25,6 +25,34 @@ interface RendererProps {
   rootId?: string | null;
 }
 
+// Internal Error Boundary Component
+class WidgetErrorBoundary extends React.Component<{ children: React.ReactNode, id: string }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode, id: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error(`Error rendering widget ${this.props.id}:`, error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-2 border border-destructive/50 bg-destructive/10 rounded text-xs text-destructive">
+          Error rendering widget
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export const Renderer: React.FC<RendererProps> = ({
   schema,
   activeWs,
@@ -131,9 +159,9 @@ export const Renderer: React.FC<RendererProps> = ({
       const type = nodeType(cid);
       return type === "container" || type === "section";
     }) : [];
-    
+
     if (fromMenu.length > 0) return fromMenu;
-    
+
     // Look for any container or section widgets with path property
     return Object.keys(byId).filter((id: string) => {
       const type = byId[id].type;
@@ -149,7 +177,16 @@ export const Renderer: React.FC<RendererProps> = ({
     return found || pageCandidates[0] || null;
   }, [activeRoute, pageCandidates, byId, rootId]);
 
-  const renderContentNode = (id: string): React.ReactNode => {
+  const renderContentNode = (id: string, visited: Set<string> = new Set()): React.ReactNode => {
+    if (visited.has(id)) {
+      return (
+        <div key={id} className="p-2 border border-yellow-500/50 bg-yellow-500/10 rounded text-xs text-yellow-600 mb-2">
+          ⚠ Cycle Detected (ID: {id})
+        </div>
+      );
+    }
+    const newVisited = new Set(visited).add(id);
+
     const n = byId[id];
     if (!n) return null;
     const t = n.type;
@@ -164,46 +201,58 @@ export const Renderer: React.FC<RendererProps> = ({
       if (!tplSchema) return null;
       const roots = tplSchema.root;
       return (
-        <div className="space-y-2">
+        <div key={id} className="space-y-2">
           {roots.map((rid: string) => (
             <div key={`${tplKey}-${rid}`}>
               {/* render each root of template schema */}
-              {renderTemplateNode(tplSchema, rid)}
+              {renderTemplateNode(tplSchema, rid, newVisited)}
             </div>
           ))}
         </div>
       );
     }
 
-    const children = (n.children || []).map((cid: string) => renderContentNode(cid));
+    const children = (n.children || []).map((cid: string) => renderContentNode(cid, newVisited));
     const config = getWidgetConfig(t);
     const renderer = config?.render;
     if (!renderer) return null;
-    const body = renderer(p, children, { ...helpers });
-    const selectable = designMode;
-    return (
-      <div
-        key={id}
-        className={cn(
-          "relative group",
-          selectable && selectedId === id
-            ? "ring-2 ring-blue-500 ring-offset-2 rounded-xl"
-            : undefined
-        )}
-        onClick={(e)=>{ if (!selectable) return; e.stopPropagation(); onSelectNode?.(id); }}
-      >
-        {body}
-      </div>
-    );
+
+    try {
+      const body = renderer(p, children, { ...helpers });
+      const selectable = designMode;
+      return (
+        <WidgetErrorBoundary key={id} id={id}>
+          <div
+            className={cn(
+              "relative group",
+              selectable && selectedId === id
+                ? "ring-2 ring-blue-500 ring-offset-2 rounded-xl"
+                : undefined
+            )}
+            onClick={(e) => { if (!selectable) return; e.stopPropagation(); onSelectNode?.(id); }}
+          >
+            {body}
+          </div>
+        </WidgetErrorBoundary>
+      );
+    } catch (err) {
+      console.error(`Error rendering widget ${id}:`, err);
+      return <div key={id} className="text-red-500 text-xs p-2 border border-red-200 bg-red-50">Widget Error</div>;
+    }
   };
 
-  const renderTemplateNode = (templateSchema: Schema, id: string): React.ReactNode => {
+  const renderTemplateNode = (templateSchema: Schema, id: string, visited: Set<string> = new Set()): React.ReactNode => {
+    if (visited.has(id)) {
+      return <div key={id} className="text-xs text-yellow-500">Cycle in template {id}</div>;
+    }
+    const newVisited = new Set(visited).add(id);
+
     const n = templateSchema.nodes[id];
     if (!n) return null;
     const cfg = getWidgetConfig(n.type);
     const p = { ...(cfg?.defaults || {}), ...(n.props || {}) };
     const children = (n.children || []).map((cid: string) =>
-      renderTemplateNode(templateSchema, cid)
+      renderTemplateNode(templateSchema, cid, newVisited)
     );
     const renderer = cfg?.render;
     if (!renderer) return null;

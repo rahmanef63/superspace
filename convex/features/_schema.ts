@@ -1,6 +1,7 @@
 import { coreTables } from "./core/api/schema";
 import { menuTables } from "./menus/api/schema";
 import { chatTables } from "./chat/api/schema";
+import { communicationsTables } from "./communications/api/schema";
 import { docsTables } from "./docs/api/schema";
 import { databaseTables } from "./database/api/schema";
 import { projectTables } from "./projects/api/schema";
@@ -50,6 +51,7 @@ import hrTables from "./hr/schema";
 import accountingTables from "./accounting/schema";
 
 // Feature Modules
+import analyticsTables from "./analytics/schema";
 import formsTables from "./forms/schema";
 import approvalsTables from "./approvals/schema";
 import auditLogTables from "./auditLog/schema";
@@ -76,6 +78,7 @@ export const featureTables = {
   ...tables(coreTables),
   ...tables(menuTables),
   ...tables(chatTables),
+  ...tables(communicationsTables),
   ...tables(docsTables),
   ...tables(databaseTables),
   ...tables(projectTables),
@@ -125,6 +128,7 @@ export const featureTables = {
   ...tables(accountingTables),
 
   // Feature Modules
+  ...tables(analyticsTables),
   ...tables(formsTables),
   ...tables(approvalsTables),
   ...tables(auditLogTables),

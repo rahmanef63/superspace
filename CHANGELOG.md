@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Overview Dashboard
 - ✅ Chats Clone (Chats, Calls, Status, AI, Starred, Archived, Settings, Profile)
 - ✅ Members Management
-- ✅ Friends System
+- ✅ Contacts System
 - ✅ Pages (Notion-like)
 - ✅ Databases (Notion-style tables)
 - ✅ Canvas (Whiteboarding)

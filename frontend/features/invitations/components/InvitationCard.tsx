@@ -138,7 +138,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
               <h3 className="font-semibold text-foreground text-lg">
                 {invitation.type === "workspace"
                   ? `Workspace: ${invitation.workspace?.name || "Unknown"}`
-                  : "Friend Request"
+                  : "Contact Request"
                 }
               </h3>
               <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(invitation.status)}`}>

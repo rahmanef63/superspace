@@ -30,10 +30,10 @@ export function getErrorMessage(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
-export function getUserFriendlyMessage(error: unknown): string {
+export function getUserContactlyMessage(error: unknown): string {
   const message = getErrorMessage(error);
 
-  const friendlyMessages: Record<string, string> = {
+  const ContactlyMessages: Record<string, string> = {
     'Network request failed': 'Unable to connect to the server. Please check your internet connection.',
     'Failed to fetch': 'Unable to connect to the server. Please check your internet connection.',
     'Unauthorized': 'You are not authorized to perform this action. Please sign in.',
@@ -48,7 +48,7 @@ export function getUserFriendlyMessage(error: unknown): string {
     'missing token': 'Please sign in to continue.',
   };
 
-  for (const [key, value] of Object.entries(friendlyMessages)) {
+  for (const [key, value] of Object.entries(ContactlyMessages)) {
     if (message.toLowerCase().includes(key.toLowerCase())) {
       return value;
     }
@@ -75,7 +75,7 @@ class ErrorLogger {
       timestamp: new Date(),
       error,
       context,
-      userMessage: getUserFriendlyMessage(error),
+      userMessage: getUserContactlyMessage(error),
     };
 
     this.logs.unshift(entry);
@@ -100,7 +100,7 @@ export const errorLogger = new ErrorLogger();
 
 export function handleError(error: unknown, context?: string): string {
   errorLogger.log(error, context);
-  return getUserFriendlyMessage(error);
+  return getUserContactlyMessage(error);
 }
 
 export function isNetworkError(error: unknown): boolean {

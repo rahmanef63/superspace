@@ -1,18 +1,49 @@
 /**
  * Shared Library Index
- * Central export for all library modules
+ * Central export for all utility modules
+ * 
+ * Structure:
+ * - core/      Pure utility functions (cn, dom, format, performance)
+ * - data/      Data manipulation (converters, export, import, grouping)
+ * - infra/     Infrastructure (errors, registry, validation)
+ * - features/  Feature modules (archived, notifications, search, starred)
+ * - system/    System utilities (theme, profile, help, command-menu, language, feedback)
  */
 
+// ============================================
+// Core Utilities
+// ============================================
+export * from "./core"
+
+// ============================================
+// Data Utilities
+// ============================================
+export * from "./data"
+
+// ============================================
+// Infrastructure Utilities
+// ============================================
+export * from "./infra"
+
+// ============================================
+// Feature Modules
+// ============================================
+export * from "./features"
+
+// ============================================
+// System Utilities
+// ============================================
+export * from "./system"
+
+// ============================================
+// Legacy Re-exports (for backward compatibility)
+// ============================================
+
 // Registry
-export * from "./registry"
+export { getGlobalRegistry, loadRegistry } from "./registry"
 
 // Error handling
-export * from "./errors"
+export { handleError, getGlobalErrorHandler } from "./errors"
 
 // Validation
-export * from "./validation"
-
-// Re-exports for convenience
-export { getGlobalRegistry, loadRegistry } from "./registry"
-export { handleError, getGlobalErrorHandler } from "./errors"
 export { validateNode, validateProps } from "./validation"

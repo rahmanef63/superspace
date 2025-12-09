@@ -88,7 +88,7 @@ export function InvitationManagement({ workspaceId, onBack }: InvitationManageme
               variant="outline"
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Send Friend Request
+              Send Contact Request
             </Button>
           </div>
         </div>

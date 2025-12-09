@@ -1,3 +1,24 @@
+// NOTE: Settings are registered via init.ts at app runtime, not exported here
+// to avoid Node.js compatibility issues in sync scripts
+
+export const WA_THEMES = {
+  light: {
+    bg: "hsl(var(--background))",
+    surface: "hsl(var(--card))",
+    border: "hsl(var(--border))",
+    text: "hsl(var(--foreground))",
+    muted: "hsl(var(--muted-foreground))",
+    accent: "hsl(var(--primary))",
+  },
+  dark: {
+    bg: "hsl(var(--background))",
+    surface: "hsl(var(--card))",
+    border: "hsl(var(--border))",
+    text: "hsl(var(--foreground))",
+    muted: "hsl(var(--muted-foreground))",
+    accent: "hsl(var(--primary))",
+  },
+} as const
 import { defineFeature } from '@/lib/features/defineFeature'
 
 export default defineFeature({

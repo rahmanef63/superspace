@@ -94,7 +94,7 @@ export const viewTool = createTool({
     const layout = params.layout ?? (isMobile ? "dropdown" : "buttons");
     const showLabels = params.showLabels ?? !isMobile;
 
-    // Dropdown layout (mobile-friendly)
+    // Dropdown layout (mobile-Contactly)
     if (layout === "dropdown" || (isMobile && params.options.length > 3)) {
       const currentOption = params.options.find((o) => o.value === params.currentView);
       const CurrentIcon = currentOption?.icon ?? Eye;

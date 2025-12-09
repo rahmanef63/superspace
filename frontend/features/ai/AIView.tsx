@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TopBar } from "@/frontend/features/chat/components/navigation/TopBar";
+import { TopBar } from "@/frontend/features/chat/sections/center/TopBar";
 import { AIListView } from "./AIListView";
 import { AIDetailView } from "./AIDetailView";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
@@ -167,10 +167,10 @@ export function AIView() {
         showCollapseButtons={true}
         persistState={true}
         storageKey="ai-layout"
-        // Responsive
-        collapseLeftAt={768}
+        // Responsive - right panel collapses first, left panel stays visible longer
         collapseRightAt={1024}
-        stackAt={640}
+        collapseLeftAt={640}
+        stackAt={480}
         // Controlled left panel state
         leftCollapsed={leftPanelCollapsed}
         onLeftCollapsedChange={setLeftPanelCollapsed}

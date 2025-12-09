@@ -2,13 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Video, Phone, Info, Edit3, Star, Ban, Flag } from "lucide-react";
+import { Video, Phone, Info, Edit3, Star, Ban, Flag, Mail, MapPin, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MemberInfoContact } from "../types";
+import type { MemberProfile } from "@/frontend/shared/communications/chat/types/member";
 
 type OverviewSectionProps = {
   contact: MemberInfoContact;
+  profile?: (MemberProfile & { presenceLabel?: string }) | null;
   isMobile: boolean;
+  isLoadingProfile?: boolean;
   /** Member action callbacks */
   isFavorite?: boolean;
   isBlocked?: boolean;
@@ -34,7 +37,9 @@ function getInitials(name: string) {
 
 export function OverviewSection({
   contact,
+  profile,
   isMobile,
+  isLoadingProfile = false,
   isFavorite = false,
   isBlocked = false,
   onAddToFavorites,
@@ -45,6 +50,18 @@ export function OverviewSection({
   onVideoCall,
   onVoiceCall,
 }: OverviewSectionProps) {
+  const resolvedContact: MemberInfoContact = {
+    ...contact,
+    ...(profile ?? {}),
+    presenceLabel: profile?.presenceLabel ?? contact.presenceLabel,
+    about: profile?.about ?? contact.about,
+    phoneNumber: profile?.phoneNumber ?? contact.phoneNumber,
+    avatar: profile?.avatar ?? contact.avatar,
+    email: profile?.email ?? contact.email,
+    jobTitle: profile?.jobTitle ?? contact.jobTitle,
+    location: profile?.location ?? contact.location,
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="bg-muted/30 border border-border rounded-lg p-4 text-center md:p-6">
@@ -55,14 +72,14 @@ export function OverviewSection({
               isMobile ? "mb-3 h-24 w-24" : "mb-4 h-32 w-32"
             )}
           >
-            <AvatarImage src={contact.avatar} alt={contact.name} />
+            <AvatarImage src={resolvedContact.avatar} alt={resolvedContact.name} />
             <AvatarFallback
               className={cn(
                 "bg-primary text-primary-foreground font-semibold",
                 isMobile ? "text-lg" : "text-2xl"
               )}
             >
-              {getInitials(contact.name)}
+              {getInitials(resolvedContact.name)}
             </AvatarFallback>
           </Avatar>
 
@@ -83,11 +100,17 @@ export function OverviewSection({
             isMobile ? "text-xl" : "text-2xl"
           )}
         >
-          {contact.name}
+          {resolvedContact.name}
         </h2>
 
-        {contact.username && (
-          <p className="text-muted-foreground">@{contact.username}</p>
+        {resolvedContact.username && (
+          <p className="text-muted-foreground">@{resolvedContact.username}</p>
+        )}
+
+        {(resolvedContact.presenceLabel || resolvedContact.lastSeen) && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {resolvedContact.presenceLabel ?? `Last seen ${resolvedContact.lastSeen}`}
+          </p>
         )}
 
         <div
@@ -100,6 +123,7 @@ export function OverviewSection({
             variant="outline"
             size={isMobile ? "default" : "lg"}
             onClick={onVideoCall}
+            disabled={!onVideoCall}
             className={cn(
               "border-border bg-background hover:bg-accent",
               isMobile ? "w-full" : "flex-1 max-w-40"
@@ -112,6 +136,7 @@ export function OverviewSection({
             variant="outline"
             size={isMobile ? "default" : "lg"}
             onClick={onVoiceCall}
+            disabled={!onVoiceCall}
             className={cn(
               "border-border bg-background hover:bg-accent",
               isMobile ? "w-full" : "flex-1 max-w-40"
@@ -129,18 +154,41 @@ export function OverviewSection({
             <Info className="h-4 w-4" />
             About
           </h3>
-          <p className="text-muted-foreground">{contact.about ?? FALLBACK_ABOUT}</p>
+          <p className="text-muted-foreground">
+            {isLoadingProfile ? "Loading contact details..." : resolvedContact.about ?? FALLBACK_ABOUT}
+          </p>
         </div>
 
-        {contact.phoneNumber && (
-          <div className="rounded-lg border border-border bg-muted/30 p-4">
-            <h3 className="mb-2 flex items-center gap-2 font-medium text-foreground">
-              <Phone className="h-4 w-4" />
-              Phone number
-            </h3>
-            <p className="text-muted-foreground">{contact.phoneNumber}</p>
+        <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+          <div className="flex items-start gap-2">
+            <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Phone</p>
+              <p className="text-muted-foreground">{resolvedContact.phoneNumber ?? "Not shared"}</p>
+            </div>
           </div>
-        )}
+          <div className="flex items-start gap-2">
+            <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Email</p>
+              <p className="text-muted-foreground">{resolvedContact.email ?? "Not shared"}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Briefcase className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Role</p>
+              <p className="text-muted-foreground">{resolvedContact.jobTitle ?? "Not set"}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Location</p>
+              <p className="text-muted-foreground">{resolvedContact.location ?? "Not set"}</p>
+            </div>
+          </div>
+        </div>
 
         <div className="rounded-lg border border-border bg-muted/30 p-4">
           <h3 className="mb-2 font-medium text-foreground">Privacy Settings</h3>

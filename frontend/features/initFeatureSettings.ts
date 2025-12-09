@@ -30,13 +30,13 @@ import "@/frontend/features/ai/init"
 
 // Business features
 import "@/frontend/features/analytics/init"
-import "@/frontend/features/contacts/init"
+import "@/frontend/features/contact/init"
 import "@/frontend/features/forms/init"
 import "@/frontend/features/marketing/init"
 import "@/frontend/features/automation/init"
 
 // System features
-import "@/frontend/features/notifications/init"
+import "@/frontend/shared/foundation/utils/notifications/init"
 import "@/frontend/features/support/init"
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {

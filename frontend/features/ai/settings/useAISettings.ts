@@ -260,7 +260,7 @@ export interface AISettingsSchema {
   
   // Personalization settings
   usePersonality: boolean
-  personalityTone: "professional" | "friendly" | "casual" | "formal"
+  personalityTone: "professional" | "Contactly" | "casual" | "formal"
   autoSuggest: boolean
   suggestFrequency: "always" | "sometimes" | "rarely"
   learnFromHistory: boolean

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useBreadcrumbs } from "./breadcrumbs-context"
 import { FeatureSettingsButton } from "@/frontend/shared/settings/components/FeatureSettingsButton"
+import { GlobalUtilityButtons } from "../../chrome/GlobalUtilityButtons"
 
 function getPageTitle(pathname: string): string {
   // Handle exact matches first
@@ -103,15 +104,8 @@ export function SiteHeader() {
 
         {/* Right side: Notifications + Feature Settings */}
         <div className="flex items-center gap-1">
-          {/* Notification button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="sr-only">Notifications</span>
-          </Button>
+          {/* Global Utilities (Search, Notifications, Help, Create) */}
+          <GlobalUtilityButtons />
 
           {/* Dynamic Feature Settings button */}
           {activeFeatureSlug && (

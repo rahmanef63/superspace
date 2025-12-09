@@ -25,7 +25,7 @@ export default defineFeature({
     version: '1.0.0',
   },
 
-  dependencies: ['notifications'],
+  dependencies: [],
 
   status: {
     state: 'stable',

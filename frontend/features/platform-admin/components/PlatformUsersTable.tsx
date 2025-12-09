@@ -59,6 +59,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useTableSortAndFilter, ColumnDef } from "../hooks/useTableSortAndFilter";
+import { EnhancedTableHeader } from "./EnhancedTableHeader";
 
 function StatCard({ title, value, icon: Icon }: { title: string; value: number | string; icon: React.ElementType }) {
   return (
@@ -181,8 +183,6 @@ function UserDetailsDialog({
 }
 
 export function PlatformUsersTable() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "blocked">("all");
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   // Platform admin queries
@@ -191,27 +191,50 @@ export function PlatformUsersTable() {
   // @ts-ignore - Generated types may not be immediately available
   const workspaces = useQuery((api as any).dev.platformAdmin.listWorkspaces, {}) as any[] | undefined;
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    
-    let filtered = users;
-    
-    // Filter by status
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((u: any) => (u.status || "active") === statusFilter);
-    }
-    
-    // Filter by search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((u: any) =>
-        u.name?.toLowerCase().includes(query) ||
-        u.email?.toLowerCase().includes(query)
-      );
-    }
+  // Define columns for sorting and filtering
+  const columns: ColumnDef<any>[] = [
+    {
+      key: "name",
+      label: "User",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "email",
+      label: "Email",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "_creationTime",
+      label: "Created",
+      sortable: true,
+      sortFn: (a, b) => a._creationTime - b._creationTime,
+    },
+  ];
 
-    return filtered;
-  }, [users, statusFilter, searchQuery]);
+  // Use the sorting and filtering hook
+  const {
+    searchQuery,
+    filters,
+    sortConfig,
+    setSearchQuery,
+    handleSort,
+    handleFilter,
+    clearFilters,
+    hasActiveFilters,
+    processedData: filteredUsers,
+  } = useTableSortAndFilter({
+    data: users,
+    columns,
+    initialFilters: { status: "all" },
+  });
 
   const stats = useMemo(() => {
     if (!users) return { total: 0, active: 0, inactive: 0, blocked: 0 };
@@ -222,13 +245,6 @@ export function PlatformUsersTable() {
       blocked: users.filter((u: any) => u.status === "blocked").length,
     };
   }, [users]);
-
-  const clearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
-  };
-
-  const hasFilters = searchQuery || statusFilter !== "all";
 
   return (
     <div className="space-y-6">
@@ -264,7 +280,10 @@ export function PlatformUsersTable() {
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+            <Select
+              value={filters.status || "all"}
+              onValueChange={(v) => handleFilter("status", v === "all" ? null : v)}
+            >
               <SelectTrigger className="w-[130px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Status" />
@@ -277,7 +296,7 @@ export function PlatformUsersTable() {
               </SelectContent>
             </Select>
 
-            {hasFilters && (
+            {hasActiveFilters && (
               <Button variant="ghost" size="icon" onClick={clearFilters}>
                 <X className="h-4 w-4" />
               </Button>
@@ -295,10 +314,38 @@ export function PlatformUsersTable() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
+                    <EnhancedTableHeader
+                      sortable={true}
+                      sortDirection={sortConfig.key === "name" ? sortConfig.direction : null}
+                      isActive={sortConfig.key === "name"}
+                      onSort={() => handleSort("name")}
+                    >
+                      User
+                    </EnhancedTableHeader>
+                    <EnhancedTableHeader
+                      sortable={true}
+                      sortDirection={sortConfig.key === "email" ? sortConfig.direction : null}
+                      isActive={sortConfig.key === "email"}
+                      onSort={() => handleSort("email")}
+                    >
+                      Email
+                    </EnhancedTableHeader>
+                    <EnhancedTableHeader
+                      sortable={true}
+                      sortDirection={sortConfig.key === "status" ? sortConfig.direction : null}
+                      isActive={sortConfig.key === "status"}
+                      onSort={() => handleSort("status")}
+                    >
+                      Status
+                    </EnhancedTableHeader>
+                    <EnhancedTableHeader
+                      sortable={true}
+                      sortDirection={sortConfig.key === "_creationTime" ? sortConfig.direction : null}
+                      isActive={sortConfig.key === "_creationTime"}
+                      onSort={() => handleSort("_creationTime")}
+                    >
+                      Created
+                    </EnhancedTableHeader>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>

@@ -11,7 +11,7 @@ import { Users, MessageCircle } from "lucide-react"
 import type { Id } from "@/convex/_generated/dataModel"
 import { toast } from "sonner"
 
-interface Friend {
+interface Contact {
   _id: Id<"users">
   name: string
   email: string
@@ -22,8 +22,8 @@ interface CreateConversationModalProps {
   isOpen: boolean
   onClose: () => void
   workspaceId: Id<"workspaces">
-  friends?: Friend[]
-  onCreateDirectChat: (friendId: Id<"users">) => Promise<void>
+  Contacts?: Contact[]
+  onCreateDirectChat: (ContactId: Id<"users">, contactInfo?: { name?: string; imageUrl?: string }) => Promise<void>
   onCreateGroupChat: (name: string, participantIds: Id<"users">[]) => Promise<void>
 }
 
@@ -31,19 +31,19 @@ export function CreateConversationModal({
   isOpen,
   onClose,
   workspaceId,
-  friends,
+  Contacts,
   onCreateDirectChat,
   onCreateGroupChat,
 }: CreateConversationModalProps) {
-  const safeFriends = (friends ?? []).filter(friend => friend && friend._id)
+  const safeContacts = (Contacts ?? []).filter(Contact => Contact && Contact._id)
   const [groupName, setGroupName] = useState("")
-  const [selectedFriends, setSelectedFriends] = useState<Id<"users">[]>([])
+  const [selectedContacts, setSelectedContacts] = useState<Id<"users">[]>([])
   const [isCreating, setIsCreating] = useState(false)
 
-  const handleCreateDirect = async (friendId: Id<"users">) => {
+  const handleCreateDirect = async (contact: Contact) => {
     setIsCreating(true)
     try {
-      await onCreateDirectChat(friendId)
+      await onCreateDirectChat(contact._id, { name: contact.name, imageUrl: contact.imageUrl })
       onClose()
       toast.success("Percakapan langsung berhasil dibuat")
     } catch (error) {
@@ -56,16 +56,16 @@ export function CreateConversationModal({
   }
 
   const handleCreateGroup = async () => {
-    if (!groupName.trim() || selectedFriends.length === 0) {
+    if (!groupName.trim() || selectedContacts.length === 0) {
       toast.error("Nama grup dan anggota wajib diisi")
       return
     }
 
     setIsCreating(true)
     try {
-      await onCreateGroupChat(groupName.trim(), selectedFriends)
+      await onCreateGroupChat(groupName.trim(), selectedContacts)
       setGroupName("")
-      setSelectedFriends([])
+      setSelectedContacts([])
       onClose()
       toast.success("Grup berhasil dibuat")
     } catch (error) {
@@ -77,8 +77,8 @@ export function CreateConversationModal({
     }
   }
 
-  const toggleFriendSelection = (friendId: Id<"users">) => {
-    setSelectedFriends((prev) => (prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]))
+  const toggleContactSelection = (ContactId: Id<"users">) => {
+    setSelectedContacts((prev) => (prev.includes(ContactId) ? prev.filter((id) => id !== ContactId) : [...prev, ContactId]))
   }
 
   return (
@@ -101,24 +101,24 @@ export function CreateConversationModal({
           </TabsList>
 
           <TabsContent value="direct" className="space-y-4">
-            <div className="text-sm text-muted-foreground">Select a friend to start a direct conversation</div>
+            <div className="text-sm text-muted-foreground">Select a Contact to start a direct conversation</div>
             <div className="max-h-60 overflow-y-auto space-y-2">
-              {safeFriends.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">No friends available</div>
+              {safeContacts.length === 0 ? (
+                <div className="text-center text-muted-foreground py-4">No Contacts available</div>
               ) : (
-                safeFriends.map((friend, index) => (
+                safeContacts.map((Contact, index) => (
                   <div
-                    key={`direct-${friend._id}-${index}`}
+                    key={`direct-${Contact._id}-${index}`}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer"
-                    onClick={() => handleCreateDirect(friend._id)}
+                    onClick={() => handleCreateDirect(Contact)}
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={friend.imageUrl || "/placeholder.svg"} />
-                      <AvatarFallback>{((friend.name || friend.email || "").charAt(0).toUpperCase() || "?")}</AvatarFallback>
+                      <AvatarImage src={Contact.imageUrl || "/placeholder.svg"} />
+                      <AvatarFallback>{((Contact.name || Contact.email || "").charAt(0).toUpperCase() || "?")}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <div className="font-medium">{friend.name || friend.email || "Unknown"}</div>
-                      <div className="text-sm text-muted-foreground">{friend.email || ""}</div>
+                      <div className="font-medium">{Contact.name || Contact.email || "Unknown"}</div>
+                      <div className="text-sm text-muted-foreground">{Contact.email || ""}</div>
                     </div>
                   </div>
                 ))
@@ -133,24 +133,24 @@ export function CreateConversationModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Select Members ({selectedFriends.length} selected)</label>
+              <label className="text-sm font-medium">Select Members ({selectedContacts.length} selected)</label>
               <div className="max-h-40 overflow-y-auto space-y-2">
-                {safeFriends.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-4">No friends available</div>
+                {safeContacts.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-4">No Contacts available</div>
                 ) : (
-                  safeFriends.map((friend, index) => (
-                    <div key={`group-${friend._id}-${index}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
+                  safeContacts.map((Contact, index) => (
+                    <div key={`group-${Contact._id}-${index}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
                       <Checkbox
-                        checked={selectedFriends.includes(friend._id)}
-                        onCheckedChange={() => toggleFriendSelection(friend._id)}
+                        checked={selectedContacts.includes(Contact._id)}
+                        onCheckedChange={() => toggleContactSelection(Contact._id)}
                       />
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={friend.imageUrl || "/placeholder.svg"} />
-                        <AvatarFallback>{((friend.name || friend.email || "").charAt(0).toUpperCase() || "?")}</AvatarFallback>
+                        <AvatarImage src={Contact.imageUrl || "/placeholder.svg"} />
+                        <AvatarFallback>{((Contact.name || Contact.email || "").charAt(0).toUpperCase() || "?")}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="font-medium">{friend.name || friend.email || "Unknown"}</div>
-                        <div className="text-sm text-muted-foreground">{friend.email || ""}</div>
+                        <div className="font-medium">{Contact.name || Contact.email || "Unknown"}</div>
+                        <div className="text-sm text-muted-foreground">{Contact.email || ""}</div>
                       </div>
                     </div>
                   ))
@@ -160,7 +160,7 @@ export function CreateConversationModal({
 
             <Button
               onClick={handleCreateGroup}
-              disabled={!groupName.trim() || selectedFriends.length === 0 || isCreating}
+              disabled={!groupName.trim() || selectedContacts.length === 0 || isCreating}
               className="w-full"
             >
               {isCreating ? "Creating..." : "Create Group"}

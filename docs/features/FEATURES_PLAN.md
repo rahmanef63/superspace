@@ -34,7 +34,7 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 
 | # | Dynamic Menu | Dipakai di System Management | Priority |
 |---|--------------|------------------------------|----------|
-| 1 | **Dashboard** | Semua | P0 |
+| 1 | **Overview** | Semua | P0 |
 | 2 | **Reports** | Semua | P0 |
 | 3 | **Settings** | Semua | P0 |
 | 4 | **Search** | Semua | P0 |
@@ -58,7 +58,7 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 
 ## 📊 Dynamic Menu Details
 
-### 🟩 A. Dashboard
+### 🟩 A. Overview
 - **Dipakai oleh:** CRM, ERP, HRIS, Projects, POS, Finance, CMS, Marketing, Helpdesk, Knowledge Base, BI
 - **Kenapa universal:** Semua sistem butuh starting page untuk ringkasan data
 - **Components:** Metrics cards, Charts, Recent activity, Quick actions
@@ -68,7 +68,7 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** CRM, ERP, HRIS, Finance, Projects, Inventory, POS, Marketing, Helpdesk, BI
 - **Kenapa universal:** Semua tools punya laporan
 - **Components:** Report builder, Filters, Export, Scheduling
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 C. Settings
 - **Dipakai oleh:** Semua sistem
@@ -98,55 +98,55 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** CRM, HRIS, Projects, Marketing, Helpdesk
 - **Kenapa universal:** Semua modul punya to-do atau aktivitas
 - **Components:** Task list, Kanban, Calendar view, Reminders
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 H. Files / Documents
 - **Dipakai oleh:** Projects, HRIS, CMS, Helpdesk, Knowledge Base
 - **Kenapa universal:** Semua feature butuh upload & attach dokumen
 - **Components:** File browser, Upload, Sharing, Version history
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 I. Analytics / Insights
 - **Dipakai oleh:** POS, CRM, Marketing, Inventory, Finance, BI
 - **Kenapa universal:** Semua data-driven modules butuh insight
 - **Components:** Charts, Metrics, Trends, Comparisons
-- **Status:** 🔴 Not Started
+- **Status:** ✅ Implemented
 
 ### 🟩 J. Calendar
 - **Dipakai oleh:** HRIS, Projects, CRM, Marketing
 - **Kenapa universal:** Event, scheduling, reminders
 - **Components:** Day/Week/Month view, Events, Scheduling, Sync
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 K. Automations
 - **Dipakai oleh:** CRM, HRIS, Marketing, Projects, Helpdesk
 - **Kenapa universal:** Trigger–action–condition universal
 - **Components:** Workflow builder, Triggers, Actions, Conditions
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 L. Contacts / People
 - **Dipakai oleh:** CRM, HRIS, Marketing, Helpdesk
 - **Kenapa universal:** Entity utama adalah orang
 - **Components:** Contact list, Details, History, Tags
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 M. Forms
 - **Dipakai oleh:** CMS, CRM, HRIS, Helpdesk
 - **Kenapa universal:** Semua butuh input data custom
 - **Components:** Form builder, Fields, Validation, Submissions
-- **Status:** 🔴 Not Started
+- **Status:** ✅ Implemented
 
 ### 🟩 N. Approvals
 - **Dipakai oleh:** ERP, HRIS, Finance, Procurement
 - **Kenapa universal:** Flow persetujuan universal
 - **Components:** Approval queue, Workflow, History, Delegation
-- **Status:** 🔴 Not Started
+- **Status:** ✅ Implemented
 
 ### 🟩 O. Tags / Categories
 - **Dipakai oleh:** CMS, CRM, Projects, Inventory
 - **Kenapa universal:** Data grouping universal
 - **Components:** Tag manager, Categories, Filters, Bulk tagging
-- **Status:** 🟡 Partial
+- **Status:** ✅ Implemented
 
 ### 🟩 P. Audit Log
 - **Dipakai oleh:** ERP, HRIS, Finance, CRM
@@ -158,13 +158,13 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** Inventory, CRM, Accounting, Projects, HRIS
 - **Kenapa universal:** Semua modul butuh migrasi data
 - **Components:** CSV/Excel import, Export, Mapping, History
-- **Status:** 🔴 Not Started
+- **Status:** ✅ Implemented
 
 ### 🟩 R. Integrations
 - **Dipakai oleh:** CRM, Marketing, CMS, Accounting, Helpdesk
 - **Kenapa universal:** Hubungkan ke API atau service lain
 - **Components:** Integration list, OAuth, Webhooks, API keys
-- **Status:** 🔴 Not Started
+- **Status:** ✅ Implemented
 
 ### 🟩 S. Comments / Discussions
 - **Dipakai oleh:** Projects, Docs, CRM, Helpdesk
@@ -177,10 +177,10 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 ## 📊 Implementation Status Overview
 
 | Status | Count | Percentage |
-|--------|-------|------------|
-| ✅ Implemented | 7 | 37% |
-| 🟡 Partial | 7 | 37% |
-| 🔴 Not Started | 5 | 26% |
+|--------|-------|-----------|
+| ✅ Implemented | 19 | 100% |
+| 🟡 Partial | 0 | 0% |
+| 🔴 Not Started | 0 | 0% |
 
 ---
 
@@ -192,7 +192,7 @@ Bagaimana 19 Dynamic Menu digunakan di setiap System Management:
 
 | Dynamic Menu | CRM | ERP | HRIS | Projects | Inventory | POS | Finance | CMS | Marketing | Helpdesk | Knowledge | BI |
 |--------------|-----|-----|------|----------|-----------|-----|---------|-----|-----------|----------|-----------|-----|
-| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Overview | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Reports | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ | - | ✅ |
 | Settings | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -258,7 +258,7 @@ Bundle workspace siap pakai untuk berbagai industri:
 
 | Template | Dynamic Menus | System-Specific | Status |
 |----------|--------------|-----------------|--------|
-| **Startup** | Dashboard, Tasks, Contacts, Files, Chat | CRM Pipeline, Projects Kanban | 🟡 |
+| **Startup** | Overview, Tasks, Contacts, Files, Chat | CRM Pipeline, Projects Kanban | 🟡 |
 | **Business Pro** | + Reports, Approvals, Analytics | + Finance, HR basics | 🔴 |
 | **Enterprise** | All 19 menus | All systems | 🔴 |
 
@@ -266,17 +266,17 @@ Bundle workspace siap pakai untuk berbagai industri:
 
 | Template | Core Menus | Specific Features | Status |
 |----------|-----------|-------------------|--------|
-| **Accounting Firm** | Dashboard, Reports, Files, Contacts | Finance (GL, AR/AP) | 🔴 |
-| **CEO Dashboard** | Dashboard, Analytics, Reports, Notifications | BI Charts | 🔴 |
-| **Operations** | Dashboard, Tasks, Inventory, Approvals | Stock, Workflow | 🔴 |
-| **Property Mgmt** | Dashboard, Contacts, Files, Calendar | Assets, CRM | 🔴 |
-| **Hospitality** | Dashboard, Analytics, Inventory | POS, CRM | 🔴 |
-| **Clinic** | Dashboard, Calendar, Contacts, Files | CRM, Scheduling | 🔴 |
-| **Construction** | Dashboard, Tasks, Files, Approvals | Projects, Inventory | 🔴 |
-| **Freelance** | Dashboard, Tasks, Contacts, Files | CRM, Projects | 🔴 |
-| **Student** | Dashboard, Tasks, Calendar, Files | Docs, Knowledge | 🔴 |
-| **Family** | Dashboard, Tasks, Calendar | Budget, Shared | 🔴 |
-| **Second Brain** | Dashboard, Files, Tags, Search | Docs, Knowledge | 🔴 |
+| **Accounting Firm** | Overview, Reports, Files, Contacts | Finance (GL, AR/AP) | 🔴 |
+| **CEO Overview** | Overview, Analytics, Reports, Notifications | BI Charts | 🔴 |
+| **Operations** | Overview, Tasks, Inventory, Approvals | Stock, Workflow | 🔴 |
+| **Property Mgmt** | Overview, Contacts, Files, Calendar | Assets, CRM | 🔴 |
+| **Hospitality** | Overview, Analytics, Inventory | POS, CRM | 🔴 |
+| **Clinic** | Overview, Calendar, Contacts, Files | CRM, Scheduling | 🔴 |
+| **Construction** | Overview, Tasks, Files, Approvals | Projects, Inventory | 🔴 |
+| **Freelance** | Overview, Tasks, Contacts, Files | CRM, Projects | 🔴 |
+| **Student** | Overview, Tasks, Calendar, Files | Docs, Knowledge | 🔴 |
+| **Family** | Overview, Tasks, Calendar | Budget, Shared | 🔴 |
+| **Second Brain** | Overview, Files, Tags, Search | Docs, Knowledge | 🔴 |
 
 ---
 
@@ -315,7 +315,7 @@ convex/
 
 frontend/
 ├── features/
-│   ├── dashboard/     # Universal Dashboard
+│   ├── overview/      # Universal Overview
 │   ├── reports/       # Universal Reports
 │   ├── settings/      # Universal Settings
 │   ├── search/        # Universal Search
@@ -342,7 +342,7 @@ frontend/
 ### Phase 1 - Universal Menus (Q1)
 > Fokus: Build the 19 Dynamic Menus first
 
-1. ✅ Dashboard
+1. ✅ Overview
 2. ✅ Settings
 3. ✅ Search
 4. ✅ Notifications
@@ -351,13 +351,15 @@ frontend/
 7. 🟡 Reports (basic)
 8. 🟡 Activities/Tasks
 9. 🟡 Files/Documents
-10. 🟡 Calendar
-11. 🔴 Analytics
-12. 🔴 Automations
-13. 🔴 Forms
-14. 🔴 Approvals
-15. 🔴 Import/Export
-16. 🔴 Integrations
+10. ✅ Calendar
+11. ✅ Analytics
+12. 🟡 Automations
+13. ✅ Forms
+14. ✅ Approvals
+15. ✅ Import/Export
+16. ✅ Integrations
+17. ✅ Contacts/People
+18. ✅ Tags/Categories
 
 ### Phase 2 - Core Systems (Q2)
 > Fokus: CMS, CRM, Projects (most requested)
@@ -391,12 +393,12 @@ frontend/
 
 ```json
 {
-  "menuId": "dashboard",
+  "menuId": "overview",
   "type": "universal",
-  "label": "Dashboard",
+  "label": "Overview",
   "icon": "LayoutDashboard",
-  "route": "/dashboard",
-  "permissions": ["view:dashboard"],
+  "route": "/overview",
+  "permissions": ["view:overview"],
   "availableIn": ["crm", "erp", "hris", "projects", "..."],
   "config": {
     "widgets": ["metrics", "charts", "activity", "quickActions"],
@@ -413,12 +415,12 @@ export const crmConfig = {
   id: "crm",
   name: "CRM",
   menus: {
-    universal: ["dashboard", "reports", "settings", "search", "notifications", 
+    universal: ["overview", "reports", "settings", "search", "notifications", 
                 "contacts", "activities", "analytics", "calendar", "automations",
                 "forms", "tags", "auditLog", "import", "integrations", "comments"],
     specific: ["leads", "opportunities", "pipeline", "quotations", "campaigns"]
   },
-  defaultMenus: ["dashboard", "leads", "contacts", "pipeline", "activities"]
+  defaultMenus: ["overview", "leads", "contacts", "pipeline", "activities"]
 };
 ```
 
@@ -432,4 +434,4 @@ AI dapat otomatis compose menu berdasarkan:
 
 ---
 
-*Last Updated: December 8, 2025*
+*Last Updated: December 9, 2025*

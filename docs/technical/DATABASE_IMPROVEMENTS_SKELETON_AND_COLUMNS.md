@@ -220,7 +220,7 @@ const handleDragEnd = useCallback((event: DragEndEvent) => {
 ## 3. Excel-like Column Resizing
 
 ### Problem
-Column resizing existed but wasn't visually clear or user-friendly. Users expected Excel-like behavior with:
+Column resizing existed but wasn't visually clear or user-Contactly. Users expected Excel-like behavior with:
 - Clear visual indicator when hovering resize handle
 - Double-click to auto-fit column width
 - Smooth resizing experience

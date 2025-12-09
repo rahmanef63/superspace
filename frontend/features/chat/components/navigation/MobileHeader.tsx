@@ -22,6 +22,7 @@ interface MobileHeaderProps {
   subtitle?: string;
   avatar?: string;
   isOnline?: boolean;
+  conversationId?: string | Id<"conversations">;
   onBack?: () => void;
   onSearch?: () => void;
   onVoiceCall?: () => void;
@@ -44,6 +45,7 @@ export function MobileHeader({
   subtitle, 
   avatar, 
   isOnline,
+  conversationId,
   onBack,
   onSearch,
   onVoiceCall,
@@ -56,7 +58,7 @@ export function MobileHeader({
   const { workspaceId } = useWorkspaceContext();
 
   // Use member info hook for actions and state
-  const memberInfo = useMemberInfo(contact?.id);
+  const memberInfo = useMemberInfo(contact?.id, conversationId);
   const { 
     isFavorite, 
     isBlocked, 
@@ -185,6 +187,12 @@ export function MobileHeader({
       {contact && (
         <MemberInfoDrawer
           contact={contact}
+          profile={memberInfo.profile}
+          sharedMedia={memberInfo.sharedMedia}
+          sharedFiles={memberInfo.sharedFiles}
+          sharedLinks={memberInfo.sharedLinks}
+          commonGroups={memberInfo.commonGroups}
+          loading={memberInfo.loading}
           isOpen={isMemberInfoOpen}
           onClose={() => setIsMemberInfoOpen(false)}
           onBack={() => setIsMemberInfoOpen(false)}

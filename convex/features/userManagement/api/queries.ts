@@ -4,7 +4,7 @@
  * Orchestration queries that compose data from multiple existing systems:
  * - Members (workspaceMemberships)
  * - Invitations (invitations)
- * - Friends (friendships, friendRequests)
+ * - Contacts (contacts, contactsRequests)
  * - Hierarchy (workspace hierarchy)
  * 
  * @module convex/features/userManagement/api/queries
@@ -41,12 +41,12 @@ export const getUserWorkspaceMatrix = query({
     // BFS to collect children up to maxDepth
     async function collectChildren(wsId: Id<"workspaces">, depth: number) {
       if (depth >= maxDepth) return;
-      
+
       const children = await ctx.db
         .query("workspaces")
         .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", wsId))
         .collect();
-      
+
       for (const child of children) {
         workspaceIds.push(child._id);
         workspaceMap.set(String(child._id), child);
@@ -58,7 +58,7 @@ export const getUserWorkspaceMatrix = query({
         .query("workspaceLinks")
         .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", wsId))
         .collect();
-      
+
       for (const link of links) {
         const linkedWs = await ctx.db.get(link.childWorkspaceId);
         if (linkedWs && !workspaceMap.has(String(linkedWs._id))) {
@@ -81,7 +81,7 @@ export const getUserWorkspaceMatrix = query({
         .withIndex("by_workspace", (q) => q.eq("workspaceId", wsId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect();
-      
+
       for (const m of memberships) {
         allMemberships.push(m);
         userIds.add(String(m.userId));
@@ -104,15 +104,15 @@ export const getUserWorkspaceMatrix = query({
 
     // Build matrix: { [userId]: { [workspaceId]: { roleId, roleName, roleLevel } } }
     const matrix: Record<string, Record<string, { roleId: string; roleName?: string; roleLevel?: number }>> = {};
-    
+
     for (const m of allMemberships) {
       const userKey = String(m.userId);
       const wsKey = String(m.workspaceId);
-      
+
       if (!matrix[userKey]) {
         matrix[userKey] = {};
       }
-      
+
       const role = await ctx.db.get(m.roleId);
       matrix[userKey][wsKey] = {
         roleId: String(m.roleId),
@@ -204,10 +204,10 @@ export const getHierarchyMemberOverview = query({
 });
 
 /**
- * Get friends available for quick invite
- * Returns friends who are not yet members of the specified workspace
+ * Get Contacts available for quick invite
+ * Returns Contacts who are not yet members of the specified workspace
  */
-export const getFriendsForQuickInvite = query({
+export const getContactsForQuickInvite = query({
   args: {
     workspaceId: v.id("workspaces"),
   },
@@ -215,22 +215,22 @@ export const getFriendsForQuickInvite = query({
     const userId = await getExistingUserId(ctx);
     if (!userId) return [];
 
-    // Get current user's friends
-    const friendships1 = await ctx.db
-      .query("friendships")
+    // Get current user's Contacts
+    const contacts1 = await ctx.db
+      .query("socialContacts")
       .withIndex("by_user1", (q) => q.eq("user1Id", userId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .collect();
 
-    const friendships2 = await ctx.db
-      .query("friendships")
+    const contacts2 = await ctx.db
+      .query("socialContacts")
       .withIndex("by_user2", (q) => q.eq("user2Id", userId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .collect();
 
-    const friendIds = new Set<string>();
-    friendships1.forEach((f) => friendIds.add(String(f.user2Id)));
-    friendships2.forEach((f) => friendIds.add(String(f.user1Id)));
+    const ContactIds = new Set<string>();
+    contacts1.forEach((f) => ContactIds.add(String(f.user2Id)));
+    contacts2.forEach((f) => ContactIds.add(String(f.user1Id)));
 
     // Get existing workspace members
     const existingMembers = await ctx.db
@@ -251,8 +251,8 @@ export const getFriendsForQuickInvite = query({
         .map((i) => String(i.inviteeId))
     );
 
-    // Filter friends who are not members and don't have pending invitations
-    const availableFriends: Array<{
+    // Filter Contacts who are not members and don't have pending invitations
+    const availableContacts: Array<{
       _id: Id<"users">;
       name?: string;
       email?: string;
@@ -260,22 +260,22 @@ export const getFriendsForQuickInvite = query({
       hasPendingInvite: boolean;
     }> = [];
 
-    for (const friendId of friendIds) {
-      if (memberIds.has(friendId)) continue; // Skip if already member
-      
-      const friend = await ctx.db.get(friendId as Id<"users">);
-      if (friend) {
-        availableFriends.push({
-          _id: friend._id,
-          name: friend.name ?? undefined,
-          email: friend.email,
-          avatarUrl: friend.avatarUrl ?? undefined,
-          hasPendingInvite: pendingInviteeIds.has(friendId),
+    for (const ContactId of ContactIds) {
+      if (memberIds.has(ContactId)) continue; // Skip if already member
+
+      const Contact = await ctx.db.get(ContactId as Id<"users">);
+      if (Contact) {
+        availableContacts.push({
+          _id: Contact._id,
+          name: Contact.name ?? undefined,
+          email: Contact.email,
+          avatarUrl: Contact.avatarUrl ?? undefined,
+          hasPendingInvite: pendingInviteeIds.has(ContactId),
         });
       }
     }
 
-    return availableFriends;
+    return availableContacts;
   },
 });
 
@@ -302,7 +302,7 @@ export const getWorkspaceTeams = query({
           .query("teamMemberships")
           .withIndex("by_team", (q) => q.eq("teamId", team._id))
           .collect();
-        
+
         return {
           ...team,
           memberCount: members.length,
@@ -337,11 +337,11 @@ export const getTeamMembers = query({
           ...m,
           user: user
             ? {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                avatarUrl: user.avatarUrl,
-              }
+              _id: user._id,
+              name: user.name,
+              email: user.email,
+              avatarUrl: user.avatarUrl,
+            }
             : null,
         };
       })

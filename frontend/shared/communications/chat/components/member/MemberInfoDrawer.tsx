@@ -21,10 +21,25 @@ import { cn } from "@/lib/utils";
 import { MemberInfoContent } from "./MemberInfoContent";
 import { NavigationItem } from "./NavigationItem";
 import { MEMBER_INFO_SECTIONS, DEFAULT_MEMBER_INFO_SECTION } from "./constants";
-import type { MemberInfoContact, MemberInfoSection } from "./types";
+import type {
+  MemberInfoContact,
+  MemberInfoSection,
+  MemberInfoLoading,
+  SharedMediaItem,
+  SharedFileItem,
+  SharedLinkItem,
+  CommonGroup,
+} from "./types";
+import type { MemberProfile } from "@/frontend/shared/communications/chat/types/member";
 
 export type MemberInfoDrawerProps = {
   contact: MemberInfoContact | null;
+  profile?: (MemberProfile & { presenceLabel?: string }) | null;
+  loading?: MemberInfoLoading;
+  sharedMedia?: SharedMediaItem[];
+  sharedFiles?: SharedFileItem[];
+  sharedLinks?: SharedLinkItem[];
+  commonGroups?: CommonGroup[];
   isOpen: boolean;
   onClose: () => void;
   onBack?: () => void;
@@ -48,6 +63,12 @@ export type MemberInfoDrawerProps = {
  */
 export function MemberInfoDrawer({
   contact,
+  profile,
+  loading,
+  sharedMedia,
+  sharedFiles,
+  sharedLinks,
+  commonGroups,
   isOpen,
   onClose,
   onBack,
@@ -119,7 +140,13 @@ export function MemberInfoDrawer({
       <MemberInfoContent
         activeSection={activeSection}
         contact={contact}
+        profile={profile ?? undefined}
         isMobile={isMobile}
+        loading={loading}
+        sharedMedia={sharedMedia}
+        sharedFiles={sharedFiles}
+        sharedLinks={sharedLinks}
+        commonGroups={commonGroups}
         isFavorite={isFavorite}
         isBlocked={isBlocked}
         onAddToFavorites={onAddToFavorites}

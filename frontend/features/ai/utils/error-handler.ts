@@ -1,6 +1,6 @@
 /**
  * AI Error Handler
- * Parses and provides user-friendly error messages for AI API errors
+ * Parses and provides user-Contactly error messages for AI API errors
  */
 
 export interface ParsedAIError {
@@ -128,7 +128,7 @@ function matchesPatterns(errorMessage: string, patterns: RegExp[]): boolean {
 }
 
 /**
- * Parse AI API error and return user-friendly error info
+ * Parse AI API error and return user-Contactly error info
  */
 export function parseAIError(
   error: Error | string,

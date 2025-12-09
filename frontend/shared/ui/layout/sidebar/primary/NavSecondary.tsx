@@ -52,17 +52,6 @@ export function NavSecondary({
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
-      <SidebarMenuItem>
-        <SidebarMenuButton asChild>
-          <label className="flex w-full items-center gap-2">
-            <IconBrightness className="h-4 w-4" />
-            <span>Dark Mode</span>
-            <span className="ml-auto">
-              <ModeToggle />
-            </span>
-          </label>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
     </SidebarMenu>
   )
 

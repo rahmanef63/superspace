@@ -3,38 +3,49 @@
 import { useState, useMemo, useCallback } from "react";
 import { useWhatsAppStore } from "../../shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChatListView } from "./ChatListView";
-import { ChatDetailView } from "./ChatDetailView";
+import { ChatListView } from "../../sections/left/ChatListView";
+import { ChatDetailView } from "../../sections/center/ChatDetailView";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
 import { ChatSkeleton } from "@/frontend/shared/ui/components/loading";
 import { MemberInfoPanel, MemberInfoDrawer } from "@/frontend/shared/communications";
 import type { MemberInfoContact } from "@/frontend/shared/communications";
 import { useMemberInfo } from "../../shared/hooks";
-import { Button } from "@/components/ui/button";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export function ChatsView() {
   // Use individual selectors to prevent unnecessary re-renders
   const selectedChatId = useWhatsAppStore((s) => s.selectedChatId);
   const isLoading = useWhatsAppStore((s) => s.isLoading);
   const chats = useWhatsAppStore((s) => s.chats);
+  const workspaceId = useWhatsAppStore((s) => s.workspaceId);
   const isMobile = useIsMobile();
+  const currentUser = useQuery(api.auth.auth.loggedInUser);
   
   // Get selected chat and derive contact from Chat data
   const selectedChat = chats.find(c => c.id === selectedChatId);
+  const meId = useMemo(() => String((currentUser as any)?._id || ""), [currentUser]);
   
+  // Identify the counterpart member for direct conversations
+  const contactMemberId = useMemo(() => {
+    if (!selectedChat?.participants || selectedChat.participants.length === 0) return undefined;
+    const others = selectedChat.participants.filter((p) => p && p !== meId);
+    return others[0];
+  }, [selectedChat, meId]);
+
   // Create contact from Chat data (Chat doesn't have a contact property)
   const contact = useMemo<MemberInfoContact | null>(() => {
-    if (!selectedChat) return null;
+    if (!selectedChat || !contactMemberId) return null;
     return {
-      id: selectedChat.id,
+      id: contactMemberId,
       name: selectedChat.name,
       avatar: selectedChat.avatar,
       isOnline: false, // Chat doesn't track online status directly
       lastSeen: selectedChat.timestamp,
       about: selectedChat.description,
+      presenceLabel: selectedChat.timestamp ? `Last active at ${selectedChat.timestamp}` : undefined,
     };
-  }, [selectedChat]);
+  }, [selectedChat, contactMemberId]);
   
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
@@ -43,7 +54,7 @@ export function ChatsView() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
   // Member info hook
-  const memberInfo = useMemberInfo(contact?.id);
+  const memberInfo = useMemberInfo(contact?.id, selectedChatId ?? undefined);
   
   // Toggle handlers
   const handleToggleLeftPanel = useCallback(() => {
@@ -79,17 +90,23 @@ export function ChatsView() {
           {contact && (
             <MemberInfoDrawer
               contact={contact}
+              profile={memberInfo.profile}
+              sharedMedia={memberInfo.sharedMedia}
+              sharedFiles={memberInfo.sharedFiles}
+              sharedLinks={memberInfo.sharedLinks}
+              commonGroups={memberInfo.commonGroups}
+              loading={memberInfo.loading}
               isOpen={mobileDrawerOpen}
               onClose={() => setMobileDrawerOpen(false)}
               onBack={() => setMobileDrawerOpen(false)}
               side="right"
               isFavorite={memberInfo.isFavorite}
               isBlocked={memberInfo.isBlocked}
-              onAddToFavorites={() => memberInfo.addToFavorites(contact.id, "" as any)}
-              onRemoveFromFavorites={() => memberInfo.removeFromFavorites(contact.id, "" as any)}
-              onBlock={() => memberInfo.blockMember(contact.id)}
-              onUnblock={() => memberInfo.unblockMember(contact.id)}
-              onReport={() => memberInfo.reportMember(contact.id, "spam")}
+              onAddToFavorites={() => contact && workspaceId && memberInfo.addToFavorites(contact.id, workspaceId as any)}
+              onRemoveFromFavorites={() => contact && workspaceId && memberInfo.removeFromFavorites(contact.id, workspaceId as any)}
+              onBlock={() => contact && memberInfo.blockMember(contact.id)}
+              onUnblock={() => contact && memberInfo.unblockMember(contact.id)}
+              onReport={() => contact && memberInfo.reportMember(contact.id, "spam")}
             />
           )}
         </>
@@ -106,11 +123,17 @@ export function ChatsView() {
       <div className="flex-1 min-h-0 overflow-hidden">
         <MemberInfoPanel
           contact={contact ?? null}
+          profile={memberInfo.profile}
+          sharedMedia={memberInfo.sharedMedia}
+          sharedFiles={memberInfo.sharedFiles}
+          sharedLinks={memberInfo.sharedLinks}
+          commonGroups={memberInfo.commonGroups}
+          loading={memberInfo.loading}
           onClose={() => setRightPanelCollapsed(true)}
           isFavorite={memberInfo.isFavorite}
           isBlocked={memberInfo.isBlocked}
-          onAddToFavorites={() => contact && memberInfo.addToFavorites(contact.id, "" as any)}
-          onRemoveFromFavorites={() => contact && memberInfo.removeFromFavorites(contact.id, "" as any)}
+          onAddToFavorites={() => contact && workspaceId && memberInfo.addToFavorites(contact.id, workspaceId as any)}
+          onRemoveFromFavorites={() => contact && workspaceId && memberInfo.removeFromFavorites(contact.id, workspaceId as any)}
           onBlock={() => contact && memberInfo.blockMember(contact.id)}
           onUnblock={() => contact && memberInfo.unblockMember(contact.id)}
           onReport={() => contact && memberInfo.reportMember(contact.id, "spam")}
@@ -148,10 +171,10 @@ export function ChatsView() {
         showCollapseButtons={true}
         persistState={true}
         storageKey="chat-layout"
-        // Responsive
-        collapseLeftAt={768}
+        // Responsive - right panel collapses first, left panel stays visible longer
         collapseRightAt={1024}
-        stackAt={640}
+        collapseLeftAt={640}
+        stackAt={480}
         // Controlled left panel state
         leftCollapsed={leftPanelCollapsed}
         onLeftCollapsedChange={setLeftPanelCollapsed}

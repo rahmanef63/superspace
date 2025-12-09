@@ -16,18 +16,20 @@ import type { ElementType, ReactElement } from "react"
 import { lazy } from "react"
 
 import {
-  Archive,
+  ArrowUpDown,
   BarChart,
   BarChart3,
-  Bell,
   BookOpen,
   Bot,
   Box,
   Building2,
   Calculator,
+  Calendar,
   Camera,
+  CheckCircle,
   CheckSquare,
   Database,
+  DollarSign,
   Eye,
   FileText,
   FolderKanban,
@@ -35,18 +37,21 @@ import {
   Hammer,
   Headphones,
   Heart,
+  History,
   Home,
+  Library,
+  LineChart,
   Mail,
+  Megaphone,
   Menu,
   MessageCircle,
+  MessageSquare,
   Package,
   Phone,
-  Settings,
+  Plug,
   Shield,
   ShoppingCart,
-  Star,
   TrendingUp,
-  User,
   UserCog,
   Users,
   Workflow
@@ -72,6 +77,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Dashboard overview with analytics and insights",
     icon: Home,
     component: lazy(() => import("@/frontend/features/overview/page")),
+  },
+  {
+    id: "communications",
+    componentId: "CommunicationsPage",
+    title: "Communications",
+    description: "Unified communication platform with channels, direct messages, voice/video calls, and AI integrations",
+    icon: MessageSquare,
+    component: lazy(() => import("@/frontend/features/communications/page")),
   },
   {
     id: "chat",
@@ -120,21 +133,13 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
     icon: Building2,
     component: lazy(async () => {
-        const module = await import("@/frontend/features/workspace-store")
-        const Component = module.WorkspaceStorePage
-        if (!Component) {
-          throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
-        }
-        return { default: Component }
-      }),
-  },
-  {
-    id: "starred",
-    componentId: "StarredPage",
-    title: "Starred",
-    description: "Starred messages",
-    icon: Star,
-    component: lazy(() => import("@/frontend/features/starred/page")),
+      const module = await import("@/frontend/features/workspace-store")
+      const Component = module.WorkspaceStorePage
+      if (!Component) {
+        throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
+      }
+      return { default: Component }
+    }),
   },
   {
     id: "knowledge",
@@ -145,20 +150,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/knowledge/page")),
   },
   {
-    id: "friends",
-    componentId: "FriendsPage",
-    title: "Friends",
-    description: "Manage your friends and connections",
+    id: "contacts",
+    componentId: "ContactsPage",
+    title: "Contacts",
+    description: "Manage your Contacts and connections",
     icon: Heart,
-    component: lazy(() => import("@/frontend/features/friends/page")),
-  },
-  {
-    id: "archived",
-    componentId: "ArchivedPage",
-    title: "Archived",
-    description: "Archived chats",
-    icon: Archive,
-    component: lazy(() => import("@/frontend/features/archived/page")),
+    component: lazy(() => import("@/frontend/features/contact/page")),
   },
   {
     id: "database",
@@ -183,13 +180,21 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Install and manage navigation menus",
     icon: Menu,
     component: lazy(async () => {
-        const module = await import("@/frontend/features/menu-store")
-        const Component = module.MenuStorePage
-        if (!Component) {
-          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
-        }
-        return { default: Component }
-      }),
+      const module = await import("@/frontend/features/menu-store")
+      const Component = module.MenuStorePage
+      if (!Component) {
+        throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
+      }
+      return { default: Component }
+    }),
+  },
+  {
+    id: "calendar",
+    componentId: "CalendarPage",
+    title: "Calendar",
+    description: "Team calendar with event management and scheduling",
+    icon: Calendar,
+    component: lazy(() => import("@/frontend/features/calendar/page")),
   },
   {
     id: "invitations",
@@ -224,6 +229,22 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/tasks/page")),
   },
   {
+    id: "forms",
+    componentId: "FormsPage",
+    title: "Forms",
+    description: "Build custom forms for data collection",
+    icon: FileText,
+    component: lazy(() => import("@/frontend/features/forms/page")),
+  },
+  {
+    id: "approvals",
+    componentId: "ApprovalsPage",
+    title: "Approvals",
+    description: "Approval workflows and request management",
+    icon: CheckCircle,
+    component: lazy(() => import("@/frontend/features/approvals/page")),
+  },
+  {
     id: "support",
     componentId: "SupportPage",
     title: "Support",
@@ -240,20 +261,36 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/projects/page")),
   },
   {
-    id: "notifications",
-    componentId: "NotificationsPage",
-    title: "Notifications",
-    description: "System notifications and activity feed",
-    icon: Bell,
-    component: lazy(() => import("@/frontend/features/notifications/page")),
+    id: "audit-log",
+    componentId: "AuditLogPage",
+    title: "Audit Log",
+    description: "View activity logs and audit trail",
+    icon: History,
+    component: lazy(() => import("@/frontend/features/audit-log/page")),
   },
   {
-    id: "user-settings",
-    componentId: "ProfilePage",
-    title: "Profile",
-    description: "Manage your user profile and preferences (Deprecated - use Knowledge > Profile or Settings)",
-    icon: User,
-    component: lazy(() => import("@/frontend/features/user-settings/page")),
+    id: "import-export",
+    componentId: "ImportExportPage",
+    title: "Import/Export",
+    description: "Import and export data across workspace",
+    icon: ArrowUpDown,
+    component: lazy(() => import("@/frontend/features/import-export/page")),
+  },
+  {
+    id: "integrations",
+    componentId: "IntegrationsPage",
+    title: "Integrations",
+    description: "Connect with third-party services and APIs",
+    icon: Plug,
+    component: lazy(() => import("@/frontend/features/integrations/page")),
+  },
+  {
+    id: "pos",
+    componentId: "PosPage",
+    title: "POS",
+    description: "Point of Sale and retail management",
+    icon: ShoppingCart,
+    component: lazy(() => import("@/frontend/features/pos/page")),
   },
   {
     id: "builder",
@@ -270,6 +307,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Preview your built interfaces in real-time",
     icon: Eye,
     component: lazy(() => import("@/frontend/features/builder/page")),
+  },
+  {
+    id: "marketing",
+    componentId: "MarketingPage",
+    title: "Marketing",
+    description: "Marketing automation and campaign management",
+    icon: Megaphone,
+    component: lazy(() => import("@/frontend/features/marketing/page")),
   },
   {
     id: "analytics",
@@ -296,6 +341,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/analytics/page")),
   },
   {
+    id: "bi",
+    componentId: "BiPage",
+    title: "Business Intelligence",
+    description: "Advanced analytics and business intelligence",
+    icon: LineChart,
+    component: lazy(() => import("@/frontend/features/bi/page")),
+  },
+  {
     id: "automation",
     componentId: "AutomationPage",
     title: "Automation",
@@ -312,12 +365,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/automation/page")),
   },
   {
-    id: "settings",
-    componentId: "SettingsPage",
-    title: "Settings",
-    description: "Personal preferences, account settings, and app configuration",
-    icon: Settings,
-    component: lazy(() => import("@/frontend/features/workspace-settings/page")),
+    id: "sales",
+    componentId: "SalesPage",
+    title: "Sales",
+    description: "Sales management and pipeline tracking",
+    icon: DollarSign,
+    component: lazy(() => import("@/frontend/features/sales/page")),
   },
   {
     id: "hr",
@@ -326,6 +379,14 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Human Resources Management",
     icon: Users,
     component: lazy(() => import("@/frontend/features/hr/page")),
+  },
+  {
+    id: "content",
+    componentId: "ContentPage",
+    title: "Content Library",
+    description: "Centralized content management for images, videos, audio, and documents with AI generation capabilities.",
+    icon: Library,
+    component: lazy(() => import("@/frontend/features/content/page")),
   },
   {
     id: "cms-lite",
@@ -342,14 +403,6 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Financial Management and Accounting",
     icon: Calculator,
     component: lazy(() => import("@/frontend/features/accounting/page")),
-  },
-  {
-    id: "sales",
-    componentId: "SalesPage",
-    title: "Sales & Invoicing",
-    description: "Complete sales management solution with quotes, invoices, recurring billing, payment processing, and sales analytics",
-    icon: ShoppingCart,
-    component: lazy(() => import("@/frontend/features/sales/page")),
   },
   {
     id: "inventory",

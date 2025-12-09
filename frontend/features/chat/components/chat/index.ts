@@ -1,15 +1,14 @@
 // Chat Components
-export * from './ChatListItem';
-export * from './MessageBubble'; 
+export * from '../../sections/left/ChatListItem';
+export * from '../../sections/center/MessageBubble'; 
 export * from './ComposerBar';
-export * from './ChatListView';
-export * from './ChatListSidebar';
-export { ChatDetailView } from './ChatDetailView';
+export * from '../../sections/left/ChatListView';
+export { ChatDetailView } from '../../sections/center/ChatDetailView';
 export { ChatsView } from './ChatsView';
 
 // CRUD Components
 export * from './ChatContextMenu';
-export * from './ChatDialogs';
+export * from '../../sections/dialog/ChatDialogs';
 
 // Re-export shared chat components
 export {

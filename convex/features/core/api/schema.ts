@@ -5,7 +5,7 @@ export const userPrivacySettings = defineTable({
   userId: v.id("users"),
   isVisible: v.boolean(),
   allowDirectMessages: v.boolean(),
-  allowFriendRequests: v.boolean(),
+  allowcontactsRequests: v.boolean(),
   visibilityMode: v.union(
     v.literal("everyone"),
     v.literal("workspaces_only"),
@@ -68,7 +68,7 @@ export const workspaces = defineTable({
   // Icon name (from lucide-react icon set)
   icon: v.optional(v.string()),
   isPublic: v.boolean(),
-  
+
   // === Nested Workspace Hierarchy Fields ===
   // Parent workspace for hierarchy (null = root level)
   parentWorkspaceId: v.optional(v.id("workspaces")),
@@ -82,7 +82,7 @@ export const workspaces = defineTable({
   path: v.optional(v.array(v.id("workspaces"))),
   // Whether this workspace shares data (knowledge, activity) to parent workspace
   shareDataToParent: v.optional(v.boolean()),
-  
+
   settings: v.optional(
     v.object({
       allowInvites: v.optional(v.boolean()),

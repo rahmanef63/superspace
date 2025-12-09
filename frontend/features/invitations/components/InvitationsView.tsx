@@ -170,7 +170,7 @@ export function InvitationsView({ onInvite }: { onInvite?: () => void }) {
           {[
             { key: "all", label: "All Types" },
             { key: "workspace", label: "Workspace" },
-            { key: "personal", label: "Friends" },
+            { key: "personal", label: "Contacts" },
           ].map(({ key, label }) => (
             <Button
               key={key}
@@ -238,7 +238,7 @@ export function InvitationsView({ onInvite }: { onInvite?: () => void }) {
                         <span className="font-medium">
                           {invitation.type === "workspace"
                             ? `Workspace: ${invitation.workspace?.name || "Unknown"}`
-                            : "Friend Request"}
+                            : "Contact Request"}
                         </span>
                         {isExpiringSoon(invitation.expiresAt) && invitation.status === "pending" && (
                           <span className="text-xs text-yellow-600 flex items-center gap-1">

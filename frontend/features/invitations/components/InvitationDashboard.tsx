@@ -50,11 +50,11 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
             Invitation Dashboard
           </h2>
           <p className="text-gray-600">
-            Manage workspace invites and friend requests
+            Manage workspace invites and Contact requests
           </p>
           <div className="mt-2 text-xs text-gray-500 space-y-1">
             <p><span className="font-medium text-gray-700">Workspace members:</span> scoped access to a specific workspace (roles, projects, etc).</p>
-            <p><span className="font-medium text-gray-700">Friends:</span> chat + can invite each other into workspaces.</p>
+            <p><span className="font-medium text-gray-700">Contacts:</span> chat + can invite each other into workspaces.</p>
           </div>
         </div>
         
@@ -79,7 +79,7 @@ export function InvitationDashboard({ workspaceId }: InvitationDashboardProps) {
             variant="outline"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Send Friend Request
+            Send Contact Request
           </Button>
         </div>
       </div>

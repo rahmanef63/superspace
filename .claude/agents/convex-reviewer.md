@@ -210,7 +210,7 @@ export const processTask = action({
 
 - [ ] **Error Handling**
   - Proper error types thrown
-  - User-friendly messages
+  - User-Contactly messages
   - No silent failures
 
 - [ ] **Type Safety**

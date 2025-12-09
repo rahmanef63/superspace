@@ -96,7 +96,7 @@ isTransformationSafe('number', 'rich_text') // true (safe)
 isTransformationSafe('multi_select', 'select') // false (loses data)
 ```
 
-**`getTransformationWarning()`** - Get user-friendly warning
+**`getTransformationWarning()`** - Get user-Contactly warning
 ```typescript
 getTransformationWarning('rich_text', 'number', 50)
 // "⚠️ Converting text to number will extract only numeric values. 

@@ -22,6 +22,12 @@ import { PanelHeader } from "./PanelHeader"
 import { CollapsedPanel } from "./CollapsedPanel"
 import type { ThreeColumnLayoutAdvancedProps } from "./types"
 
+// Default responsive breakpoints
+// Priority: Right panel collapses first, then left panel on very small screens
+const DEFAULT_COLLAPSE_RIGHT_AT = 1024 // Collapse right panel first on smaller desktops
+const DEFAULT_COLLAPSE_LEFT_AT = 640   // Collapse left panel only on mobile
+const DEFAULT_STACK_AT = 480           // Stack on very small mobile
+
 export function ThreeColumnLayoutAdvanced({
   left,
   center,
@@ -52,21 +58,19 @@ export function ThreeColumnLayoutAdvanced({
   leftLabel = "Left Panel",
   centerLabel = "Main Content",
   rightLabel = "Right Panel",
-  // Responsive
-  collapseLeftAt,
-  collapseRightAt,
-  stackAt,
+  // Responsive - use defaults if not provided
+  collapseLeftAt = DEFAULT_COLLAPSE_LEFT_AT,
+  collapseRightAt = DEFAULT_COLLAPSE_RIGHT_AT,
+  stackAt = DEFAULT_STACK_AT,
 }: ThreeColumnLayoutAdvancedProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
-  // Persisted state - TEMPORARILY DISABLED to debug infinite loop
-  // const [persistedState, setPersistedState] = usePersistedState(
-  //   storageKey,
-  //   { leftCollapsed: defaultLeftCollapsed, rightCollapsed: defaultRightCollapsed },
-  //   persistState
-  // )
-  const persistedState = { leftCollapsed: defaultLeftCollapsed, rightCollapsed: defaultRightCollapsed }
-  const setPersistedState = React.useCallback((_fn: React.SetStateAction<typeof persistedState>) => {}, [])
+  // Persisted state
+  const [persistedState, setPersistedState] = usePersistedState(
+    storageKey,
+    { leftCollapsed: defaultLeftCollapsed, rightCollapsed: defaultRightCollapsed },
+    persistState
+  )
 
   // Internal collapse state (uncontrolled)
   const [internalLeftCollapsed, setInternalLeftCollapsed] = React.useState(
@@ -77,24 +81,11 @@ export function ThreeColumnLayoutAdvanced({
   )
 
   // Auto-collapse based on responsive breakpoints
-  // TEMPORARILY DISABLED to debug infinite loop
-  // const autoLeftCollapsed = useResponsiveCollapse(
-  //   collapseLeftAt,
-  //   controlledLeftCollapsed,
-  //   onLeftCollapsedChange
-  // )
-  // const autoRightCollapsed = useResponsiveCollapse(
-  //   collapseRightAt,
-  //   controlledRightCollapsed,
-  //   onRightCollapsedChange
-  // )
-  const autoLeftCollapsed = false
-  const autoRightCollapsed = false
+  const autoLeftCollapsed = useResponsiveCollapse(collapseLeftAt)
+  const autoRightCollapsed = useResponsiveCollapse(collapseRightAt)
 
   // Stack layout for mobile
-  // TEMPORARILY DISABLED to debug infinite loop
-  // const isStacked = useStackedLayout(stackAt)
-  const isStacked = false
+  const isStacked = useStackedLayout(stackAt)
 
   // Determine actual collapse state
   const isLeftControlled = controlledLeftCollapsed !== undefined
@@ -117,25 +108,23 @@ export function ThreeColumnLayoutAdvanced({
     const newValue = !leftCollapsed
     if (!isLeftControlled) {
       setInternalLeftCollapsed(newValue)
-      // Disabled for debugging
-      // if (persistState) {
-      //   setPersistedState(prev => ({ ...prev, leftCollapsed: newValue }))
-      // }
+      if (persistState) {
+        setPersistedState(prev => ({ ...prev, leftCollapsed: newValue }))
+      }
     }
     onLeftCollapsedChange?.(newValue)
-  }, [leftCollapsed, isLeftControlled, onLeftCollapsedChange])
+  }, [leftCollapsed, isLeftControlled, onLeftCollapsedChange, persistState, setPersistedState])
 
   const toggleRight = React.useCallback(() => {
     const newValue = !rightCollapsed
     if (!isRightControlled) {
       setInternalRightCollapsed(newValue)
-      // Disabled for debugging
-      // if (persistState) {
-      //   setPersistedState(prev => ({ ...prev, rightCollapsed: newValue }))
-      // }
+      if (persistState) {
+        setPersistedState(prev => ({ ...prev, rightCollapsed: newValue }))
+      }
     }
     onRightCollapsedChange?.(newValue)
-  }, [rightCollapsed, isRightControlled, onRightCollapsedChange])
+  }, [rightCollapsed, isRightControlled, onRightCollapsedChange, persistState, setPersistedState])
 
   // Resize handlers
   const leftResizeRef = React.useRef({ startWidth: leftWidth, startPos: 0 })

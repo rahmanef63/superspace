@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState } from "react"
-import { History, Filter, Download, User, FileText, Settings, Trash2 } from "lucide-react"
+import { History, Filter, Download, User, FileText, Settings, Trash2, RefreshCcw } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useAuditLog } from "../hooks/useAuditLog"
+import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -41,6 +42,7 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
+          <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-xl font-semibold">No Workspace Selected</h2>
           <p className="mt-2 text-muted-foreground">
             Please select a workspace to view audit logs
@@ -51,26 +53,34 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b p-4">
-        <div className="flex items-center gap-3">
-          <History className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-xl font-bold">Audit Log</h1>
-            <p className="text-sm text-muted-foreground">
-              Activity trail and compliance logs
-            </p>
-          </div>
-        </div>
-        <Button variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
-      </div>
+    <div className="flex h-full flex-col p-6 gap-6">
+      <FeatureHeader
+        icon={History}
+        title="Audit Log"
+        subtitle="Activity trail and compliance logs"
+        primaryAction={{
+          label: "Export",
+          icon: Download,
+          onClick: () => {},
+        }}
+        secondaryActions={[
+          {
+            id: "refresh",
+            label: "Refresh",
+            icon: RefreshCcw,
+            onClick: () => {},
+          },
+          {
+            id: "settings",
+            label: "Settings",
+            icon: Settings,
+            onClick: () => {},
+          },
+        ]}
+      />
 
       {/* Filters */}
-      <div className="flex items-center gap-4 border-b p-4">
+      <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Filters:</span>
@@ -92,7 +102,7 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-4 gap-4 border-b p-4">
+        <div className="grid grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Events</p>
@@ -121,7 +131,7 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
       )}
 
       {/* Logs List */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-muted-foreground">Loading audit logs...</p>

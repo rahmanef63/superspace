@@ -907,10 +907,10 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             showCollapseButtons={true}
             persistState={true}
             storageKey="menu-store-layout"
-            // Responsive
-            collapseLeftAt={900}
-            collapseRightAt={1100}
-            stackAt={640}
+            // Responsive - right panel collapses first, left panel stays visible longer
+            collapseRightAt={1024}
+            collapseLeftAt={640}
+            stackAt={480}
             // Default states
             defaultLeftCollapsed={false}
             rightCollapsed={rightPanelCollapsed}

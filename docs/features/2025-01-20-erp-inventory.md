@@ -844,7 +844,7 @@ alert.resolved
 
 ### 9.2 UI/UX Considerations
 
-- Large touch-friendly buttons for warehouse use
+- Large touch-Contactly buttons for warehouse use
 - High contrast for visibility
 - Voice-guided operations
 - Offline capability for poor connectivity areas

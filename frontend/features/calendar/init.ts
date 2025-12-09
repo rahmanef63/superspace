@@ -3,7 +3,7 @@
  * Registers calendar settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Calendar, Layout, CalendarDays, RefreshCw } from "lucide-react"
 import {
     CalendarGeneralSettings,

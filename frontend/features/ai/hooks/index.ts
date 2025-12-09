@@ -376,7 +376,7 @@ export const useAIActions = () => {
       console.error("AI chat error:", error);
       setError(errorMessage);
 
-      // Parse error for user-friendly message
+      // Parse error for user-Contactly message
       const parsedError = parseAIError(error instanceof Error ? error : errorMessage, provider);
 
       toast.error(parsedError.title, {

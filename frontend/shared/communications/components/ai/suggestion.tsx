@@ -12,7 +12,7 @@ interface SuggestionsProps extends React.ComponentProps<typeof ScrollArea> {}
  * 
  * Features:
  * - Horizontal scrolling with hidden scrollbar
- * - Touch-friendly scrolling
+ * - Touch-Contactly scrolling
  * - Automatic overflow handling
  */
 function Suggestions({ className, children, ...props }: SuggestionsProps) {

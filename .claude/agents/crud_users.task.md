@@ -4,7 +4,7 @@
 Users & Clerk sync:
 - Webhooks: upsertFromClerk / deleteFromClerk
 - Update profile (name, bio, image)
-- userPrivacySettings (isVisible, allowDM, allowFriendRequests, visibilityMode)
+- userPrivacySettings (isVisible, allowDM, allowcontactsRequests, visibilityMode)
 - Link Clerk `externalId` to Convex `users`
 - Audit events
 

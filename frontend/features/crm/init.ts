@@ -3,7 +3,7 @@
  * Registers CRM settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
 import { Users, Layout, Bell, Zap } from "lucide-react"
 import {
     CRMGeneralSettings,

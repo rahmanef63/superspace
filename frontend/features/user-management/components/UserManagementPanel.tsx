@@ -3,7 +3,7 @@
  * 
  * Main panel component for unified user management.
  * Provides tabs for:
- * - Team: Friends and teams management
+ * - Team: Contacts and teams management
  * - Matrix: User→workspace access visualization
  * - Invite: Quick invite features
  * - Roles: Visual role hierarchy (ReactFlow)
@@ -32,7 +32,7 @@ import type { UserManagementTab } from "../types";
 import { 
   useHierarchyMemberOverview,
   useUserWorkspaceMatrix,
-  useFriendsForQuickInvite,
+  useContactsForQuickInvite,
   useWorkspaceTeams,
   useRoleHierarchy,
 } from "../api";
@@ -62,7 +62,7 @@ export function UserManagementPanel({
   // Fetch data
   const overview = useHierarchyMemberOverview(workspaceId);
   const matrix = useUserWorkspaceMatrix(workspaceId);
-  const friendsForInvite = useFriendsForQuickInvite(workspaceId);
+  const ContactsForInvite = useContactsForQuickInvite(workspaceId);
   const teams = useWorkspaceTeams(workspaceId);
   const roleHierarchy = useRoleHierarchy(workspaceId);
 
@@ -75,7 +75,7 @@ export function UserManagementPanel({
   // Stats for badges
   const totalMembers = overview?.totalMembers ?? 0;
   const pendingInvites = overview?.pendingInvitations ?? 0;
-  const friendCount = friendsForInvite?.length ?? 0;
+  const ContactCount = ContactsForInvite?.length ?? 0;
   const teamCount = teams?.length ?? 0;
 
   return (
@@ -126,9 +126,9 @@ export function UserManagementPanel({
           <TabsTrigger value="invite" className="gap-1.5">
             <UserPlus className="w-4 h-4" />
             Quick Invite
-            {friendCount > 0 && (
+            {ContactCount > 0 && (
               <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-                {friendCount}
+                {ContactCount}
               </Badge>
             )}
           </TabsTrigger>
@@ -157,7 +157,7 @@ export function UserManagementPanel({
           <TabsContent value="invite" className="h-full m-0">
             <QuickInvitePanel 
               workspaceId={workspaceId}
-              friends={friendsForInvite ?? []}
+              Contacts={ContactsForInvite ?? []}
               teams={teams ?? []}
             />
           </TabsContent>

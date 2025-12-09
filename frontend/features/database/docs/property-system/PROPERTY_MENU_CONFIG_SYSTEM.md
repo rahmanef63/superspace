@@ -171,7 +171,7 @@ Number
 **Type-Specific Items:**
 - 📅 Date format
   - Full date
-  - Friendly
+  - Contactly
   - US (MM/DD/YYYY)
   - European (DD/MM/YYYY)
   - ISO (YYYY-MM-DD)

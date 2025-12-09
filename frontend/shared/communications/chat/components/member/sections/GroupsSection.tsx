@@ -1,33 +1,27 @@
 import { Users } from "lucide-react";
+import type { CommonGroup } from "../types";
 
 type GroupsSectionProps = {
   isMobile: boolean;
+  groups?: CommonGroup[];
+  isLoading?: boolean;
 };
 
-const GROUP_ITEMS = [
-  {
-    id: "product-sync",
-    name: "Product Sync",
-    members: 12,
-    avatar:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=80&h=80&fit=crop",
-  },
-  {
-    id: "support-team",
-    name: "Support Team",
-    members: 8,
-    avatar:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=80&h=80&fit=crop",
-  },
-  {
-    id: "growth-lab",
-    name: "Growth Lab",
-    members: 16,
-  },
-];
+export function GroupsSection({ isMobile, groups, isLoading }: GroupsSectionProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(3)].map((_, idx) => (
+          <div
+            key={idx}
+            className="h-14 rounded-wa-lg border border-wa-border bg-muted/40 animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
 
-export function GroupsSection({ isMobile }: GroupsSectionProps) {
-  if (!GROUP_ITEMS.length) {
+  if (!groups || groups.length === 0) {
     return (
       <div className={isMobile ? "py-8 text-center" : "py-12 text-center"}>
         <Users
@@ -47,12 +41,12 @@ export function GroupsSection({ isMobile }: GroupsSectionProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-medium text-wa-text">
-          Groups in common ({GROUP_ITEMS.length})
+          Groups in common ({groups.length})
         </h3>
       </div>
 
       <div className="space-y-2">
-        {GROUP_ITEMS.map((group) => (
+        {groups.map((group) => (
           <div
             key={group.id}
             className="flex items-center gap-3 rounded-wa-lg border border-wa-border bg-wa-surface p-3 transition-colors hover:bg-wa-hover"

@@ -4,7 +4,7 @@
  * Unified user management that composes existing systems:
  * - Members (workspaceMemberships)
  * - Invitations (invitations)
- * - Friends (friendships)
+ * - Contacts (contacts)
  * - Teams (userTeams)
  * - Role Hierarchy (roleHierarchyLinks)
  * 
@@ -26,12 +26,12 @@ export {
   useUserManagementApi,
   useUserWorkspaceMatrix,
   useHierarchyMemberOverview,
-  useFriendsForQuickInvite,
+  useContactsForQuickInvite,
   useWorkspaceTeams,
   useTeamMembers,
   useRoleHierarchy,
   useInviteToHierarchy,
-  useBulkInviteFriends,
+  useBulkInviteContacts,
   useCreateTeam,
   useAddTeamMember,
   useRemoveTeamMember,
@@ -41,7 +41,7 @@ export {
   // Re-exported from existing features
   useMembers,
   useRoles,
-  useFriends,
+  useContacts,
   useReceivedInvitations,
   useSentInvitations,
 } from "./api";
@@ -59,13 +59,13 @@ export type {
   HierarchyInvitation,
   PropagationStrategy,
   InviteToHierarchyParams,
-  BulkInviteFriendsParams,
+  BulkInviteContactsParams,
   WorkspaceInfo,
   AccessMatrixEntry,
   AccessMatrix,
   RoleBreakdown,
   HierarchyMemberOverview,
-  FriendForQuickInvite,
+  ContactForQuickInvite,
   UserManagementTab,
   UserManagementState,
   UserManagementFilters,

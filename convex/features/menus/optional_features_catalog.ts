@@ -41,6 +41,24 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
+    "slug": "calendar",
+    "name": "Calendar",
+    "description": "Team calendar with event management and scheduling",
+    "icon": "Calendar",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "scheduling",
+      "events",
+      "productivity"
+    ],
+    "requiresPermission": "calendar.view",
+    "originalRequiresPermission": "calendar.view",
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
     "slug": "reports",
     "name": "Reports",
     "description": "Analytics and reporting dashboard",
@@ -72,6 +90,43 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "status": "beta",
     "isReady": true,
     "expectedRelease": "Q1 2025",
+    "featureType": "optional"
+  },
+  {
+    "slug": "forms",
+    "name": "Forms",
+    "description": "Build custom forms for data collection",
+    "icon": "FileText",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "forms",
+      "data-collection",
+      "surveys"
+    ],
+    "requiresPermission": "forms.view",
+    "originalRequiresPermission": "forms.view",
+    "status": "beta",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "approvals",
+    "name": "Approvals",
+    "description": "Approval workflows and request management",
+    "icon": "CheckCircle",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "approvals",
+      "workflows",
+      "requests"
+    ],
+    "requiresPermission": "approvals.view",
+    "originalRequiresPermission": "approvals.view",
+    "status": "development",
+    "isReady": false,
+    "expectedRelease": "Q2 2025",
     "featureType": "optional"
   },
   {
@@ -107,19 +162,80 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
-    "slug": "notifications",
-    "name": "Notifications",
-    "description": "System notifications and activity feed",
-    "icon": "Bell",
+    "slug": "audit-log",
+    "name": "Audit Log",
+    "description": "View activity logs and audit trail",
+    "icon": "History",
     "version": "1.0.0",
-    "category": "communication",
+    "category": "administration",
     "tags": [
-      "notifications",
-      "activity",
-      "feed"
+      "audit",
+      "logs",
+      "compliance",
+      "security"
     ],
+    "requiresPermission": "audit-log.view",
+    "originalRequiresPermission": "audit-log.view",
     "status": "stable",
     "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "import-export",
+    "name": "Import/Export",
+    "description": "Import and export data across workspace",
+    "icon": "ArrowUpDown",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "import",
+      "export",
+      "data",
+      "migration"
+    ],
+    "requiresPermission": "import-export.view",
+    "originalRequiresPermission": "import-export.view",
+    "status": "beta",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "integrations",
+    "name": "Integrations",
+    "description": "Connect with third-party services and APIs",
+    "icon": "Plug",
+    "version": "1.0.0",
+    "category": "administration",
+    "tags": [
+      "integrations",
+      "api",
+      "webhooks",
+      "oauth"
+    ],
+    "requiresPermission": "integrations.view",
+    "originalRequiresPermission": "integrations.view",
+    "status": "beta",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "pos",
+    "name": "POS",
+    "description": "Point of Sale and retail management",
+    "icon": "ShoppingCart",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "pos",
+      "retail",
+      "sales",
+      "cashier"
+    ],
+    "requiresPermission": "pos.view",
+    "originalRequiresPermission": "pos.view",
+    "status": "development",
+    "isReady": false,
+    "expectedRelease": "Q3 2025",
     "featureType": "optional"
   },
   {
@@ -142,6 +258,26 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
+    "slug": "marketing",
+    "name": "Marketing",
+    "description": "Marketing automation and campaign management",
+    "icon": "Megaphone",
+    "version": "1.0.0",
+    "category": "content",
+    "tags": [
+      "marketing",
+      "campaigns",
+      "email",
+      "automation"
+    ],
+    "requiresPermission": "marketing.view",
+    "originalRequiresPermission": "marketing.view",
+    "status": "development",
+    "isReady": false,
+    "expectedRelease": "Q3 2025",
+    "featureType": "optional"
+  },
+  {
     "slug": "analytics",
     "name": "Analytics",
     "description": "Monitor your business performance with real-time analytics",
@@ -161,6 +297,26 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
+    "slug": "bi",
+    "name": "Business Intelligence",
+    "description": "Advanced analytics and business intelligence",
+    "icon": "LineChart",
+    "version": "1.0.0",
+    "category": "analytics",
+    "tags": [
+      "bi",
+      "analytics",
+      "dashboards",
+      "reports"
+    ],
+    "requiresPermission": "bi.view",
+    "originalRequiresPermission": "bi.view",
+    "status": "development",
+    "isReady": false,
+    "expectedRelease": "Q3 2025",
+    "featureType": "optional"
+  },
+  {
     "slug": "automation",
     "name": "Automation",
     "description": "Automate workflows and processes with visual builders",
@@ -177,6 +333,26 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "originalRequiresPermission": "automation.create",
     "status": "stable",
     "isReady": true,
+    "featureType": "optional"
+  },
+  {
+    "slug": "sales",
+    "name": "Sales",
+    "description": "Sales management and pipeline tracking",
+    "icon": "DollarSign",
+    "version": "1.0.0",
+    "category": "productivity",
+    "tags": [
+      "sales",
+      "pipeline",
+      "deals",
+      "revenue"
+    ],
+    "requiresPermission": "sales.view",
+    "originalRequiresPermission": "sales.view",
+    "status": "development",
+    "isReady": false,
+    "expectedRelease": "Q2 2025",
     "featureType": "optional"
   },
   {
@@ -205,25 +381,6 @@ export const OPTIONAL_FEATURES_CATALOG = [
       "accounting",
       "administration"
     ],
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
-    "slug": "sales",
-    "name": "Sales & Invoicing",
-    "description": "Complete sales management solution with quotes, invoices, recurring billing, payment processing, and sales analytics",
-    "icon": "ShoppingCart",
-    "version": "1.0.0",
-    "category": "administration",
-    "tags": [
-      "erp",
-      "sales",
-      "invoicing",
-      "payments"
-    ],
-    "requiresPermission": "erp.sales.view",
-    "originalRequiresPermission": "erp.sales.view",
     "status": "stable",
     "isReady": true,
     "featureType": "optional"

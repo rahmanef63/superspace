@@ -1,7 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from './Button';
-import { errorLogger, getUserFriendlyMessage } from '../utils/errorHandling';
+import { errorLogger, getUserContactlyMessage } from '../utils/errorHandling';
 
 interface Props {
   children: ReactNode;
@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
             <p className="text-foreground/70 mb-6">
-              {getUserFriendlyMessage(this.state.error)}
+              {getUserContactlyMessage(this.state.error)}
             </p>
             <div className="flex gap-2 justify-center">
               <Button onClick={this.handleReset}>
@@ -80,7 +80,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
         <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
         <h2 className="text-xl font-bold mb-2">Error</h2>
         <p className="text-foreground/70 mb-4">
-          {getUserFriendlyMessage(error)}
+          {getUserContactlyMessage(error)}
         </p>
         <Button onClick={resetError} size="sm">
           Try again

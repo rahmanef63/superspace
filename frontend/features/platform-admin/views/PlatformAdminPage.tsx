@@ -36,6 +36,8 @@ import {
   Box,
 } from "lucide-react"
 import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useFeatureBundles, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
+import { useTableSortAndFilter, ColumnDef } from "../hooks/useTableSortAndFilter"
+import { EnhancedTableHeader } from "../components/EnhancedTableHeader"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -99,7 +101,7 @@ import { WorkspaceStorePage } from "@/frontend/features/workspace-store"
 const FEATURE_CATEGORIES = [
   "productivity",
   "communication",
-  "analytics", 
+  "analytics",
   "integration",
   "management",
   "development",
@@ -137,10 +139,10 @@ function StatusBadge({ status }: { status: FeatureStatus }) {
     deprecated: { icon: XCircle, class: "bg-gray-500/10 text-gray-500 border-gray-500/20" },
     disabled: { icon: XCircle, class: "bg-red-500/10 text-red-500 border-red-500/20" },
   }
-  
+
   const config = statusConfig[status] || statusConfig.stable
   const Icon = config.icon
-  
+
   return (
     <Badge variant="outline" className={cn("gap-1", config.class)}>
       <Icon className="h-3 w-3" />
@@ -149,13 +151,13 @@ function StatusBadge({ status }: { status: FeatureStatus }) {
   )
 }
 
-function StatCard({ 
-  title, 
-  value, 
-  description, 
+function StatCard({
+  title,
+  value,
+  description,
   icon: Icon,
   trend,
-}: { 
+}: {
   title: string
   value: string | number
   description: string
@@ -217,7 +219,7 @@ function AccessDenied() {
       </div>
       <h1 className="text-2xl font-bold text-center">Access Denied</h1>
       <p className="text-muted-foreground text-center mt-2 max-w-md">
-        You don&apos;t have platform administrator access. 
+        You don&apos;t have platform administrator access.
         This page is restricted to super admins only.
       </p>
       <Badge variant="outline" className={cn("mt-4", FEATURE_TAGS.admin.color)}>
@@ -227,10 +229,10 @@ function AccessDenied() {
   )
 }
 
-function FeaturesTable({ 
-  features, 
-  onStatusChange 
-}: { 
+function FeaturesTable({
+  features,
+  onStatusChange
+}: {
   features: any[]
   onStatusChange: (id: any, status: FeatureStatus) => void
 }) {
@@ -243,7 +245,7 @@ function FeaturesTable({
       </div>
     )
   }
-  
+
   return (
     <Table>
       <TableHeader>
@@ -308,7 +310,7 @@ function WorkspacesTable({ workspaces }: { workspaces: any[] }) {
       </div>
     )
   }
-  
+
   return (
     <Table>
       <TableHeader>
@@ -357,18 +359,70 @@ function SystemFeaturesTable() {
   const { updateFeature, setVisibility, deleteFeature, seedFeatures, createFeature } = useSystemFeatureMutations()
   const { bundles: bundleCategories, isLoading: isBundlesLoading } = useBundleCategories()
   const { setFeatureBundles, createBundle } = useBundleCategoryMutations()
-  
+
+  // Define columns for sorting and filtering
+  const columns: ColumnDef<any>[] = [
+    {
+      key: "name",
+      label: "Feature",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "featureId",
+      label: "Feature ID",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "version",
+      label: "Version",
+      sortable: true,
+      filterable: false,
+    },
+    {
+      key: "category",
+      label: "Category",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "featureType",
+      label: "Type",
+      sortable: true,
+      filterable: true,
+    },
+  ]
+
+  // Use the sorting and filtering hook
+  const {
+    searchQuery,
+    filters,
+    sortConfig,
+    setSearchQuery,
+    handleSort,
+    handleFilter,
+    clearFilters,
+    hasActiveFilters,
+    processedData: filteredFeatures,
+  } = useTableSortAndFilter({
+    data: features,
+    columns,
+    initialFilters: { category: null, status: null },
+  })
+
   // State for editing
   const [editingFeature, setEditingFeature] = useState<any | null>(null)
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isSeeding, setIsSeeding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  
-  // Filter state
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Bundle selection state for editing
@@ -418,21 +472,6 @@ function SystemFeaturesTable() {
     isPublic: true,
   })
 
-  // Filtered features
-  const filteredFeatures = useMemo(() => {
-    return features.filter((feature: any) => {
-      const matchesSearch = 
-        feature.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        feature.featureId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        feature.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      
-      const matchesCategory = categoryFilter === "all" || feature.category === categoryFilter
-      const matchesStatus = statusFilter === "all" || feature.status === statusFilter
-      
-      return matchesSearch && matchesCategory && matchesStatus
-    })
-  }, [features, searchQuery, categoryFilter, statusFilter])
-
   // Get unique categories from features
   const categories = useMemo(() => {
     const cats = new Set(features.map((f: any) => f.category))
@@ -469,12 +508,12 @@ function SystemFeaturesTable() {
         ...editForm,
         status: editForm.status as FeatureStatus,
       })
-      
+
       // Update bundle memberships
       if (selectedBundles.length > 0) {
         await setFeatureBundles(editingFeature.featureId, selectedBundles)
       }
-      
+
       toast.success("Feature updated successfully")
       setIsEditSheetOpen(false)
       setEditingFeature(null)
@@ -635,7 +674,7 @@ function SystemFeaturesTable() {
       </div>
     )
   }
-  
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -650,9 +689,12 @@ function SystemFeaturesTable() {
             className="pl-8"
           />
         </div>
-        
+
         {/* Category Filter */}
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+        <Select
+          value={filters.category || "all"}
+          onValueChange={(v) => handleFilter("category", v === "all" ? null : v)}
+        >
           <SelectTrigger className="w-[150px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Category" />
@@ -664,9 +706,12 @@ function SystemFeaturesTable() {
             ))}
           </SelectContent>
         </Select>
-        
+
         {/* Status Filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={filters.status || "all"}
+          onValueChange={(v) => handleFilter("status", v === "all" ? null : v)}
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -677,6 +722,12 @@ function SystemFeaturesTable() {
             ))}
           </SelectContent>
         </Select>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="icon" onClick={clearFilters}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 ml-auto">
@@ -700,10 +751,10 @@ function SystemFeaturesTable() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleSeedFeatures}
             disabled={isSeeding}
           >
@@ -714,7 +765,7 @@ function SystemFeaturesTable() {
             )}
             Sync
           </Button>
-          
+
           <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Feature
@@ -738,11 +789,50 @@ function SystemFeaturesTable() {
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>Feature</TableHead>
-              <TableHead className="w-[100px]">Version</TableHead>
-              <TableHead className="w-[120px]">Category</TableHead>
-              <TableHead className="w-[120px]">Status</TableHead>
-              <TableHead className="w-[100px]">Type</TableHead>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "name" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "name"}
+                onSort={() => handleSort("name")}
+              >
+                Feature
+              </EnhancedTableHeader>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "version" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "version"}
+                onSort={() => handleSort("version")}
+                className="w-[100px]"
+              >
+                Version
+              </EnhancedTableHeader>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "category" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "category"}
+                onSort={() => handleSort("category")}
+                className="w-[120px]"
+              >
+                Category
+              </EnhancedTableHeader>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "status" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "status"}
+                onSort={() => handleSort("status")}
+                className="w-[120px]"
+              >
+                Status
+              </EnhancedTableHeader>
+              <EnhancedTableHeader
+                sortable={true}
+                sortDirection={sortConfig.key === "featureType" ? sortConfig.direction : null}
+                isActive={sortConfig.key === "featureType"}
+                onSort={() => handleSort("featureType")}
+                className="w-[100px]"
+              >
+                Type
+              </EnhancedTableHeader>
               <TableHead className="w-[70px] text-center">Public</TableHead>
               <TableHead className="w-[70px] text-center">Enabled</TableHead>
               <TableHead className="w-[80px] text-right">Actions</TableHead>
@@ -750,8 +840,8 @@ function SystemFeaturesTable() {
           </TableHeader>
           <TableBody>
             {filteredFeatures.map((feature: any) => (
-              <TableRow 
-                key={feature._id} 
+              <TableRow
+                key={feature._id}
                 className={cn(
                   !feature.isEnabled && "opacity-50",
                   selectedIds.has(feature._id) && "bg-muted/50"
@@ -823,7 +913,7 @@ function SystemFeaturesTable() {
                         Copy ID
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleDelete(feature._id)}
                         className="text-red-500"
                       >
@@ -848,18 +938,18 @@ function SystemFeaturesTable() {
               Update feature details for Menu Store
             </SheetDescription>
           </SheetHeader>
-          
+
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-6">
             {/* Feature ID - Read Only */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Feature ID</Label>
               <Input value={editingFeature?.featureId || ""} disabled className="font-mono bg-muted/50 h-10" />
             </div>
-            
+
             {/* Basic Info Section */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic Information</h4>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="edit-name" className="text-sm font-medium">Name <span className="text-red-500">*</span></Label>
                 <Input
@@ -870,7 +960,7 @@ function SystemFeaturesTable() {
                   className="h-10"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="edit-description" className="text-sm font-medium">Description</Label>
                 <Textarea
@@ -883,11 +973,11 @@ function SystemFeaturesTable() {
                 />
               </div>
             </div>
-            
+
             {/* Version & Icon */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Version & Appearance</h4>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-version" className="text-sm font-medium">Version <span className="text-red-500">*</span></Label>
@@ -899,7 +989,7 @@ function SystemFeaturesTable() {
                     className="h-10 font-mono"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="edit-icon" className="text-sm font-medium">Icon</Label>
                   <IconPicker
@@ -920,11 +1010,11 @@ function SystemFeaturesTable() {
                 </div>
               </div>
             </div>
-            
+
             {/* Classification */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Classification</h4>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-category" className="text-sm font-medium">Category <span className="text-red-500">*</span></Label>
@@ -939,7 +1029,7 @@ function SystemFeaturesTable() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="edit-status" className="text-sm font-medium">Status <span className="text-red-500">*</span></Label>
                   <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
@@ -954,7 +1044,7 @@ function SystemFeaturesTable() {
                   </Select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-type" className="text-sm font-medium">Feature Type</Label>
@@ -969,7 +1059,7 @@ function SystemFeaturesTable() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="edit-release" className="text-sm font-medium">Expected Release</Label>
                   <Input
@@ -987,9 +1077,9 @@ function SystemFeaturesTable() {
                 <Input
                   id="edit-tags"
                   value={editForm.tags.join(", ")}
-                  onChange={(e) => setEditForm({ 
-                    ...editForm, 
-                    tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) 
+                  onChange={(e) => setEditForm({
+                    ...editForm,
+                    tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean)
                   })}
                   placeholder="productivity, workflow, automation"
                   className="h-10"
@@ -1004,7 +1094,7 @@ function SystemFeaturesTable() {
               <p className="text-xs text-muted-foreground -mt-2">
                 Assign this feature to workspace bundles. Each bundle can have this feature as core (always on), recommended (default on), or optional (default off).
               </p>
-              
+
               <BundleMultiSelect
                 options={bundleOptions}
                 value={selectedBundles}
@@ -1025,11 +1115,11 @@ function SystemFeaturesTable() {
                 isLoading={isBundlesLoading}
               />
             </div>
-            
+
             {/* Visibility Settings */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Visibility & Status</h4>
-              
+
               <div className="space-y-1 rounded-lg border p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -1042,7 +1132,7 @@ function SystemFeaturesTable() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-1 rounded-lg border p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -1055,7 +1145,7 @@ function SystemFeaturesTable() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-1 rounded-lg border p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -1070,7 +1160,7 @@ function SystemFeaturesTable() {
               </div>
             </div>
           </div>
-          
+
           <SheetFooter className="px-6 py-4 border-t flex-shrink-0">
             <div className="flex w-full gap-3">
               <Button variant="outline" onClick={() => setIsEditSheetOpen(false)} className="flex-1">
@@ -1103,7 +1193,7 @@ function SystemFeaturesTable() {
               Add a new feature to the Menu Store
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="px-6 py-4 space-y-5 max-h-[60vh] overflow-y-auto">
             {/* Feature ID */}
             <div className="space-y-2">
@@ -1119,7 +1209,7 @@ function SystemFeaturesTable() {
               />
               <p className="text-xs text-muted-foreground">Unique identifier, lowercase with hyphens</p>
             </div>
-            
+
             {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="new-name" className="text-sm font-medium">
@@ -1133,7 +1223,7 @@ function SystemFeaturesTable() {
                 className="h-10"
               />
             </div>
-            
+
             {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="new-description" className="text-sm font-medium">Description</Label>
@@ -1146,7 +1236,7 @@ function SystemFeaturesTable() {
                 className="resize-none"
               />
             </div>
-            
+
             {/* Version & Icon */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1177,7 +1267,7 @@ function SystemFeaturesTable() {
                 />
               </div>
             </div>
-            
+
             {/* Category & Status */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1208,7 +1298,7 @@ function SystemFeaturesTable() {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter className="px-6 py-4 border-t">
             <div className="flex w-full gap-3">
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="flex-1">
@@ -1246,10 +1336,10 @@ function SystemFeaturesTable() {
  */
 export default function PlatformAdminPage() {
   const { isLoading, isPlatformAdmin, email, name } = usePlatformAdminStatus()
-  const { 
-    features, 
-    workspaces, 
-    isLoadingFeatures, 
+  const {
+    features,
+    workspaces,
+    isLoadingFeatures,
     isLoadingWorkspaces,
     updateFeatureStatus,
   } = usePlatformAdmin()
@@ -1321,40 +1411,40 @@ export default function PlatformAdminPage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="system-features" className="flex-1">
-        <TabsList>
-          <TabsTrigger value="system-features" className="gap-2">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="system-features" className="gap-2 whitespace-nowrap">
             <Store className="h-4 w-4" />
-            Menu Store Features
+            Menu Store
           </TabsTrigger>
-          <TabsTrigger value="bundle-categories" className="gap-2">
+          <TabsTrigger value="bundle-categories" className="gap-2 whitespace-nowrap">
             <Package className="h-4 w-4" />
-            Bundle Categories
+            Bundles
           </TabsTrigger>
-          <TabsTrigger value="workspace-hierarchy" className="gap-2">
+          <TabsTrigger value="workspace-hierarchy" className="gap-2 whitespace-nowrap">
             <Building2 className="h-4 w-4" />
-            Workspace Hierarchy
+            Hierarchy
           </TabsTrigger>
-          <TabsTrigger value="features" className="gap-2">
+          <TabsTrigger value="features" className="gap-2 whitespace-nowrap">
             <Blocks className="h-4 w-4" />
-            Custom Features
+            Custom
           </TabsTrigger>
-          <TabsTrigger value="workspaces" className="gap-2">
+          <TabsTrigger value="workspaces" className="gap-2 whitespace-nowrap">
             <Building2 className="h-4 w-4" />
             Workspaces
           </TabsTrigger>
-          <TabsTrigger value="users" className="gap-2">
+          <TabsTrigger value="users" className="gap-2 whitespace-nowrap">
             <Users className="h-4 w-4" />
             Users
           </TabsTrigger>
-          <TabsTrigger value="invitations" className="gap-2">
+          <TabsTrigger value="invitations" className="gap-2 whitespace-nowrap">
             <Mail className="h-4 w-4" />
             Invitations
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2">
+          <TabsTrigger value="analytics" className="gap-2 whitespace-nowrap">
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2">
+          <TabsTrigger value="settings" className="gap-2 whitespace-nowrap">
             <Settings className="h-4 w-4" />
             Settings
           </TabsTrigger>
@@ -1367,7 +1457,7 @@ export default function PlatformAdminPage() {
                 <div>
                   <CardTitle>Menu Store Features</CardTitle>
                   <CardDescription>
-                    Manage system features that appear in Menu Store. 
+                    Manage system features that appear in Menu Store.
                     Edit names, versions, and control visibility dynamically.
                   </CardDescription>
                 </div>
@@ -1426,8 +1516,8 @@ export default function PlatformAdminPage() {
                   ))}
                 </div>
               ) : (
-                <FeaturesTable 
-                  features={features} 
+                <FeaturesTable
+                  features={features}
                   onStatusChange={handleStatusChange}
                 />
               )}

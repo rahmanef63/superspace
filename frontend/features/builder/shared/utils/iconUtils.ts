@@ -1,5 +1,5 @@
 import * as LucideIcons from 'lucide-react';
-import { getCategoryIcon } from '@/frontend/shared/ui';
+import { getIconComponent, getCategoryIconName, DEFAULT_ICON } from '@/frontend/shared/ui/icons';
 
 /**
  * Standard icon mapping for CMS widgets
@@ -30,29 +30,33 @@ export const widgetIcons = {
   container: 'Box',
   row: 'Rows',
   column: 'Columns',
-  
+  threeColumn: 'Columns3',
+  twoColumn: 'Columns2',
+  grid: 'LayoutGrid',
+  flex: 'MoveHorizontal',
+
   // Content
   text: 'Type',
   card: 'Square',
   heading: 'Heading',
   paragraph: 'AlignLeft',
-  
+
   // Media
   image: 'Image',
   video: 'Video',
   audio: 'Music',
   gallery: 'Images',
-  
+
   // Navigation
   navGroup: 'Menu',
   breadcrumb: 'ChevronRight',
   pagination: 'MoreHorizontal',
-  
+
   // Action
   button: 'MousePointerClick',
   link: 'Link',
   form: 'FileText',
-  
+
   // UI Components
   accordion: 'ChevronDown',
   alert: 'AlertCircle',
@@ -67,7 +71,14 @@ export const widgetIcons = {
   textarea: 'AlignLeft',
   toggleGroup: 'ToggleLeft',
   aspectRatio: 'Crop',
-  
+  tabs: 'Layers',
+  separator: 'Minus',
+  tooltip: 'MessageCircle',
+  collapsible: 'ChevronsUpDown',
+  carousel: 'GalleryHorizontal',
+  dialog: 'MessageSquare',
+  hoverCard: 'RectangleHorizontal',
+
   // Templates
   hero: 'LayoutTemplate',
   heroComposite: 'Layers',
@@ -91,16 +102,16 @@ export const resolveWidgetIcon = (
     if (typeof icon !== 'string') {
       return icon;
     }
-    
+
     // If it's a string that matches a Lucide icon, return the component
     if (icon in LucideIcons) {
       return (LucideIcons as any)[icon];
     }
-    
+
     // Return the string as-is (for custom icons)
     return icon;
   }
-  
+
   // Try to get widget-specific icon
   if (widgetKey && widgetKey in widgetIcons) {
     const iconName = widgetIcons[widgetKey];
@@ -109,7 +120,7 @@ export const resolveWidgetIcon = (
     }
     return iconName;
   }
-  
+
   // Try to get category icon
   if (fallbackCategory && fallbackCategory in categoryIcons) {
     const iconName = categoryIcons[fallbackCategory];
@@ -118,9 +129,13 @@ export const resolveWidgetIcon = (
     }
     return iconName;
   }
-  
+
   // Last resort: use shared icon utility
-  return getCategoryIcon(fallbackCategory || 'UI');
+  const sharedIcon = getIconComponent(getCategoryIconName(fallbackCategory || 'UI'));
+  if (sharedIcon) return sharedIcon;
+
+  // Final fallback: use Lucide Component icon
+  return (LucideIcons as any).Component || 'Component';
 };
 
 /**
@@ -133,7 +148,9 @@ export const getCategoryStandardIcon = (category: keyof typeof categoryIcons): R
   if (iconName in LucideIcons) {
     return (LucideIcons as any)[iconName];
   }
-  return getCategoryIcon(category);
+  const sharedIcon = getIconComponent(getCategoryIconName(category));
+  if (sharedIcon) return sharedIcon;
+  return (LucideIcons as any).Component;
 };
 
 /**

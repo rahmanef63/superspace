@@ -359,7 +359,7 @@ function applyConvexFilters<T>(records: T[], filter: ConvexQueryFilter): T[]
 // Apply single filter expression
 function applyFilterExpression(record: any, filter: FilterExpression): boolean
 
-// Get index-friendly filters
+// Get index-Contactly filters
 function buildConvexQueryArgs(filter: ConvexQueryFilter): {
   indexableFilters: Array<{ field: string; value: any }>;
   clientFilters: ConvexQueryFilter | null;
@@ -506,6 +506,6 @@ const combinedQuery = {
 - ✅ SSOT: Single filter system untuk entire app
 - ✅ DRY: Reusable hook + component
 - ✅ Type-safe: Full TypeScript support
-- ✅ User-friendly: Visible chips, clear all, persistence
+- ✅ User-Contactly: Visible chips, clear all, persistence
 
 **Result**: Professional filtering UI seperti Notion, Airtable, Linear! 🎉

@@ -14,7 +14,13 @@ import { navGroupManifest } from '../slices/widgets/navigation/navGroup/manifest
 import { heroManifest } from '../slices/widgets/templates/hero/manifest';
 import { heroCompositeManifest } from '../slices/widgets/templates/heroComposite/manifest';
 
-// UI Widgets
+// New Layout Widgets
+import { threeColumnManifest } from '../slices/widgets/layout/threeColumn/manifest';
+import { twoColumnManifest } from '../slices/widgets/layout/twoColumn/manifest';
+import { gridManifest } from '../slices/widgets/layout/grid/manifest';
+import { flexManifest } from '../slices/widgets/layout/flex/manifest';
+
+// UI Widgets (existing)
 import { accordionManifest } from './ui/accordion/manifest';
 import { alertManifest } from './ui/alert/manifest';
 import { aspectRatioManifest } from './ui/aspectRatio/manifest';
@@ -29,6 +35,16 @@ import { tableManifest } from './ui/table/manifest';
 import { textareaManifest } from './ui/textarea/manifest';
 import { toggleGroupManifest } from './ui/toggleGroup/manifest';
 
+// New UI Widgets
+import { tabsManifest } from './ui/tabs/manifest';
+import { separatorManifest } from './ui/separator/manifest';
+import { tooltipManifest } from './ui/tooltip/manifest';
+import { collapsibleManifest } from './ui/collapsible/manifest';
+import { carouselManifest } from './ui/carousel/manifest';
+import { breadcrumbManifest } from './ui/breadcrumb/manifest';
+import { dialogManifest } from './ui/dialog/manifest';
+import { hoverCardManifest } from './ui/hoverCard/manifest';
+
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
   // Layout
@@ -36,6 +52,10 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   container: containerManifest,
   row: rowManifest,
   column: columnManifest,
+  threeColumn: threeColumnManifest,
+  twoColumn: twoColumnManifest,
+  grid: gridManifest,
+  flex: flexManifest,
 
   // Content
   text: textManifest,
@@ -54,7 +74,7 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   hero: heroManifest,
   heroComposite: heroCompositeManifest,
 
-  // UI Components
+  // UI Components (existing)
   accordion: accordionManifest,
   alert: alertManifest,
   aspectRatio: aspectRatioManifest,
@@ -68,19 +88,29 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   table: tableManifest,
   textarea: textareaManifest,
   toggleGroup: toggleGroupManifest,
+
+  // UI Components (new)
+  tabs: tabsManifest,
+  separator: separatorManifest,
+  tooltip: tooltipManifest,
+  collapsible: collapsibleManifest,
+  carousel: carouselManifest,
+  breadcrumb: breadcrumbManifest,
+  dialog: dialogManifest,
+  hoverCard: hoverCardManifest,
 };
 
 // Standardize all widgets and validate in development
 const standardizeRegistry = (registry: Record<string, WidgetConfig>): Record<string, WidgetConfig> => {
   const standardized: Record<string, WidgetConfig> = {};
-  
+
   Object.entries(registry).forEach(([key, config]) => {
     standardized[key] = standardizeWidget(key, config);
   });
-  
+
   // Validate in development
   devValidateRegistry(standardized);
-  
+
   return standardized;
 };
 

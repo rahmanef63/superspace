@@ -7,6 +7,7 @@
 "use client";
 
 import type { Id } from "@convex/_generated/dataModel";
+import { Users } from "lucide-react";
 import { UserManagementPanel } from "./components/UserManagementPanel";
 
 export interface UserManagementPageProps {
@@ -16,8 +17,14 @@ export interface UserManagementPageProps {
 export default function UserManagementPage({ workspaceId }: UserManagementPageProps) {
   if (!workspaceId) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
-        <p>Select a workspace to manage users</p>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold">No Workspace Selected</h2>
+          <p className="mt-2 text-muted-foreground">
+            Select a workspace to manage users
+          </p>
+        </div>
       </div>
     );
   }
@@ -25,7 +32,7 @@ export default function UserManagementPage({ workspaceId }: UserManagementPagePr
   return (
     <UserManagementPanel 
       workspaceId={workspaceId} 
-      className="h-full p-4"
+      className="h-full p-6"
     />
   );
 }

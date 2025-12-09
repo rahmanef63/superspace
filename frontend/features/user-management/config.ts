@@ -1,7 +1,7 @@
 /**
  * User Management Feature Configuration
  * 
- * Unified user management composing members, invitations, friends, and teams.
+ * Unified user management composing members, invitations, Contacts, and teams.
  * System feature - visible only to users with MANAGE_MEMBERS permission.
  */
 

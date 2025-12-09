@@ -74,9 +74,9 @@ describe("Invitations Feature - Components", () => {
 
       it("should display invitation type icon", () => {
         const workspaceInvite = createMockInvitation({ type: "workspace" });
-        const friendInvite = createMockInvitation({ type: "personal" });
+        const ContactInvite = createMockInvitation({ type: "personal" });
         expect(workspaceInvite.type).toBe("workspace");
-        expect(friendInvite.type).toBe("personal");
+        expect(ContactInvite.type).toBe("personal");
       });
 
       it("should display workspace name for workspace invites", () => {
@@ -87,7 +87,7 @@ describe("Invitations Feature - Components", () => {
         expect(invite.workspace?.name).toBe("Acme Corp");
       });
 
-      it("should display 'Friend Request' for personal invites", () => {
+      it("should display 'Contact Request' for personal invites", () => {
         const invite = createMockInvitation({ type: "personal" });
         expect(invite.type).toBe("personal");
       });
@@ -197,7 +197,7 @@ describe("Invitations Feature - Components", () => {
           expect(filtered.length).toBe(1);
         });
 
-        it("should filter by personal/friend invites", () => {
+        it("should filter by personal/Contact invites", () => {
           const invitations = [
             createMockInvitation({ type: "workspace" }),
             createMockInvitation({ type: "personal" }),
@@ -229,7 +229,7 @@ describe("Invitations Feature - Components", () => {
         expect(invite.type).toBe("workspace");
       });
 
-      it("should render workspace/friend label", () => {
+      it("should render workspace/Contact label", () => {
         const wsInvite = createMockInvitation({
           type: "workspace",
           workspace: { name: "Team Alpha" },

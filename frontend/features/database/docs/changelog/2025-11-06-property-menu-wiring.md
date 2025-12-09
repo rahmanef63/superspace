@@ -357,7 +357,7 @@ buildTypeSpecificSection(config, callbacks)
 
 **Menu Will Show:**
 - ... (base items)
-- **Date Format** (Full, Friendly, US, European, ISO, Relative)
+- **Date Format** (Full, Contactly, US, European, ISO, Relative)
 - **Time Format** (12-hour, 24-hour, None)
 - **Notifications** (toggle)
 - Calculate (Earliest, Latest, Date range) ← overridden!

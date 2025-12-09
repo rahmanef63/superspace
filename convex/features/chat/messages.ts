@@ -58,11 +58,25 @@ export const getConversationMessages = query({
           return acc;
         }, {});
 
+        // Resolve a preview URL for attachments (best effort)
+        let attachmentUrl: string | null = null;
+        const storageId =
+          (message.metadata as any)?.storageId ??
+          ((message.metadata as any)?.storageIds?.[0] as any);
+        if (storageId) {
+          try {
+            attachmentUrl = await ctx.storage.getUrl(storageId as any);
+          } catch {
+            attachmentUrl = null;
+          }
+        }
+
         return {
           ...message,
           author,           // keep for backward compatibility
           sender: author,   // new alias
           reactions: Object.values(grouped),
+          attachmentUrl,
         } as any;
       })
     );

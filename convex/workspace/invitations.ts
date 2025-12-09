@@ -48,7 +48,7 @@ export const sendWorkspaceInvitation = mutation({
     const existingInvitation = await ctx.db
       .query("invitations")
       .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", args.inviteeEmail))
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("workspaceId"), args.workspaceId),
           q.eq(q.field("status"), "pending")
@@ -118,7 +118,7 @@ export const getWorkspaceInvitations = query({
   },
 });
 
-// Send personal invitation (friend request)
+// Send personal invitation (Contact request)
 export const sendPersonalInvitation = mutation({
   args: {
     inviteeEmail: v.string(),
@@ -138,7 +138,7 @@ export const sendPersonalInvitation = mutation({
     const existingInvitation = await ctx.db
       .query("invitations")
       .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", args.inviteeEmail))
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("inviterId"), currentUserId),
           q.eq(q.field("type"), "personal"),
@@ -241,15 +241,15 @@ export const getUserInvitations = query({
     if (!args.type || args.type === "received") {
       const byEmail = inviteeEmail
         ? await ctx.db
-            .query("invitations")
-            .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", inviteeEmail))
-            .collect()
+          .query("invitations")
+          .withIndex("by_invitee_email", (q) => q.eq("inviteeEmail", inviteeEmail))
+          .collect()
         : [];
       const byId = currentUserId
         ? await ctx.db
-            .query("invitations")
-            .withIndex("by_invitee_id", (q) => q.eq("inviteeId", currentUserId))
-            .collect()
+          .query("invitations")
+          .withIndex("by_invitee_id", (q) => q.eq("inviteeId", currentUserId))
+          .collect()
         : [];
 
       // Merge and dedupe
@@ -332,20 +332,20 @@ export const acceptInvitation = mutation({
       }
     }
 
-    // If it's a personal invitation, create friendship link
+    // If it's a personal invitation, create Contactship link
     if (invitation.type === "personal") {
-      // Avoid duplicates (friendship could be either direction)
+      // Avoid duplicates (Contactship could be either direction)
       const existingForward = await ctx.db
-        .query("friendships")
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", invitation.inviterId).eq("user2Id", currentUserId))
         .first();
       const existingReverse = await ctx.db
-        .query("friendships")
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", currentUserId).eq("user2Id", invitation.inviterId))
         .first();
-      const friendship = existingForward || existingReverse;
-      if (!friendship) {
-        await ctx.db.insert("friendships", {
+      const Contactship = existingForward || existingReverse;
+      if (!Contactship) {
+        await ctx.db.insert("socialContacts", {
           user1Id: invitation.inviterId,
           user2Id: currentUserId,
           status: "active",
@@ -421,11 +421,11 @@ export const getInvitationByToken = query({
     const inviter = await ctx.db.get(invitation.inviterId);
     let workspace = null;
     let role = null;
-    
+
     if (invitation.workspaceId) {
       workspace = await ctx.db.get(invitation.workspaceId);
     }
-    
+
     if (invitation.roleId) {
       role = await ctx.db.get(invitation.roleId);
     }
@@ -497,15 +497,15 @@ export const acceptInvitationByToken = mutation({
 
     if (invitation.type === "personal") {
       const existingForward = await ctx.db
-        .query("friendships")
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", invitation.inviterId).eq("user2Id", currentUserId))
         .first();
       const existingReverse = await ctx.db
-        .query("friendships")
+        .query("socialContacts")
         .withIndex("by_users", (q) => q.eq("user1Id", currentUserId).eq("user2Id", invitation.inviterId))
         .first();
       if (!existingForward && !existingReverse) {
-        await ctx.db.insert("friendships", {
+        await ctx.db.insert("socialContacts", {
           user1Id: invitation.inviterId,
           user2Id: currentUserId,
           status: "active",
@@ -544,7 +544,7 @@ export const resendInvitation = mutation({
 
     // Generate new token and expiration
     const newToken = generateInvitationToken();
-    const newExpiresAt = invitation.type === "workspace" 
+    const newExpiresAt = invitation.type === "workspace"
       ? Date.now() + (7 * 24 * 60 * 60 * 1000)  // 7 days for workspace
       : Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days for personal
 
@@ -601,7 +601,7 @@ export const sendBulkInvitations = mutation({
         if (inviteeUser) {
           const existingMembership = await ctx.db
             .query("workspaceMemberships")
-            .withIndex("by_user_workspace", (q) => 
+            .withIndex("by_user_workspace", (q) =>
               q.eq("userId", inviteeUser._id).eq("workspaceId", args.workspaceId)
             )
             .unique();
@@ -760,7 +760,7 @@ export const cleanupExpiredInvitationsInternal = internalMutation({
   args: {},
   handler: async (ctx) => {
     console.log("[cleanupExpiredInvitationsInternal] Starting cleanup...");
-    
+
     const now = Date.now();
     const invitations = await ctx.db
       .query("invitations")

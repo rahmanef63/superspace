@@ -206,7 +206,7 @@ export function BundleCategoriesTable() {
   } = useTableSortAndFilter({
     data: bundles,
     columns,
-    initialFilters: { category: "all" },
+    initialFilters: { category: null },
   })
 
   // State

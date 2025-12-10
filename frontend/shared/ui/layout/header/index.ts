@@ -164,6 +164,10 @@ export type {
   MinimalHeaderProps,
 } from "./presets"
 
+// Mobile Header
+export { MobileHeader } from "./MobileHeader"
+export type { MobileHeaderProps } from "./MobileHeader"
+
 // ============================================================================
 // Styles (for custom implementations)
 // ============================================================================

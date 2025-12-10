@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TopBar } from "@/frontend/features/chat/sections/center/TopBar";
+import { MobileHeader } from "@/frontend/shared/ui/layout/header";
+import { Sparkles } from "lucide-react";
 import { AIListView } from "./AIListView";
 import { AIDetailView } from "./AIDetailView";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
@@ -15,32 +16,32 @@ import { PanelLeft, PanelRight } from "lucide-react";
 
 export function AIView() {
   const isMobile = useIsMobile();
-  
+
   // Initialize AI store with workspace context
   useInitializeAI();
-  
+
   // Use store state and actions
   const selectedSessionId = useAIStore((s) => s.selectedSessionId);
   const selectedSession = useAIStore((s) => s.selectedSession);
   const knowledgeEnabled = useAIStore((s) => s.knowledgeEnabled);
   const { selectSession } = useAIActions();
-  
+
   // Get setKnowledgeEnabled directly from store
   const handleKnowledgeToggle = useCallback((enabled: boolean) => {
     useAIStore.getState().setKnowledgeEnabled(enabled);
   }, []);
-  
+
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(!selectedSessionId);
   // Mobile drawer state
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  
+
   // Toggle handlers
   const handleToggleLeftPanel = useCallback(() => {
     setLeftPanelCollapsed(prev => !prev);
   }, []);
-  
+
   const handleToggleRightPanel = useCallback(() => {
     setRightPanelCollapsed(prev => !prev);
   }, []);
@@ -62,14 +63,13 @@ export function AIView() {
     if (selectedSessionId) {
       return (
         <div className="flex flex-col h-full bg-background">
-          <TopBar
+          <MobileHeader
             title="AI"
-            showSearch={false}
-            showActions={false}
-            onMenuClick={handleBack}
+            icon={Sparkles}
+            onBack={handleBack}
           />
           <AIDetailView chatId={selectedSessionId} />
-          
+
           {/* Mobile: Use Drawer for session info */}
           <AISessionInfoDrawer
             session={selectedSession as any}
@@ -82,18 +82,17 @@ export function AIView() {
         </div>
       );
     }
-    
+
     return (
       <div className="flex flex-col h-full bg-background">
-        <TopBar
+        <MobileHeader
           title="AI"
-          showSearch={true}
-          showActions={false}
-          onMenuClick={handleBack}
+          icon={Sparkles}
+          onBack={handleBack}
         />
-        <AIListView 
-          selectedChatId={selectedSessionId ?? undefined} 
-          onChatSelect={handleChatSelect} 
+        <AIListView
+          selectedChatId={selectedSessionId ?? undefined}
+          onChatSelect={handleChatSelect}
         />
       </div>
     );
@@ -124,7 +123,7 @@ export function AIView() {
           <PanelRight className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {/* Session info panel content */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <AISessionInfoPanel

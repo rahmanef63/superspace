@@ -28,6 +28,7 @@ import {
   Camera,
   CheckCircle,
   CheckSquare,
+  Contact,
   Database,
   DollarSign,
   Eye,
@@ -36,18 +37,14 @@ import {
   GitBranch,
   Hammer,
   Headphones,
-  Heart,
   History,
   Home,
   Library,
   LineChart,
-  Mail,
   Megaphone,
   Menu,
-  MessageCircle,
   MessageSquare,
   Package,
-  Phone,
   Plug,
   Shield,
   ShoppingCart,
@@ -87,36 +84,12 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     component: lazy(() => import("@/frontend/features/communications/page")),
   },
   {
-    id: "chat",
-    componentId: "ChatsPage",
-    title: "Chat",
-    description: "Chat conversations",
-    icon: MessageCircle,
-    component: lazy(() => import("@/frontend/features/chat/page")),
-  },
-  {
-    id: "calls",
-    componentId: "CallsPage",
-    title: "Calls",
-    description: "Voice and video calls with team members",
-    icon: Phone,
-    component: lazy(() => import("@/frontend/features/calls/page")),
-  },
-  {
     id: "status",
     componentId: "StatusPage",
     title: "Status",
     description: "Share status updates with your team",
     icon: Camera,
     component: lazy(() => import("@/frontend/features/status/page")),
-  },
-  {
-    id: "members",
-    componentId: "MembersPage",
-    title: "Members",
-    description: "Manage workspace members and permissions",
-    icon: Users,
-    component: lazy(() => import("@/frontend/features/members/page")),
   },
   {
     id: "ai",
@@ -133,13 +106,13 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
     icon: Building2,
     component: lazy(async () => {
-      const module = await import("@/frontend/features/workspace-store")
-      const Component = module.WorkspaceStorePage
-      if (!Component) {
-        throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
-      }
-      return { default: Component }
-    }),
+        const module = await import("@/frontend/features/workspace-store")
+        const Component = module.WorkspaceStorePage
+        if (!Component) {
+          throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
+        }
+        return { default: Component }
+      }),
   },
   {
     id: "knowledge",
@@ -153,8 +126,8 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     id: "contacts",
     componentId: "ContactsPage",
     title: "Contacts",
-    description: "Manage your Contacts and connections",
-    icon: Heart,
+    description: "Manage your contacts and connections",
+    icon: Contact,
     component: lazy(() => import("@/frontend/features/contact/page")),
   },
   {
@@ -180,13 +153,13 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Install and manage navigation menus",
     icon: Menu,
     component: lazy(async () => {
-      const module = await import("@/frontend/features/menu-store")
-      const Component = module.MenuStorePage
-      if (!Component) {
-        throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
-      }
-      return { default: Component }
-    }),
+        const module = await import("@/frontend/features/menu-store")
+        const Component = module.MenuStorePage
+        if (!Component) {
+          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
+        }
+        return { default: Component }
+      }),
   },
   {
     id: "calendar",
@@ -195,14 +168,6 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Team calendar with event management and scheduling",
     icon: Calendar,
     component: lazy(() => import("@/frontend/features/calendar/page")),
-  },
-  {
-    id: "invitations",
-    componentId: "InvitationsPage",
-    title: "Invitations",
-    description: "Manage workspace invitations",
-    icon: Mail,
-    component: lazy(() => import("@/frontend/features/invitations/page")),
   },
   {
     id: "user-management",

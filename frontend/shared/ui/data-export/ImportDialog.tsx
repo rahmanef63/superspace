@@ -388,16 +388,16 @@ export function ImportDialog({
                               <TableCell className="font-medium">{header}</TableCell>
                               <TableCell>
                                 <Select
-                                  value={fieldMapping[header] || ""}
+                                  value={fieldMapping[header] || "__skip__"}
                                   onValueChange={(value) =>
-                                    setFieldMapping(prev => ({ ...prev, [header]: value }))
+                                    setFieldMapping(prev => ({ ...prev, [header]: value === "__skip__" ? "" : value }))
                                   }
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select field..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="">-- Skip --</SelectItem>
+                                    <SelectItem value="__skip__">-- Skip --</SelectItem>
                                     {properties.map((prop) => (
                                       <SelectItem key={prop.key} value={prop.key}>
                                         {prop.label}

@@ -8,8 +8,7 @@
  */
 
 // Communication features
-import "@/frontend/features/chat/init"
-import "@/frontend/features/calls/init"
+import "@/frontend/features/communications/init"
 import "@/frontend/features/status/init"
 
 // Productivity features

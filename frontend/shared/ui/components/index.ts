@@ -13,6 +13,7 @@ export * from "./utils"
 export * from "./Button"
 export * from "./Input"
 export * from "./Card"
+export * from "./SearchBar"
 
 // Rich Text Components
 export * from "./rich-text"

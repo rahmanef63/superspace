@@ -22,8 +22,8 @@ export default defineFeature({
   },
 
   status: {
-    state: 'development',
-    isReady: false,
+    state: 'stable',
+    isReady: true,
   },
 
   bundles: {

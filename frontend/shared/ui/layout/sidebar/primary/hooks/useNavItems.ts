@@ -8,6 +8,8 @@ import { getDefaultPages, PAGE_MANIFEST_MAP, COMPONENT_REGISTRY_MAP } from "@/fr
 import { iconFromName } from "@/frontend/shared/ui/components/icons"
 import { Building, type LucideIcon } from "lucide-react"
 import type { SystemNavItem } from "./useSystemNavItems"
+import { useIsGuestMode, useGuestWorkspaceContext, MOCK_MENU_ITEMS } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
+import { MOCK_SYSTEM_FEATURES } from "@/frontend/shared/mock-data"
 
 // Type for system feature visibility data
 interface SystemFeatureVisibility {
@@ -33,38 +35,57 @@ interface NavItem {
 /**
  * Hook for building navigation items from menu items
  * Handles menu item parsing, system features, and visibility
+ * Supports both authenticated mode (Convex queries) and guest mode (mock data)
  */
-export function useNavItems(workspaceId: Id<"workspaces"> | null) {
-  // Query menu items
+export function useNavItems(workspaceId: Id<"workspaces"> | string | null) {
+  const isGuestMode = useIsGuestMode()
+
+  // Get guest context for workspace-specific menu items
+  let guestMenuItems: typeof MOCK_MENU_ITEMS | null = null
+  try {
+    if (isGuestMode) {
+      const guestContext = useGuestWorkspaceContext()
+      guestMenuItems = guestContext.currentMenuItems
+    }
+  } catch {
+    // Not in guest mode or context not available
+  }
+
+  // Query menu items - skip in guest mode
   const menuItems = useQuery(
     (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
-    workspaceId ? { workspaceId } : "skip",
+    !isGuestMode && workspaceId ? { workspaceId } : "skip",
   ) as any[] | undefined
-  
-  // Get system features for visibility info
+
+  // Get system features for visibility info - skip in guest mode
   const systemFeatures = useQuery(
-    api.features.system.admin.getSystemFeatures
+    api.features.system.admin.getSystemFeatures,
+    isGuestMode ? "skip" : undefined
   ) as SystemFeatureVisibility[] | undefined
-  
+
+  // Use workspace-specific mock data in guest mode, query result otherwise
+  const effectiveMenuItems = isGuestMode ? (guestMenuItems ?? MOCK_MENU_ITEMS) : menuItems
+  const effectiveSystemFeatures = isGuestMode ? MOCK_SYSTEM_FEATURES : systemFeatures
+
   // Build feature visibility map
   const featureVisibilityMap = useMemo(() => {
     const map = new Map<string, SystemFeatureVisibility>()
-    if (systemFeatures) {
-      for (const feature of systemFeatures) {
+    if (effectiveSystemFeatures) {
+      for (const feature of effectiveSystemFeatures) {
         map.set(feature.featureId, feature)
       }
     }
     return map
-  }, [systemFeatures])
+  }, [effectiveSystemFeatures])
 
   // Build navigation items
   const { navItems, systemItems } = useMemo(() => {
-    if (Array.isArray(menuItems) && menuItems.length > 0) {
+    if (Array.isArray(effectiveMenuItems) && effectiveMenuItems.length > 0) {
       const itemsMap = new Map()
       const rootItems: NavItem[] = []
       const systemMenuItems: SystemNavItem[] = []
 
-      menuItems
+      effectiveMenuItems
         .filter((mi) => mi && typeof mi.slug === "string" && mi.isVisible !== false)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         .forEach((mi) => {
@@ -74,7 +95,7 @@ export function useNavItems(workspaceId: Id<"workspaces"> | null) {
 
           // Get visibility info from systemFeatures if available
           const featureVisibility = featureVisibilityMap.get(mi.slug as string)
-          
+
           // Merge metadata with system feature visibility info
           const mergedMetadata = {
             ...mi.metadata,
@@ -122,7 +143,7 @@ export function useNavItems(workspaceId: Id<"workspaces"> | null) {
         })
 
       // Build parent-child relationships
-      menuItems.forEach((mi) => {
+      effectiveMenuItems.forEach((mi) => {
         if (mi.parentId && itemsMap.has(mi.parentId)) {
           const parent = itemsMap.get(mi.parentId)
           const child = itemsMap.get(mi._id)
@@ -150,7 +171,7 @@ export function useNavItems(workspaceId: Id<"workspaces"> | null) {
       })) as NavItem[],
       systemItems: [] as SystemNavItem[],
     }
-  }, [menuItems, featureVisibilityMap])
+  }, [effectiveMenuItems, featureVisibilityMap])
 
-  return { navItems, systemItems, menuItems }
+  return { navItems, systemItems, menuItems: effectiveMenuItems }
 }

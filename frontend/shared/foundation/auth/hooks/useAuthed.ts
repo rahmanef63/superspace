@@ -10,21 +10,12 @@ export function useAuthed() {
   // Wait for Clerk to fully load first
   // Only show "not authenticated" after Clerk has loaded
   const isLoading = !isLoaded || convexLoading
-  
+
   // User is authed if Clerk says signed in OR Convex says authenticated
   // But only trust this after loading is complete
   const isAuthed = isLoading ? false : Boolean(isSignedIn || isAuthenticated)
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[useAuthed]', {
-      isSignedIn: Boolean(isSignedIn),
-      isAuthenticated: Boolean(isAuthenticated),
-      isAuthed,
-      isLoading,
-      clerkLoaded: isLoaded,
-      convexLoading
-    })
-  }
+
 
   return {
     isAuthed,

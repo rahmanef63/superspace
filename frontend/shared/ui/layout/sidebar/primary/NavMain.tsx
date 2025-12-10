@@ -20,6 +20,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/FeatureTag"
 import { cn } from "@/lib/utils"
+import { useIsGuestMode } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
 
 interface NavItem {
   id: string
@@ -35,7 +36,7 @@ interface NavItem {
 }
 
 interface NavMainProps {
-  workspaceId: Id<"workspaces">
+  workspaceId: Id<"workspaces"> | string | null
   activeView: string
   onViewChange?: (view: string) => void
   items?: NavItem[]
@@ -45,6 +46,11 @@ interface NavMainProps {
 
 export function NavMain({ workspaceId, activeView, onViewChange, items, workspaceColor }: NavMainProps) {
   const { isMobile, setOpenMobile } = useSidebar()
+  const isGuestMode = useIsGuestMode()
+  
+  // Base URL for navigation - "/dashboard" for authenticated, "/mock-dashboard" for guest
+  const baseUrl = isGuestMode ? "/mock-dashboard" : "/dashboard"
+  
   const fallback = getDefaultPages().map((p) => ({
     id: p.id,
     title: p.title,
@@ -145,7 +151,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
                               return (
                               <SidebarMenuSubButton key={nestedItem.id} asChild>
                                 <Link
-                                  href={nestedItem.url || `/dashboard/${item.id}/${subItem.id}/${nestedItem.id}`}
+                                  href={nestedItem.url || `${baseUrl}/${item.id}/${subItem.id}/${nestedItem.id}`}
                                   onClick={() => handleMenuClick(nestedItem.id)}
                                   className={nestedIsActive && !workspaceColor ? "bg-accent" : ""}
                                   style={nestedActiveStyles}
@@ -163,7 +169,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
                       // Leaf node - render as link
                       <SidebarMenuSubButton asChild>
                         <Link
-                          href={subItem.url || `/dashboard/${item.id}/${subItem.id}`}
+                          href={subItem.url || `${baseUrl}/${item.id}/${subItem.id}`}
                           onClick={() => handleMenuClick(subItem.id)}
                           className={subIsActive && !workspaceColor ? "bg-accent" : ""}
                           style={subActiveStyles}
@@ -195,7 +201,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
           )}
         >
           <Link
-            href={item.url || `/dashboard/${item.id}`}
+            href={item.url || `${baseUrl}/${item.id}`}
             onClick={() => handleMenuClick(item.id)}
           >
             {item.icon && <item.icon />}

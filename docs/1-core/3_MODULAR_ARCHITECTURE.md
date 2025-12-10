@@ -509,7 +509,7 @@ import { useSharedHook } from '@/features/{feature}/shared/hooks/useSharedHook'
 ```typescript
 // In ANY feature
 import { Button } from '@/frontend/shared/ui/button'
-import { useAuth } from '@/frontend/shared/hooks/useAuth'
+import { useAuthed } from '@/frontend/shared/foundation'
 ```
 
 ### Import from Convex Shared

@@ -7,23 +7,6 @@
 // Update via: pnpm run sync:features
 export const OPTIONAL_FEATURES_CATALOG = [
   {
-    "slug": "calls",
-    "name": "Calls",
-    "description": "Voice and video calls with team members",
-    "icon": "Phone",
-    "version": "2.0.0",
-    "category": "communication",
-    "tags": [
-      "communication",
-      "calls",
-      "voice",
-      "video"
-    ],
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
     "slug": "status",
     "name": "Status",
     "description": "Share status updates with your team",
@@ -124,9 +107,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "approvals.view",
     "originalRequiresPermission": "approvals.view",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q2 2025",
+    "status": "beta",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -233,9 +215,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "pos.view",
     "originalRequiresPermission": "pos.view",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q3 2025",
+    "status": "beta",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -272,9 +253,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "marketing.view",
     "originalRequiresPermission": "marketing.view",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q3 2025",
+    "status": "beta",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -311,9 +291,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "bi.view",
     "originalRequiresPermission": "bi.view",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q3 2025",
+    "status": "beta",
+    "isReady": true,
     "featureType": "optional"
   },
   {
@@ -350,9 +329,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "sales.view",
     "originalRequiresPermission": "sales.view",
-    "status": "development",
-    "isReady": false,
-    "expectedRelease": "Q2 2025",
+    "status": "beta",
+    "isReady": true,
     "featureType": "optional"
   },
   {

@@ -38,6 +38,7 @@ import {
 } from "lucide-react"
 import type { Id, Doc } from "@convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
+import { useIsGuestMode, useGuestWorkspaceContext } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
 import { cn } from "@/lib/utils"
 
 // Workspace type icons
@@ -47,6 +48,77 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
   institution: Building2,
   group: Users,
   family: Heart,
+}
+
+/**
+ * Hook that works with both WorkspaceProvider (authenticated) and GuestWorkspaceProvider (guest mode)
+ */
+function useUnifiedWorkspaceContext() {
+  const isGuestMode = useIsGuestMode()
+  
+  // Guest context
+  let guestContext: ReturnType<typeof useGuestWorkspaceContext> | null = null
+  try {
+    if (isGuestMode) {
+      guestContext = useGuestWorkspaceContext()
+    }
+  } catch {
+    // Not in guest mode
+  }
+  
+  // Real context
+  let realContext: ReturnType<typeof useWorkspaceContext> | null = null
+  try {
+    if (!isGuestMode) {
+      realContext = useWorkspaceContext()
+    }
+  } catch {
+    // Not in real mode
+  }
+  
+  if (guestContext) {
+    return {
+      workspaceId: guestContext.workspaceId as Id<"workspaces"> | null,
+      setWorkspaceId: (id: Id<"workspaces"> | null) => guestContext!.setWorkspaceId(id as string | null),
+      workspaces: guestContext.workspaces as any[],
+      currentWorkspace: guestContext.currentWorkspace as any,
+      mainWorkspace: guestContext.mainWorkspace as any,
+      isMainWorkspace: guestContext.isMainWorkspace,
+      childWorkspaces: guestContext.childWorkspaces as any[],
+      siblingWorkspaces: guestContext.siblingWorkspaces as any[],
+      workspacePath: guestContext.workspacePath as any[],
+      isGuestMode: true,
+    }
+  }
+  
+  if (realContext) {
+    return {
+      workspaceId: realContext.workspaceId,
+      setWorkspaceId: realContext.setWorkspaceId,
+      workspaces: realContext.workspaces,
+      currentWorkspace: realContext.currentWorkspace,
+      mainWorkspace: realContext.mainWorkspace,
+      isMainWorkspace: realContext.isMainWorkspace,
+      childWorkspaces: realContext.childWorkspaces,
+      siblingWorkspaces: realContext.siblingWorkspaces,
+      workspacePath: realContext.workspacePath,
+      isGuestMode: false,
+    }
+  }
+  
+  // Fallback
+  return {
+    workspaceId: null as Id<"workspaces"> | null,
+    setWorkspaceId: () => {},
+    workspaces: undefined as any[] | undefined,
+    currentWorkspace: null as any,
+    mainWorkspace: null as any,
+    isMainWorkspace: false,
+    childWorkspaces: [] as any[],
+    siblingWorkspaces: [] as any[],
+    workspacePath: [] as any[],
+    isGuestMode: false,
+  }
 }
 
 interface WorkspaceSwitcherStackProps {
@@ -90,7 +162,8 @@ export function WorkspaceSwitcherStack({
     childWorkspaces,
     siblingWorkspaces,
     workspacePath,
-  } = useWorkspaceContext()
+    isGuestMode,
+  } = useUnifiedWorkspaceContext()
 
   const handleWorkspaceSelect = React.useCallback(
     (wsId: Id<"workspaces">) => {
@@ -129,6 +202,21 @@ export function WorkspaceSwitcherStack({
   // Always show child placeholder if current workspace has children
   // This allows immediate selection without clicking parent dropdown first
   const showChildPlaceholder = childWorkspaces && childWorkspaces.length > 0
+  
+  // Helper to get siblings for a workspace in guest mode
+  const getGuestSiblings = (ws: any) => {
+    if (!isGuestMode || !workspaces) return []
+    if (ws.parentWorkspaceId) {
+      return workspaces.filter((w: any) => w.parentWorkspaceId === ws.parentWorkspaceId && w._id !== ws._id)
+    }
+    return workspaces.filter((w: any) => !w.parentWorkspaceId && w._id !== ws._id)
+  }
+  
+  // Helper to get children for a workspace in guest mode
+  const getGuestChildren = (ws: any) => {
+    if (!isGuestMode || !workspaces) return []
+    return workspaces.filter((w: any) => w.parentWorkspaceId === ws._id)
+  }
 
   return (
     <div className="space-y-1">
@@ -140,10 +228,13 @@ export function WorkspaceSwitcherStack({
           isActive={level.isActive}
           currentWorkspaceId={workspaceId}
           onSelect={handleWorkspaceSelect}
-          onCreateWorkspace={onCreateWorkspace}
-          onEditWorkspace={onEditWorkspace}
-          onDeleteWorkspace={onDeleteWorkspace}
+          onCreateWorkspace={isGuestMode ? undefined : onCreateWorkspace}
+          onEditWorkspace={isGuestMode ? undefined : onEditWorkspace}
+          onDeleteWorkspace={isGuestMode ? undefined : onDeleteWorkspace}
           isMobile={isMobile}
+          isGuestMode={isGuestMode}
+          guestSiblings={getGuestSiblings(level.workspace)}
+          guestChildren={getGuestChildren(level.workspace)}
         />
       ))}
       
@@ -155,10 +246,13 @@ export function WorkspaceSwitcherStack({
           isActive={true}
           currentWorkspaceId={workspaceId}
           onSelect={handleWorkspaceSelect}
-          onCreateWorkspace={onCreateWorkspace}
-          onEditWorkspace={onEditWorkspace}
-          onDeleteWorkspace={onDeleteWorkspace}
+          onCreateWorkspace={isGuestMode ? undefined : onCreateWorkspace}
+          onEditWorkspace={isGuestMode ? undefined : onEditWorkspace}
+          onDeleteWorkspace={isGuestMode ? undefined : onDeleteWorkspace}
           isMobile={isMobile}
+          isGuestMode={isGuestMode}
+          guestSiblings={getGuestSiblings(currentWorkspace)}
+          guestChildren={getGuestChildren(currentWorkspace)}
         />
       )}
       
@@ -168,7 +262,7 @@ export function WorkspaceSwitcherStack({
           parentWorkspace={currentWorkspace}
           children={childWorkspaces}
           onSelect={handleWorkspaceSelect}
-          onCreateWorkspace={onCreateWorkspace}
+          onCreateWorkspace={isGuestMode ? undefined : onCreateWorkspace}
           isMobile={isMobile}
         />
       )}
@@ -186,6 +280,9 @@ interface WorkspaceLevelSwitcherProps {
   onEditWorkspace?: (workspaceId: Id<"workspaces">) => void
   onDeleteWorkspace?: (workspaceId: Id<"workspaces">) => void
   isMobile: boolean
+  isGuestMode?: boolean
+  guestSiblings?: any[]
+  guestChildren?: any[]
 }
 
 function WorkspaceLevelSwitcher({
@@ -198,18 +295,25 @@ function WorkspaceLevelSwitcher({
   onEditWorkspace,
   onDeleteWorkspace,
   isMobile,
+  isGuestMode = false,
+  guestSiblings = [],
+  guestChildren = [],
 }: WorkspaceLevelSwitcherProps) {
-  // Fetch siblings for THIS workspace (not the current selected)
-  const siblings = useQuery(
+  // Fetch siblings for THIS workspace (not the current selected) - skip in guest mode
+  const siblingsQuery = useQuery(
     api.workspace.hierarchy.getSiblingWorkspaces,
-    { workspaceId: workspace._id }
+    isGuestMode ? "skip" : { workspaceId: workspace._id }
   )
   
-  // Fetch children for THIS workspace (only if it's the active/current one)
-  const children = useQuery(
+  // Fetch children for THIS workspace (only if it's the active/current one) - skip in guest mode
+  const childrenQuery = useQuery(
     api.workspace.hierarchy.getChildWorkspaces,
-    isActive ? { workspaceId: workspace._id, includeLinked: true } : "skip"
+    isGuestMode ? "skip" : (isActive ? { workspaceId: workspace._id, includeLinked: true } : "skip")
   )
+  
+  // Use guest data if in guest mode, otherwise use query results
+  const siblings = isGuestMode ? guestSiblings : siblingsQuery
+  const children = isGuestMode ? guestChildren : childrenQuery
 
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
   const color = (workspace as any).color ?? "#6366f1"

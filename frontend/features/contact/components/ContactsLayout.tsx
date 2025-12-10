@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
-import { MemberInfoPanel, MemberInfoDrawer } from "@/frontend/shared/communications";
+import { MemberInfoPanel, MemberInfoDrawer, useMemberInfo } from "@/frontend/shared/communications";
 import type { MemberInfoContact } from "@/frontend/shared/communications";
-import { useMemberInfo } from "@/frontend/features/chat/shared/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Id } from "@/convex/_generated/dataModel";
 

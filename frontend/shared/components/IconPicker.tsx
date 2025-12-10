@@ -30,7 +30,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { InlineColorPicker } from "@/frontend/shared/ui/color-picker";
+import { InlineColorPicker } from "@/frontend/shared/foundation/utils/color-picker";
 import { ICON_COLOR_PRESETS, BACKGROUND_COLOR_PRESETS } from "@/frontend/shared/constants/colors";
 
 // Extract just the hex values for the color picker

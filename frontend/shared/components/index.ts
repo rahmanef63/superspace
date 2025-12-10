@@ -10,5 +10,5 @@
 // Icon Picker
 export { IconPicker, DynamicIcon, getIconComponent, getIconStyle, type IconPickerProps, type IconName } from "./IconPicker";
 
-// Color Picker - Now at frontend/shared/ui/color-picker
-// import { PresetColorPicker, InlineColorPicker, SimpleColorPicker } from "@/frontend/shared/ui/color-picker";
+// Color Picker - Available at frontend/shared/foundation/utils/color-picker
+// import { PresetColorPicker, InlineColorPicker, SimpleColorPicker } from "@/frontend/shared/foundation/utils/color-picker";

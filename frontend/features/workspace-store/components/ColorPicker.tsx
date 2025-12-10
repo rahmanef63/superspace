@@ -9,20 +9,20 @@
 "use client"
 
 // Re-export shared components from SSOT
-export { 
-  PresetColorPicker as ColorPicker, 
+export {
+  PresetColorPicker as ColorPicker,
   InlineColorPicker,
   type PresetColorPickerProps as ColorPickerProps,
   type InlineColorPickerProps,
-} from "@/frontend/shared/ui/color-picker";
+} from "@/frontend/shared/foundation/utils/color-picker";
 
 // For backward compatibility, also export workspace-specific wrappers
-import { 
-  PresetColorPicker, 
+import {
+  PresetColorPicker,
   InlineColorPicker as SharedInlineColorPicker,
   type PresetColorPickerProps,
   type InlineColorPickerProps as SharedInlineColorPickerProps,
-} from "@/frontend/shared/ui/color-picker";
+} from "@/frontend/shared/foundation/utils/color-picker";
 
 /**
  * Workspace Color Picker - pre-configured for workspace colors

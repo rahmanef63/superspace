@@ -23,17 +23,18 @@ export function usePlatformAdminStatus() {
  * Hook to manage system features (platform admin only)
  * These are the features that appear in Menu Store
  */
-export function useSystemFeatures() {
+export function useSystemFeatures(enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  const shouldQuery = enabled && isPlatformAdmin
   const features = useQuery(
     api.features.system.admin.getSystemFeatures,
-    isPlatformAdmin ? {} : undefined
+    shouldQuery ? {} : undefined
   )
   
   return {
     features: features ?? [],
-    isLoading: features === undefined,
-    isEmpty: features?.length === 0,
+    isLoading: shouldQuery ? features === undefined : false,
+    isEmpty: shouldQuery ? features?.length === 0 : false,
   }
 }
 
@@ -99,50 +100,54 @@ export function useSystemFeatureMutations() {
 /**
  * Hook to manage custom features (platform admin only)
  */
-export function useCustomFeatures() {
+export function useCustomFeatures(enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  const shouldQuery = enabled && isPlatformAdmin
   const features = useQuery(
     api.features.custom.admin.getAllCustomFeatures,
-    isPlatformAdmin ? {} : undefined
+    shouldQuery ? {} : undefined
   )
   
   return {
     features: features ?? [],
-    isLoading: features === undefined,
-    isEmpty: features?.length === 0,
+    isLoading: shouldQuery ? features === undefined : false,
+    isEmpty: shouldQuery ? features?.length === 0 : false,
   }
 }
 
 /**
  * Hook to manage all workspaces (platform admin only)
  */
-export function useAllWorkspaces() {
+export function useAllWorkspaces(enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  const shouldQuery = enabled && isPlatformAdmin
   const workspaces = useQuery(
     api.features.custom.admin.getAllWorkspaces,
-    isPlatformAdmin ? {} : undefined
+    shouldQuery ? {} : undefined
   )
   
   return {
     workspaces: workspaces ?? [],
-    isLoading: workspaces === undefined,
-    isEmpty: workspaces?.length === 0,
+    isLoading: shouldQuery ? workspaces === undefined : false,
+    isEmpty: shouldQuery ? workspaces?.length === 0 : false,
   }
 }
 
 /**
  * Hook for feature access management
  */
-export function useFeatureAccess(workspaceId: Id<"workspaces"> | null) {
+export function useFeatureAccess(workspaceId: Id<"workspaces"> | null, enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  // Only query if enabled, is admin, and has workspaceId
+  const canQuery = enabled && isPlatformAdmin
   const access = useQuery(
     api.features.custom.admin.getWorkspaceFeatureAccess,
-    isPlatformAdmin && workspaceId ? { workspaceId } : undefined
+    canQuery && workspaceId ? { workspaceId } : "skip"
   )
   
   return {
     access: access ?? [],
-    isLoading: access === undefined,
+    isLoading: canQuery && workspaceId ? access === undefined : false,
   }
 }
 
@@ -176,33 +181,36 @@ export function usePlatformAdminMutations() {
 /**
  * Hook to manage bundle categories (platform admin only)
  */
-export function useBundleCategories() {
+export function useBundleCategories(enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  const shouldQuery = enabled && isPlatformAdmin
   const bundles = useQuery(
     api.features.bundles.mutations.list,
-    isPlatformAdmin ? {} : undefined
+    shouldQuery ? {} : undefined
   )
   
   return {
     bundles: bundles ?? [],
-    isLoading: bundles === undefined,
-    isEmpty: bundles?.length === 0,
+    isLoading: shouldQuery ? bundles === undefined : false,
+    isEmpty: shouldQuery ? bundles?.length === 0 : false,
   }
 }
 
 /**
  * Hook to get feature bundle memberships
  */
-export function useFeatureBundles(featureId: string | null) {
+export function useFeatureBundles(featureId: string | null, enabled = true) {
   const { isPlatformAdmin } = usePlatformAdminStatus()
+  // Only query if enabled, is admin, and has featureId
+  const canQuery = enabled && isPlatformAdmin
   const memberships = useQuery(
     api.features.bundles.mutations.getFeatureBundles,
-    isPlatformAdmin && featureId ? { featureId } : undefined
+    canQuery && featureId ? { featureId } : "skip"
   )
   
   return {
     memberships: memberships ?? [],
-    isLoading: memberships === undefined,
+    isLoading: canQuery && featureId ? memberships === undefined : false,
   }
 }
 
@@ -280,12 +288,13 @@ export function useBundleCategoryMutations() {
 /**
  * Combined hook for full platform admin functionality
  */
-export function usePlatformAdmin() {
+export function usePlatformAdmin(enabled = true) {
   const status = usePlatformAdminStatus()
-  const customFeatures = useCustomFeatures()
-  const systemFeatures = useSystemFeatures()
-  const workspaces = useAllWorkspaces()
-  const bundleCategories = useBundleCategories()
+  const allowAdminQueries = enabled && status.isAuthenticated && status.isPlatformAdmin
+  const customFeatures = useCustomFeatures(allowAdminQueries)
+  const systemFeatures = useSystemFeatures(allowAdminQueries)
+  const workspaces = useAllWorkspaces(allowAdminQueries)
+  const bundleCategories = useBundleCategories(allowAdminQueries)
   const mutations = usePlatformAdminMutations()
   const systemMutations = useSystemFeatureMutations()
   const bundleMutations = useBundleCategoryMutations()

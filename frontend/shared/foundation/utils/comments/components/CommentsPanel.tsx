@@ -7,8 +7,7 @@
 
 import React from "react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { ChatContainer } from "@/frontend/shared/communications";
-import { useConvexChatDataSource } from "@/frontend/features/chat/adapters/convexChatAdapter";
+import { ChatContainer, useConvexChatDataSource } from "@/frontend/shared/communications";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import type { UserMeta } from "@/frontend/shared/communications";
 
@@ -53,25 +52,25 @@ export function CommentsPanel({
   const panelStyle: React.CSSProperties =
     position === "right"
       ? {
-          position: "fixed",
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: typeof width === "number" ? `${width}px` : width,
-          borderLeft: "1px solid var(--border)",
-          zIndex: 50,
-          backgroundColor: "var(--background)",
-        }
+        position: "fixed",
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: typeof width === "number" ? `${width}px` : width,
+        borderLeft: "1px solid var(--border)",
+        zIndex: 50,
+        backgroundColor: "var(--background)",
+      }
       : {
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: typeof width === "number" ? `${width}px` : width,
-          borderTop: "1px solid var(--border)",
-          zIndex: 50,
-          backgroundColor: "var(--background)",
-        };
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: typeof width === "number" ? `${width}px` : width,
+        borderTop: "1px solid var(--border)",
+        zIndex: 50,
+        backgroundColor: "var(--background)",
+      };
 
   return (
     <div style={panelStyle}>

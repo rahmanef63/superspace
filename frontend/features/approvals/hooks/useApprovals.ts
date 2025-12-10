@@ -1,31 +1,32 @@
-import { useQuery, useMutation } from "convex/react"
+import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
+import type { ApprovalsData } from "../types"
+
+// Initial empty data for real Approvals usage
+const INITIAL_DATA: ApprovalsData = {
+  stats: {
+    totalRequests: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    avgTime: '-'
+  },
+  recentRequests: [],
+  pendingRequests: []
+}
 
 /**
  * Hook for Approvals feature
  */
-export function useApprovals(workspaceId: Id<"workspaces"> | null | undefined) {
-  const pendingApprovals = useQuery(
-    api.features.approvals.queries.getPendingApprovals,
+export function useApprovals(workspaceId: Id<"workspaces"> | null | undefined): { isLoading: boolean, data: ApprovalsData } {
+  const remoteData = useQuery(
+    api.features.approvals.queries.getData,
     workspaceId ? { workspaceId } : "skip"
   )
-
-  const myRequests = useQuery(
-    api.features.approvals.queries.getMyRequests,
-    workspaceId ? { workspaceId } : "skip"
-  )
-
-  const createRequest = useMutation(api.features.approvals.mutations.createRequest)
-  const approveRequest = useMutation(api.features.approvals.mutations.approveRequest)
-  const rejectRequest = useMutation(api.features.approvals.mutations.rejectRequest)
 
   return {
-    isLoading: pendingApprovals === undefined && workspaceId !== null && workspaceId !== undefined,
-    pendingApprovals: pendingApprovals ?? [],
-    myRequests: myRequests ?? [],
-    createRequest,
-    approveRequest,
-    rejectRequest,
+    isLoading: remoteData === undefined && workspaceId !== null && workspaceId !== undefined,
+    data: (remoteData as unknown as ApprovalsData) || INITIAL_DATA,
   }
 }

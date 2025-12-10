@@ -3,25 +3,444 @@ import { query } from "../../_generated/server"
 import { requireActiveMembership } from "../../auth/helpers"
 
 /**
- * Queries for marketing feature
+ * Comprehensive Marketing Queries
  */
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Campaign Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export const getCampaigns = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    status: v.optional(v.string()),
+    type: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let campaigns = await ctx.db
+      .query("marketingCampaigns")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .order("desc")
+      .collect()
+
+    // Filter by status
+    if (args.status) {
+      campaigns = campaigns.filter(c => c.status === args.status)
+    }
+
+    // Filter by type
+    if (args.type) {
+      campaigns = campaigns.filter(c => c.type === args.type)
+    }
+
+    // Apply limit
+    if (args.limit) {
+      campaigns = campaigns.slice(0, args.limit)
+    }
+
+    return campaigns
+  },
+})
+
+export const getCampaign = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    campaignId: v.id("marketingCampaigns"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const campaign = await ctx.db.get(args.campaignId)
+    if (!campaign || campaign.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return campaign
+  },
+})
+
+export const getCampaignStats = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    campaignId: v.id("marketingCampaigns"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const campaign = await ctx.db.get(args.campaignId)
+    if (!campaign || campaign.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    // Get events for this campaign
+    const events = await ctx.db
+      .query("marketingEvents")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .collect()
+
+    const sent = events.filter(e => e.type === "sent").length
+    const delivered = events.filter(e => e.type === "delivered").length
+    const opened = events.filter(e => e.type === "opened").length
+    const clicked = events.filter(e => e.type === "clicked").length
+    const bounced = events.filter(e => e.type === "bounced").length
+    const unsubscribed = events.filter(e => e.type === "unsubscribed").length
+
+    return {
+      sent,
+      delivered,
+      opened,
+      clicked,
+      bounced,
+      unsubscribed,
+      openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0",
+      clickRate: opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0",
+      bounceRate: sent > 0 ? ((bounced / sent) * 100).toFixed(1) : "0",
+      unsubscribeRate: sent > 0 ? ((unsubscribed / sent) * 100).toFixed(1) : "0",
+    }
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Template Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getTemplates = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    type: v.optional(v.string()),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let templates = await ctx.db
+      .query("marketingTemplates")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    if (args.type) {
+      templates = templates.filter(t => t.type === args.type)
+    }
+
+    if (args.category) {
+      templates = templates.filter(t => t.category === args.category)
+    }
+
+    // Sort by usage count (most used first)
+    templates.sort((a, b) => b.usageCount - a.usageCount)
+
+    return templates
+  },
+})
+
+export const getTemplate = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    templateId: v.id("marketingTemplates"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const template = await ctx.db.get(args.templateId)
+    if (!template || template.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return template
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Subscriber Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getSubscribers = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    status: v.optional(v.string()),
+    listId: v.optional(v.id("marketingLists")),
+    search: v.optional(v.string()),
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let subscribers = await ctx.db
+      .query("marketingSubscribers")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Filter by status
+    if (args.status) {
+      subscribers = subscribers.filter(s => s.status === args.status)
+    }
+
+    // Filter by list
+    if (args.listId) {
+      subscribers = subscribers.filter(s => s.lists.includes(args.listId!))
+    }
+
+    // Search by email or name
+    if (args.search) {
+      const search = args.search.toLowerCase()
+      subscribers = subscribers.filter(s =>
+        s.email.toLowerCase().includes(search) ||
+        s.firstName?.toLowerCase().includes(search) ||
+        s.lastName?.toLowerCase().includes(search)
+      )
+    }
+
+    const total = subscribers.length
+
+    // Pagination
+    const offset = args.offset || 0
+    const limit = args.limit || 50
+    subscribers = subscribers.slice(offset, offset + limit)
+
+    return { subscribers, total }
+  },
+})
+
+export const getSubscriber = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    subscriberId: v.id("marketingSubscribers"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const subscriber = await ctx.db.get(args.subscriberId)
+    if (!subscriber || subscriber.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return subscriber
+  },
+})
+
+export const getSubscriberByEmail = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const subscriber = await ctx.db
+      .query("marketingSubscribers")
+      .withIndex("by_email", (q) => 
+        q.eq("workspaceId", args.workspaceId).eq("email", args.email)
+      )
+      .first()
+
+    return subscriber
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// List Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getLists = query({
   args: {
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
     await requireActiveMembership(ctx, args.workspaceId)
 
-    const campaigns = await ctx.db
-      .query("marketingCampaigns")
+    const lists = await ctx.db
+      .query("marketingLists")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    return lists
+  },
+})
+
+export const getList = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    listId: v.id("marketingLists"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const list = await ctx.db.get(args.listId)
+    if (!list || list.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return list
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Segment Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getSegments = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const segments = await ctx.db
+      .query("marketingSegments")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    return segments
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Automation Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getAutomations = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let automations = await ctx.db
+      .query("marketingAutomations")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    if (args.status) {
+      automations = automations.filter(a => a.status === args.status)
+    }
+
+    return automations
+  },
+})
+
+export const getAutomation = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    automationId: v.id("marketingAutomations"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const automation = await ctx.db.get(args.automationId)
+    if (!automation || automation.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return automation
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Form Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getForms = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    type: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let forms = await ctx.db
+      .query("marketingForms")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    if (args.type) {
+      forms = forms.filter(f => f.type === args.type)
+    }
+
+    return forms
+  },
+})
+
+export const getForm = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    formId: v.id("marketingForms"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const form = await ctx.db.get(args.formId)
+    if (!form || form.workspaceId !== args.workspaceId) {
+      return null
+    }
+
+    return form
+  },
+})
+
+export const getFormSubmissions = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    formId: v.id("marketingForms"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let submissions = await ctx.db
+      .query("marketingFormSubmissions")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
+      .order("desc")
+      .collect()
+
+    submissions = submissions.filter(s => s.workspaceId === args.workspaceId)
+
+    if (args.limit) {
+      submissions = submissions.slice(0, args.limit)
+    }
+
+    return submissions
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Social Posts Queries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getSocialPosts = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    status: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    let posts = await ctx.db
+      .query("marketingSocialPosts")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .order("desc")
       .collect()
 
-    return campaigns
+    if (args.status) {
+      posts = posts.filter(p => p.status === args.status)
+    }
+
+    if (args.limit) {
+      posts = posts.slice(0, args.limit)
+    }
+
+    return posts
   },
 })
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Stats Queries
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export const getStats = query({
   args: {
@@ -30,21 +449,124 @@ export const getStats = query({
   handler: async (ctx, args) => {
     await requireActiveMembership(ctx, args.workspaceId)
 
-    // Get aggregate stats
+    // Get campaign stats
     const campaigns = await ctx.db
       .query("marketingCampaigns")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .collect()
 
+    const activeCampaigns = campaigns.filter(c => c.status === "active").length
     const emailsSent = campaigns.reduce((sum, c) => sum + (c.sent || 0), 0)
-    const opens = campaigns.reduce((sum, c) => sum + (c.opens || 0), 0)
-    const openRate = emailsSent > 0 ? Math.round((opens / emailsSent) * 100) : 0
+    const totalOpens = campaigns.reduce((sum, c) => sum + (c.opens || 0), 0)
+    const totalClicks = campaigns.reduce((sum, c) => sum + (c.clicks || 0), 0)
+    const totalConversions = campaigns.reduce((sum, c) => sum + (c.conversions || 0), 0)
+
+    // Get subscriber stats
+    const subscribers = await ctx.db
+      .query("marketingSubscribers")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    const totalSubscribers = subscribers.length
+    const activeSubscribers = subscribers.filter(s => s.status === "subscribed").length
+
+    // Calculate rates
+    const openRate = emailsSent > 0 ? Math.round((totalOpens / emailsSent) * 100) : 0
+    const clickRate = totalOpens > 0 ? Math.round((totalClicks / totalOpens) * 100) : 0
+
+    // Get lists count
+    const lists = await ctx.db
+      .query("marketingLists")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Get automations count
+    const automations = await ctx.db
+      .query("marketingAutomations")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+    const activeAutomations = automations.filter(a => a.status === "active").length
 
     return {
+      // Campaigns
+      totalCampaigns: campaigns.length,
+      activeCampaigns,
+      
+      // Email metrics
       emailsSent,
       openRate,
-      subscribers: 0, // TODO: Get from subscribers table
-      conversions: campaigns.reduce((sum, c) => sum + (c.conversions || 0), 0),
+      clickRate,
+      conversions: totalConversions,
+      
+      // Subscribers
+      subscribers: totalSubscribers,
+      activeSubscribers,
+      
+      // Lists
+      totalLists: lists.length,
+      
+      // Automations
+      totalAutomations: automations.length,
+      activeAutomations,
+    }
+  },
+})
+
+export const getDashboardMetrics = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    period: v.optional(v.union(
+      v.literal("7d"),
+      v.literal("30d"),
+      v.literal("90d")
+    )),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const period = args.period || "30d"
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : 90
+    const startDate = Date.now() - (days * 24 * 60 * 60 * 1000)
+
+    // Get recent events
+    const events = await ctx.db
+      .query("marketingEvents")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.gte(q.field("createdAt"), startDate))
+      .collect()
+
+    // Group by day
+    const dailyStats: Record<string, { sent: number; opened: number; clicked: number }> = {}
+    
+    for (const event of events) {
+      const date = new Date(event.createdAt).toISOString().split("T")[0]
+      if (!dailyStats[date]) {
+        dailyStats[date] = { sent: 0, opened: 0, clicked: 0 }
+      }
+      
+      if (event.type === "sent") dailyStats[date].sent++
+      if (event.type === "opened") dailyStats[date].opened++
+      if (event.type === "clicked") dailyStats[date].clicked++
+    }
+
+    // Get new subscribers in period
+    const subscribers = await ctx.db
+      .query("marketingSubscribers")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.gte(q.field("subscribedAt"), startDate))
+      .collect()
+
+    const newSubscribers = subscribers.filter(s => s.status === "subscribed").length
+    const unsubscribed = subscribers.filter(s => s.status === "unsubscribed").length
+
+    return {
+      period,
+      dailyStats: Object.entries(dailyStats)
+        .map(([date, stats]) => ({ date, ...stats }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+      newSubscribers,
+      unsubscribed,
+      netGrowth: newSubscribers - unsubscribed,
     }
   },
 })

@@ -9,23 +9,25 @@ import { AuthRedirect } from "../../components/route-group/marketing/AuthRedirec
 
 export default function Home() {
   return (
-    <div>
-      <AuthRedirect />
-      <HeroSection />
-      <FeaturesOne />
-      <section className="bg-muted/50 py-16 md:py-32">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-12 mx-auto max-w-2xl space-y-6 text-center">
-              <h1 className="text-center text-4xl font-semibold lg:text-5xl">Pricing that Scales with You</h1>
-              <p>Gemini is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</p>
+    <div className="flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-4 py-8 space-y-16">
+        <AuthRedirect />
+        <HeroSection />
+        <FeaturesOne />
+        <section className="bg-muted/50 py-16 md:py-24 -mx-4 px-4 rounded-lg">
+          <div className="mx-auto max-w-4xl space-y-8">
+            <div className="space-y-4 text-center">
+              <h2 className="text-3xl font-semibold lg:text-4xl">Simple, Transparent Pricing</h2>
+              <p className="text-muted-foreground">Choose the plan that fits your needs. No hidden fees, no surprises.</p>
+            </div>
+            <CustomClerkPricing />
           </div>
-          <CustomClerkPricing />
-        </div>
-      </section>
-      <Testimonials />
-      <CallToAction />
-      <FAQs />
-      <Footer />
+        </section>
+        <Testimonials />
+        <CallToAction />
+        <FAQs />
+        <Footer />
+      </div>
     </div>
   );
 }

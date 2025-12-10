@@ -27,9 +27,8 @@ export default defineFeature({
   },
 
   status: {
-    state: 'development',
-    isReady: false,
-    expectedRelease: 'Q3 2025',
+    state: 'beta',
+    isReady: true,
   },
 
   bundles: {

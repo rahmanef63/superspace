@@ -1,31 +1,30 @@
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
+import type { AuditLogData } from "../types"
+
+// Initial empty data for real Audit Log usage
+const INITIAL_DATA: AuditLogData = {
+  stats: {
+    totalEvents: 0,
+    criticalEvents: 0,
+    activeUsers: 0,
+    systemHealth: 'Unknown'
+  },
+  recentEvents: []
+}
 
 /**
  * Hook for Audit Log feature
  */
-export function useAuditLog(workspaceId: Id<"workspaces"> | null | undefined, filters?: {
-  action?: string
-  entityType?: string
-  userId?: Id<"users">
-  startDate?: number
-  endDate?: number
-  limit?: number
-}) {
-  const logs = useQuery(
-    api.features.auditLog.queries.getLogs,
-    workspaceId ? { workspaceId, ...filters } : "skip"
-  )
-
-  const stats = useQuery(
-    api.features.auditLog.queries.getStats,
+export function useAuditLog(workspaceId: Id<"workspaces"> | null | undefined): { isLoading: boolean, data: AuditLogData } {
+  const remoteData = useQuery(
+    api.features.audit_log.queries.getData,
     workspaceId ? { workspaceId } : "skip"
   )
 
   return {
-    isLoading: logs === undefined && workspaceId !== null && workspaceId !== undefined,
-    logs: logs ?? [],
-    stats,
+    isLoading: remoteData === undefined && workspaceId !== null && workspaceId !== undefined,
+    data: (remoteData as unknown as AuditLogData) || INITIAL_DATA,
   }
 }

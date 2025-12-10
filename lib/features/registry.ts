@@ -12,10 +12,7 @@ import type { FeatureConfig } from './defineFeature'
 
 import overviewConfig from '@/frontend/features/overview/config'
 import communicationsConfig from '@/frontend/features/communications/config'
-import chatConfig from '@/frontend/features/chat/config'
-import callsConfig from '@/frontend/features/calls/config'
 import statusConfig from '@/frontend/features/status/config'
-import membersConfig from '@/frontend/features/members/config'
 import aiConfig from '@/frontend/features/ai/config'
 import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
 import knowledgeConfig from '@/frontend/features/knowledge/config'
@@ -24,7 +21,6 @@ import databaseConfig from '@/frontend/features/database/config'
 import documentsConfig from '@/frontend/features/documents/config'
 import menuStoreConfig from '@/frontend/features/menu-store/config'
 import calendarConfig from '@/frontend/features/calendar/config'
-import invitationsConfig from '@/frontend/features/invitations/config'
 import userManagementConfig from '@/frontend/features/user-management/config'
 import reportsConfig from '@/frontend/features/reports/config'
 import tasksConfig from '@/frontend/features/tasks/config'
@@ -53,10 +49,7 @@ import platformAdminConfig from '@/frontend/features/platform-admin/config'
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
   communicationsConfig,
-  chatConfig,
-  callsConfig,
   statusConfig,
-  membersConfig,
   aiConfig,
   workspaceStoreConfig,
   knowledgeConfig,
@@ -65,7 +58,6 @@ const featureConfigs: FeatureConfig[] = [
   documentsConfig,
   menuStoreConfig,
   calendarConfig,
-  invitationsConfig,
   userManagementConfig,
   reportsConfig,
   tasksConfig,

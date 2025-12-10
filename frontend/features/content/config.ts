@@ -35,8 +35,8 @@ export default defineFeature({
 
   // Development Status
   status: {
-    state: 'development',              // development | beta | stable | deprecated
-    isReady: false,                     // Set to true when ready for production
+    state: 'stable',              // development | beta | stable | deprecated
+    isReady: true,                     // Set to true when ready for production
     expectedRelease: undefined,         // Optional: 'Q1 2025'
   },
 

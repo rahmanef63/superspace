@@ -93,8 +93,8 @@ export default defineFeature({
         version: '1.0.0',
       },
       status: {
-        state: 'beta',
-        isReady: false,
+        state: 'stable',
+        isReady: true,
         expectedRelease: '2025-11-01',
       },
     },

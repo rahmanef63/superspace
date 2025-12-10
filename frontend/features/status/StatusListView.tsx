@@ -6,8 +6,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
-import { getInitials } from "../chat/utils";
+import { SearchBar } from "@/frontend/shared/ui";
+import { getInitials } from "@/frontend/shared/communications";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
@@ -89,10 +89,10 @@ export function StatusListView({
             </Button>
           </div>
         </div>
-        <SearchBar 
-          placeholder="Search status updates" 
-          value={searchQuery} 
-          onChange={setSearchQuery} 
+        <SearchBar
+          placeholder="Search status updates"
+          value={searchQuery}
+          onChange={setSearchQuery}
         />
       </div>
 
@@ -137,11 +137,10 @@ export function StatusListView({
                 </div>
               ) : (
                 filteredStatuses.map((status) => (
-                  <div 
-                    key={status.id} 
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer ${
-                      status.id === selectedStatusId ? 'bg-accent' : 'hover:bg-muted'
-                    }`}
+                  <div
+                    key={status.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer ${status.id === selectedStatusId ? 'bg-accent' : 'hover:bg-muted'
+                      }`}
                     onClick={() => onStatusSelect?.(status.id)}
                   >
                     <Avatar className={`h-12 w-12 ${status.hasUpdate ? 'ring-2 ring-primary' : ''}`}>

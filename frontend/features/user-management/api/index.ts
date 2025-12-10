@@ -1,7 +1,8 @@
 /**
  * User Management API Hooks
  * 
- * Composes hooks from existing features + new user-management queries/mutations
+ * Consolidated hooks for members, roles, invitations, and user management.
+ * This module is self-contained and does not depend on archives-features.
  */
 
 import { useQuery, useMutation } from "convex/react";
@@ -9,29 +10,54 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
 // ============================================================================
-// Re-export existing feature hooks for composition
+// Members API (previously from archives-features/members)
 // ============================================================================
 
-// Members API
-export {
-  useMembers,
-  useRoles,
-  useAddMember,
-  useRemoveMember,
-  useUpdateMemberRole,
-  useHasPermission,
-  useCreateRole,
-  useUpdateRole,
-  useDeleteRole,
-} from "@/frontend/features/members/api";
+export const useMembers = (
+  workspaceId: Id<"workspaces">,
+  options?: { includeInactive?: boolean }
+) => useQuery(api.workspace.workspaces.getWorkspaceMembers, { workspaceId, includeInactive: options?.includeInactive });
 
-import {
-  useCreateRole,
-  useUpdateRole,
-  useDeleteRole,
-} from "@/frontend/features/members/api";
+export const useSearchMembers = (
+  workspaceId: Id<"workspaces">,
+  query: string,
+  options?: {
+    status?: "active" | "inactive" | "pending";
+    roleId?: Id<"roles">;
+    limit?: number;
+  }
+) => useQuery(api.workspace.workspaces.searchWorkspaceMembers, {
+  workspaceId,
+  query,
+  status: options?.status,
+  roleId: options?.roleId,
+  limit: options?.limit,
+});
 
-// Contacts API
+export const useMember = (
+  workspaceId: Id<"workspaces">,
+  userId: Id<"users">
+) => useQuery(api.workspace.workspaces.getWorkspaceMember, { workspaceId, userId });
+
+export const useRoles = (workspaceId: Id<"workspaces">) =>
+  useQuery(api.workspace.roles.getAllRoles, { workspaceId });
+
+export const useAddMember = () => useMutation(api.workspace.workspaces.addMember);
+export const useRemoveMember = () => useMutation(api.workspace.workspaces.removeMember);
+export const useUpdateMemberRole = () => useMutation(api.workspace.workspaces.updateMemberRole);
+export const useCreateRole = () => useMutation(api.workspace.roles.createRole);
+export const useUpdateRole = () => useMutation(api.workspace.roles.updateRole);
+export const useDeleteRole = () => useMutation(api.workspace.roles.deleteRole);
+
+export const useHasPermission = (
+  workspaceId: Id<"workspaces">,
+  permission: string
+) => useQuery(api.workspace.roles.hasPermission, { workspaceId, permission });
+
+// ============================================================================
+// Contacts API (re-exported from contact feature)
+// ============================================================================
+
 export {
   useContacts,
   usePendingContactRequests,
@@ -42,18 +68,63 @@ export {
   useRemoveContact,
 } from "@/frontend/features/contact/api";
 
-// Invitations API
-export {
-  useReceivedInvitations,
-  useSentInvitations,
-  useSendInvitation,
-  useAcceptInvitation,
-  useDeclineInvitation,
-  useCancelInvitation,
-  useSendBulkInvitations,
-  useWorkspaceInvitations,
-  useInvitationStats,
-} from "@/frontend/features/invitations/api";
+// ============================================================================
+// Invitations API (previously from archives-features/invitations)
+// ============================================================================
+
+// Invitations combined hook
+export const useInvitationsApi = () => {
+  const receivedInvitations = useQuery(api.workspace.invitations.getUserInvitations, { type: "received" });
+  const sentInvitations = useQuery(api.workspace.invitations.getUserInvitations, { type: "sent" });
+  
+  const sendInvitation = useMutation(api.workspace.invitations.sendWorkspaceInvitation);
+  const acceptInvitation = useMutation(api.workspace.invitations.acceptInvitation);
+  const declineInvitation = useMutation(api.workspace.invitations.declineInvitation);
+  const cancelInvitation = useMutation(api.workspace.invitations.cancelInvitation);
+  const resendInvitation = useMutation(api.workspace.invitations.resendInvitation);
+  const sendBulkInvitations = useMutation(api.workspace.invitations.sendBulkInvitations);
+  const cleanupExpiredInvitations = useMutation(api.workspace.invitations.cleanupExpiredInvitations);
+
+  return {
+    receivedInvitations,
+    sentInvitations,
+    sendInvitation,
+    acceptInvitation,
+    declineInvitation,
+    cancelInvitation,
+    resendInvitation,
+    sendBulkInvitations,
+    cleanupExpiredInvitations,
+  };
+};
+
+// Individual invitation hooks
+export const useReceivedInvitations = () => useQuery(api.workspace.invitations.getUserInvitations, { type: "received" });
+export const useSentInvitations = () => useQuery(api.workspace.invitations.getUserInvitations, { type: "sent" });
+
+export const useSendInvitation = () => useMutation(api.workspace.invitations.sendWorkspaceInvitation);
+export const useAcceptInvitation = () => useMutation(api.workspace.invitations.acceptInvitation);
+export const useDeclineInvitation = () => useMutation(api.workspace.invitations.declineInvitation);
+export const useCancelInvitation = () => useMutation(api.workspace.invitations.cancelInvitation);
+export const useResendInvitation = () => useMutation(api.workspace.invitations.resendInvitation);
+export const useSendBulkInvitations = () => useMutation(api.workspace.invitations.sendBulkInvitations);
+export const useCleanupExpiredInvitations = () => useMutation(api.workspace.invitations.cleanupExpiredInvitations);
+
+// Workspace-specific invitation hooks
+export const useWorkspaceInvitations = (
+  workspaceId: Id<"workspaces">,
+  status?: "pending" | "accepted" | "declined" | "expired"
+) => useQuery(api.workspace.invitations.getWorkspaceInvitations, { workspaceId, status });
+
+export const useInvitationStats = (workspaceId: Id<"workspaces">) =>
+  useQuery(api.workspace.invitations.getInvitationStats, { workspaceId });
+
+export const useSearchInvitations = (
+  workspaceId: Id<"workspaces">,
+  query: string,
+  status?: "pending" | "accepted" | "declined" | "expired",
+  limit?: number
+) => useQuery(api.workspace.invitations.searchInvitations, { workspaceId, query, status, limit });
 
 // ============================================================================
 // New User Management Queries

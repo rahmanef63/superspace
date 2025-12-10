@@ -161,8 +161,6 @@ export function RoleExplorerPanel({
             toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to delete role", variant: "destructive" });
         }
     };
-
-
     return (
         <div className={cn("flex h-full border rounded-lg overflow-hidden bg-background", className)}>
             {/* Left Panel: Tree */}
@@ -263,6 +261,7 @@ export function RoleExplorerPanel({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
+
                                         {isEditing ? (
                                             <>
                                                 <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>
@@ -273,22 +272,25 @@ export function RoleExplorerPanel({
                                                 </Button>
                                             </>
                                         ) : (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                                                        <Edit2 className="w-4 h-4 mr-2" /> Edit Role
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleDeleteRole} className="text-red-600 focus:text-red-600">
-                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete Role
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <>
+                                                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                                                    <Edit2 className="w-4 h-4 mr-2" /> Edit Role
+                                                </Button>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm">
+                                                            <MoreHorizontal className="w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={handleDeleteRole} className="text-red-600 focus:text-red-600">
+                                                            <Trash2 className="w-4 h-4 mr-2" /> Delete Role
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </>
                                         )}
+
                                     </div>
                                 </div>
 
@@ -322,9 +324,14 @@ export function RoleExplorerPanel({
                                                                 className={cn(
                                                                     "flex items-start gap-3 p-3 rounded-md border text-sm transition-colors",
                                                                     hasPerm ? "bg-primary/5 border-primary/20" : "bg-muted/10 border-transparent",
-                                                                    isEditing && "cursor-pointer hover:bg-muted/20"
+                                                                    isEditing ? "cursor-pointer hover:bg-muted/20" : "opacity-80"
                                                                 )}
                                                                 onClick={(e) => {
+                                                                    // If view mode, maybe prompt user?
+                                                                    if (!isEditing) {
+                                                                        toast({ title: "View Only", description: "Click 'Edit Role' to make changes." });
+                                                                        return;
+                                                                    }
                                                                     // If we clicked the checkbox directly, don't double-toggle (it handles itself)
                                                                     if ((e.target as HTMLElement).closest('[role="checkbox"]')) return;
                                                                     togglePermission(perm.id);

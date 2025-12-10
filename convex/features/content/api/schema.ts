@@ -16,6 +16,8 @@ export const calendar = defineTable({
   startsAt: v.number(),
   endsAt: v.optional(v.number()),
   allDay: v.optional(v.boolean()),
+  type: v.optional(v.string()),
+  color: v.optional(v.string()),
   createdBy: v.optional(v.id("users")),
   updatedBy: v.optional(v.id("users")),
   createdAt: v.number(),

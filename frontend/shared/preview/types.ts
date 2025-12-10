@@ -79,6 +79,10 @@ export type FeaturePreviewCategory =
   | 'insights'
   | 'team'
   | 'profile'
+  | 'business'
+  | 'finance'
+  | 'inventory'
+  | 'operations'
 
 /**
  * State for the preview panel

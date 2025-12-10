@@ -1,26 +1,34 @@
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
+import type { HrData } from "../types"
+
+// Initial empty data for real HR usage
+const INITIAL_DATA: HrData = {
+  stats: {
+    totalEmployees: 0,
+    onLeave: 0,
+    openPositions: 0,
+    newHires: 0,
+    departmentCount: 0
+  },
+  recentHires: [],
+  leaveRequests: []
+}
 
 /**
- * Hook for HR Management feature
+ * Hook for HR feature
  * 
  * Pattern: Use Convex query directly, no manual loading state
- * The query returns undefined while loading, data when ready
- * 
- * @see docs/00_BASE_KNOWLEDGE.md - Pattern 4: React Component with Convex
  */
-export function useHr(workspaceId: Id<"workspaces"> | null | undefined) {
-  // Query data from Convex - returns undefined while loading
-  const data = useQuery(
+export function useHr(workspaceId: Id<"workspaces"> | null | undefined): { isLoading: boolean, data: HrData } {
+  const remoteData = useQuery(
     api.features.hr.queries.getData,
-    workspaceId ? { workspaceId } : undefined
+    workspaceId ? { workspaceId } : "skip"
   )
 
   return {
-    // undefined = loading, null = no data, otherwise = data
-    isLoading: data === undefined && workspaceId !== null && workspaceId !== undefined,
-    data,
-    // Error handling is done by Convex automatically
+    isLoading: remoteData === undefined && workspaceId !== null && workspaceId !== undefined,
+    data: (remoteData as unknown as HrData) || INITIAL_DATA,
   }
 }

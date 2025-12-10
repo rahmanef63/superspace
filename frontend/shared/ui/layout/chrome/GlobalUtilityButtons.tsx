@@ -4,7 +4,6 @@ import * as React from "react"
 import { Bell, HelpCircle, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { GlobalCreateMenu } from "./GlobalCreateMenu"
 
 export interface GlobalUtilityButtonsProps {
     className?: string
@@ -81,9 +80,6 @@ export function GlobalUtilityButtons({
             >
                 <HelpCircle className="h-4 w-4" />
             </Button>
-
-            {/* Primary Create Action */}
-            <GlobalCreateMenu />
         </div>
     )
 }

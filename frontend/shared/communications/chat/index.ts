@@ -41,6 +41,25 @@ export type { UseChatOptions, UseChatReturn } from "./hooks/useChat";
 export { useChatScroll } from "./hooks/useChatScroll";
 export { useChatPresence } from "./hooks/useChatPresence";
 export { useMessageActions } from "./hooks/useMessageActions";
+export {
+  useMemberInfo,
+  useMemberProfile,
+  useMemberActions,
+  useIsMemberFavorite,
+  useIsMemberBlocked,
+  useSharedMedia,
+  useSharedFiles,
+  useSharedLinks,
+  useCommonGroups,
+} from "./hooks/useMemberActions";
+
+// Adapters (Convex integration)
+export {
+  useConvexChatDataSource,
+  useChatMessages,
+  useChatRoom,
+  useChatParticipants,
+} from "./adapters";
 
 // Lib
 export {

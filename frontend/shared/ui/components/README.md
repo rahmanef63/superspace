@@ -115,7 +115,7 @@ import { FeatureListHeader } from '@/components/ui'
 
 **Usage:**
 ```tsx
-import { useFeatureNavigation } from '@/frontend/shared/hooks'
+import { useFeatureNavigation } from '@/frontend/shared/foundation'
 
 const { selectedId, setSelectedId, handleBack, hasSelection } = useFeatureNavigation()
 
@@ -140,7 +140,7 @@ const { selectedId, setSelectedId, handleBack, hasSelection } = useFeatureNaviga
 
 **Usage:**
 ```tsx
-import { useMobileResponsive } from '@/frontend/shared/hooks'
+import { useMobileResponsive } from '@/frontend/shared/foundation'
 
 const { isMobile, showList, showDetail, layoutMode } = useMobileResponsive(!!selectedId)
 
@@ -164,7 +164,7 @@ if (showDetail) return <DetailView />
 
 **Usage:**
 ```tsx
-import { useSearchFilter } from '@/frontend/shared/hooks'
+import { useSearchFilter } from '@/frontend/shared/foundation'
 
 const calls = [{ name: 'Alice' }, { name: 'Bob' }]
 const { query, setQuery, filteredItems, resultCount } = useSearchFilter(
@@ -239,7 +239,7 @@ When adding a new shared component:
 ```tsx
 import { MasterDetailLayout } from '@/frontend/shared/components/layouts'
 import { EmptyState, FeatureListHeader } from '@/components/ui'
-import { useFeatureNavigation, useSearchFilter } from '@/frontend/shared/hooks'
+import { useFeatureNavigation, useSearchFilter } from '@/frontend/shared/foundation'
 import { Phone } from 'lucide-react'
 
 function CallsFeature() {

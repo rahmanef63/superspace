@@ -3,15 +3,15 @@
  * @module features
  */
 
-// Workspace Chat (updated)
-export { WorkspaceChatContainer } from "./chat/components/WorkspaceChatContainer";
-export type { WorkspaceChatContainerProps } from "./chat/components/WorkspaceChatContainer";
-export {
-  useConvexChatDataSource,
-  useChatMessages,
-  useChatRoom,
-  useChatParticipants,
-} from "./chat/adapters/convexChatAdapter";
+// Chat functionality - re-export from shared/communications
+export { 
+  ChatContainer,
+  useChat,
+  createConvexChatDataSource,
+  type ChatContainerProps,
+  type ChatDataSource,
+  type UserMeta,
+} from "@/frontend/shared/communications";
 
 // AI Chat (updated)
 export { AIChatContainer } from "./ai/components/AIChatContainer";

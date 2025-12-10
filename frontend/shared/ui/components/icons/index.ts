@@ -85,4 +85,4 @@ export {
   type SimpleColorPickerProps,
   type PresetColorPickerProps,
   type InlineColorPickerProps,
-} from "@/frontend/shared/ui/color-picker";
+} from "@/frontend/shared/foundation/utils/color-picker";

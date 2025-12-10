@@ -16,6 +16,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { NavSystem } from "./NavSystem"
 import { NavSecondary } from "./NavSecondary"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
+import { useIsGuestMode, useGuestWorkspaceContext, GUEST_USER } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
 import {
   CreateWorkspaceDialog,
   EditWorkspaceDialog,
@@ -32,6 +33,65 @@ import {
 } from "./hooks"
 import { CommandMenu } from "@/frontend/shared/foundation/utils/system/command-menu"
 import { GlobalOverlays } from "../../chrome/GlobalOverlays"
+
+/**
+ * Hook that works with both WorkspaceProvider (authenticated) and GuestWorkspaceProvider (guest mode)
+ */
+function useUnifiedWorkspaceContext() {
+  const isGuestMode = useIsGuestMode()
+  
+  // Guest context (will be available if in GuestWorkspaceProvider)
+  let guestContext: ReturnType<typeof useGuestWorkspaceContext> | null = null
+  try {
+    if (isGuestMode) {
+      guestContext = useGuestWorkspaceContext()
+    }
+  } catch {
+    // Not in guest mode
+  }
+  
+  // Real context (will be available if in WorkspaceProvider)
+  let realContext: ReturnType<typeof useWorkspaceContext> | null = null
+  try {
+    if (!isGuestMode) {
+      realContext = useWorkspaceContext()
+    }
+  } catch {
+    // Not in real mode
+  }
+  
+  if (guestContext) {
+    return {
+      workspaceId: guestContext.workspaceId as Id<"workspaces"> | null,
+      setWorkspaceId: (id: Id<"workspaces"> | null) => guestContext!.setWorkspaceId(id as string | null),
+      currentWorkspace: guestContext.currentWorkspace as any,
+      workspaces: guestContext.workspaces as any[],
+      isGuestMode: true,
+      guestUser: guestContext.guestUser,
+    }
+  }
+  
+  if (realContext) {
+    return {
+      workspaceId: realContext.workspaceId,
+      setWorkspaceId: realContext.setWorkspaceId,
+      currentWorkspace: realContext.currentWorkspace,
+      workspaces: realContext.workspaces,
+      isGuestMode: false,
+      guestUser: null,
+    }
+  }
+  
+  // Fallback
+  return {
+    workspaceId: null as Id<"workspaces"> | null,
+    setWorkspaceId: () => {},
+    currentWorkspace: null as any,
+    workspaces: undefined as any[] | undefined,
+    isGuestMode: false,
+    guestUser: null,
+  }
+}
 
 export interface AppSidebarProps {
   workspaceId?: Id<"workspaces"> | null
@@ -54,7 +114,14 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { workspaceId: ctxWorkspaceId, setWorkspaceId, currentWorkspace: contextWorkspace } = useWorkspaceContext()
+  const { 
+    workspaceId: ctxWorkspaceId, 
+    setWorkspaceId, 
+    currentWorkspace: contextWorkspace,
+    workspaces: contextWorkspaces,
+    isGuestMode,
+    guestUser 
+  } = useUnifiedWorkspaceContext()
 
   // Derive active view from pathname
   const derivedActiveView = React.useMemo(() => {
@@ -69,15 +136,21 @@ export function AppSidebar({
   const handleViewChange = onViewChange ?? ((view: string) => router.push(`/dashboard/${view}`))
   const effectiveWorkspaceId = (workspaceId ?? ctxWorkspaceId) as Id<"workspaces"> | null
 
-  // Query user workspaces
-  const userWorkspaces = useQuery(api.workspace.workspaces.getUserWorkspaces)
+  // Query user workspaces - skip in guest mode
+  const userWorkspacesQuery = useQuery(
+    api.workspace.workspaces.getUserWorkspaces,
+    isGuestMode ? "skip" : undefined
+  )
+  
+  // Use context workspaces in guest mode, query result otherwise
+  const userWorkspaces = isGuestMode ? contextWorkspaces : userWorkspacesQuery
 
   // Use extracted hooks for navigation and CRUD
   const { navItems, systemItems, menuItems } = useNavItems(effectiveWorkspaceId)
   const finalSystemItems = useSystemNavItems(systemItems)
 
-  // Auto-seed menu items
-  useMenuSeeding(effectiveWorkspaceId, menuItems)
+  // Auto-seed menu items - skip in guest mode
+  useMenuSeeding(isGuestMode ? null : effectiveWorkspaceId, menuItems)
 
   // Workspace CRUD hook
   const {
@@ -200,9 +273,9 @@ export function AppSidebar({
               setWorkspaceId(wsId)
             }
           }}
-          onCreateWorkspace={openCreateDialog}
-          onEditWorkspace={openEditDialog}
-          onDeleteWorkspace={openDeleteDialog}
+          onCreateWorkspace={isGuestMode ? undefined : openCreateDialog}
+          onEditWorkspace={isGuestMode ? undefined : openEditDialog}
+          onDeleteWorkspace={isGuestMode ? undefined : openDeleteDialog}
           isLoading={userWorkspaces === undefined}
         />
       </SidebarHeader>
@@ -228,33 +301,56 @@ export function AppSidebar({
         <NavSecondary />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        {isGuestMode && guestUser ? (
+          <GuestNavUser user={guestUser} />
+        ) : (
+          <NavUser />
+        )}
       </SidebarFooter>
       <SidebarRail />
 
-      {/* Workspace CRUD Dialogs */}
-      <CreateWorkspaceDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onSubmit={handleCreateSubmit}
-        parentWorkspace={createParentWorkspace}
-      />
+      {/* Workspace CRUD Dialogs - only show in authenticated mode */}
+      {!isGuestMode && (
+        <>
+          <CreateWorkspaceDialog
+            open={createDialogOpen}
+            onOpenChange={setCreateDialogOpen}
+            onSubmit={handleCreateSubmit}
+            parentWorkspace={createParentWorkspace}
+          />
 
-      <EditWorkspaceDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        workspace={editWorkspaceItem}
-        onSubmit={handleEditSubmit}
-      />
+          <EditWorkspaceDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            workspace={editWorkspaceItem}
+            onSubmit={handleEditSubmit}
+          />
 
-      <DeleteWorkspaceDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        workspace={deleteWorkspaceItem}
-        onConfirm={handleDeleteConfirm}
-      />
+          <DeleteWorkspaceDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            workspace={deleteWorkspaceItem}
+            onConfirm={handleDeleteConfirm}
+          />
+        </>
+      )}
       <CommandMenu />
       <GlobalOverlays />
     </Sidebar>
+  )
+}
+
+// Guest-specific NavUser component
+function GuestNavUser({ user }: { user: typeof GUEST_USER }) {
+  return (
+    <div className="flex items-center gap-2 px-2 py-1.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+        {user.initials}
+      </div>
+      <div className="grid flex-1 text-left text-sm leading-tight">
+        <span className="truncate font-semibold">{user.name}</span>
+        <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+      </div>
+    </div>
   )
 }

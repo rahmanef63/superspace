@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
  */
 export default function DashboardLoading() {
   return (
-    <div className="flex flex-col space-y-6 p-4 lg:p-6">
+    <div className="flex flex-1 h-full w-full min-h-0 flex-col space-y-6 p-4 lg:p-6">
       {/* Header skeleton */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-64" />

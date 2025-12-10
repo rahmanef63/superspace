@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SearchBar } from "@/frontend/features/chat/components/ui/SearchBar";
+import { SearchBar } from "@/frontend/shared/ui";
 import { useAIStore, type AISession } from "./stores";
 import { useAIActions } from "./hooks";
 import { GlobalModeToggle } from "@/frontend/shared/ui/components/controls";
@@ -32,7 +32,7 @@ export function AIListView({
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const isMobile = useIsMobile();
-  
+
   // Use Zustand store
   const sessions = useAIStore((s) => s.sessions);
   const isLoading = useAIStore((s) => s.isLoading);
@@ -45,13 +45,13 @@ export function AIListView({
   const renameSession = useAIStore((s) => s.renameSession);
   const removeSession = useAIStore((s) => s.removeSession);
   const { createSession, selectSession } = useAIActions();
-  
+
   // CRUD Dialog states
   const [renamingSession, setRenamingSession] = useState<AISession | null>(null);
   const [deletingSession, setDeletingSession] = useState<AISession | null>(null);
   const [archivingSession, setArchivingSession] = useState<AISession | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  
+
   // Convex mutations
   const updateSessionMutation = useMutation(api.features.ai.mutations.updateChatSession);
   const deleteSessionMutation = useMutation(api.features.ai.mutations.deleteChatSession);
@@ -71,7 +71,7 @@ export function AIListView({
   const handleRename = useCallback((session: AISession) => {
     setRenamingSession(session);
   }, []);
-  
+
   const handleSaveRename = useCallback(async (sessionId: string, data: { name?: string; description?: string }) => {
     setIsUpdating(true);
     try {
@@ -89,7 +89,7 @@ export function AIListView({
       setRenamingSession(null);
     }
   }, [updateSessionMutation, renameSession]);
-  
+
   const handlePin = useCallback(async (sessionId: string, isPinned: boolean) => {
     try {
       await updateSessionMutation({
@@ -102,7 +102,7 @@ export function AIListView({
       toast.error("Failed to update session");
     }
   }, [updateSessionMutation, pinSession]);
-  
+
   const handleFavorite = useCallback(async (sessionId: string, isFavorite: boolean) => {
     try {
       await updateSessionMutation({
@@ -115,14 +115,14 @@ export function AIListView({
       toast.error("Failed to update session");
     }
   }, [updateSessionMutation, favoriteSession]);
-  
+
   const handleArchive = useCallback((sessionId: string, isArchived: boolean) => {
     const session = sessions.find(s => s._id === sessionId);
     if (session) {
       setArchivingSession(session);
     }
   }, [sessions]);
-  
+
   const handleConfirmArchive = useCallback(async (sessionId: string, isArchived: boolean) => {
     setIsUpdating(true);
     try {
@@ -140,14 +140,14 @@ export function AIListView({
       setArchivingSession(null);
     }
   }, [updateSessionMutation, archiveSession]);
-  
+
   const handleDelete = useCallback((sessionId: string) => {
     const session = sessions.find(s => s._id === sessionId);
     if (session) {
       setDeletingSession(session);
     }
   }, [sessions]);
-  
+
   const handleConfirmDelete = useCallback(async (sessionId: string) => {
     setIsUpdating(true);
     try {
@@ -164,7 +164,7 @@ export function AIListView({
       setDeletingSession(null);
     }
   }, [deleteSessionMutation, removeSession]);
-  
+
   const handleDuplicate = useCallback(async (session: AISession) => {
     // Create a new session with same title (copy)
     setIsCreating(true);
@@ -180,7 +180,7 @@ export function AIListView({
       setIsCreating(false);
     }
   }, [createSession]);
-  
+
   const handleExport = useCallback((session: AISession) => {
     try {
       const exportData = {
@@ -253,9 +253,9 @@ export function AIListView({
               label="Global"
               size="sm"
             />
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="text-muted-foreground hover:text-foreground"
               onClick={handleNewChat}
               disabled={isCreating}
@@ -268,10 +268,10 @@ export function AIListView({
             </Button>
           </div>
         </div>
-        <SearchBar 
-          placeholder="Search AI conversations" 
-          value={searchQuery} 
-          onChange={setSearchQuery} 
+        <SearchBar
+          placeholder="Search AI conversations"
+          value={searchQuery}
+          onChange={setSearchQuery}
         />
       </div>
 
@@ -297,12 +297,12 @@ export function AIListView({
                   {globalMode ? "Start a private AI conversation" : "Start a conversation with AI"}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {globalMode 
+                  {globalMode
                     ? "Personal AI chats that aren't tied to any workspace."
                     : "Get help with writing, coding, learning, and more."}
                 </p>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="gap-2"
                   onClick={handleNewChat}
                   disabled={isCreating}
@@ -316,7 +316,7 @@ export function AIListView({
                 </Button>
               </div>
             )}
-            
+
             {!isLoading && searchQuery && filteredSessions.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">
                 No AI conversations found
@@ -343,7 +343,7 @@ export function AIListView({
           </div>
         </ScrollArea>
       </div>
-      
+
       {/* CRUD Dialogs */}
       <RenameSessionDialog
         session={renamingSession}

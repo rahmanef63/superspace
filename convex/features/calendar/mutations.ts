@@ -16,6 +16,8 @@ export const create = mutation({
     endsAt: v.optional(v.number()),
     description: v.optional(v.string()),
     location: v.optional(v.string()),
+    color: v.optional(v.string()),
+    type: v.optional(v.string()),
     allDay: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -42,6 +44,8 @@ export const create = mutation({
     if (args.location !== undefined) doc.location = args.location
     if (args.allDay !== undefined) doc.allDay = args.allDay
     if (args.endsAt !== undefined) doc.endsAt = args.endsAt
+    if (args.type !== undefined) doc.type = args.type
+    if (args.color !== undefined) doc.color = args.color
 
     const itemId = await ctx.db.insert("calendar", doc)
 
@@ -68,6 +72,8 @@ export const update = mutation({
       endsAt: v.optional(v.union(v.number(), v.null())),
       description: v.optional(v.union(v.string(), v.null())),
       location: v.optional(v.union(v.string(), v.null())),
+      color: v.optional(v.union(v.string(), v.null())),
+      type: v.optional(v.union(v.string(), v.null())),
       allDay: v.optional(v.boolean()),
     }),
   },
@@ -100,6 +106,8 @@ export const update = mutation({
     if (patch.endsAt !== undefined) updates.endsAt = patch.endsAt === null ? undefined : patch.endsAt
     if (patch.description !== undefined) updates.description = patch.description === null ? undefined : patch.description
     if (patch.location !== undefined) updates.location = patch.location === null ? undefined : patch.location
+    if (patch.type !== undefined) updates.type = patch.type === null ? undefined : patch.type
+    if (patch.color !== undefined) updates.color = patch.color === null ? undefined : patch.color
     if (patch.allDay !== undefined) updates.allDay = patch.allDay
 
     await ctx.db.patch(args.id, updates)

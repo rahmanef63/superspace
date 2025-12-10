@@ -7,8 +7,7 @@
 
 import React from "react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { ChatContainer } from "@/frontend/shared/communications";
-import { useConvexChatDataSource } from "@/frontend/features/chat/adapters/convexChatAdapter";
+import { ChatContainer, useConvexChatDataSource } from "@/frontend/shared/communications";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import type { UserMeta } from "@/frontend/shared/communications";
 

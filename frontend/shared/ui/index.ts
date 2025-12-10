@@ -43,6 +43,8 @@ export { TextareaWrapper as TextareaComponent } from './components/Textarea/Text
 // ============================================================
 export { FeatureBadge } from './components/FeatureBadge'
 export { FeatureNotReady } from './components/FeatureNotReady'
+export { SearchBar } from './components/SearchBar'
+export type { SearchBarProps } from './components/SearchBar'
 
 // ============================================================
 // Loading & Error States

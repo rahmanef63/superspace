@@ -6,6 +6,7 @@ import { Id } from "@convex/_generated/dataModel"
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import { useAccounting } from "../hooks/useAccounting"
+import AccountingDashboard from "../components/AccountingDashboard"
 
 interface AccountingPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -15,8 +16,7 @@ interface AccountingPageProps {
  * Accounting Page Component
  * 
  * Pattern: Feature page with shared layout components
- * @see docs/guides/three-column-layout-usage.md for complex layouts
- * @see docs/00_BASE_KNOWLEDGE.md - Pattern 4: React Component with Convex
+ * Uses AccountingDashboard for presentation
  */
 export default function AccountingPage({ workspaceId }: AccountingPageProps) {
   // Use hook with workspaceId - this is the correct pattern
@@ -31,14 +31,6 @@ export default function AccountingPage({ workspaceId }: AccountingPageProps) {
             Please select a workspace to view Accounting
           </p>
         </div>
-      </PageContainer>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <PageContainer centered>
-        <div className="text-muted-foreground">Loading Accounting...</div>
       </PageContainer>
     )
   }
@@ -72,22 +64,7 @@ export default function AccountingPage({ workspaceId }: AccountingPageProps) {
       />
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center space-y-4">
-            <Calculator className="h-16 w-16 mx-auto text-muted-foreground/30" />
-            <div>
-              <p className="text-lg font-medium">Accounting feature is under development</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Coming soon with chart of accounts, journal entries, GL, AP/AR, and budgets
-              </p>
-            </div>
-            <div className="rounded-lg border border-dashed p-8 text-center max-w-md mx-auto">
-              <p className="text-muted-foreground">
-                Start building your accounting feature here!
-              </p>
-            </div>
-          </div>
-        </div>
+        <AccountingDashboard data={data} isLoading={isLoading} />
       </div>
     </div>
   )

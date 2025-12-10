@@ -42,7 +42,8 @@ export type { MergedBundle } from './hooks/useBundles';
 
 // Settings
 export { WorkspaceSettings } from '@/frontend/shared/settings/workspace/WorkspaceSettings';
-export { MemberManagementPanel as MemberManagement } from '../../../features/members/components/MemberManagementPanel';
+// Note: MemberManagementPanel moved to user-management feature
+// If needed, import from: @/frontend/features/user-management
 
 // Types
 export type {

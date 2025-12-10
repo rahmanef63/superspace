@@ -44,8 +44,8 @@ export default function Chatbot() {
           content: locale === "id"
             ? "Maaf, terjadi kesalahan. Silakan coba lagi."
             : locale === "ar"
-            ? "عذرا، حدث خطأ. يرجى المحاولة مرة أخرى."
-            : "Sorry, an error occurred. Please try again.",
+              ? "عذرا، حدث خطأ. يرجى المحاولة مرة أخرى."
+              : "Sorry, an error occurred. Please try again.",
         },
       ]);
     } finally {
@@ -77,7 +77,7 @@ export default function Chatbot() {
 
   const handleReferenceClick = (ref: ContentReference) => {
     setIsOpen(false);
-    
+
     if (ref.url.startsWith("/#")) {
       router.push("/");
       setTimeout(() => {
@@ -102,14 +102,14 @@ export default function Chatbot() {
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-background border rounded-lg shadow-2xl flex flex-col z-50">
+        <div className="fixed bottom-6 right-6 w-96 h-full bg-background border rounded-lg shadow-2xl flex flex-col z-50">
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold">
               {locale === "id"
                 ? "Asisten Virtual"
                 : locale === "ar"
-                ? "المساعد الافتراضي"
-                : "Virtual Assistant"}
+                  ? "المساعد الافتراضي"
+                  : "Virtual Assistant"}
             </h3>
             <button
               onClick={() => setIsOpen(false)}
@@ -127,8 +127,8 @@ export default function Chatbot() {
                   {locale === "id"
                     ? "Halo! Ada yang bisa saya bantu?"
                     : locale === "ar"
-                    ? "مرحبا! كيف يمكنني مساعدتك؟"
-                    : "Hello! How can I help you?"}
+                      ? "مرحبا! كيف يمكنني مساعدتك؟"
+                      : "Hello! How can I help you?"}
                 </p>
               </div>
             )}
@@ -139,11 +139,10 @@ export default function Chatbot() {
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                      msg.role === "user"
+                    className={`max-w-[80%] px-4 py-2 rounded-lg ${msg.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
-                    }`}
+                      }`}
                   >
                     {msg.content}
                   </div>
@@ -206,8 +205,8 @@ export default function Chatbot() {
                   locale === "id"
                     ? "Ketik pesan..."
                     : locale === "ar"
-                    ? "اكتب رسالة..."
-                    : "Type a message..."
+                      ? "اكتب رسالة..."
+                      : "Type a message..."
                 }
                 className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled={loading}

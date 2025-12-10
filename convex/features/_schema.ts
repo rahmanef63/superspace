@@ -60,6 +60,7 @@ import importExportTables from "./importExport/schema";
 import integrationsTables from "./integrations/schema";
 import marketingTables from "./marketing/schema";
 import posTables from "./pos/schema";
+import industryTemplatesTables from "./industryTemplates/schema";
 
 // Shared Features
 import searchTables from "../shared/search/schema";
@@ -137,6 +138,7 @@ export const featureTables = {
   ...tables(integrationsTables),
   ...tables(marketingTables),
   ...tables(posTables),
+  ...tables(industryTemplatesTables),
 
   // Shared Features
   ...tables(searchTables),

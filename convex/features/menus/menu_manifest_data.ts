@@ -46,49 +46,11 @@ export const DEFAULT_MENU_ITEMS = [
         "ai"
       ],
       featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-    // No requiresPermission - visible to all workspace members
-  },
-  {
-    name: "Chat" as const,
-    slug: "chat" as const,
-    type: "route" as const,
-    icon: "MessageCircle" as const,
-    path: "/dashboard/chat",
-    component: "ChatsPage" as const,
-    order: 1,
-    metadata: {
-      description: "Chat conversations",
-      version: "2.0.0",
-      category: "communication" as const,
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
-    name: "Members" as const,
-    slug: "members" as const,
-    type: "route" as const,
-    icon: "Users" as const,
-    path: "/dashboard/members",
-    component: "MembersPage" as const,
-    order: 4,
-    metadata: {
-      description: "Manage workspace members and permissions",
-      version: "1.1.0",
-      category: "administration" as const,
-      tags: [
-        "members",
-        "team",
-        "permissions"
-      ],
-      featureType: "default" as const,
       originalFeatureType: "default" as const,
-      requiresPermission: "MANAGE_MEMBERS",
-      originalRequiresPermission: "MANAGE_MEMBERS"
+      requiresPermission: "communications.view",
+      originalRequiresPermission: "communications.view"
     },
-    requiresPermission: "MANAGE_MEMBERS"
+    requiresPermission: "communications.view"
   },
   {
     name: "AI" as const,
@@ -256,30 +218,6 @@ export const DEFAULT_MENU_ITEMS = [
       originalRequiresPermission: "MANAGE_MENUS"
     },
     requiresPermission: "MANAGE_MENUS"
-  },
-  {
-    name: "Invitations" as const,
-    slug: "invitations" as const,
-    type: "route" as const,
-    icon: "Mail" as const,
-    path: "/dashboard/invitations",
-    component: "InvitationsPage" as const,
-    order: 11,
-    metadata: {
-      description: "Manage workspace invitations",
-      version: "1.0.0",
-      category: "administration" as const,
-      tags: [
-        "invitations",
-        "team",
-        "onboarding"
-      ],
-      featureType: "system" as const,
-      originalFeatureType: "system" as const,
-      requiresPermission: "MANAGE_INVITATIONS",
-      originalRequiresPermission: "MANAGE_INVITATIONS"
-    },
-    requiresPermission: "MANAGE_INVITATIONS"
   },
   {
     name: "User Management",

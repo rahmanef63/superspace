@@ -7,8 +7,7 @@
 
 import React from "react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { ChatContainer } from "@/frontend/shared/communications";
-import { useConvexChatDataSource } from "@/frontend/features/chat/adapters/convexChatAdapter";
+import { ChatContainer, useConvexChatDataSource } from "@/frontend/shared/communications";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import type { UserMeta, MessageDraft, ModerationResult } from "@/frontend/shared/communications";
 
@@ -80,15 +79,14 @@ export function SupportChatContainer({
           </div>
           <div className="flex items-center gap-2">
             <span
-              className={`text-xs px-2 py-1 rounded-full ${
-                ticketStatus === "open"
+              className={`text-xs px-2 py-1 rounded-full ${ticketStatus === "open"
                   ? "bg-green-100 text-green-800"
                   : ticketStatus === "pending"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : ticketStatus === "resolved"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-800"
-              }`}
+                    ? "bg-yellow-100 text-yellow-800"
+                    : ticketStatus === "resolved"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-800"
+                }`}
             >
               {ticketStatus}
             </span>

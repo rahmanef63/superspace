@@ -19,15 +19,12 @@ import { useRouter, usePathname } from "next/navigation";
 // Common dashboard routes to prefetch
 const COMMON_ROUTES = [
   "/dashboard/overview",
-  "/dashboard/chat",
   "/dashboard/members",
   "/dashboard/settings",
 ];
 
 // Routes that should be prefetched based on current location
 const ROUTE_PREFETCH_MAP: Record<string, string[]> = {
-  "/dashboard/overview": ["/dashboard/chat", "/dashboard/members"],
-  "/dashboard/chat": ["/dashboard/members", "/dashboard/calls"],
   "/dashboard/members": ["/dashboard/invitations", "/dashboard/user-management"],
   "/dashboard/settings": ["/dashboard/workspace-store"],
 };

@@ -7,23 +7,28 @@
 
 // Import all feature previews
 import OverviewPreview from '@/frontend/features/overview/features-preview/index'
-import ChatPreview from '@/frontend/features/chat/features-preview/index'
 import KnowledgePreview from '@/frontend/features/knowledge/features-preview/index'
-import MembersPreview from '@/frontend/features/members/features-preview/index'
 import AIPreview from '@/frontend/features/ai/features-preview/index'
 import DocumentsPreview from '@/frontend/features/documents/features-preview/index'
-// import StarredPreview from '@/frontend/shared/foundation/utils/starred/features-preview/index'
 import DatabasePreview from '@/frontend/features/database/features-preview/index'
 import ContactsPreview from '@/frontend/features/contact/features-preview/index'
-// import ArchivedPreview from '@/frontend/shared/foundation/utils/archived/features-preview/index'
 import AnalyticsPreview from '@/frontend/features/analytics/features-preview/index'
-import InvitationsPreview from '@/frontend/features/invitations/features-preview/index'
-// import NotificationsPreview from '@/frontend/shared/foundation/utils/notifications/features-preview/index'
 import CMSLitePreview from '@/frontend/features/cms-lite/features-preview/index'
 import TasksPreview from '@/frontend/features/tasks/features-preview/index'
-// import WorkspaceSettingsPreview from '@/frontend/features/workspace-settings/features-preview/index'
 import UserSettingsPreview from '@/frontend/shared/settings/user-settings/features-preview/index'
 import ProjectsPreview from '@/frontend/features/projects/features-preview/index'
+import CRMPreview from '@/frontend/features/crm/features-preview/index'
+import CalendarPreview from '@/frontend/features/calendar/features-preview/index'
+import UserManagementPreview from '@/frontend/features/user-management/features-preview/index'
+import CommunicationsPreview from '@/frontend/features/communications/features-preview/index'
+// NEW: Additional feature previews
+import InventoryPreview from '@/frontend/features/inventory/features-preview/index'
+import FormsPreview from '@/frontend/features/forms/features-preview/index'
+import AutomationPreview from '@/frontend/features/automation/features-preview/index'
+import SalesPreview from '@/frontend/features/sales/features-preview/index'
+import ReportsPreview from '@/frontend/features/reports/features-preview/index'
+import SupportPreview from '@/frontend/features/support/features-preview/index'
+import StatusPreview from '@/frontend/features/status/features-preview/index'
 
 import { registerFeaturePreview, getFeaturePreview, getAllFeaturePreviews } from './registry'
 import type { FeaturePreviewDefinition } from './types'
@@ -31,27 +36,38 @@ import type { FeaturePreviewDefinition } from './types'
 // Auto-register all previews
 const allPreviews: FeaturePreviewDefinition[] = [
   OverviewPreview,
-  ChatPreview,
   KnowledgePreview,
-  MembersPreview,
   AIPreview,
   DocumentsPreview,
-  // StarredPreview,
   DatabasePreview,
   ContactsPreview,
-  // ArchivedPreview,
   AnalyticsPreview,
-  InvitationsPreview,
-  // NotificationsPreview,
   CMSLitePreview,
   TasksPreview,
-  // WorkspaceSettingsPreview,
   UserSettingsPreview,
   ProjectsPreview,
+  CRMPreview,
+  CalendarPreview,
+  UserManagementPreview,
+  CommunicationsPreview,
+  // NEW: Additional feature previews
+  InventoryPreview,
+  FormsPreview,
+  AutomationPreview,
+  SalesPreview,
+  ReportsPreview,
+  SupportPreview,
+  StatusPreview,
 ]
 
 // Register all previews
-allPreviews.forEach(preview => registerFeaturePreview(preview))
+allPreviews.forEach((preview, index) => {
+  if (preview) {
+    registerFeaturePreview(preview)
+  } else {
+    console.warn(`[FeaturePreviewRegistry] Preview at index ${index} is undefined. Check imports in all-previews.ts`)
+  }
+})
 
 // Export registry functions
 export { getFeaturePreview, getAllFeaturePreviews }
@@ -59,26 +75,34 @@ export { getFeaturePreview, getAllFeaturePreviews }
 // Export individual previews for direct imports
 export {
   OverviewPreview,
-  ChatPreview,
   KnowledgePreview,
-  MembersPreview,
   AIPreview,
   DocumentsPreview,
-  // StarredPreview,
   DatabasePreview,
   ContactsPreview,
-  // ArchivedPreview,
   AnalyticsPreview,
-  InvitationsPreview,
-  // NotificationsPreview,
   CMSLitePreview,
   TasksPreview,
-  // WorkspaceSettingsPreview,
   UserSettingsPreview,
   ProjectsPreview,
+  CRMPreview,
+  CalendarPreview,
+  UserManagementPreview,
+  CommunicationsPreview,
+  // NEW: Additional feature previews
+  InventoryPreview,
+  FormsPreview,
+  AutomationPreview,
+  SalesPreview,
+  ReportsPreview,
+  SupportPreview,
+  StatusPreview,
 }
 
 // Export preview definitions map for type-safe lookups
 export const featurePreviewsMap = Object.fromEntries(
-  allPreviews.map(preview => [preview.featureId, preview])
+  allPreviews
+    .filter(preview => !!preview)
+    .map(preview => [preview.featureId, preview])
 ) as Record<string, FeaturePreviewDefinition>
+

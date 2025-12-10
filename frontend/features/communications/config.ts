@@ -37,7 +37,7 @@ export default defineFeature({
 
   // Development Status
   status: {
-    state: 'development',
+    state: 'stable',
     isReady: true,
   },
 

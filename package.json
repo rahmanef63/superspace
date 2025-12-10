@@ -129,6 +129,7 @@
         "input-otp": "latest",
         "jotai": "^2.15.0",
         "katex": "^0.16.25",
+        "little-date": "^1.2.1",
         "lodash.throttle": "^4.1.1",
         "lucide-react": "^0.454.0",
         "motion": "latest",

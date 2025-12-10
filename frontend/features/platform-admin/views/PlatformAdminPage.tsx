@@ -35,7 +35,7 @@ import {
   Mail,
   Box,
 } from "lucide-react"
-import { usePlatformAdmin, usePlatformAdminStatus, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useFeatureBundles, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
+import { usePlatformAdmin, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
 import { useTableSortAndFilter, ColumnDef } from "../hooks/useTableSortAndFilter"
 import { EnhancedTableHeader } from "../components/EnhancedTableHeader"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
@@ -96,6 +96,7 @@ import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
 import { WorkspaceStorePage } from "@/frontend/features/workspace-store"
+import { ConvexErrorBoundary } from "@/frontend/shared/ui/components/error/ConvexErrorBoundary"
 
 // Feature categories available
 const FEATURE_CATEGORIES = [
@@ -225,6 +226,44 @@ function AccessDenied() {
       <Badge variant="outline" className={cn("mt-4", FEATURE_TAGS.admin.color)}>
         {FEATURE_TAGS.admin.label}
       </Badge>
+    </div>
+  )
+}
+
+function PlatformAdminErrorFallback({ error, onRetry }: { error: Error; onRetry: () => void }) {
+  const message = error?.message ?? "An unexpected error occurred."
+  const isAccessError = message.toLowerCase().includes("platform administrator access required")
+
+  if (isAccessError) {
+    return (
+      <div className="flex flex-col h-full p-6 space-y-4">
+        <AccessDenied />
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry access check
+          </Button>
+        </div>
+        <p className="text-center text-sm text-muted-foreground">
+          If you believe you should have access, ask a platform admin to grant permissions.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-6 space-y-3 text-center">
+      <AlertTriangle className="h-10 w-10 text-red-500" />
+      <div>
+        <h2 className="text-lg font-semibold">Unable to load the admin console</h2>
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </div>
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </div>
     </div>
   )
 }
@@ -424,6 +463,7 @@ function SystemFeaturesTable() {
   const [isSeeding, setIsSeeding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set()) // Track individual loading states
 
   // Bundle selection state for editing
   const [selectedBundles, setSelectedBundles] = useState<SelectedBundle[]>([])
@@ -563,20 +603,46 @@ function SystemFeaturesTable() {
   }
 
   const handleVisibilityToggle = async (feature: any) => {
+    const featureId = feature._id
+    setTogglingIds(prev => new Set(prev).add(featureId))
     try {
       await setVisibility(feature._id, !feature.isPublic, feature.isEnabled)
-      toast.success(`Feature is now ${!feature.isPublic ? "public" : "private"}`)
-    } catch (error) {
-      toast.error("Failed to update visibility")
+      toast.success(
+        !feature.isPublic
+          ? `"${feature.name}" now visible in Menu Store`
+          : `"${feature.name}" hidden from Menu Store`
+      )
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update Menu Store visibility")
+      console.error("Visibility toggle error:", error)
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(featureId)
+        return next
+      })
     }
   }
 
   const handleEnabledToggle = async (feature: any) => {
+    const featureId = feature._id
+    setTogglingIds(prev => new Set(prev).add(featureId))
     try {
       await setVisibility(feature._id, feature.isPublic, !feature.isEnabled)
-      toast.success(`Feature ${!feature.isEnabled ? "enabled" : "disabled"}`)
-    } catch (error) {
-      toast.error("Failed to update status")
+      toast.success(
+        !feature.isEnabled
+          ? `"${feature.name}" is now enabled`
+          : `"${feature.name}" is now disabled`
+      )
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update feature status")
+      console.error("Enabled toggle error:", error)
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(featureId)
+        return next
+      })
     }
   }
 
@@ -833,7 +899,12 @@ function SystemFeaturesTable() {
               >
                 Type
               </EnhancedTableHeader>
-              <TableHead className="w-[70px] text-center">Public</TableHead>
+              <TableHead className="w-[100px] text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <Store className="h-3.5 w-3.5" />
+                  <span>Menu Store</span>
+                </div>
+              </TableHead>
               <TableHead className="w-[70px] text-center">Enabled</TableHead>
               <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
@@ -882,16 +953,30 @@ function SystemFeaturesTable() {
                   <Badge variant="outline" className="capitalize">{feature.featureType}</Badge>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Switch
-                    checked={feature.isPublic}
-                    onCheckedChange={() => handleVisibilityToggle(feature)}
-                  />
+                  <div className="flex justify-center">
+                    {togglingIds.has(feature._id) ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Switch
+                        checked={feature.isPublic}
+                        onCheckedChange={() => handleVisibilityToggle(feature)}
+                        disabled={togglingIds.has(feature._id)}
+                      />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Switch
-                    checked={feature.isEnabled}
-                    onCheckedChange={() => handleEnabledToggle(feature)}
-                  />
+                  <div className="flex justify-center">
+                    {togglingIds.has(feature._id) ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Switch
+                        checked={feature.isEnabled}
+                        onCheckedChange={() => handleEnabledToggle(feature)}
+                        disabled={togglingIds.has(feature._id)}
+                      />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -1334,9 +1419,12 @@ function SystemFeaturesTable() {
  * - All workspaces
  * - System configuration
  */
-export default function PlatformAdminPage() {
-  const { isLoading, isPlatformAdmin, email, name } = usePlatformAdminStatus()
+function PlatformAdminContent() {
   const {
+    isLoading,
+    isPlatformAdmin,
+    email,
+    name,
     features,
     workspaces,
     isLoadingFeatures,
@@ -1598,5 +1686,15 @@ export default function PlatformAdminPage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function PlatformAdminPage() {
+  return (
+    <ConvexErrorBoundary fallback={(error, reset) => (
+      <PlatformAdminErrorFallback error={error} onRetry={reset} />
+    )}>
+      <PlatformAdminContent />
+    </ConvexErrorBoundary>
   )
 }

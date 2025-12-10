@@ -17,4 +17,4 @@ export {
   type PresetColorPickerProps as ColorPickerProps,
   type InlineColorPickerProps,
   type ColorPickerVariant,
-} from "@/frontend/shared/ui/color-picker";
+} from "@/frontend/shared/foundation/utils/color-picker";

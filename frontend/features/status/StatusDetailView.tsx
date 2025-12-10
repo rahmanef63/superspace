@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Play, Pause, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "../chat/utils";
+import { getInitials } from "@/frontend/shared/communications";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -30,7 +30,7 @@ interface StatusDetail {
 const useStatusDetail = (statusId?: string) => {
   const rawStatus = useQuery(
     api.features.status.queries.getStatus,
-    statusId ? { statusId: statusId as Id<"statuses"> } : undefined
+    statusId ? { statusId: statusId as Id<"statuses"> } : "skip"
   );
 
   if (!rawStatus) {
@@ -105,13 +105,13 @@ export function StatusDetailView({ statusId }: StatusDetailViewProps) {
   const currentMedia = status.media[currentMediaIndex];
 
   const handlePrevious = () => {
-    setCurrentMediaIndex((prev) => 
+    setCurrentMediaIndex((prev) =>
       prev > 0 ? prev - 1 : status.media.length - 1
     );
   };
 
   const handleNext = () => {
-    setCurrentMediaIndex((prev) => 
+    setCurrentMediaIndex((prev) =>
       prev < status.media.length - 1 ? prev + 1 : 0
     );
   };
@@ -136,14 +136,13 @@ export function StatusDetailView({ statusId }: StatusDetailViewProps) {
       {/* Progress bars */}
       <div className="absolute top-16 left-4 right-4 z-10 flex gap-1">
         {status.media.map((_, index) => (
-          <div 
+          <div
             key={index}
             className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden"
           >
-            <div 
-              className={`h-full bg-white rounded-full transition-all duration-300 ${
-                index === currentMediaIndex ? 'w-full' : index < currentMediaIndex ? 'w-full' : 'w-0'
-              }`}
+            <div
+              className={`h-full bg-white rounded-full transition-all duration-300 ${index === currentMediaIndex ? 'w-full' : index < currentMediaIndex ? 'w-full' : 'w-0'
+                }`}
             />
           </div>
         ))}
@@ -152,14 +151,14 @@ export function StatusDetailView({ statusId }: StatusDetailViewProps) {
       {/* Media Content */}
       <div className="flex-1 flex items-center justify-center relative">
         {currentMedia.type === 'photo' ? (
-          <img 
-            src={currentMedia.url} 
-            alt="Status" 
+          <img
+            src={currentMedia.url}
+            alt="Status"
             className="max-w-full max-h-full object-contain"
           />
         ) : (
           <div className="relative">
-            <video 
+            <video
               src={currentMedia.url}
               className="max-w-full max-h-full object-contain"
               controls={false}

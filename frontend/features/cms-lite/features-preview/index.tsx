@@ -1,215 +1,236 @@
 /**
  * CMS Lite Feature Preview
  * 
- * Mock preview showing content management system interface
+ * Uses the REAL CmsLitePage layout with secondary sidebar
+ * showing content management sections
  */
 
 "use client"
 
 import * as React from 'react'
-import { FileText, Layout, Globe, Eye, EyeOff, Plus, Calendar, Pencil, Check, Clock, Image, Tag } from 'lucide-react'
+import { useState } from 'react'
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  FileText,
+  Briefcase,
+  Settings,
+  Home,
+  Layers,
+  Link2,
+  Menu,
+  Wrench,
+  Bot,
+  Globe,
+  Users,
+  Plus,
+  Eye
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { defineFeaturePreview } from '@/frontend/shared/preview'
 import type { FeaturePreviewProps } from '@/frontend/shared/preview'
 
-interface ContentItem {
-  id: string
-  title: string
-  type: 'page' | 'post' | 'component'
-  status: 'published' | 'draft' | 'scheduled'
-  author: string
-  updatedAt: string
-  thumbnail?: boolean
+interface CmsLiteMockData {
+  stats: { products: number; posts: number; pages: number; users: number }
+  sections: Array<{ id: string; title: string; icon: string; count?: number }>
 }
 
-interface CMSMockData {
-  content: ContentItem[]
-  stats: {
-    pages: number
-    posts: number
-    components: number
-    published: number
+function CmsLitePreview({ mockData, compact, interactive }: FeaturePreviewProps) {
+  const data = mockData.data as unknown as CmsLiteMockData
+  const [activeSection, setActiveSection] = useState('dashboard')
+
+  const getIcon = (id: string) => {
+    const icons: Record<string, any> = {
+      dashboard: LayoutDashboard,
+      users: Users,
+      products: ShoppingCart,
+      posts: FileText,
+      portfolio: Briefcase,
+      services: Wrench,
+      landing: Home,
+      navigation: Menu,
+      features: Layers,
+      quicklinks: Link2,
+      ai: Bot,
+      settings: Settings,
+    }
+    return icons[id] || LayoutDashboard
   }
-}
-
-const statusConfig = {
-  published: { color: 'bg-green-500/10 text-green-500 border-green-500/20', icon: Check },
-  draft: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20', icon: Pencil },
-  scheduled: { color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', icon: Clock },
-}
-
-const typeIcons = {
-  page: <Layout className="h-4 w-4 text-blue-500" />,
-  post: <FileText className="h-4 w-4 text-purple-500" />,
-  component: <Tag className="h-4 w-4 text-orange-500" />,
-}
-
-function CMSPreview({ mockData, compact, interactive }: FeaturePreviewProps) {
-  const data = mockData.data as unknown as CMSMockData
-  const [selectedTab, setSelectedTab] = React.useState('all')
 
   if (compact) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">CMS Lite</span>
-          <Badge variant="secondary">{data.stats.published} published</Badge>
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">CMS Lite</span>
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <div className="p-2 bg-muted/50 rounded-md text-center">
-            <p className="text-sm font-bold">{data.stats.pages}</p>
-            <p className="text-[10px] text-muted-foreground">Pages</p>
+            <p className="text-lg font-bold">{data.stats.products}</p>
+            <p className="text-[10px] text-muted-foreground">Products</p>
           </div>
           <div className="p-2 bg-muted/50 rounded-md text-center">
-            <p className="text-sm font-bold">{data.stats.posts}</p>
+            <p className="text-lg font-bold">{data.stats.posts}</p>
             <p className="text-[10px] text-muted-foreground">Posts</p>
-          </div>
-          <div className="p-2 bg-muted/50 rounded-md text-center">
-            <p className="text-sm font-bold">{data.stats.components}</p>
-            <p className="text-[10px] text-muted-foreground">Blocks</p>
           </div>
         </div>
       </div>
     )
   }
 
+  const sidebarItems = [
+    { group: 'Main', items: ['dashboard', 'users'] },
+    { group: 'Content', items: ['products', 'posts', 'portfolio', 'services'] },
+    { group: 'Site', items: ['landing', 'navigation', 'features', 'quicklinks'] },
+    { group: 'AI', items: ['ai'] },
+    { group: 'Config', items: ['settings'] },
+  ]
+
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Globe className="h-5 w-5" />
-          <h3 className="font-semibold">Content Manager</h3>
+    <div className="flex h-full border rounded-xl overflow-hidden bg-background">
+      {/* Sidebar */}
+      <div className="w-56 border-r bg-muted/20 flex flex-col">
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            <div>
+              <h3 className="font-semibold text-sm">CMS Lite</h3>
+              <p className="text-[10px] text-muted-foreground">Website Admin</p>
+            </div>
+          </div>
         </div>
-        <Button size="sm" className="gap-1" disabled={!interactive}>
-          <Plus className="h-4 w-4" />
-          New Content
-        </Button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Layout className="h-4 w-4 mx-auto text-blue-500 mb-1" />
-            <div className="text-lg font-bold">{data.stats.pages}</div>
-            <div className="text-[10px] text-muted-foreground">Pages</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <FileText className="h-4 w-4 mx-auto text-purple-500 mb-1" />
-            <div className="text-lg font-bold">{data.stats.posts}</div>
-            <div className="text-[10px] text-muted-foreground">Posts</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Tag className="h-4 w-4 mx-auto text-orange-500 mb-1" />
-            <div className="text-lg font-bold">{data.stats.components}</div>
-            <div className="text-[10px] text-muted-foreground">Blocks</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-green-500/5">
-          <CardContent className="p-3 text-center">
-            <Check className="h-4 w-4 mx-auto text-green-500 mb-1" />
-            <div className="text-lg font-bold">{data.stats.published}</div>
-            <div className="text-[10px] text-muted-foreground">Live</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="w-full">
-          <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-          <TabsTrigger value="pages" className="flex-1">Pages</TabsTrigger>
-          <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Content List */}
-      <Card>
-        <ScrollArea className="h-[220px]">
-          <div className="divide-y">
-            {data.content.map((item) => {
-              const StatusIcon = statusConfig[item.status].icon
-              return (
-                <div 
-                  key={item.id} 
-                  className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
-                >
-                  {item.thumbnail ? (
-                    <div className="w-12 h-8 rounded bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center">
-                      <Image className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-8 rounded bg-muted flex items-center justify-center">
-                      {typeIcons[item.type]}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      by {item.author} · {item.updatedAt}
-                    </p>
-                  </div>
-                  <Badge 
-                    variant="outline" 
-                    className={cn("text-xs gap-1", statusConfig[item.status].color)}
-                  >
-                    <StatusIcon className="h-3 w-3" />
-                    {item.status}
-                  </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    disabled={!interactive}
-                  >
-                    {item.status === 'published' ? (
-                      <Eye className="h-4 w-4" />
-                    ) : (
-                      <Pencil className="h-4 w-4" />
-                    )}
-                  </Button>
+        <ScrollArea className="flex-1">
+          <div className="p-2 space-y-4">
+            {sidebarItems.map((section) => (
+              <div key={section.group}>
+                <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase">{section.group}</p>
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const Icon = getIcon(item)
+                    return (
+                      <button
+                        key={item}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                          activeSection === item ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                        )}
+                        onClick={() => interactive && setActiveSection(item)}
+                        disabled={!interactive}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="capitalize">{item.replace('-', ' ')}</span>
+                      </button>
+                    )
+                  })}
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </ScrollArea>
-      </Card>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <div className="p-4 border-b flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold capitalize">{activeSection.replace('-', ' ')}</h2>
+            <p className="text-xs text-muted-foreground">Manage your website content</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-2" disabled={!interactive}>
+              <Eye className="h-4 w-4" />
+              Preview
+            </Button>
+            <Button size="sm" className="gap-2" disabled={!interactive}>
+              <Plus className="h-4 w-4" />
+              Add New
+            </Button>
+          </div>
+        </div>
+
+        <ScrollArea className="flex-1 p-4">
+          {activeSection === 'dashboard' && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {Object.entries(data.stats).map(([key, value]) => (
+                  <Card key={key}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium capitalize">{key}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{value}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Common website operations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Button variant="outline" className="justify-start" disabled={!interactive}>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Add Product
+                    </Button>
+                    <Button variant="outline" className="justify-start" disabled={!interactive}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      New Post
+                    </Button>
+                    <Button variant="outline" className="justify-start" disabled={!interactive}>
+                      <Bot className="mr-2 h-4 w-4" />
+                      AI Settings
+                    </Button>
+                    <Button variant="outline" className="justify-start" disabled={!interactive}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Site Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeSection !== 'dashboard' && (
+            <div className="flex items-center justify-center h-64 text-muted-foreground">
+              <div className="text-center">
+                {React.createElement(getIcon(activeSection), { className: "h-12 w-12 mx-auto mb-3 opacity-50" })}
+                <p className="font-medium capitalize">{activeSection.replace('-', ' ')} Management</p>
+                <p className="text-sm">Configure your website {activeSection}</p>
+              </div>
+            </div>
+          )}
+        </ScrollArea>
+      </div>
     </div>
   )
 }
 
-// Register the preview
 export default defineFeaturePreview({
   featureId: 'cms-lite',
   name: 'CMS Lite',
-  description: 'Lightweight content management',
-  component: CMSPreview,
+  description: 'Lightweight content management for websites',
+  component: CmsLitePreview,
   category: 'content',
-  tags: ['cms', 'content', 'pages', 'posts', 'publishing'],
+  tags: ['cms', 'website', 'content', 'admin', 'blog'],
   mockDataSets: [
     {
       id: 'default',
-      name: 'Content',
-      description: 'Pages and posts',
+      name: 'Website Admin',
+      description: 'Sample CMS with content stats',
       data: {
-        stats: { pages: 12, posts: 24, components: 8, published: 28 },
-        content: [
-          { id: '1', title: 'Home Page', type: 'page', status: 'published', author: 'Alice', updatedAt: '2h ago', thumbnail: true },
-          { id: '2', title: 'Getting Started Guide', type: 'post', status: 'published', author: 'Bob', updatedAt: '1d ago' },
-          { id: '3', title: 'About Us', type: 'page', status: 'draft', author: 'Charlie', updatedAt: '3d ago', thumbnail: true },
-          { id: '4', title: 'Product Announcement', type: 'post', status: 'scheduled', author: 'Diana', updatedAt: '1w ago' },
-          { id: '5', title: 'Hero Banner', type: 'component', status: 'published', author: 'Eve', updatedAt: '2w ago' },
+        stats: { products: 24, posts: 18, pages: 8, users: 156 },
+        sections: [
+          { id: 'dashboard', title: 'Dashboard' },
+          { id: 'products', title: 'Products', count: 24 },
+          { id: 'posts', title: 'Blog Posts', count: 18 },
         ],
       },
     },

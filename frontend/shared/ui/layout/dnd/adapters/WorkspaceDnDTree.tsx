@@ -39,7 +39,7 @@ import {
   type TreeItemSlots,
 } from "@/frontend/shared/ui/layout/dnd"
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
-import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
+import { InlineColorPicker } from "@/frontend/shared/foundation/utils/color-picker"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import {
@@ -87,7 +87,7 @@ export interface WorkspaceDnDTreeProps {
   emptyMessage?: string
   /** Additional class name */
   className?: string
-  
+
   // Callbacks
   onSelect?: (workspace: WorkspaceDnDItem) => void
   onMove?: (data: { workspaceId: string; newParentId: string | null; newSortOrder: number }) => Promise<void> | void
@@ -117,7 +117,7 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
 const WORKSPACE_TYPE_ICON_NAMES: Record<string, string> = {
   personal: "Home",
   organization: "Building2",
-  institution: "Building2", 
+  institution: "Building2",
   group: "Users",
   family: "Heart",
 }
@@ -265,7 +265,7 @@ export function WorkspaceDnDTree({
 
       // Icon button component
       const iconButton = (
-        <button 
+        <button
           className="flex h-6 w-6 items-center justify-center rounded text-white shrink-0 hover:opacity-80 transition-opacity"
           style={{ backgroundColor: color }}
         >
@@ -343,7 +343,7 @@ export function WorkspaceDnDTree({
     renderBeforeActions: ({ item }) => {
       if (!onShowFeatures) return null
       const workspace = workspaceMap.get(item.id) || item
-      
+
       return (
         <TooltipProvider delayDuration={300}>
           <Tooltip>

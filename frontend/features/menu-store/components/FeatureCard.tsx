@@ -185,7 +185,7 @@ export function FeatureCard({
             {!isLocked && (
               <Button
                 onClick={() => onInstall(feature.slug)}
-                disabled={isInstalling || isNotReady}
+                disabled={isInstalling}
                 className="w-full"
                 size="sm"
                 variant={isNotReady ? "outline" : "default"}
@@ -196,7 +196,10 @@ export function FeatureCard({
                     Installing...
                   </>
                 ) : isNotReady ? (
-                  <>In Development</>
+                  <>
+                    <Download className="mr-2 h-3 w-3" />
+                    Install (Dev)
+                  </>
                 ) : (
                   <>
                     <Download className="mr-2 h-3 w-3" />

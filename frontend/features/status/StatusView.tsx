@@ -1,21 +1,48 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useWhatsAppStore } from "@/frontend/features/chat/shared/stores";
-import { TopBar } from "@/frontend/features/chat/sections/center/TopBar";
+import { useRouter } from "next/navigation";
 import { StatusListView } from "./StatusListView";
 import { StatusDetailView } from "./StatusDetailView";
 import { SecondarySidebarLayout } from "@/frontend/shared/ui";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Camera } from "lucide-react";
+
+// Simple header for status page
+function StatusHeader({ 
+  title, 
+  onBack,
+  showBackButton = true,
+}: { 
+  title: string; 
+  onBack?: () => void;
+  showBackButton?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 border-b bg-background">
+      {showBackButton && onBack && (
+        <Button variant="ghost" size="icon" onClick={onBack}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      )}
+      <div className="flex items-center gap-2">
+        <Camera className="h-5 w-5 text-muted-foreground" />
+        <h1 className="text-lg font-semibold">{title}</h1>
+      </div>
+    </div>
+  );
+}
 
 export function StatusView() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>();
   const isMobile = useIsMobile();
-  const { setActiveTab } = useWhatsAppStore();
+  const router = useRouter();
 
   const handleBack = () => {
     if (selectedStatusId) {
       setSelectedStatusId(undefined);
     } else {
-      setActiveTab('chats');
+      // Navigate back to communications or dashboard
+      router.back();
     }
   };
 
@@ -24,25 +51,15 @@ export function StatusView() {
     if (selectedStatusId) {
       return (
         <div className="flex flex-col h-screen bg-background">
-          <TopBar
-            title="Status"
-            showSearch={false}
-            showActions={false}
-            onMenuClick={handleBack}
-          />
+          <StatusHeader title="Status" onBack={handleBack} />
           <StatusDetailView statusId={selectedStatusId} />
         </div>
       );
     }
-    
+
     return (
       <div className="flex flex-col h-screen bg-background">
-        <TopBar
-          title="Status"
-          showSearch={true}
-          showActions={false}
-          onMenuClick={handleBack}
-        />
+        <StatusHeader title="Status" onBack={handleBack} />
         <StatusListView selectedStatusId={selectedStatusId} onStatusSelect={setSelectedStatusId} />
       </div>
     );

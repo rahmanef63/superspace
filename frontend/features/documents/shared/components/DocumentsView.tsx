@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
 import { FeatureAIAssistant } from "@/frontend/shared/ui/ai-assistant/FeatureAIAssistant";
+import { FeatureSkeletons } from "@/frontend/shared/ui/components/loading/FeatureSkeletons";
 import { cn } from "@/lib/utils";
 
 // Hooks & Logic
@@ -501,6 +502,10 @@ export function DocumentsView({
   category,
 }: DocumentsViewWrapperProps) {
   const manager = useDocumentsManager({ workspaceId, initialDocumentId, editorMode, category });
+
+  if (manager.isLoading) {
+    return <FeatureSkeletons.Documents />;
+  }
 
   return (
     <DocumentsViewContent

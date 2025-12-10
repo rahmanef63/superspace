@@ -86,6 +86,64 @@ export function useDirectConversations(options: UseDirectConversationsOptions = 
   }
 }
 
+/**
+ * Check if an ID looks like a valid Convex ID (not a mock/sample ID)
+ */
+function isValidConvexId(id: string | undefined): boolean {
+  if (!id) return false
+  const mockPrefixes = ["ch-", "dm-", "user-", "msg-", "cat-", "bot-", "part-", "ai-"]
+  return !mockPrefixes.some(prefix => id.startsWith(prefix))
+}
+
+interface UseDirectConversationOptions {
+  conversationId?: string
+}
+
+/**
+ * Fetch a single direct conversation by ID
+ * Maps backend "conversation" to frontend "DirectConversation" type
+ */
+export function useDirectConversation(options: UseDirectConversationOptions = {}) {
+  // Skip backend query for mock/sample IDs
+  const shouldQuery = options.conversationId && isValidConvexId(options.conversationId)
+
+  const conversation = useQuery(
+    api.features.chat.conversations.getConversation,
+    shouldQuery ? { conversationId: options.conversationId as Id<"conversations"> } : "skip"
+  )
+
+  const isLoading = conversation === undefined && !!options.conversationId
+
+  // Map to DirectConversation type
+  const directConversation: DirectConversation | null = conversation ? {
+    id: conversation._id,
+    workspaceId: conversation.workspaceId,
+    type: "direct",
+    name: conversation.name,
+    participants: ((conversation as any).participants ?? []).map((p: any): DirectParticipant => ({
+      id: p._id,
+      conversationId: conversation._id,
+      userId: p.userId,
+      user: p.user ? {
+        id: p.user._id,
+        name: p.user.name || p.user.email || "Unknown",
+        avatar: p.user.imageUrl || p.user.image,
+        status: "online" as const,
+      } : undefined,
+      joinedAt: new Date(p.joinedAt || Date.now()).toISOString(),
+    })),
+    participantIds: ((conversation as any).participants ?? []).map((p: any) => p.userId),
+    createdBy: conversation.createdBy,
+    createdAt: new Date((conversation as any)._creationTime || Date.now()).toISOString(),
+  } : null
+
+  return {
+    conversation: directConversation,
+    isLoading,
+    error: null,
+  }
+}
+
 interface UseDirectMessagesOptions {
   conversationId?: string
   limit?: number

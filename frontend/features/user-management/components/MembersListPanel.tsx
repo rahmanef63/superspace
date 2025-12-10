@@ -1,0 +1,370 @@
+/**
+ * MembersListPanel
+ *
+ * Simple unified list of all workspace members.
+ * Features:
+ * - List view with Avatar, Name, Email, Role, Joined Date
+ * - Search and Role Filter
+ * - Invite Member Action
+ * - Sorting by Name, Role, Date
+ */
+
+"use client";
+
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+    Search,
+    MoreVertical,
+    UserPlus,
+    Filter,
+    Mail,
+    Shield,
+    Trash2,
+    Calendar,
+    Loader2,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
+} from "lucide-react";
+import { format } from "date-fns";
+import type { Id } from "@convex/_generated/dataModel";
+import { useMembers, useRoles, useRemoveMember, useUpdateMemberRole } from "../api";
+import { useToast } from "@/hooks/use-toast";
+import { QuickInvitePanel } from "./QuickInvitePanel";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+
+interface MembersListPanelProps {
+    workspaceId: Id<"workspaces">;
+    className?: string;
+}
+
+type SortField = "name" | "role" | "joined";
+type SortDirection = "asc" | "desc";
+
+export function MembersListPanel({ workspaceId, className }: MembersListPanelProps) {
+    const [searchQuery, setSearchQuery] = React.useState("");
+    const [roleFilter, setRoleFilter] = React.useState<string | "all">("all");
+    const [isInviteOpen, setIsInviteOpen] = React.useState(false);
+    const [sortField, setSortField] = React.useState<SortField>("name");
+    const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
+
+    // Data Hooks
+    const members = useMembers(workspaceId, { includeInactive: false });
+    const roles = useRoles(workspaceId);
+    const removeMember = useRemoveMember();
+    const updateMemberRole = useUpdateMemberRole();
+    const { toast } = useToast();
+
+    // Derived State
+    const filteredMembers = React.useMemo(() => {
+        if (!members) return [];
+        let result = [...members]; // Create copy for sorting
+
+        // Filter by search
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(
+                (m) =>
+                    m.user?.name?.toLowerCase().includes(query) ||
+                    m.user?.email?.toLowerCase().includes(query)
+            );
+        }
+
+        // Filter by role
+        if (roleFilter !== "all") {
+            result = result.filter((m) => m.role?._id === roleFilter);
+        }
+
+        // Sort
+        result.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === "name") {
+                const na = a.user?.name || "";
+                const nb = b.user?.name || "";
+                cmp = na.localeCompare(nb);
+            } else if (sortField === "role") {
+                const ra = a.role?.name || "";
+                const rb = b.role?.name || "";
+                cmp = ra.localeCompare(rb);
+            } else if (sortField === "joined") {
+                const da = a._creationTime || 0;
+                const db = b._creationTime || 0;
+                cmp = da - db;
+            }
+            return sortDirection === "asc" ? cmp : -cmp;
+        });
+
+        return result;
+    }, [members, searchQuery, roleFilter, sortField, sortDirection]);
+
+    // Handlers
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const handleRemoveMember = async (userId: Id<"users">, memberId: Id<"workspaceMemberships">) => {
+        if (!confirm("Are you sure you want to remove this member?")) return;
+        try {
+            await removeMember({ workspaceId, userId });
+            toast({ title: "Member removed", description: "The user has been removed from the workspace." });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to remove member.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleRoleChange = async (memberId: Id<"workspaceMemberships">, userId: Id<"users">, roleId: Id<"roles">) => {
+        try {
+            await updateMemberRole({ workspaceId, userId, roleId });
+            toast({ title: "Role updated", description: "Member role has been updated." });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update role.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const getInitials = (name?: string) => {
+        return (name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    if (!members || !roles) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ArrowUpDown className="w-3 h-3 ml-1 opacity-50" />;
+        return sortDirection === "asc" ? <ArrowUp className="w-3 h-3 ml-1" /> : <ArrowDown className="w-3 h-3 ml-1" />;
+    };
+
+    return (
+        <div className={cn("flex flex-col h-full space-y-4", className)}>
+            {/* Toolbar */}
+            <div className="flex items-center justify-between gap-2 p-1">
+                <div className="flex items-center gap-2 flex-1">
+                    <div className="relative max-w-sm w-full">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search members..."
+                            className="pl-8 h-9"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-9 gap-1">
+                                <Filter className="w-3.5 h-3.5" />
+                                {roleFilter === "all"
+                                    ? "All Roles"
+                                    : roles.find((r) => r._id === roleFilter)?.name || "Role"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            <DropdownMenuItem onClick={() => setRoleFilter("all")}>
+                                All Roles
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {roles.map((role) => (
+                                <DropdownMenuItem
+                                    key={role._id}
+                                    onClick={() => setRoleFilter(role._id)}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="w-2 h-2 rounded-full"
+                                            style={{ backgroundColor: role.color ?? "#6366f1" }}
+                                        />
+                                        {role.name}
+                                    </div>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="sm" className="h-9 gap-1.5">
+                            <UserPlus className="w-4 h-4" />
+                            Invite Member
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Invite to Workspace</DialogTitle>
+                        </DialogHeader>
+                        <QuickInvitePanel
+                            workspaceId={workspaceId}
+                            Contacts={[]}
+                            teams={[]}
+                            className="border-none shadow-none p-0"
+                        />
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 border rounded-md overflow-hidden bg-card">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent bg-muted/50">
+                            <TableHead className="w-[300px] cursor-pointer" onClick={() => handleSort("name")}>
+                                <div className="flex items-center">Member <SortIcon field="name" /></div>
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort("role")}>
+                                <div className="flex items-center">Role <SortIcon field="role" /></div>
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort("joined")}>
+                                <div className="flex items-center">Joined <SortIcon field="joined" /></div>
+                            </TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredMembers.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                    No members found.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredMembers.map((member) => (
+                                <TableRow key={member._id} className="group">
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarImage src={member.user?.avatarUrl} />
+                                                <AvatarFallback>{getInitials(member.user?.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-sm">
+                                                    {member.user?.name || "Unknown User"}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                                    {member.user?.email}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant="outline"
+                                            className="bg-opacity-10 border-opacity-20 flex w-fit items-center gap-1.5"
+                                            style={{
+                                                backgroundColor: (member.role?.color ?? "#6366f1") + "20",
+                                                borderColor: member.role?.color ?? "#6366f1",
+                                                color: member.role?.color ?? "#6366f1",
+                                            }}
+                                        >
+                                            <Shield className="w-3 h-3" />
+                                            {member.role?.name || "No Role"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="w-3.5 h-3.5 opacity-70" />
+                                            {member._creationTime
+                                                ? format(new Date(member._creationTime), "MMM d, yyyy")
+                                                : "-"}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() => window.location.href = `mailto:${member.user?.email}`}
+                                                >
+                                                    <Mail className="w-4 h-4 mr-2" />
+                                                    Email member
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem className="focus:bg-transparent">
+                                                    <span className="text-xs text-muted-foreground font-medium mb-1 ml-1">Change Role</span>
+                                                </DropdownMenuItem>
+                                                {roles.map((role) => (
+                                                    <DropdownMenuItem
+                                                        key={role._id}
+                                                        onClick={() => handleRoleChange(member._id, member.user!._id, role._id)}
+                                                        disabled={member.role?._id === role._id}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className="w-2 h-2 rounded-full"
+                                                                style={{ backgroundColor: role.color ?? "#6366f1" }}
+                                                            />
+                                                            {role.name}
+                                                            {member.role?._id === role._id && <span className="ml-auto text-xs opacity-50">(Current)</span>}
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                ))}
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => handleRemoveMember(member.user!._id, member._id)}
+                                                >
+                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                    Remove from workspace
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
+    );
+}

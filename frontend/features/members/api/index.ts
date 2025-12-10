@@ -35,6 +35,8 @@ export const useAddMember = () => useMutation(api.workspace.workspaces.addMember
 export const useRemoveMember = () => useMutation(api.workspace.workspaces.removeMember);
 export const useUpdateMemberRole = () => useMutation(api.workspace.workspaces.updateMemberRole);
 export const useCreateRole = () => useMutation(api.workspace.roles.createRole);
+export const useUpdateRole = () => useMutation(api.workspace.roles.updateRole);
+export const useDeleteRole = () => useMutation(api.workspace.roles.deleteRole);
 
 export const useHasPermission = (
   workspaceId: Id<"workspaces">,

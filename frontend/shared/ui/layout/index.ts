@@ -137,11 +137,27 @@ export {
   SidebarLayout,
   ResizeHandle,
   CollapsiblePanel,
+  // Column Layout System
+  ColumnLayout,
+  ColumnHeader,
+  ColumnMain,
+  ColumnFooter,
+  LeftPanelLayout,
+  CenterPanelLayout,
+  RightPanelLayout,
+  PanelRoot,
+  PanelHeader,
+  PanelBody,
+  PanelFooter,
   type LayoutType,
   type SplitMode,
   type LayoutNode,
   type PanelRenderContext,
   type LayoutContainerProps,
+  type ColumnLayoutProps,
+  type ColumnHeaderProps,
+  type ColumnMainProps,
+  type ColumnFooterProps,
 } from "./container";
 
 // ============================================================================

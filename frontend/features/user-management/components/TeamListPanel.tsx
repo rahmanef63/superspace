@@ -15,25 +15,26 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Users, 
-  Plus, 
+import {
+  Users,
+  Plus,
   Search,
   UserPlus,
   MoreHorizontal,
   Crown,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,9 +42,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Id } from "@convex/_generated/dataModel";
 import type { Team, HierarchyMemberOverview, TeamMember } from "../types";
-import { useCreateTeam, useContacts, useTeamMembers } from "../api";
+import { useCreateTeam, useContacts, useTeamMembers, useMembers, useAddTeamMember } from "../api";
 import { useToast } from "@/hooks/use-toast";
 
 interface TeamListPanelProps {
@@ -62,13 +70,49 @@ export function TeamListPanel({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedTeamId, setSelectedTeamId] = React.useState<Id<"userTeams"> | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = React.useState(false);
+  const [isAddingMember, setIsAddingMember] = React.useState(false);
+
   const [newTeamName, setNewTeamName] = React.useState("");
   const [newTeamDescription, setNewTeamDescription] = React.useState("");
-  
-  const Contacts = useContacts();
+  const [selectedMemberId, setSelectedMemberId] = React.useState<string>("");
+
+  const contacts = useContacts();
+  const members = useMembers(workspaceId);
   const teamMembers = useTeamMembers(selectedTeamId ?? undefined);
   const createTeam = useCreateTeam();
+  const addTeamMember = useAddTeamMember();
   const { toast } = useToast();
+
+  // Get available members to add (everyone in workspace who is not already in team)
+  const availableMembers = React.useMemo(() => {
+    if (!members || !teamMembers) return [];
+    const teamUserIds = new Set((teamMembers as TeamMember[]).map(m => m.userId));
+    return members.filter((m: any) => !teamUserIds.has(m.user?._id as any));
+  }, [members, teamMembers]);
+
+  const handleAddMember = async () => {
+    if (!selectedTeamId || !selectedMemberId) return;
+    try {
+      setIsAddingMember(true);
+      // Find the user ID from the member ID selection (selectedMemberId might be member doc ID or user ID depending on dropdown)
+      // Let's use User ID for the mutation
+      const member = members?.find((m: any) => m.user?._id === selectedMemberId);
+      if (!member || !member.user) return;
+
+      await addTeamMember({
+        teamId: selectedTeamId,
+        userId: member.user._id,
+      });
+      toast({ title: "Member added", description: "User has been added to the team." });
+      setIsAddMemberOpen(false);
+      setSelectedMemberId("");
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
 
   const filteredTeams = React.useMemo(() => {
     if (!searchQuery) return teams;
@@ -166,6 +210,51 @@ export function TeamListPanel({
           </Dialog>
         </div>
 
+        <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Team Member</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label>Select Member</Label>
+                <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a workspace member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableMembers.map((m: any) => (
+                      <SelectItem key={m.user?._id} value={m.user?._id as string}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-5 h-5">
+                            <AvatarImage src={m.user?.avatarUrl} />
+                            <AvatarFallback className="text-[10px]">
+                              {getInitials(m.user?.name || "?")}
+                            </AvatarFallback>
+                          </Avatar>
+                          {m.user?.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                    {availableMembers.length === 0 && (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        No available members to add
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddMemberOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddMember} disabled={!selectedMemberId || isAddingMember}>
+                {isAddingMember && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Add Member
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="relative mb-3">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -254,7 +343,7 @@ export function TeamListPanel({
                   <div className="text-center py-8 text-muted-foreground">
                     <UserPlus className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No members yet</p>
-                    <Button size="sm" variant="outline" className="mt-2">
+                    <Button size="sm" variant="outline" className="mt-2" onClick={() => setIsAddMemberOpen(true)}>
                       Add Members
                     </Button>
                   </div>
@@ -295,18 +384,18 @@ export function TeamListPanel({
         ) : (
           <>
             <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">
-              Contacts ({Contacts?.length ?? 0})
+              Contacts ({contacts?.length ?? 0})
             </h3>
             <ScrollArea className="flex-1">
               <div className="space-y-2 pr-3">
-                {!Contacts || Contacts.length === 0 ? (
+                {!contacts || contacts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No Contacts yet</p>
                     <p className="text-xs">Add Contacts to quickly invite them to workspaces</p>
                   </div>
                 ) : (
-                  Contacts.map((Contactship: any) => (
+                  contacts.map((Contactship: any) => (
                     <div
                       key={String(Contactship._id)}
                       className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50"

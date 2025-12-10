@@ -37,6 +37,7 @@ export const inviteToHierarchy = mutation({
     ),
     maxDepth: v.optional(v.number()),
     message: v.optional(v.string()),
+    specificWorkspaceIds: v.optional(v.array(v.id("workspaces"))), // New arg for custom mode
   },
   handler: async (ctx, args) => {
     const inviterId = await ensureUser(ctx);
@@ -60,8 +61,44 @@ export const inviteToHierarchy = mutation({
     const roleMap = new Map<string, Id<"roles">>();
     roleMap.set(String(args.workspaceId), args.baseRoleId);
 
-    // Collect child workspaces if propagating
-    if (args.propagateToChildren) {
+    // Customize target collection
+    if (args.specificWorkspaceIds) {
+      // CUSTOM MODE: specific workspaces only
+      // We assume "same" strategy (role equivalence by slug) for simplicity or respect "same" from args.
+      // We don't support "decreasing" for arbitrary specific IDs easily without knowing depth.
+      // So we'll try to find equivalent role in each specific workspace.
+
+      // Reset targets to just the specific ones (ensure unique)
+      const uniqueIds = Array.from(new Set(args.specificWorkspaceIds));
+      // Clear the default start (unless it's in the list)
+      targetWorkspaceIds.length = 0;
+      uniqueIds.forEach(id => targetWorkspaceIds.push(id));
+
+      for (const wsId of targetWorkspaceIds) {
+        if (roleMap.has(String(wsId))) continue; // Already set (e.g. source workspace)
+
+        // Find equivalent role
+        const equivalentRole = await ctx.db
+          .query("roles")
+          .withIndex("by_workspace_slug", (q) => q.eq("workspaceId", wsId).eq("slug", baseRoleSlug))
+          .first();
+
+        if (equivalentRole) {
+          roleMap.set(String(wsId), equivalentRole._id);
+        } else {
+          // Fallback to default
+          const defaultRole = await ctx.db
+            .query("roles")
+            .withIndex("by_workspace", (q) => q.eq("workspaceId", wsId))
+            .filter((q) => q.eq(q.field("isDefault"), true))
+            .first();
+          if (defaultRole) {
+            roleMap.set(String(wsId), defaultRole._id);
+          }
+        }
+      }
+
+    } else if (args.propagateToChildren) {
       async function collectChildren(wsId: Id<"workspaces">, depth: number, parentRoleLevel: number) {
         if (depth >= maxDepth) return;
 

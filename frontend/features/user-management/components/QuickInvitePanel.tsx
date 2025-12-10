@@ -28,8 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  UserPlus, 
+import {
+  UserPlus,
   Users,
   GitBranch,
   Send,
@@ -43,11 +43,13 @@ import {
 } from "lucide-react";
 import type { Id } from "@convex/_generated/dataModel";
 import type { ContactForQuickInvite, Team, PropagationStrategy } from "../types";
-import { 
-  useBulkInviteContacts, 
+import {
+  useBulkInviteContacts,
   useInviteToHierarchy,
   useInviteTeamToWorkspaces,
+
   useRoles,
+  useUserWorkspaceMatrix,
 } from "../api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -66,6 +68,8 @@ export function QuickInvitePanel({
 }: QuickInvitePanelProps) {
   // State
   const [mode, setMode] = React.useState<"Contacts" | "hierarchy" | "team">("Contacts");
+  const [hierarchyMode, setHierarchyMode] = React.useState<"all" | "custom">("all");
+  const [selectedWorkspaceIds, setSelectedWorkspaceIds] = React.useState<Set<string>>(new Set());
   const [selectedContactIds, setSelectedContactIds] = React.useState<Set<string>>(new Set());
   const [selectedTeamId, setSelectedTeamId] = React.useState<string>("");
   const [selectedRoleId, setSelectedRoleId] = React.useState<string>("");
@@ -79,6 +83,7 @@ export function QuickInvitePanel({
 
   // Hooks
   const roles = useRoles(workspaceId);
+  const matrix = useUserWorkspaceMatrix(workspaceId);
   const bulkInviteContacts = useBulkInviteContacts();
   const inviteToHierarchy = useInviteToHierarchy();
   const inviteTeamToWorkspaces = useInviteTeamToWorkspaces();
@@ -163,21 +168,28 @@ export function QuickInvitePanel({
 
     setIsSubmitting(true);
     try {
+      // Prepare specific workspace IDs if in custom mode
+      const specificWorkspaceIds = hierarchyMode === "custom"
+        ? Array.from(selectedWorkspaceIds) as Id<"workspaces">[]
+        : undefined;
+
       const result = await inviteToHierarchy({
         workspaceId,
         inviteeEmail: hierarchyEmail,
         baseRoleId: selectedRoleId as Id<"roles">,
-        propagateToChildren,
+        propagateToChildren: hierarchyMode === "all" ? propagateToChildren : false,
         propagationStrategy,
         message: message || undefined,
+        specificWorkspaceIds,
       });
 
       toast({
         title: "Hierarchy invitation sent",
-        description: `Successfully invited to ${result.successCount} of ${result.totalWorkspaces} workspaces.`,
+        description: `Successfully invited to ${result.successWorkspaces ?? result.successCount} of ${result.totalWorkspaces} workspaces.`,
       });
 
       setHierarchyEmail("");
+      setSelectedWorkspaceIds(new Set());
       setMessage("");
     } catch (error) {
       toast({
@@ -322,7 +334,7 @@ export function QuickInvitePanel({
           )}
 
           {mode === "hierarchy" && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Email address</Label>
                 <Input
@@ -332,37 +344,94 @@ export function QuickInvitePanel({
                   onChange={(e) => setHierarchyEmail(e.target.value)}
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Propagate to child workspaces</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Invite to this workspace and all its children
-                  </p>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Invite Scope</Label>
+                <div className="flex gap-4 p-1">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="opt-all"
+                      className="accent-primary"
+                      checked={hierarchyMode === "all"}
+                      onChange={() => setHierarchyMode("all")}
+                    />
+                    <Label htmlFor="opt-all" className="font-normal cursor-pointer">Entire Hierarchy</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="opt-custom"
+                      className="accent-primary"
+                      checked={hierarchyMode === "custom"}
+                      onChange={() => setHierarchyMode("custom")}
+                    />
+                    <Label htmlFor="opt-custom" className="font-normal cursor-pointer">Select Workspaces</Label>
+                  </div>
                 </div>
-                <Switch
-                  checked={propagateToChildren}
-                  onCheckedChange={setPropagateToChildren}
-                />
               </div>
-              {propagateToChildren && (
-                <div className="space-y-2">
-                  <Label>Role propagation strategy</Label>
-                  <Select
-                    value={propagationStrategy}
-                    onValueChange={(v) => setPropagationStrategy(v as PropagationStrategy)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="same">
-                        Same role in all workspaces
-                      </SelectItem>
-                      <SelectItem value="decreasing">
-                        Decreasing role level (less power in children)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+
+              {hierarchyMode === "all" ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Propagate to child workspaces</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Invite to this workspace and all its children
+                      </p>
+                    </div>
+                    <Switch
+                      checked={propagateToChildren}
+                      onCheckedChange={setPropagateToChildren}
+                    />
+                  </div>
+                  {propagateToChildren && (
+                    <div className="space-y-2">
+                      <Label>Role propagation strategy</Label>
+                      <Select
+                        value={propagationStrategy}
+                        onValueChange={(v) => setPropagationStrategy(v as PropagationStrategy)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="same">
+                            Same role in all workspaces
+                          </SelectItem>
+                          <SelectItem value="decreasing">
+                            Decreasing role level (less power in children)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="border rounded-md p-3 space-y-2 bg-muted/10 max-h-48 overflow-y-auto">
+                  <Label className="text-xs text-muted-foreground uppercase">Available Workspaces</Label>
+                  <div className="space-y-1.5">
+                    {matrix?.workspaces?.map(ws => (
+                      <div key={ws._id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`ws-${ws._id}`}
+                          checked={selectedWorkspaceIds.has(ws._id)}
+                          onCheckedChange={(checked) => {
+                            const next = new Set(selectedWorkspaceIds);
+                            if (checked) next.add(ws._id);
+                            else next.delete(ws._id);
+                            setSelectedWorkspaceIds(next);
+                          }}
+                        />
+                        <Label htmlFor={`ws-${ws._id}`} className="cursor-pointer text-sm font-normal">
+                          {ws.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {(!matrix?.workspaces || matrix.workspaces.length === 0) && (
+                    <p className="text-xs text-muted-foreground text-center py-2">No child workspaces found.</p>
+                  )}
                 </div>
               )}
             </div>
@@ -438,8 +507,8 @@ export function QuickInvitePanel({
               mode === "Contacts"
                 ? handleBulkInviteContacts
                 : mode === "hierarchy"
-                ? handleHierarchyInvite
-                : handleTeamInvite
+                  ? handleHierarchyInvite
+                  : handleTeamInvite
             }
           >
             {isSubmitting ? (
@@ -603,7 +672,7 @@ export function QuickInvitePanel({
                         <div>
                           <p className="font-medium">Decreasing role level</p>
                           <p className="text-xs mt-1">
-                            Each child workspace will have a lower privilege role 
+                            Each child workspace will have a lower privilege role
                             (e.g., Admin → Manager → Staff)
                           </p>
                         </div>

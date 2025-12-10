@@ -38,6 +38,13 @@ import { cn } from "@/lib/utils"
 import { useCommunicationsStore, useCategories } from "../shared"
 import type { Channel } from "../shared/types"
 
+// Backend hook for mutations
+import { useChannelMutations } from "../hooks/useChannels"
+
+// Workspace context
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
+import type { Id } from "@/convex/_generated/dataModel"
+
 interface CreateChannelDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -56,7 +63,14 @@ export function CreateChannelDialog({
   defaultCategoryId,
 }: CreateChannelDialogProps) {
   const categories = useCategories()
-  const addChannel = useCommunicationsStore(state => state.addChannel)
+  const selectChannel = useCommunicationsStore(state => state.selectChannel)
+  const setViewMode = useCommunicationsStore(state => state.setViewMode)
+
+  // Backend mutation
+  const { createChannel } = useChannelMutations()
+  
+  // Workspace context
+  const { workspaceId } = useWorkspaceContext()
 
   const [name, setName] = React.useState("")
   const [topic, setTopic] = React.useState("")
@@ -64,6 +78,7 @@ export function CreateChannelDialog({
   const [categoryId, setCategoryId] = React.useState(defaultCategoryId || "")
   const [isPrivate, setIsPrivate] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   // Reset form when dialog opens
   React.useEffect(() => {
@@ -73,6 +88,7 @@ export function CreateChannelDialog({
       setType("text")
       setCategoryId(defaultCategoryId || categories[0]?.id || "")
       setIsPrivate(false)
+      setError(null)
     }
   }, [open, defaultCategoryId, categories])
 
@@ -80,26 +96,36 @@ export function CreateChannelDialog({
     e.preventDefault()
     if (!name.trim()) return
 
-    setIsSubmitting(true)
-
-    // Create channel (sample data for now)
-    const newChannel: Channel = {
-      id: `ch-${Date.now()}`,
-      workspaceId: "ws-1",
-      categoryId: categoryId || undefined,
-      name: name.toLowerCase().replace(/\s+/g, "-"),
-      type,
-      topic: topic || undefined,
-      isPrivate,
-      position: 0,
-      memberCount: 1,
+    if (!workspaceId) {
+      setError("No workspace selected")
+      return
     }
 
-    // Add to store
-    addChannel(newChannel)
+    setIsSubmitting(true)
+    setError(null)
 
-    setIsSubmitting(false)
-    onOpenChange(false)
+    try {
+      // Call backend to create channel
+      const channelId = await createChannel({
+        workspaceId: workspaceId as Id<"workspaces">,
+        name: name.toLowerCase().replace(/\s+/g, "-"),
+        description: topic || undefined,
+        isPrivate,
+      })
+
+      if (channelId) {
+        // Select the newly created channel
+        selectChannel(String(channelId))
+        setViewMode("channel")
+      }
+
+      onOpenChange(false)
+    } catch (err) {
+      console.error("Failed to create channel:", err)
+      setError(err instanceof Error ? err.message : "Failed to create channel")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const TypeIcon = CHANNEL_TYPES.find(t => t.value === type)?.icon || Hash
@@ -221,6 +247,13 @@ export function CreateChannelDialog({
                 onCheckedChange={setIsPrivate}
               />
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                {error}
+              </div>
+            )}
           </div>
 
           <DialogFooter>

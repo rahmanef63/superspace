@@ -128,3 +128,24 @@ export type {
   PanelTopbarProps,
   TopbarTab,
 } from "./DraggableTopbar"
+
+// Column Layout System - For header/main/footer structure in each column
+export {
+  ColumnLayout,
+  ColumnHeader,
+  ColumnMain,
+  ColumnFooter,
+  LeftPanelLayout,
+  CenterPanelLayout,
+  RightPanelLayout,
+  PanelRoot,
+  PanelHeader,
+  PanelBody,
+  PanelFooter,
+} from "./column-layout"
+export type {
+  ColumnLayoutProps,
+  ColumnHeaderProps,
+  ColumnMainProps,
+  ColumnFooterProps,
+} from "./column-layout"

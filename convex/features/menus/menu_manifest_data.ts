@@ -46,11 +46,9 @@ export const DEFAULT_MENU_ITEMS = [
         "ai"
       ],
       featureType: "default" as const,
-      originalFeatureType: "default" as const,
-      requiresPermission: "communications.view",
-      originalRequiresPermission: "communications.view"
-    },
-    requiresPermission: "communications.view"
+      originalFeatureType: "default" as const
+    }
+    // No requiresPermission - visible to all workspace members
   },
   {
     name: "Chat" as const,

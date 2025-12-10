@@ -2,6 +2,7 @@
  * Message Hooks
  * 
  * Hooks for fetching and managing messages, threads, and typing indicators.
+ * Wired to the existing Convex chat backend.
  * 
  * @module features/communications/hooks
  */
@@ -9,42 +10,77 @@
 "use client"
 
 import { useQuery, useMutation } from "convex/react"
-// import { api } from "@/convex/_generated/api"
+import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import type { Message, Thread, TypingIndicator } from "../shared"
 
 interface UseMessagesOptions {
-  channelId?: Id<"channels">
+  channelId?: Id<"channels"> | string
   limit?: number
   cursor?: string
 }
 
 /**
+ * Check if an ID looks like a valid Convex ID (not a mock/sample ID)
+ */
+function isValidConvexId(id: string | undefined): boolean {
+  if (!id) return false
+  const mockPrefixes = ["ch-", "dm-", "user-", "msg-", "cat-", "bot-", "part-"]
+  return !mockPrefixes.some(prefix => id.startsWith(prefix))
+}
+
+/**
  * Fetch messages for a channel with pagination
+ * Uses the existing chat messages API
+ * Only queries backend if the ID looks like a valid Convex ID
  */
 export function useMessages(options: UseMessagesOptions = {}) {
-  // TODO: Implement Convex query when backend is ready
-  // const result = useQuery(
-  //   api.features.communications.messages.list,
-  //   options.channelId ? { 
-  //     channelId: options.channelId,
-  //     limit: options.limit || 50,
-  //     cursor: options.cursor,
-  //   } : "skip"
-  // )
+  // Skip backend query for mock/sample IDs
+  const shouldQuery = options.channelId && isValidConvexId(options.channelId)
 
-  const messages: Message[] = []
-  const hasMore = false
-  const nextCursor: string | null = null
-  const isLoading = false
-  const error = null
+  // Use getConversationMessages - channels are just conversations
+  const rawMessages = useQuery(
+    api.features.chat.messages.getConversationMessages,
+    shouldQuery
+      ? {
+        conversationId: options.channelId as Id<"conversations">,
+        limit: options.limit || 50,
+      }
+      : "skip"
+  )
+
+  const isLoading = rawMessages === undefined && !!options.channelId
+
+  // Map backend messages to frontend Message type
+  const messages: Message[] = (rawMessages ?? []).map((m: any): Message => ({
+    id: m._id,
+    channelId: m.conversationId,
+    senderId: m.senderId,
+    senderType: m.metadata?.aiModel ? "ai" : "user",
+    sender: m.sender ? {
+      id: m.sender._id,
+      name: m.sender.name || m.sender.email || "Unknown",
+      avatar: m.sender.imageUrl || m.sender.image,
+    } : undefined,
+    content: m.content,
+    type: m.type || "text",
+    createdAt: new Date(m._creationTime || Date.now()).toISOString(),
+    timestamp: new Date(m._creationTime || Date.now()).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    isEdited: !!m.editedAt,
+    editedAt: m.editedAt ? new Date(m.editedAt).toISOString() : undefined,
+    reactions: m.reactions || [],
+    replyToId: m.replyToId,
+  }))
 
   return {
     messages,
-    hasMore,
-    nextCursor,
+    hasMore: false, // TODO: Implement pagination
+    nextCursor: null,
     isLoading,
-    error,
+    error: null,
   }
 }
 
@@ -116,22 +152,16 @@ export function useTypingIndicators(options: UseTypingIndicatorsOptions = {}) {
 
 /**
  * Message mutation hooks
+ * Uses existing chat.messages API
  */
 export function useMessageMutations() {
-  // TODO: Implement Convex mutations when backend is ready
-  // const sendMessage = useMutation(api.features.communications.messages.send)
-  // const editMessage = useMutation(api.features.communications.messages.edit)
-  // const deleteMessage = useMutation(api.features.communications.messages.remove)
-  // const addReaction = useMutation(api.features.communications.messages.react)
-  // const removeReaction = useMutation(api.features.communications.messages.unreact)
-  // const pinMessage = useMutation(api.features.communications.messages.pin)
-  // const unpinMessage = useMutation(api.features.communications.messages.unpin)
-  // const createThread = useMutation(api.features.communications.threads.create)
-  // const setTyping = useMutation(api.features.communications.typing.set)
+  const sendMessageMut = useMutation(api.features.chat.messages.sendMessage)
+  const editMessageMut = useMutation(api.features.chat.messages.editMessage)
+  const deleteMessageMut = useMutation(api.features.chat.messages.deleteMessage)
 
   return {
     sendMessage: async (data: {
-      channelId?: Id<"channels">
+      channelId?: Id<"channels"> | string
       directConversationId?: Id<"directConversations">
       threadId?: Id<"channelThreads">
       content: string
@@ -139,51 +169,58 @@ export function useMessageMutations() {
       attachments?: Message["attachments"]
       mentions?: Message["mentions"]
     }) => {
-      console.log("Sending message:", data)
-      // return await sendMessage(data)
+      // Use channelId or directConversationId as conversationId
+      const conversationId = (data.channelId || data.directConversationId) as Id<"conversations">
+      if (!conversationId) {
+        console.error("No conversation ID provided")
+        return
+      }
+      return await sendMessageMut({
+        conversationId,
+        content: data.content,
+        replyToId: data.threadId as Id<"messages"> | undefined,
+      })
     },
-    
-    editMessage: async (messageId: Id<"channelMessages">, content: string) => {
-      console.log("Editing message:", messageId, content)
-      // return await editMessage({ messageId, content })
+
+    editMessage: async (messageId: Id<"channelMessages"> | string, content: string) => {
+      return await editMessageMut({
+        messageId: messageId as Id<"messages">,
+        content,
+      })
     },
-    
-    deleteMessage: async (messageId: Id<"channelMessages">) => {
-      console.log("Deleting message:", messageId)
-      // return await deleteMessage({ messageId })
+
+    deleteMessage: async (messageId: Id<"channelMessages"> | string) => {
+      return await deleteMessageMut({
+        messageId: messageId as Id<"messages">,
+      })
     },
-    
+
     addReaction: async (messageId: Id<"channelMessages">, emoji: string) => {
-      console.log("Adding reaction:", messageId, emoji)
-      // return await addReaction({ messageId, emoji })
+      console.log("Adding reaction not yet implemented:", messageId, emoji)
     },
-    
+
     removeReaction: async (messageId: Id<"channelMessages">, emoji: string) => {
-      console.log("Removing reaction:", messageId, emoji)
-      // return await removeReaction({ messageId, emoji })
+      console.log("Removing reaction not yet implemented:", messageId, emoji)
     },
-    
+
     pinMessage: async (messageId: Id<"channelMessages">) => {
-      console.log("Pinning message:", messageId)
-      // return await pinMessage({ messageId })
+      console.log("Pinning message not yet implemented:", messageId)
     },
-    
+
     unpinMessage: async (messageId: Id<"channelMessages">) => {
-      console.log("Unpinning message:", messageId)
-      // return await unpinMessage({ messageId })
+      console.log("Unpinning message not yet implemented:", messageId)
     },
-    
+
     createThread: async (messageId: Id<"channelMessages">, title?: string) => {
-      console.log("Creating thread:", messageId, title)
-      // return await createThread({ messageId, title })
+      console.log("Creating thread not yet implemented:", messageId, title)
     },
-    
+
     setTyping: async (data: {
       channelId?: Id<"channels">
       directConversationId?: Id<"directConversations">
       isTyping: boolean
     }) => {
-      // return await setTyping(data)
+      // Typing indicators not yet implemented
     },
   }
 }

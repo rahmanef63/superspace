@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode, Suspense } from "react"
 import type { Id } from "@convex/_generated/dataModel"
 import { AppContent } from "../foundation";
+import { PageLoading } from "@/frontend/shared/ui/components/loading/PageLoading";
 
 // Error Boundary for catching component load failures
 class PageErrorBoundary extends Component<
@@ -69,14 +70,7 @@ class PageErrorBoundary extends Component<
 
 // Loading fallback for Suspense
 function PageLoadingFallback() {
-  return (
-    <div className="flex h-full items-center justify-center p-8">
-      <div className="space-y-3 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="text-sm text-muted-foreground">Loading page...</p>
-      </div>
-    </div>
-  )
+  return <PageLoading />;
 }
 
 interface AppContentWrapperProps {

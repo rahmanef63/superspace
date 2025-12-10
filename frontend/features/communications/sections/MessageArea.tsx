@@ -3,6 +3,7 @@
  * 
  * Main message display and input area for channels and DMs.
  * Uses premium UI components with date separators and typing indicators.
+ * Uses PanelRoot/PanelHeader/PanelBody/PanelFooter for consistent layout.
  * 
  * @module features/communications/sections
  */
@@ -17,22 +18,23 @@ import { Hash, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+// Layout Components
+import { PanelRoot, PanelBody, PanelFooter } from "@/frontend/shared/ui/layout"
+
 // Components
 import { ChannelHeader } from "../components/ChannelHeader"
 import { MessageItem } from "../components/MessageItem"
-import { MessageComposer } from "../components/MessageComposer"
+import { MessageComposer } from "../components/MessageComposerNew"
 
 // Store
 import {
   useCommunicationsStore,
   useSelectedChannel,
-  useChannelMessages,
   useSelectedChannelId,
   useTypingIndicators,
   useRightPanelOpen,
   useSelectedDirectId,
   useDirectConversations as useDirectConversationsStore,
-  useDirectMessages as useDirectMessagesStore,
   type Message,
   type DirectMessage,
   type DirectConversation,
@@ -45,6 +47,8 @@ import {
   useDirectConversations as useDirectConversationsQuery,
   useDirectMessages as useDirectMessagesQuery,
 } from "../hooks/useDirectMessages"
+import { useMessages } from "../hooks/useMessages"
+import { useChannel, useChannels } from "../hooks/useChannels"
 import { useCommunications } from "../hooks/useCommunications"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
@@ -59,28 +63,30 @@ export function MessageArea({ type, className }: MessageAreaProps) {
   const { workspaceId } = useWorkspaceContext()
   const { sendMessage: sendChannelMessage } = useCommunications(workspaceId)
 
-  // Channel state
-  const selectedChannel = useSelectedChannel()
+  // Channel state - fetch from backend
   const selectedChannelId = useSelectedChannelId()
-  const channelMessages = useChannelMessages(selectedChannelId || "")
+  const { channel: backendChannel, isLoading: channelLoading } = useChannel(selectedChannelId || undefined)
+  const { messages: channelMessages, isLoading: channelMessagesLoading } = useMessages({
+    channelId: selectedChannelId || undefined
+  })
 
   // DM state - fetch from backend
   const selectedDirectId = useSelectedDirectId()
   const { conversations: backendConversations } = useDirectConversationsQuery({
     workspaceId: workspaceId as any
   })
-  const { messages: backendMessages, isLoading: messagesLoading } = useDirectMessagesQuery({
+  const { messages: backendDMMessages, isLoading: dmMessagesLoading } = useDirectMessagesQuery({
     conversationId: selectedDirectId || undefined
   })
 
   // Determine active selection based on type
   const selectedId = type === "channel" ? selectedChannelId : selectedDirectId
   const selectedItem = type === "channel"
-    ? selectedChannel
+    ? backendChannel
     : backendConversations.find(c => c.id === selectedDirectId) || null
 
-  // Use backend messages for DMs, store messages for channels
-  const messages = (type === "channel" ? channelMessages : backendMessages) as Message[]
+  // Use backend messages for both channels and DMs
+  const messages = (type === "channel" ? channelMessages : backendDMMessages) as Message[]
 
   const typingUsers = useTypingIndicators(selectedId || "")
   const rightPanelOpen = useRightPanelOpen()
@@ -215,9 +221,8 @@ export function MessageArea({ type, className }: MessageAreaProps) {
   }
 
   return (
-    <div className={cn("flex flex-col h-full bg-background", className)}>
-      {/* Header */}
-      {/* Header */}
+    <PanelRoot className={className}>
+      {/* Header - Fixed at top */}
       <ChannelHeader
         channel={selectedItem as Channel}
         memberCount={5}
@@ -230,103 +235,108 @@ export function MessageArea({ type, className }: MessageAreaProps) {
         onStartVideoCall={() => handleStartCall(true)}
       />
 
-      {/* Messages */}
-      <ScrollArea
-        className="flex-1 relative"
-        onScroll={handleScroll}
-        ref={scrollContainerRef as any}
-      >
-        <div className="min-h-full flex flex-col justify-end">
-          {/* Welcome message for empty channels */}
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Hash className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-2xl mb-2">
-                Welcome to #{selectedItem.name}!
-              </h3>
-              <p className="text-muted-foreground max-w-md">
-                This is the start of the #{selectedItem.name} {type === "channel" ? "channel" : "conversation"}.
-                {(selectedItem as any).description && ` ${(selectedItem as any).description}`}
-              </p>
-            </div>
-          ) : (
-            <div className="py-4">
-              {groupedMessages.map((group, groupIndex) => (
-                <div key={group.date}>
-                  {/* Date separator */}
-                  <div className="flex items-center gap-4 px-4 py-2">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {group.date}
-                    </span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-
-                  {/* Messages */}
-                  {group.messages.map((message, index) => (
-                    <MessageItem
-                      key={message.id}
-                      message={message}
-                      isGrouped={shouldGroupMessage(group.messages, index)}
-                      onReply={setReplyingTo}
-                      onReact={(msg, emoji) => {
-                        // Handle reaction - would update store
-                        console.log("React:", msg.id, emoji)
-                      }}
-                    />
-                  ))}
+      {/* Body - Scrollable messages */}
+      <PanelBody scrollable={false} className="relative">
+        <ScrollArea
+          className="h-full"
+          onScroll={handleScroll}
+          ref={scrollContainerRef as any}
+        >
+          <div className="min-h-full flex flex-col justify-end">
+            {/* Welcome message for empty channels */}
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <Hash className="h-8 w-8 text-primary" />
                 </div>
-              ))}
-            </div>
+                <h3 className="font-bold text-2xl mb-2">
+                  Welcome to #{selectedItem.name}!
+                </h3>
+                <p className="text-muted-foreground max-w-md">
+                  This is the start of the #{selectedItem.name} {type === "channel" ? "channel" : "conversation"}.
+                  {(selectedItem as any).description && ` ${(selectedItem as any).description}`}
+                </p>
+              </div>
+            ) : (
+              <div className="py-4">
+                {groupedMessages.map((group, groupIndex) => (
+                  <div key={group.date}>
+                    {/* Date separator */}
+                    <div className="flex items-center gap-4 px-4 py-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {group.date}
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    {/* Messages */}
+                    {group.messages.map((message, index) => (
+                      <MessageItem
+                        key={message.id}
+                        message={message}
+                        isGrouped={shouldGroupMessage(group.messages, index)}
+                        onReply={setReplyingTo}
+                        onReact={(msg, emoji) => {
+                          // Handle reaction - would update store
+                          console.log("React:", msg.id, emoji)
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+            <div ref={scrollRef} />
+          </div>
+
+          {/* Jump to present button */}
+          {showScrollButton && (
+            <Button
+              size="sm"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 shadow-lg gap-1 z-10"
+              onClick={scrollToBottom}
+            >
+              <ArrowDown className="h-3 w-3" />
+              Jump to Present
+            </Button>
           )}
-          <div ref={scrollRef} />
-        </div>
+        </ScrollArea>
+      </PanelBody>
 
-        {/* Jump to present button */}
-        {showScrollButton && (
-          <Button
-            size="sm"
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 shadow-lg gap-1"
-            onClick={scrollToBottom}
-          >
-            <ArrowDown className="h-3 w-3" />
-            Jump to Present
-          </Button>
-        )}
-      </ScrollArea>
-
-      {/* Typing indicator */}
-      {typingUsers.length > 0 && (
-        <div className="px-4 py-1 text-sm">
-          <span className="inline-flex items-center gap-2">
-            <span className="flex gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {typingUsers.map(t => t.user?.name || "Someone").join(", ")}
+      {/* Footer - Fixed composer area */}
+      <PanelFooter border="subtle" padding="none" className="bg-background">
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-1 text-sm border-t border-border/50">
+            <span className="inline-flex items-center gap-2">
+              <span className="flex gap-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
               </span>
-              {" "}is typing...
+              <span className="text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {typingUsers.map(t => t.user?.name || "Someone").join(", ")}
+                </span>
+                {" "}is typing...
+              </span>
             </span>
-          </span>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Message Input */}
-      <div className="px-4 pb-4 pt-2 shrink-0">
-        <MessageComposer
-          channelName={selectedItem.name}
-          channelId={selectedId || ""}
-          replyTo={replyingTo}
-          onCancelReply={() => setReplyingTo(null)}
-          onSend={handleSendMessage}
-        />
-      </div>
-    </div>
+        {/* Message Input */}
+        <div className="px-4 pb-4 pt-2">
+          <MessageComposer
+            channelName={selectedItem.name}
+            channelId={selectedId || ""}
+            replyTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+            onSend={handleSendMessage}
+          />
+        </div>
+      </PanelFooter>
+    </PanelRoot>
   )
 }
 

@@ -16,9 +16,16 @@ export const getConversationMessages = query({
     const userId = await getExistingUserId(ctx);
     if (!userId) return [];
 
-    // Only allow reading messages if you are a participant (by any candidate id)
     const candidates = await resolveCandidateUserIds(ctx);
-    let isParticipant = false;
+    
+    // Get the conversation to check its type
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return [];
+    
+    const conv: any = conversation;
+    let hasAccess = false;
+
+    // Check if user is a participant
     for (const idStr of candidates) {
       const p = await ctx.db
         .query("conversationParticipants")
@@ -27,9 +34,26 @@ export const getConversationMessages = query({
         )
         .filter((q) => q.eq(q.field("isActive"), true))
         .first();
-      if (p) { isParticipant = true; break; }
+      if (p) { hasAccess = true; break; }
     }
-    if (!isParticipant) return [];
+
+    // For group conversations (channels), allow access if user is a workspace member
+    if (!hasAccess && conv.type === "group" && conv.workspaceId) {
+      for (const idStr of candidates) {
+        const membership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_workspace_user", (q) =>
+            q.eq("workspaceId", conv.workspaceId).eq("userId", idStr as any)
+          )
+          .first();
+        if (membership && membership.status === "active") {
+          hasAccess = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasAccess) return [];
 
     let q = ctx.db
       .query("messages")
@@ -161,6 +185,8 @@ export const sendMessage = mutation({
     const convMeta = await ctx.db.get(args.conversationId);
     if (!convMeta) throw new Error("Conversation not found");
 
+    const conv: any = convMeta;
+
     // Check if user is a participant (by any candidate id to account for legacy rows)
     const candidateIds = await resolveCandidateUserIds(ctx);
     let participant: any = null;
@@ -173,6 +199,37 @@ export const sendMessage = mutation({
         .first();
       if (p && p.isActive) { participant = p; break; }
     }
+
+    // For group conversations (channels), allow workspace members to send messages
+    // and auto-join them to the channel
+    if (!participant && conv.type === "group" && conv.workspaceId) {
+      let isMember = false;
+      for (const idStr of candidateIds) {
+        const membership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_workspace_user", (q) =>
+            q.eq("workspaceId", conv.workspaceId).eq("userId", idStr as any)
+          )
+          .first();
+        if (membership && membership.status === "active") {
+          isMember = true;
+          break;
+        }
+      }
+      
+      if (isMember) {
+        // Auto-join the user to the channel
+        await ctx.db.insert("conversationParticipants", {
+          conversationId: args.conversationId,
+          userId,
+          role: "member",
+          joinedAt: Date.now(),
+          isActive: true,
+        });
+        participant = { userId, role: "member", isActive: true };
+      }
+    }
+
     if (!participant) throw new Error("Not authorized to send messages in this conversation");
 
     // Heal: ensure a participation row exists for the current userId

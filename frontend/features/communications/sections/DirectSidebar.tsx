@@ -10,6 +10,7 @@
 
 import * as React from "react"
 import { useThreeColumnLayoutSafe } from "@/frontend/shared/ui/layout/container"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Plus, Search } from "lucide-react"
 
@@ -43,6 +44,7 @@ export function DirectSidebar({ className }: DirectSidebarProps) {
   const selectedId = useSelectedDirectId()
   const selectDirectConversation = useCommunicationsStore(state => state.selectDirectConversation)
   const layoutContext = useThreeColumnLayoutSafe()
+  const isMobile = useIsMobile()
   
   const [search, setSearch] = React.useState("")
 
@@ -50,8 +52,10 @@ export function DirectSidebar({ className }: DirectSidebarProps) {
   const handleSelectConversation = React.useCallback((conversationId: string) => {
     selectDirectConversation(conversationId)
     // On mobile, navigate to center panel after selecting
-    layoutContext?.toggleLeft?.()
-  }, [selectDirectConversation, layoutContext])
+    if (isMobile) {
+      layoutContext?.toggleLeft?.()
+    }
+  }, [selectDirectConversation, layoutContext, isMobile])
   
   // Filter conversations
   const filteredConversations = React.useMemo(() => {

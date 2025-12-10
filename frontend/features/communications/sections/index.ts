@@ -17,3 +17,4 @@ export { CallView } from "./CallView"
 
 // Panel sections  
 export { MemberPanel } from "./MemberPanel"
+export { InspectorPanel } from "./InspectorPanel"

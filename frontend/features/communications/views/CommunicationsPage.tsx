@@ -7,7 +7,7 @@
  * @module features/communications/views
  */
 
-"use client"
+import { FeatureSkeletons } from "@/frontend/shared/ui/components/loading/FeatureSkeletons"
 
 import * as React from "react"
 import { MessageSquare } from "lucide-react"
@@ -46,7 +46,7 @@ export default function CommunicationsPage({ workspaceId }: CommunicationsPagePr
     return (
       <TooltipProvider>
         <div className="flex h-full flex-col">
-          <CommunicationsView 
+          <CommunicationsView
             workspaceId="demo"
             className="flex-1"
           />
@@ -62,21 +62,14 @@ export default function CommunicationsPage({ workspaceId }: CommunicationsPagePr
 
   // Handle loading
   if (isLoading) {
-    return (
-      <PageContainer centered>
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-          <p className="text-muted-foreground">Loading Communications...</p>
-        </div>
-      </PageContainer>
-    )
+    return <FeatureSkeletons.Chat />
   }
 
   // Main content
   return (
     <TooltipProvider>
       <div className="flex h-full flex-col">
-        <CommunicationsView 
+        <CommunicationsView
           workspaceId={workspaceId as string}
           className="flex-1"
         />

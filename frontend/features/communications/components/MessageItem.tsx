@@ -47,6 +47,39 @@ import {
 } from "@/components/ui/popover"
 
 import { type Message } from "../shared"
+import { RichTextRenderer } from "@/frontend/shared/communications/components/RichTextRenderer"
+
+// =============================================================================
+// Message Content Component - Renders rich text
+// =============================================================================
+
+interface MessageContentProps {
+    content: string
+    className?: string
+}
+
+function MessageContent({ content, className }: MessageContentProps) {
+    // Check if content has any markdown-like formatting
+    const hasRichFormatting = React.useMemo(() => {
+        return /```|^\s*[-*]\s|^\s*\d+\.\s|^\s*>|^\s*#{1,6}\s|\*\*|__|~~|`[^`]+`|@\w+|#\w+|\[.+\]\(.+\)/.test(content)
+    }, [content])
+
+    if (!hasRichFormatting) {
+        // Plain text - just render with basic whitespace handling
+        return (
+            <div className={cn("text-sm whitespace-pre-wrap break-words leading-relaxed", className)}>
+                {content}
+            </div>
+        )
+    }
+
+    // Rich text - use the renderer
+    return (
+        <div className={cn("text-sm", className)}>
+            <RichTextRenderer content={content} />
+        </div>
+    )
+}
 
 interface MessageItemProps {
     message: Message
@@ -144,10 +177,8 @@ export function MessageItem({
                         </div>
                     )}
 
-                    {/* Message text */}
-                    <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                        {message.content}
-                    </div>
+                    {/* Message text with rich text rendering */}
+                    <MessageContent content={message.content} />
 
                     {/* Attachments */}
                     {message.attachments && message.attachments.length > 0 && (

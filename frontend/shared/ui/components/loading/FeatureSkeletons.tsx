@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { PageLoading } from "./PageLoading";
 
 // ============================================================================
 // GENERIC SKELETONS
@@ -34,10 +35,10 @@ export function SecondarySidebarSkeleton() {
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-48" />
         </div>
-        
+
         {/* Search */}
         <Skeleton className="h-10 w-full rounded-md" />
-        
+
         {/* List Items */}
         <div className="space-y-2">
           {[...Array(8)].map((_, i) => (
@@ -51,7 +52,7 @@ export function SecondarySidebarSkeleton() {
           ))}
         </div>
       </div>
-      
+
       {/* Content */}
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -78,10 +79,10 @@ export function ChatSkeleton() {
           <Skeleton className="h-7 w-20" />
           <Skeleton className="h-8 w-8 rounded-full" />
         </div>
-        
+
         {/* Search */}
         <Skeleton className="h-10 w-full rounded-md" />
-        
+
         {/* Chat List */}
         <div className="space-y-1">
           {[...Array(10)].map((_, i) => (
@@ -98,7 +99,7 @@ export function ChatSkeleton() {
           ))}
         </div>
       </div>
-      
+
       {/* Chat Content - Empty State */}
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-2">
@@ -125,7 +126,7 @@ export function ChatDetailSkeleton() {
           <Skeleton className="h-8 w-8 rounded-full" />
         </div>
       </div>
-      
+
       {/* Messages */}
       <div className="flex-1 p-4 space-y-4 overflow-hidden">
         {[...Array(6)].map((_, i) => (
@@ -147,7 +148,7 @@ export function ChatDetailSkeleton() {
           </div>
         ))}
       </div>
-      
+
       {/* Composer Bar */}
       <div className="border-t p-4">
         <div className="flex items-center gap-3">
@@ -174,16 +175,16 @@ export function CallsSkeleton() {
           <Skeleton className="h-7 w-16" />
           <Skeleton className="h-8 w-8 rounded-full" />
         </div>
-        
+
         {/* Search */}
         <Skeleton className="h-10 w-full rounded-md" />
-        
+
         {/* Tabs */}
         <div className="flex gap-2">
           <Skeleton className="h-8 w-16 rounded-md" />
           <Skeleton className="h-8 w-20 rounded-md" />
         </div>
-        
+
         {/* Calls List */}
         <div className="space-y-2">
           {[...Array(8)].map((_, i) => (
@@ -201,7 +202,7 @@ export function CallsSkeleton() {
           ))}
         </div>
       </div>
-      
+
       {/* Call Detail - Empty State */}
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -228,10 +229,10 @@ export function DatabaseSkeleton() {
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-8 w-8 rounded" />
         </div>
-        
+
         {/* Search */}
         <Skeleton className="h-9 w-full rounded-md" />
-        
+
         {/* Table List */}
         <div className="space-y-1">
           {[...Array(6)].map((_, i) => (
@@ -242,7 +243,7 @@ export function DatabaseSkeleton() {
           ))}
         </div>
       </div>
-      
+
       {/* Database Content */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
@@ -252,7 +253,7 @@ export function DatabaseSkeleton() {
           <div className="flex-1" />
           <Skeleton className="h-9 w-24" />
         </div>
-        
+
         {/* Table Header */}
         <div className="border-b flex items-center px-4 py-3 gap-4">
           <Skeleton className="h-4 w-32" />
@@ -260,7 +261,7 @@ export function DatabaseSkeleton() {
           <Skeleton className="h-4 w-28" />
           <Skeleton className="h-4 w-20" />
         </div>
-        
+
         {/* Table Rows */}
         <div className="flex-1 overflow-hidden">
           {[...Array(8)].map((_, i) => (
@@ -294,17 +295,17 @@ export function DocumentsSkeleton() {
           </div>
           <Skeleton className="h-4 w-40" />
         </div>
-        
+
         {/* Search */}
         <Skeleton className="h-10 w-full rounded-md" />
-        
+
         {/* Filters */}
         <div className="flex gap-2">
           <Skeleton className="h-8 w-12 rounded-md" />
           <Skeleton className="h-8 w-16 rounded-md" />
           <Skeleton className="h-8 w-16 rounded-md" />
         </div>
-        
+
         {/* Document Tree */}
         <div className="space-y-1">
           {[...Array(8)].map((_, i) => (
@@ -315,7 +316,7 @@ export function DocumentsSkeleton() {
           ))}
         </div>
       </div>
-      
+
       {/* Document Editor */}
       <div className="flex-1 flex flex-col p-6">
         {/* Title */}
@@ -326,7 +327,7 @@ export function DocumentsSkeleton() {
           </div>
           <Skeleton className="h-4 w-48" />
         </div>
-        
+
         {/* Content */}
         <div className="space-y-4 flex-1">
           <Skeleton className="h-6 w-full" />
@@ -339,7 +340,7 @@ export function DocumentsSkeleton() {
           </div>
         </div>
       </div>
-      
+
       {/* Inspector */}
       <div className="w-80 shrink-0 border-l bg-muted/30 p-6 space-y-6">
         {/* Header */}
@@ -347,7 +348,7 @@ export function DocumentsSkeleton() {
           <Skeleton className="h-5 w-24" />
           <Skeleton className="h-8 w-8 rounded" />
         </div>
-        
+
         {/* Metadata */}
         <div className="space-y-3">
           <Skeleton className="h-4 w-16" />
@@ -356,7 +357,7 @@ export function DocumentsSkeleton() {
             <Skeleton className="h-4 w-3/4" />
           </div>
         </div>
-        
+
         {/* Tags */}
         <div className="space-y-3">
           <Skeleton className="h-4 w-12" />
@@ -382,13 +383,13 @@ export function PageSkeleton() {
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-96" />
       </div>
-      
+
       {/* Actions */}
       <div className="flex gap-3">
         <Skeleton className="h-10 w-32" />
         <Skeleton className="h-10 w-24" />
       </div>
-      
+
       {/* Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
@@ -433,4 +434,7 @@ export const FeatureSkeletons = {
   Page: PageSkeleton,
   SecondarySidebar: SecondarySidebarSkeleton,
   CenteredLoading: CenteredLoadingSkeleton,
+  PageLoading: PageLoading,
 };
+
+export * from "./PageLoading";

@@ -3,6 +3,7 @@
  * 
  * Unified sidebar component used for both channels and DMs.
  * Follows DRY principle - same layout structure for both views.
+ * Uses PanelRoot/PanelHeader/PanelBody/PanelFooter for consistent layout.
  * 
  * @module features/communications/sections
  */
@@ -11,6 +12,7 @@
 
 import * as React from "react"
 import { useThreeColumnLayoutSafe } from "@/frontend/shared/ui/layout/container"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Hash,
     Volume2,
@@ -72,6 +74,9 @@ import {
     DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 
+// Layout Components
+import { PanelRoot, PanelHeader, PanelBody, PanelFooter } from "@/frontend/shared/ui/layout"
+
 // Components
 import { UserStatusPanel } from "../components/UserStatusPanel"
 import { VoiceChannelMini } from "../components/VoiceChannelMini"
@@ -84,7 +89,7 @@ import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/Works
 import {
     useCommunicationsStore,
     useCategories,
-    useChannels,
+    useChannels as useChannelsStore, // Store version for local state
     useSelectedChannelId,
     useDirectConversations as useDirectConversationsStore,
     useSelectedDirectId,
@@ -97,8 +102,9 @@ import {
     type DirectConversation,
 } from "../shared"
 
-// Backend hook for fetching conversations
+// Backend hooks for fetching data
 import { useDirectConversations as useDirectConversationsQuery } from "../hooks/useDirectMessages"
+import { useChannels as useChannelsQuery } from "../hooks/useChannels"
 
 // Channel type icons
 const channelIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -146,7 +152,15 @@ export function CommunicationSidebar({
     className
 }: CommunicationSidebarProps) {
     const categories = useCategories()
-    const channels = useChannels()
+
+    // Fetch channels from backend if we have a workspaceId
+    const { channels: backendChannels, isLoading: channelsLoading } = useChannelsQuery({
+        workspaceId: workspaceId as any
+    })
+    const storeChannels = useChannelsStore()
+    // Use backend channels if available, fallback to store
+    const channels = backendChannels.length > 0 ? backendChannels : storeChannels
+
     const selectedChannelId = useSelectedChannelId()
 
     // Fetch conversations from backend hook
@@ -166,6 +180,7 @@ export function CommunicationSidebar({
 
     // Layout context for mobile navigation
     const layoutContext = useThreeColumnLayoutSafe()
+    const isMobile = useIsMobile()
 
     const selectChannel = useCommunicationsStore(state => state.selectChannel)
     const selectDirectConversation = useCommunicationsStore(state => state.selectDirectConversation)
@@ -180,14 +195,18 @@ export function CommunicationSidebar({
     const handleSelectChannel = React.useCallback((channelId: string) => {
         selectChannel(channelId)
         // On mobile, navigate to center panel after selecting
-        layoutContext?.toggleLeft?.()
-    }, [selectChannel, layoutContext])
+        if (isMobile) {
+            layoutContext?.toggleLeft?.()
+        }
+    }, [selectChannel, layoutContext, isMobile])
 
     const handleSelectDirectConversation = React.useCallback((conversationId: string) => {
         selectDirectConversation(conversationId)
         // On mobile, navigate to center panel after selecting
-        layoutContext?.toggleLeft?.()
-    }, [selectDirectConversation, layoutContext])
+        if (isMobile) {
+            layoutContext?.toggleLeft?.()
+        }
+    }, [selectDirectConversation, layoutContext, isMobile])
 
     // Track collapsed categories
     const [collapsedCategories, setCollapsedCategories] = React.useState<Set<string>>(new Set())
@@ -299,7 +318,9 @@ export function CommunicationSidebar({
         }
         selectChannel(channel.id)
         // On mobile, navigate to center panel after selecting
-        layoutContext?.toggleLeft?.()
+        if (isMobile) {
+            layoutContext?.toggleLeft?.()
+        }
     }
 
     const handleBack = () => {
@@ -307,7 +328,7 @@ export function CommunicationSidebar({
     }
 
     return (
-        <div className={cn("flex flex-col h-full bg-muted/20 border-r", className)}>
+        <PanelRoot className={cn("bg-muted/20 border-r", className)}>
             {/* Header */}
             <div className="shrink-0">
                 <div className="flex items-center gap-2 px-3 py-2 border-b">
@@ -455,8 +476,8 @@ export function CommunicationSidebar({
 
             <Separator />
 
-            {/* Content */}
-            <ScrollArea className="flex-1">
+            {/* Content - Scrollable */}
+            <PanelBody scrollable>
                 <div className="py-2 px-2">
                     {mode === "channels" ? (
                         <ChannelList
@@ -480,15 +501,17 @@ export function CommunicationSidebar({
                         />
                     )}
                 </div>
-            </ScrollArea>
+            </PanelBody>
 
-            {/* Voice Mini + User Panel */}
-            <VoiceChannelMini />
-            <UserStatusPanel />
+            {/* Footer - Fixed at bottom */}
+            <PanelFooter border="subtle" padding="none">
+                <VoiceChannelMini />
+                <UserStatusPanel />
+            </PanelFooter>
 
             {/* New DM Dialog */}
             <NewDMDialog open={showNewDMDialog} onOpenChange={setShowNewDMDialog} />
-        </div>
+        </PanelRoot>
     )
 }
 

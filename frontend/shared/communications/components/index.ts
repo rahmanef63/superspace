@@ -29,6 +29,11 @@ export {
 } from './grok-chat'
 
 // ============================================================
+// Rich Text Rendering
+// ============================================================
+export { RichTextRenderer, type RichTextBlock, type RichTextBlockType, type RichTextRendererProps } from './RichTextRenderer'
+
+// ============================================================
 // AI Components (shadcn.io AI Elements style)
 // ============================================================
 export * from './ai'

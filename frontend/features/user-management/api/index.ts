@@ -20,6 +20,15 @@ export {
   useRemoveMember,
   useUpdateMemberRole,
   useHasPermission,
+  useCreateRole,
+  useUpdateRole,
+  useDeleteRole,
+} from "@/frontend/features/members/api";
+
+import {
+  useCreateRole,
+  useUpdateRole,
+  useDeleteRole,
 } from "@/frontend/features/members/api";
 
 // Contacts API
@@ -223,6 +232,9 @@ export const useUserManagementApi = (workspaceId: Id<"workspaces"> | undefined) 
   const inviteTeamToWorkspaces = useInviteTeamToWorkspaces();
   const createRoleHierarchyLink = useCreateRoleHierarchyLink();
   const deleteRoleHierarchyLink = useDeleteRoleHierarchyLink();
+  const createRole = useCreateRole();
+  const updateRole = useUpdateRole();
+  const deleteRole = useDeleteRole();
 
   return {
     // Data
@@ -241,5 +253,8 @@ export const useUserManagementApi = (workspaceId: Id<"workspaces"> | undefined) 
     inviteTeamToWorkspaces,
     createRoleHierarchyLink,
     deleteRoleHierarchyLink,
+    createRole,
+    updateRole,
+    deleteRole,
   };
 };

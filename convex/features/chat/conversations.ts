@@ -1,17 +1,95 @@
 import { v } from "convex/values";
 import { query, mutation } from "../../_generated/server";
-import { ensureUser, getExistingUserId, requirePermission, resolveCandidateUserIds } from "../../auth/helpers";
+import { ensureUser, getExistingUserId, requirePermission, resolveCandidateUserIds, requireActiveMembership } from "../../auth/helpers";
 import { PERMS } from "../../workspace/permissions";
 import { logAuditEvent } from "../../shared/audit";
 
+// Helper to enrich a conversation with participants, last message, etc.
+async function enrichConversation(ctx: any, conversation: any, participation?: any) {
+  const conv: any = conversation as any;
+  
+  // Get all participants
+  const allParticipants = await ctx.db
+    .query("conversationParticipants")
+    .withIndex("by_conversation", (q: any) => q.eq("conversationId", conv._id))
+    .filter((q: any) => q.eq(q.field("isActive"), true))
+    .collect();
+
+  // Get participant user details
+  const participantsWithUsers = await Promise.all(
+    allParticipants.map(async (p: any) => {
+      const user = await ctx.db.get(p.userId);
+      return { ...p, user };
+    })
+  );
+
+  // Get last message
+  const lastMessage = await ctx.db
+    .query("messages")
+    .withIndex("by_conversation", (q: any) => q.eq("conversationId", conv._id))
+    .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
+    .order("desc")
+    .first();
+
+  let lastMessageWithSender = null;
+  if (lastMessage) {
+    const sender = await ctx.db.get(lastMessage.senderId);
+    lastMessageWithSender = {
+      ...lastMessage,
+      senderName: sender?.name,
+    };
+  }
+
+  // Calculate unread count (only if user has participation record)
+  let unreadCount = 0;
+  if (participation) {
+    unreadCount = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q: any) => q.eq("conversationId", conv._id))
+      .filter((q: any) =>
+        q.and(
+          q.eq(q.field("deletedAt"), undefined),
+          q.gt(q.field("_creationTime"), participation.lastReadAt || 0)
+        )
+      )
+      .collect()
+      .then((messages: any[]) => messages.length);
+  }
+
+  return {
+    ...conversation,
+    participants: participantsWithUsers,
+    lastMessage: lastMessageWithSender,
+    unreadCount,
+  };
+}
+
 // Get workspace conversations for current user
+// - Personal (DM) conversations: only if user is a participant
+// - Group conversations (channels): all workspace channels visible to all members
 export const getWorkspaceConversations = query({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
     const candidateIds = await resolveCandidateUserIds(ctx);
     if (candidateIds.length === 0) return [];
 
-    // Collect participations across any candidate user id
+    // Verify user is a workspace member
+    let isMember = false;
+    for (const idStr of candidateIds) {
+      const membership = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_workspace_user", (q) =>
+          q.eq("workspaceId", args.workspaceId).eq("userId", idStr as any)
+        )
+        .first();
+      if (membership && membership.status === "active") {
+        isMember = true;
+        break;
+      }
+    }
+    if (!isMember) return [];
+
+    // Build a map of user's participations
     const participationMap = new Map<string, any>();
     for (const idStr of candidateIds) {
       const rows = await ctx.db
@@ -19,73 +97,50 @@ export const getWorkspaceConversations = query({
         .withIndex("by_user", (q) => q.eq("userId", idStr as any))
         .filter((q) => q.eq(q.field("isActive"), true))
         .collect();
-      for (const r of rows) participationMap.set(String(r._id), r);
+      for (const r of rows) {
+        participationMap.set(String(r.conversationId), r);
+      }
     }
-    const participations = Array.from(participationMap.values());
 
-    const conversations = await Promise.all(
-      participations.map(async (participation) => {
-        const conversation = await ctx.db.get(participation.conversationId);
-        const conv: any = conversation as any;
-        if (!conv || conv.workspaceId !== args.workspaceId) {
-          return null;
-        }
+    // Get all "group" type conversations (channels) in this workspace
+    // These are visible to all workspace members
+    const groupConversations = await ctx.db
+      .query("conversations")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("type"), "group"),
+          q.eq(q.field("isActive"), true)
+        )
+      )
+      .collect();
 
-        // Get all participants
-        const allParticipants = await ctx.db
-          .query("conversationParticipants")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", (conv._id as any)))
-          .filter((q) => q.eq(q.field("isActive"), true))
-          .collect();
+    // Get personal conversations where user is a participant
+    const personalConversations: any[] = [];
+    for (const [convIdStr, participation] of participationMap.entries()) {
+      const conversation = await ctx.db.get(participation.conversationId);
+      const conv: any = conversation as any;
+      if (conv && conv.workspaceId === args.workspaceId && conv.type === "personal") {
+        personalConversations.push({ conversation, participation });
+      }
+    }
 
-        // Get participant user details
-        const participantsWithUsers = await Promise.all(
-          allParticipants.map(async (p) => {
-            const user = await ctx.db.get(p.userId);
-            return { ...p, user };
-          })
-        );
-
-        // Get last message
-        const lastMessage = await ctx.db
-          .query("messages")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", (conv._id as any)))
-          .filter((q) => q.eq(q.field("deletedAt"), undefined))
-          .order("desc")
-          .first();
-
-        let lastMessageWithSender = null;
-        if (lastMessage) {
-          const sender = await ctx.db.get(lastMessage.senderId);
-          lastMessageWithSender = {
-            ...lastMessage,
-            senderName: sender?.name,
-          };
-        }
-
-        // Calculate unread count
-        const unreadCount = await ctx.db
-          .query("messages")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", (conv._id as any)))
-          .filter((q) =>
-            q.and(
-              q.eq(q.field("deletedAt"), undefined),
-              q.gt(q.field("_creationTime"), participation.lastReadAt || 0)
-            )
-          )
-          .collect()
-          .then(messages => messages.length);
-
-        return {
-          ...conversation,
-          participants: participantsWithUsers,
-          lastMessage: lastMessageWithSender,
-          unreadCount,
-        };
+    // Enrich group conversations
+    const enrichedGroups = await Promise.all(
+      groupConversations.map(async (conv) => {
+        const participation = participationMap.get(String(conv._id));
+        return enrichConversation(ctx, conv, participation);
       })
     );
 
-    return conversations.filter(Boolean);
+    // Enrich personal conversations
+    const enrichedPersonal = await Promise.all(
+      personalConversations.map(async ({ conversation, participation }) => {
+        return enrichConversation(ctx, conversation, participation);
+      })
+    );
+
+    return [...enrichedGroups, ...enrichedPersonal].filter(Boolean);
   },
 });
 
@@ -174,6 +229,8 @@ export const getConversation = query({
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation) throw new Error("Conversation not found");
 
+    const conv: any = conversation;
+
     // Check if user is participant
     let participation: any = null;
     for (const idStr of candidateIds) {
@@ -187,7 +244,25 @@ export const getConversation = query({
       if (p) { participation = p; break; }
     }
 
-    if (!participation) throw new Error("Not authorized");
+    // For group conversations (channels), allow access if user is a workspace member
+    if (!participation && conv.type === "group" && conv.workspaceId) {
+      let isMember = false;
+      for (const idStr of candidateIds) {
+        const membership = await ctx.db
+          .query("workspaceMemberships")
+          .withIndex("by_workspace_user", (q) =>
+            q.eq("workspaceId", conv.workspaceId).eq("userId", idStr as any)
+          )
+          .first();
+        if (membership && membership.status === "active") {
+          isMember = true;
+          break;
+        }
+      }
+      if (!isMember) throw new Error("Not authorized");
+    } else if (!participation) {
+      throw new Error("Not authorized");
+    }
 
     // Get all participants
     const allParticipants = await ctx.db
@@ -233,7 +308,7 @@ export const createConversation = mutation({
     const userId = await ensureUser(ctx);
     await requirePermission(ctx, args.workspaceId, PERMS.CREATE_CONVERSATIONS);
 
-    // For personal chats, verify Contactship
+    // For personal chats, verify the other user is either a Contact or a workspace member
     if (args.type === "personal" && args.participantIds.length === 1) {
       const otherUserId = args.participantIds[0];
 
@@ -250,8 +325,16 @@ export const createConversation = mutation({
         .filter((q) => q.eq(q.field("status"), "active"))
         .first();
 
-      if (!Contactship && !reverseContactship) {
-        throw new Error("Can only create direct chats with Contacts");
+      // Check if they are workspace members (allows DMs between workspace members)
+      const isWorkspaceMember = await ctx.db
+        .query("workspaceMemberships")
+        .withIndex("by_workspace_user", (q) =>
+          q.eq("workspaceId", args.workspaceId).eq("userId", otherUserId)
+        )
+        .first();
+
+      if (!Contactship && !reverseContactship && !isWorkspaceMember) {
+        throw new Error("Can only create direct chats with Contacts or workspace members");
       }
 
       // Check if conversation already exists

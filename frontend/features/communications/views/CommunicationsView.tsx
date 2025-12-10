@@ -31,7 +31,7 @@ import {
 // Section components
 import { CommunicationSidebar } from "../sections/CommunicationSidebar"
 import { MessageArea } from "../sections/MessageArea"
-import { MemberPanel } from "../sections/MemberPanel"
+import { InspectorPanel } from "../sections/InspectorPanel"
 import { CallView } from "../sections/CallView"
 
 // Empty state component
@@ -136,12 +136,12 @@ export function CommunicationsView({
         )
       }
       right={
-        rightPanelOpen && hasSelection && viewMode !== "dm" ? (
-          <MemberPanel />
+        rightPanelOpen && hasSelection ? (
+          <InspectorPanel />
         ) : null
       }
       leftWidth={280}
-      rightWidth={rightPanelOpen && viewMode !== "dm" ? 260 : 0}
+      rightWidth={rightPanelOpen ? 280 : 0}
     />
   )
 }

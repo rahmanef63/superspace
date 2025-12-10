@@ -71,7 +71,8 @@ const workspaceMemberships = defineTable({
   .index("by_workspace", ["workspaceId"])
   .index("by_workspace_user", ["workspaceId", "userId"])
   .index("by_user_workspace", ["userId", "workspaceId"])
-  .index("by_status", ["status"]);
+  .index("by_status", ["status"])
+  .index("by_role", ["roleId"]);
 
 // Export all tables
 export const tables = {

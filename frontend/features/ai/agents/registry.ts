@@ -24,6 +24,25 @@ class SubAgentRegistry {
     // ============================================================================
 
     /**
+     * Get agent by ID
+     */
+    getAgentById(id: string | null): SubAgent {
+        if (!id) {
+            // Return a default "General" agent placeholder if no ID
+            return {
+                id: "general",
+                name: "General Assistant",
+                description: "Capable of general conversation and tasks.",
+                featureId: "ai",
+                tools: [],
+                canHandle: () => 1,
+            } as any;
+        }
+        return this.agents.get(id)?.agent || this.getAgentById(null);
+    }
+
+
+    /**
      * Register a sub-agent with the registry
      */
     register(agent: SubAgent, options?: { priority?: number; enabled?: boolean }): void {
@@ -288,3 +307,10 @@ export const subAgentRegistry = new SubAgentRegistry();
 
 // Export class for testing
 export { SubAgentRegistry };
+
+// Helper functions for AgentSelector
+export const getAgentById = (id: string | null) => subAgentRegistry.getAgentById(id);
+export const AVAILABLE_AGENTS = subAgentRegistry.getAllAgents();
+export const listAvailableAgents = () => subAgentRegistry.getAllAgents();
+export const subAgentRegistryInstance = subAgentRegistry;
+

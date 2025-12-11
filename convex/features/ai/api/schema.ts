@@ -46,19 +46,20 @@ export const aiChatSessions = defineTable({
   title: v.string(),
   icon: v.optional(v.string()), // Icon name from lucide-react
   isGlobal: v.optional(v.boolean()), // true for global/private sessions
+  metadata: v.optional(v.record(v.string(), v.any())), // Store session-level metadata like agentId
   messages: v.array(v.object({
     id: v.optional(v.string()),
     role: v.string(), // system, user, assistant
     content: v.string(),
     timestamp: v.number(),
-    
+
     // New fields for advanced features
     branches: v.optional(v.array(v.object({
       id: v.string(),
       content: v.string(),
       timestamp: v.number(),
     }))),
-    
+
     attachments: v.optional(v.array(v.object({
       id: v.string(),
       name: v.string(),
@@ -66,11 +67,11 @@ export const aiChatSessions = defineTable({
       url: v.string(),
       size: v.number(),
     }))),
-    
+
     replyTo: v.optional(v.string()),
     feedback: v.optional(v.string()), // "up" | "down"
     reasoning: v.optional(v.string()),
-    
+
     metadata: v.optional(v.object({
       tokenCount: v.optional(v.float64()),
       contextIds: v.optional(v.array(v.string())),

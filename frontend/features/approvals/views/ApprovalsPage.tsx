@@ -40,7 +40,6 @@ export default function ApprovalsPage({ workspaceId }: ApprovalsPageProps) {
         icon={CheckSquare}
         title="Approvals"
         subtitle="Manage and track approval requests"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Request",
           icon: Plus,

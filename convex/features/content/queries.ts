@@ -11,14 +11,36 @@ export const getData = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    // ✅ REQUIRED: Check workspace membership
-    const { membership, role } = await requireActiveMembership(ctx, args.workspaceId)
+    await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
+    // Get documents/pages as content items
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Since documents table doesn't have status/views, return basic counts
+    const totalItems = documents.length
+
+    // Format recent content
+    const recentContent = documents.slice(0, 10).map(doc => ({
+      id: doc._id,
+      title: doc.title || "Untitled",
+      type: "article" as "article" | "page" | "video" | "image",
+      author: "User",
+      status: "draft" as "published" | "draft" | "scheduled" | "archived",
+      views: 0,
+    }))
+
     return {
-      message: "Query successful",
-      userId: membership.userDocId,
-      role: role.name,
+      stats: {
+        totalItems,
+        published: 0,
+        drafts: totalItems,
+        scheduled: 0,
+        views: 0,
+      },
+      recentContent,
     }
   },
 })

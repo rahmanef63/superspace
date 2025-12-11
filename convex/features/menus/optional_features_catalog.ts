@@ -70,9 +70,8 @@ export const OPTIONAL_FEATURES_CATALOG = [
       "productivity",
       "project-management"
     ],
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
-    "expectedRelease": "Q1 2025",
     "featureType": "optional"
   },
   {
@@ -89,7 +88,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "forms.view",
     "originalRequiresPermission": "forms.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -107,7 +106,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "approvals.view",
     "originalRequiresPermission": "approvals.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -177,7 +176,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "import-export.view",
     "originalRequiresPermission": "import-export.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -196,7 +195,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "integrations.view",
     "originalRequiresPermission": "integrations.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -215,7 +214,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "pos.view",
     "originalRequiresPermission": "pos.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -253,7 +252,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "marketing.view",
     "originalRequiresPermission": "marketing.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -291,7 +290,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "bi.view",
     "originalRequiresPermission": "bi.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },
@@ -329,7 +328,7 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "sales.view",
     "originalRequiresPermission": "sales.view",
-    "status": "beta",
+    "status": "stable",
     "isReady": true,
     "featureType": "optional"
   },

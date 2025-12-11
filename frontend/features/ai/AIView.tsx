@@ -1,18 +1,23 @@
 "use client";
 
+/**
+ * AI View - Main Feature Container
+ * 
+ * Uses the three-panel architecture:
+ * - Left: AILeftPanel (Sessions list)
+ * - Center: AICenterPanel (Chat conversation)
+ * - Right: AIRightPanel (Session info)
+ */
+
 import { useState, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileHeader } from "@/frontend/shared/ui/layout/header";
 import { Sparkles } from "lucide-react";
-import { AIListView } from "./AIListView";
-import { AIDetailView } from "./AIDetailView";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
 import { useAIStore } from "./stores";
 import { useInitializeAI, useAIActions } from "./hooks";
-import { AISessionInfoPanel } from "./components/AISessionInfoPanel";
+import { AILeftPanel, AICenterPanel, AIRightPanel } from "./panels";
 import { AISessionInfoDrawer } from "./components/AISessionInfoDrawer";
-import { Button } from "@/components/ui/button";
-import { PanelLeft, PanelRight } from "lucide-react";
 
 export function AIView() {
   const isMobile = useIsMobile();
@@ -37,26 +42,25 @@ export function AIView() {
   // Mobile drawer state
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  // Toggle handlers
-  const handleToggleLeftPanel = useCallback(() => {
-    setLeftPanelCollapsed(prev => !prev);
-  }, []);
+  const handleChatSelect = useCallback((chatId: string) => {
+    selectSession(chatId as any);
+    // Auto-expand right panel when selecting a session
+    setRightPanelCollapsed(false);
+  }, [selectSession]);
+
+  const handleBack = useCallback(() => {
+    if (selectedSessionId) {
+      selectSession(null);
+    }
+  }, [selectedSessionId, selectSession]);
 
   const handleToggleRightPanel = useCallback(() => {
     setRightPanelCollapsed(prev => !prev);
   }, []);
 
-  const handleChatSelect = (chatId: string) => {
-    selectSession(chatId as any);
-    // Auto-expand right panel when selecting a session
-    setRightPanelCollapsed(false);
-  };
-
-  const handleBack = () => {
-    if (selectedSessionId) {
-      selectSession(null);
-    }
-  };
+  // ============================================================================
+  // Mobile Layout
+  // ============================================================================
 
   if (isMobile) {
     // On mobile, show either AI chat list or AI chat detail, not both
@@ -68,7 +72,12 @@ export function AIView() {
             icon={Sparkles}
             onBack={handleBack}
           />
-          <AIDetailView chatId={selectedSessionId} />
+          <AICenterPanel 
+            chatId={selectedSessionId} 
+            onBack={handleBack}
+            onToggleInfo={() => setMobileDrawerOpen(true)}
+            isInfoOpen={mobileDrawerOpen}
+          />
 
           {/* Mobile: Use Drawer for session info */}
           <AISessionInfoDrawer
@@ -90,64 +99,44 @@ export function AIView() {
           icon={Sparkles}
           onBack={handleBack}
         />
-        <AIListView
-          selectedChatId={selectedSessionId ?? undefined}
-          onChatSelect={handleChatSelect}
+        <AILeftPanel
+          selectedSessionId={selectedSessionId}
+          onSessionSelect={handleChatSelect}
         />
       </div>
     );
   }
 
-  // Desktop: Right panel content with toggle buttons
-  const rightPanelContent = (
-    <div className="flex flex-col h-full">
-      {/* Quick actions bar with panel toggles */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/20">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleToggleLeftPanel}
-          className="h-8 w-8 p-0"
-          title={leftPanelCollapsed ? "Show session list" : "Hide session list"}
-        >
-          <PanelLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-xs text-muted-foreground font-medium">Panels</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleToggleRightPanel}
-          className="h-8 w-8 p-0"
-          title={rightPanelCollapsed ? "Show session info" : "Hide session info"}
-        >
-          <PanelRight className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Session info panel content */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <AISessionInfoPanel
-          session={selectedSession as any}
-          onClose={() => setRightPanelCollapsed(true)}
-          knowledgeEnabled={knowledgeEnabled}
-          onKnowledgeToggle={handleKnowledgeToggle}
-        />
-      </div>
-    </div>
-  );
+  // ============================================================================
+  // Desktop Layout - Three Column
+  // ============================================================================
 
   return (
     <div className="h-full flex flex-col">
       <ThreeColumnLayoutAdvanced
+        // Panel Components
         left={
-          <AIListView
-            selectedChatId={selectedSessionId ?? undefined}
-            onChatSelect={handleChatSelect}
-            variant="layout"
+          <AILeftPanel
+            selectedSessionId={selectedSessionId}
+            onSessionSelect={handleChatSelect}
           />
         }
-        center={<AIDetailView chatId={selectedSessionId ?? undefined} />}
-        right={rightPanelContent}
+        center={
+          <AICenterPanel 
+            chatId={selectedSessionId ?? undefined}
+            onBack={handleBack}
+            onToggleInfo={handleToggleRightPanel}
+            isInfoOpen={!rightPanelCollapsed}
+          />
+        }
+        right={
+          <AIRightPanel
+            session={selectedSession}
+            onClose={() => setRightPanelCollapsed(true)}
+            knowledgeEnabled={knowledgeEnabled}
+            onKnowledgeToggle={handleKnowledgeToggle}
+          />
+        }
         // Labels
         leftLabel="Sessions"
         centerLabel="AI Chat"

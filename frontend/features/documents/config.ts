@@ -27,8 +27,12 @@ export default defineFeature({
   },
 
   status: {
-    state: 'deprecated',
+    state: 'stable',
     isReady: true,
+  },
+  agent: {
+    definitionPath: "convex/features/docs/agent.ts",
+    capabilities: ["create", "read", "update", "delete", "search"],
   },
 
   // Bundle membership - empty as deprecated

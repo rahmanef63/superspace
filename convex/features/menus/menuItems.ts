@@ -149,6 +149,11 @@ export const getWorkspaceMenuItems = query({
     // This ensures new features appear immediately without requiring a sync
     const dbSlugs = new Set(menuItems.map((item) => item.slug))
     
+    // Build catalog lookup for optional features
+    const catalogBySlug = new Map(
+      OPTIONAL_FEATURES_CATALOG.map((f) => [f.slug, f])
+    )
+    
     // Get roles for permission checking
     const allRoles = await ctx.db
       .query("roles")
@@ -165,6 +170,23 @@ export const getWorkspaceMenuItems = query({
         })
         .map((role: any) => role._id)
     }
+    
+    // === SSOT: Update existing optional features with latest catalog values ===
+    // This ensures isReady and status are always current from catalog
+    menuItems = menuItems.map((item) => {
+      const catalogFeature = catalogBySlug.get(item.slug)
+      if (catalogFeature && item.metadata?.featureType === "optional") {
+        return {
+          ...item,
+          metadata: {
+            ...item.metadata,
+            isReady: catalogFeature.isReady,
+            status: catalogFeature.status,
+          },
+        }
+      }
+      return item
+    })
     
     // Add missing default/system features from manifest
     for (const manifestItem of DEFAULT_MENU_ITEMS) {
@@ -907,7 +929,7 @@ export const installFeatureMenus = mutation({
         // Simple version comparison (you can use semver library for more complex logic)
         if (existingVersion === newVersion) continue // Same version, skip
 
-        // Update existing menu item
+        // Update existing menu item with full metadata sync
         await ctx.db.patch(existing._id, {
           name: feature.name,
           icon: feature.icon,
@@ -916,8 +938,7 @@ export const installFeatureMenus = mutation({
           order: feature.order,
           metadata: {
             ...existing.metadata,
-            description: feature.metadata.description,
-            version: newVersion,
+            ...feature.metadata, // Include all catalog metadata (isReady, status, etc.)
             lastUpdated: Date.now(),
             previousVersion: existingVersion,
           },

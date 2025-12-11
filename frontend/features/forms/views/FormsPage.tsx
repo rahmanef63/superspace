@@ -243,7 +243,6 @@ export default function FormsPage({ workspaceId }: FormsPageProps) {
         icon={FileText}
         title="Forms"
         subtitle="Create and manage forms for data collection"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "Create Form",
           icon: Plus,

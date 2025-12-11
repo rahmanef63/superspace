@@ -15,7 +15,7 @@
 
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { Sparkles } from "lucide-react"
 import { toast } from "sonner"
 
@@ -23,28 +23,27 @@ import { toast } from "sonner"
 
 // Grok-style UI components
 import {
-  GrokUserMessage,
-  GrokAIMessage,
-  GrokTypingIndicator,
-  GrokChatContainer,
   GrokInput,
 } from "@/frontend/shared/communications/components/grok-chat"
 
-// AI Elements imports - for PromptInput and Response rendering
-import {
-  Response,
-  type ChatStatus,
-} from "@/frontend/shared/communications/components/ai"
+// AI Elements type
+import type { ChatStatus } from "@/frontend/shared/communications/components/ai"
+
 
 // Feature imports
 import { useAIStore } from "./stores"
-import { useAIActions } from "./hooks"
+import { useAIActions, useSubAgentRouter } from "./hooks"
 import { useAIKnowledgeContext } from "./hooks/useAIKnowledgeContext"
 import { useAISettingsStorage } from "./settings/useAISettings"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DEFAULT_SUGGESTIONS, DEFAULT_PROVIDER, DEFAULT_MODEL_ID } from "./constants"
 import { AIChatHeader } from "./components/AIChatHeader"
+import { AIWelcomeMode } from "./components/AIWelcomeMode"
+import { AIMessageList } from "./components/AIMessageList"
+import { SessionInfoPanel } from "./components/SessionInfoPanel"
 import { generateAISuggestions } from "./utils/suggestions"
+import { DEFAULT_PROVIDER, DEFAULT_MODEL_ID } from "./constants"
+import { AIDebugPanel } from "./components/AIDebugPanel"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 interface AIDetailViewProps {
   chatId?: string
   onBack?: () => void
@@ -55,6 +54,7 @@ interface AIDetailViewProps {
 
 export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewProps) {
   const [message, setMessage] = useState("")
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true) // Default to open as per user request to see info immediately
   const [messageBranches, setMessageBranches] = useState<Record<string, Array<{ id: string; content: string; timestamp: number }>>>({})
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [attachments, setAttachments] = useState<File[]>([])
@@ -62,7 +62,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false)
   const isMobile = useIsMobile()
-  
+
   // AI settings for API calls
   const { settings } = useAISettingsStorage()
 
@@ -78,6 +78,23 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
 
   // Knowledge context
   const { knowledgeContext } = useAIKnowledgeContext()
+
+  // Access sub-agent router state to show feedback
+  const { isProcessing: isAgentProcessing, lastToolUsed, lastAgentUsed } = useSubAgentRouter()
+
+  // Show feedback when tool is executing
+  useEffect(() => {
+    if (isAgentProcessing && lastToolUsed) {
+      toast.loading(`Running tool: ${lastToolUsed}...`, {
+        id: "agent-tool-execution",
+      })
+    } else if (!isAgentProcessing && lastToolUsed) {
+      toast.dismiss("agent-tool-execution")
+      toast.success(`Completed: ${lastToolUsed}`, {
+        duration: 2000
+      })
+    }
+  }, [isAgentProcessing, lastToolUsed])
 
   // Use external or store chatId
   const chatId = externalChatId ?? storeSelectedSessionId
@@ -120,10 +137,10 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
     if (!message.trim() && attachments.length === 0) return
 
     const contextToUse = knowledgeEnabled ? knowledgeContext : undefined
-    
+
     // Handle attachments (mock for now)
     let finalMessage = message
-    
+
     // Handle reply context
     if (replyingTo) {
       const quote = `> ${replyingTo.substring(0, 200)}${replyingTo.length > 200 ? '...' : ''}\n\n`
@@ -195,12 +212,12 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
   // Regenerate creates a new branch - calls API directly without adding new message
   const handleRegenerate = useCallback(async (originalMessageId: string, originalContent: string) => {
     if (!selectedSession?.messages.length) return
-    
+
     setIsRegenerating(true)
     try {
       const userMessages = selectedSession.messages.filter(m => m.role === 'user')
       const lastUserMessage = userMessages[userMessages.length - 1]
-      
+
       if (!lastUserMessage) return
 
       // Get AI settings for direct API call
@@ -259,7 +276,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
 
       const data = await response.json()
       const responseContent = data.content || "Failed to regenerate"
-      
+
       // Add to branches for this message (local state only, no new message added)
       setMessageBranches(prev => {
         const existing = prev[originalMessageId] || [
@@ -278,7 +295,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
       if (chatId) {
         await regenerateMessage(chatId as any, originalMessageId, responseContent)
       }
-      
+
       toast.success("Response regenerated as new branch")
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to regenerate"
@@ -299,10 +316,31 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
     }
   }, [chatId, updateSessionMetadata])
 
+  const handleAgentSelect = useCallback(async (agentId: string | null) => {
+    if (!chatId || !updateSessionMetadata) return;
+
+    // Update session metadata with selected agent
+    await updateSessionMetadata(chatId as any, {
+      metadata: { agentId: agentId || undefined }
+    });
+
+    if (agentId) {
+      // Import registry dynamically to avoid cycles if possible, or assume it's available
+      // For now, we trust the update will persist.
+      // We could also update the icon if the agent has one
+      // const agent = subAgentRegistry.getAgent(agentId); 
+      // if (agent?.icon) await updateSessionMetadata(chatId as any, { icon: agent.icon });
+
+      toast.success("Agent selected");
+    } else {
+      toast.success("Switched to General Assistant");
+    }
+  }, [chatId, updateSessionMetadata]);
+
   // Generate AI suggestions when last message changes
   const generateSuggestionsForMessage = useCallback(async (content: string) => {
     if (isGeneratingSuggestions) return
-    
+
     setIsGeneratingSuggestions(true)
     try {
       const provider = settings.defaultProvider || "groq"
@@ -310,7 +348,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
       const apiKeyConfig = settings.apiKeys?.find(
         k => k.providerId === provider && k.isEnabled
       )
-      
+
       if (!apiKeyConfig?.apiKey && provider !== "ollama") {
         // Fallback to static suggestions if no API key
         setAiSuggestions([])
@@ -324,7 +362,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
         baseUrl: apiKeyConfig?.baseUrl,
         conversationContext: messages.slice(-3).map(m => m.content)
       })
-      
+
       setAiSuggestions(suggestions)
     } catch (error) {
       console.error("Failed to generate suggestions:", error)
@@ -334,58 +372,7 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
     }
   }, [settings, messages, isGeneratingSuggestions])
 
-  // Empty state - no conversation selected (Grok style)
-  if (!chatId) {
-    return (
-      <div className="flex flex-col h-full min-h-0 bg-background">
-        <div className="flex-1 flex items-center justify-center overflow-y-auto">
-          <div className="text-center max-w-lg p-4">
-            <div className="text-foreground text-2xl font-medium mb-2">
-              How can AI help?
-            </div>
-            <p className="text-muted-foreground text-sm mb-8">
-              Ask anything. Get answers, ideas, and assistance.
-            </p>
-            
-            {/* Suggestions - Grok style */}
-            <div className="space-y-3">
-              {DEFAULT_SUGGESTIONS.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSuggestionClick(s)}
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors text-secondary-foreground text-sm"
-                >
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Input - Grok style */}
-        <GrokInput
-          value={message}
-          onChange={setMessage}
-          onSubmit={() => {
-            if (message.trim() || attachments.length > 0) {
-              handleSendMessage({ preventDefault: () => {} } as React.FormEvent)
-            }
-          }}
-          placeholder="How can AI help?"
-          disabled={isSending}
-          thinkHarder={knowledgeEnabled}
-          onThinkHarderChange={setKnowledgeEnabled}
-          model="Auto"
-          onAttach={handleAttach}
-          attachments={attachments}
-          onRemoveAttachment={handleRemoveAttachment}
-          replyingTo={replyingTo}
-          onCancelReply={handleCancelReply}
-        />
-      </div>
-    )
-  }
+  // State processed above
 
   // Loading state
   if (isLoading && !selectedSession) {
@@ -399,160 +386,107 @@ export function AIDetailView({ chatId: externalChatId, onBack }: AIDetailViewPro
     )
   }
 
-  // No messages yet - new conversation (Grok style)
-  if (messages.length === 0) {
+  // Consolidated Welcome / Empty State handling
+  if (!chatId || messages.length === 0) {
     return (
-      <div className="flex flex-col h-full min-h-0 bg-background">
-        {/* Header */}
-        <AIChatHeader
-          session={selectedSession}
-          knowledgeEnabled={knowledgeEnabled}
-          onKnowledgeToggle={setKnowledgeEnabled}
-          onIconChange={handleIconChange}
-          onBack={onBack}
-        />
-
-        <div className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="text-center max-w-lg">
-            <Sparkles className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-medium text-foreground mb-2">Start a conversation</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              Ask a question or start with a suggestion below.
-            </p>
-            
-            {/* Suggestions */}
-            <div className="space-y-3">
-              {DEFAULT_SUGGESTIONS.slice(0, 3).map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSuggestionClick(s)}
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors text-secondary-foreground text-sm"
-                >
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Input - Grok style */}
-        <GrokInput
-          value={message}
-          onChange={setMessage}
-          onSubmit={() => {
-            if (message.trim() || attachments.length > 0) {
-              handleSendMessage({ preventDefault: () => {} } as React.FormEvent)
-            }
-          }}
-          placeholder="How can AI help?"
-          disabled={isSending}
-          thinkHarder={knowledgeEnabled}
-          onThinkHarderChange={setKnowledgeEnabled}
-          model="Auto"
-          onAttach={handleAttach}
-          attachments={attachments}
-          onRemoveAttachment={handleRemoveAttachment}
-          replyingTo={replyingTo}
-          onCancelReply={handleCancelReply}
-        />
-      </div>
+      <AIWelcomeMode
+        session={selectedSession}
+        message={message}
+        isSending={isSending}
+        knowledgeEnabled={knowledgeEnabled}
+        attachments={attachments}
+        replyingTo={replyingTo}
+        onMessageChange={setMessage}
+        onSendMessage={() => {
+          if (message.trim() || attachments.length > 0) {
+            handleSendMessage({ preventDefault: () => { } } as React.FormEvent)
+          }
+        }}
+        onSuggestionClick={handleSuggestionClick}
+        onKnowledgeToggle={setKnowledgeEnabled}
+        onIconChange={handleIconChange}
+        onAgentSelect={handleAgentSelect}
+        onAttach={handleAttach}
+        onRemoveAttachment={handleRemoveAttachment}
+        onCancelReply={handleCancelReply}
+        onBack={onBack}
+      />
     )
   }
 
-  // Main conversation view - Grok style
+  // Main conversation view
   return (
-    <div className="flex flex-col h-full min-h-0 bg-background">
-      {/* Header */}
-      <AIChatHeader
-        session={selectedSession}
-        knowledgeEnabled={knowledgeEnabled}
-        onKnowledgeToggle={setKnowledgeEnabled}
-        onIconChange={handleIconChange}
-        onBack={onBack}
-      />
+    <div className="flex h-full min-h-0 bg-background overflow-hidden">
 
-      {/* Messages area - Grok style */}
-      <GrokChatContainer>
-        {messages.map((msg, index) => {
-          const isUser = msg.role === 'user'
-          const isLastAIMessage = !isUser && index === messages.length - 1
-          const msgId = msg.id || `msg-${index}`
-          const branches = messageBranches[msgId]
+      <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0">
+        <div className="border-b px-4 flex items-center justify-between bg-muted/10">
+          <TabsList className="h-9">
+            <TabsTrigger value="chat" className="text-xs">Chat</TabsTrigger>
+            <TabsTrigger value="debug" className="text-xs">Debug</TabsTrigger>
+          </TabsList>
+        </div>
 
-          if (isUser) {
-            return (
-              <GrokUserMessage key={msgId}>
-                {msg.content}
-              </GrokUserMessage>
-            )
-          }
+        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 mt-0 data-[state=active]:flex">
+          {/* Main Chat Area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Header */}
+            <AIChatHeader
+              session={selectedSession}
+              knowledgeEnabled={knowledgeEnabled}
+              onKnowledgeToggle={setKnowledgeEnabled}
+              onIconChange={handleIconChange}
+              onAgentSelect={handleAgentSelect}
+              onBack={onBack}
+              onToggleInfo={() => setIsRightPanelOpen(!isRightPanelOpen)}
+              isInfoOpen={isRightPanelOpen}
+            />
 
-          // Use AI-generated suggestions for the last AI message, or fallback to simple context-aware ones
-          const followUpSuggestions = isLastAIMessage 
-            ? (aiSuggestions.length > 0 ? aiSuggestions : undefined)
-            : undefined
-          
-          // Trigger AI suggestion generation for last message if not already generated
-          if (isLastAIMessage && aiSuggestions.length === 0 && !isGeneratingSuggestions && !isSending) {
-            // Use setTimeout to avoid calling during render
-            setTimeout(() => generateSuggestionsForMessage(msg.content), 100)
-          }
-
-          const duration = msg.metadata?.duration ? msg.metadata.duration / 1000 : undefined
-
-          return (
-            <GrokAIMessage
-              key={msgId}
-              responseTime={duration}
-              speedLabel={duration && duration < 2 ? "Fast" : "Normal"}
-              branches={branches}
-              onRegenerate={() => handleRegenerate(msgId, msg.content)}
-              onReply={() => handleReply(msg.content)}
-              onListen={() => handleListen(msg.content)}
-              onShare={() => {
-                navigator.clipboard.writeText(msg.content)
-                toast.success("Copied to clipboard")
-              }}
-              onThumbsUp={() => handleThumbsUp(msgId)}
-              onThumbsDown={() => handleThumbsDown(msgId)}
-              onMore={() => toast.info("Report issue feature coming soon")}
-              feedback={msg.feedback}
-              suggestions={followUpSuggestions}
-              onSuggestionClick={handleSuggestionClick}
+            {/* Messages List */}
+            <AIMessageList
+              messages={messages}
+              isSending={isSending}
               isRegenerating={isRegenerating}
-              reasoning={msg.reasoning}
-              isStreamingReasoning={isLastAIMessage && isSending}
-            >
-              <Response>{msg.content}</Response>
-            </GrokAIMessage>
-          )
-        })}
+              messageBranches={messageBranches}
+              aiSuggestions={aiSuggestions}
+              isGeneratingSuggestions={isGeneratingSuggestions}
+              onRegenerate={handleRegenerate}
+              onReply={handleReply}
+              onListen={handleListen}
+              onThumbsUp={handleThumbsUp}
+              onThumbsDown={handleThumbsDown}
+              onSuggestionClick={handleSuggestionClick}
+              generateSuggestionsForMessage={generateSuggestionsForMessage}
+            />
 
-        {/* Typing indicator */}
-        {isSending && <GrokTypingIndicator />}
-      </GrokChatContainer>
+            {/* Input */}
+            <GrokInput
+              value={message}
+              onChange={setMessage}
+              onSubmit={() => {
+                if (message.trim() || attachments.length > 0) {
+                  handleSendMessage({ preventDefault: () => { } } as React.FormEvent)
+                }
+              }}
+              placeholder="How can AI help?"
+              disabled={isSending}
+              thinkHarder={knowledgeEnabled}
+              onThinkHarderChange={setKnowledgeEnabled}
+              model="Auto"
+              onAttach={handleAttach}
+              attachments={attachments}
+              onRemoveAttachment={handleRemoveAttachment}
+              replyingTo={replyingTo}
+              onCancelReply={handleCancelReply}
+            />
+          </div>
+        </TabsContent>
 
-      {/* Input - Grok style */}
-      <GrokInput
-        value={message}
-        onChange={setMessage}
-        onSubmit={() => {
-          if (message.trim() || attachments.length > 0) {
-            handleSendMessage({ preventDefault: () => {} } as React.FormEvent)
-          }
-        }}
-        placeholder="How can AI help?"
-        disabled={isSending}
-        thinkHarder={knowledgeEnabled}
-        onThinkHarderChange={setKnowledgeEnabled}
-        model="Auto"
-        onAttach={handleAttach}
-        attachments={attachments}
-        onRemoveAttachment={handleRemoveAttachment}
-        replyingTo={replyingTo}
-        onCancelReply={handleCancelReply}
-      />
+        <TabsContent value="debug" className="flex-1 min-h-0 mt-0 data-[state=active]:flex">
+          <div className="flex-1 flex min-h-0">
+            <AIDebugPanel />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

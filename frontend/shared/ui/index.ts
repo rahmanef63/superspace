@@ -87,6 +87,21 @@ export * from './components/canvas'
 export * from './components/preview'
 
 // ============================================================
+// Session Info (Shared across features)
+// ============================================================
+export * from './components/session-info'
+
+// ============================================================
+// Agent Chat (Shared AI chat container)
+// ============================================================
+export * from './agent-chat'
+
+// ============================================================
+// AI Assistant (Feature AI Assistant components)
+// ============================================================
+export * from './ai-assistant'
+
+// ============================================================
 // User Components
 // ============================================================
 export * from './components/user'

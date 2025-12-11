@@ -7,6 +7,79 @@ import { requireActiveMembership } from "../../auth/helpers"
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Main Data Query (for Dashboard)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get marketing dashboard data
+ * Returns data matching the MarketingData interface expected by the frontend
+ */
+export const getData = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    // Get all campaigns for this workspace
+    const campaigns = await ctx.db
+      .query("marketingCampaigns")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .order("desc")
+      .collect()
+
+    // Get active campaigns
+    const activeCampaigns = campaigns.filter(c => c.status === "active" || c.status === "scheduled")
+
+    // Calculate stats
+    const totalSent = campaigns.reduce((sum, c) => sum + (c.sent || 0), 0)
+    const totalConversions = campaigns.reduce((sum, c) => sum + (c.conversions || 0), 0)
+    const totalClicks = campaigns.reduce((sum, c) => sum + (c.clicks || 0), 0)
+    
+    // Calculate spend (from budget if available)
+    const totalSpend = campaigns.reduce((sum, c) => {
+      if (c.budget?.spent) return sum + c.budget.spent
+      return sum
+    }, 0)
+
+    // Calculate ROI (simple estimation based on conversions)
+    const estimatedRevenue = totalConversions * 50 // Assume $50 per conversion
+    const roi = totalSpend > 0 ? Number((estimatedRevenue / totalSpend).toFixed(1)) : 0
+
+    // Calculate conversion rate
+    const conversionRate = totalSent > 0 
+      ? Number(((totalConversions / totalSent) * 100).toFixed(1)) 
+      : 0
+
+    // Format campaigns for frontend
+    const formattedCampaigns = activeCampaigns.slice(0, 10).map(c => ({
+      id: c._id,
+      name: c.name,
+      status: c.status as 'active' | 'scheduled' | 'ended' | 'draft',
+      platform: (c.type === "email" ? "email" : 
+               c.type === "social" ? "social" : 
+               c.type === "ads" ? "display" : "email") as 'email' | 'social' | 'search' | 'display',
+      budget: c.budget?.total || 0,
+      impressions: (c.sent || 0) * 10, // Estimate impressions
+      clicks: c.clicks || 0,
+      conversions: c.conversions || 0,
+    }))
+
+    return {
+      stats: {
+        activeCampaigns: activeCampaigns.length,
+        totalLeads: totalConversions,
+        conversionRate,
+        spend: totalSpend,
+        roi,
+      },
+      activeCampaigns: formattedCampaigns,
+      recentActivity: [], // TODO: Implement activity feed
+    }
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Campaign Queries
 // ═══════════════════════════════════════════════════════════════════════════════
 

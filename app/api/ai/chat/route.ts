@@ -13,6 +13,8 @@ interface ChatRequest {
   baseUrl?: string
   temperature?: number
   maxTokens?: number
+  tools?: any[]
+  tool_choice?: any
 }
 
 // Request timeout in milliseconds (30 seconds)
@@ -28,7 +30,7 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
-  
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -47,9 +49,9 @@ function parseProviderError(provider: string, status: number, errorText: string)
   try {
     const errorJson = JSON.parse(errorText)
     // Extract meaningful error message from various provider formats
-    const message = 
-      errorJson.error?.message || 
-      errorJson.message || 
+    const message =
+      errorJson.error?.message ||
+      errorJson.message ||
       errorJson.error?.error?.message ||
       errorJson.detail ||
       errorText
@@ -102,10 +104,10 @@ const PROVIDER_CONFIGS: Record<string, { baseUrl: string; headers?: Record<strin
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   let provider = "unknown"
-  
+
   try {
     const body: ChatRequest = await request.json()
-    const { messages, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048 } = body
+    const { messages, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048, tools, tool_choice } = body
     provider = body.provider
 
     if (!messages || messages.length === 0) {
@@ -138,18 +140,26 @@ export async function POST(request: NextRequest) {
     }
 
     // OpenAI-compatible API call (works for Groq, OpenAI, Together, Fireworks, etc.)
+    const requestBody: any = {
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+    }
+
+    // Add tools if present
+    if (tools && tools.length > 0) {
+      requestBody.tools = tools
+      requestBody.tool_choice = tool_choice || "auto"
+    }
+
     const response = await fetchWithTimeout(`${apiBaseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
@@ -163,23 +173,26 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    const assistantMessage = data.choices?.[0]?.message?.content
+    const choice = data.choices?.[0]
+    const assistantMessage = choice?.message
 
     if (!assistantMessage) {
       return NextResponse.json({ error: "No response from AI provider. The model may be unavailable." }, { status: 500 })
     }
 
     console.log(`[AI Chat] ${provider}/${model} responded in ${Date.now() - startTime}ms`)
-    
+
+    // Return content and/or tool calls
     return NextResponse.json({
-      content: assistantMessage,
+      content: assistantMessage.content,
+      tool_calls: assistantMessage.tool_calls,
       model: data.model,
       usage: data.usage,
     })
   } catch (error) {
     const elapsed = Date.now() - startTime
     console.error(`AI chat error (${provider}, ${elapsed}ms):`, error)
-    
+
     // Handle specific error types
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
@@ -188,20 +201,20 @@ export async function POST(request: NextRequest) {
           { status: 504 }
         )
       }
-      
+
       if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
         return NextResponse.json(
           { error: `Unable to connect to ${provider}. Please check your internet connection or try a different provider.` },
           { status: 503 }
         )
       }
-      
+
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json(
       { error: "An unexpected error occurred. Please try again." },
       { status: 500 }
@@ -297,7 +310,7 @@ async function handleGoogleRequest(
       }))
 
     const systemMessage = messages.find(m => m.role === "system")
-    
+
     const body: any = {
       contents,
       generationConfig: {
@@ -415,7 +428,7 @@ async function handleCohereRequest(
     }
 
     const data = await response.json()
-    
+
     return NextResponse.json({
       content: data.text,
       model: model,

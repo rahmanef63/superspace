@@ -27,7 +27,7 @@ export default defineFeature({
   },
 
   status: {
-    state: 'beta',
+    state: 'stable',
     isReady: true,
   },
 

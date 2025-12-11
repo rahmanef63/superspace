@@ -33,3 +33,14 @@ export interface AIProvider {
   models: string[]
   isAvailable: boolean
 }
+
+export interface AgentDefinition {
+  name: string
+  description: string
+  icon: string
+  capabilities?: string[]
+  prompts?: {
+    system?: string
+    [key: string]: any
+  }
+}

@@ -29,7 +29,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import type { AiSource } from "../hooks/useContent"
+import type { AiSource } from "../hooks/useContentLibrary"
 
 interface Message {
   id: string

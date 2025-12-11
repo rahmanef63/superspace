@@ -296,6 +296,10 @@ export const useAIActions = () => {
         { role: "user" as const, content },
       ];
 
+      // Get tool definitions from registry
+      const { subAgentRegistry } = await import("../agents/registry");
+      const tools = subAgentRegistry.getToolDefinitions();
+
       // Call AI API
       const startTime = Date.now();
       const response = await fetch("/api/ai/chat", {
@@ -309,6 +313,8 @@ export const useAIActions = () => {
           baseUrl: apiKeyConfig?.baseUrl,
           temperature: settings.temperature || 0.7,
           maxTokens: parseInt(settings.maxTokens || "2048"),
+          tools: tools, // Pass tools to API
+          tool_choice: "auto",
         }),
       });
 
@@ -321,7 +327,77 @@ export const useAIActions = () => {
       }
 
       const data = await response.json();
-      const aiResponse = data.content;
+      let aiResponse = data.content || ""; // Might be null if it's a pure tool call
+      let toolCalls = data.tool_calls;
+      let toolExecuted = false;
+
+      // Handle Native Tool Calls (Response from Provider)
+      if (toolCalls && toolCalls.length > 0) {
+        console.log("[AI] Native tool calls detected:", toolCalls);
+        const { executeToolCall } = await import("../agents/router");
+
+        // Execute all tool calls
+        for (const toolCall of toolCalls) {
+          try {
+            // Execute tool on frontend (which calls backend)
+            const context = {
+              workspaceId: workspaceId as any,
+              userId: userId,
+              convex: null as any, // Hydrated inside executeTool route logic/wrapper if needed, but here we depend on the registry actions
+            };
+
+            // We need to use executeToolCall from router
+            const result = await executeToolCall(toolCall, context);
+
+            // Append tool result to the conversation for the AI to see (if we were doing a loop)
+            // For now, we'll just format the result for the user message
+            if (result.result.success) {
+              aiResponse += `\n\n✅ Executed **${result.toolName}**: Success`;
+              toolExecuted = true;
+            } else {
+              aiResponse += `\n\n❌ Failed to execute **${result.toolName}**: ${result.result.error}`;
+            }
+          } catch (err) {
+            console.error("Tool execution error:", err);
+            aiResponse += `\n\n❌ Error executing tool: ${err instanceof Error ? err.message : "Unknown error"}`;
+          }
+        }
+      }
+      // Fallback: Check for Regex JSON if no native tool calls (for providers that don't support it well or legacy behavior)
+      else {
+        const toolCallMatch = aiResponse?.match(/```json\s*([\s\S]*?)```/);
+        if (toolCallMatch) {
+          // ... existing regex logic ...
+          try {
+            const toolCallJson = JSON.parse(toolCallMatch[1].trim());
+            if (toolCallJson.tool && toolCallJson.params) {
+              console.log("[AI] Regex tool call detected:", toolCallJson.tool);
+              // Execute the tool
+              const { executeTool } = await import("../agents/router");
+              const context = {
+                workspaceId: workspaceId as any,
+                userId: userId,
+                convex: null,
+              };
+
+              // Execute via router
+              const result = await executeTool(
+                "documents", // Assuming documents for legacy regex
+                toolCallJson.tool === "createDocument" ? "create" : toolCallJson.tool,
+                toolCallJson.params,
+                context
+              );
+
+              if (result.success) {
+                aiResponse = `✅ Created document **"${toolCallJson.params.title}"** successfully!\n\nThe document has been saved with all the rich content formatting.`;
+                toolExecuted = true;
+              } else {
+                aiResponse = `❌ Failed to execute action: ${result.error}`;
+              }
+            }
+          } catch (e) { /* ignore parse error */ }
+        }
+      }
 
       // Add AI response to store
       addMessage(sessionId, {
@@ -432,7 +508,7 @@ export const useAIActions = () => {
 
   const updateSessionMetadata = useCallback(async (
     sessionId: Id<"aiChatSessions">,
-    updates: { icon?: string; title?: string; topic?: string }
+    updates: { icon?: string; title?: string; topic?: string; metadata?: Record<string, any> }
   ) => {
     try {
       await updateSessionMutation({

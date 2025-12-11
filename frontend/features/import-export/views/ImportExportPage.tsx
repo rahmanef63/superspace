@@ -55,7 +55,6 @@ export default function ImportExportPage({ workspaceId }: ImportExportPageProps)
         icon={ArrowUpDown}
         title="Import / Export"
         subtitle="Manage your workspace data"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "Import Data",
           icon: Upload,

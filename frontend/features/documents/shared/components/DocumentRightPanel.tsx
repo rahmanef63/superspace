@@ -1,9 +1,10 @@
 /**
  * Document Right Panel
  * 
- * A dual-mode right panel that switches between:
+ * A multi-mode right panel that switches between:
  * - Inspector: Document details, metadata, tags
  * - AI Chat: Document-related AI assistance
+ * - Debug: Session info with AI agent tracing
  */
 
 "use client";
@@ -13,9 +14,11 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toggle } from "@/components/ui/toggle";
-import { Bot, Info, X, Sparkles } from "lucide-react";
+import { Bot, Info, X, Sparkles, Bug } from "lucide-react";
 import { ContainerHeader } from "@/frontend/shared/ui/layout/header";
 import { AIChatPanel } from "@/frontend/shared/ui/ai-assistant";
+import { ChatHistoryDropdown } from "@/frontend/features/ai/components/ChatHistoryDropdown";
+import { SessionInfoTabs } from "@/frontend/shared/ui/components/session-info";
 import { cn } from "@/lib/utils";
 
 // Lazy load inspector
@@ -50,12 +53,28 @@ export interface DocumentRightPanelProps {
     /** Callback when tag is removed */
     onTagRemove?: (tag: string) => void;
     /** Current mode of the panel */
-    mode?: "inspector" | "ai";
+    mode?: "inspector" | "ai" | "debug";
     /** Callback when mode changes */
-    onModeChange?: (mode: "inspector" | "ai") => void;
+    onModeChange?: (mode: "inspector" | "ai" | "debug") => void;
+    /** AI Session for debug panel */
+    aiSession?: {
+        _id: string;
+        title: string;
+        status: string;
+        messages: Array<{
+            id?: string;
+            role: "user" | "assistant" | "system";
+            content: string;
+            timestamp: number;
+            metadata?: Record<string, any>;
+        }>;
+        createdAt: number;
+        updatedAt: number;
+        metadata?: Record<string, any>;
+    } | null;
 }
 
-type PanelMode = "inspector" | "ai";
+type PanelMode = "inspector" | "ai" | "debug";
 
 // ============================================================================
 // Component
@@ -69,6 +88,7 @@ export function DocumentRightPanel({
     onTagRemove,
     mode: controlledMode,
     onModeChange,
+    aiSession,
 }: DocumentRightPanelProps) {
     const [internalMode, setInternalMode] = useState<PanelMode>("inspector");
 
@@ -83,23 +103,47 @@ export function DocumentRightPanel({
         }
     };
 
+    // Get panel title and subtitle based on mode
+    const getPanelInfo = () => {
+        switch (mode) {
+            case "inspector":
+                return {
+                    title: "Inspector",
+                    subtitle: selectedDocument ? "Document Details" : "Select a document",
+                    icon: Info,
+                };
+            case "ai":
+                return {
+                    title: "AI Assistant",
+                    subtitle: "Ask about documents",
+                    icon: Sparkles,
+                };
+            case "debug":
+                return {
+                    title: "Debug",
+                    subtitle: "AI Agent Tracing",
+                    icon: Bug,
+                };
+        }
+    };
+
+    const panelInfo = getPanelInfo();
+
     return (
         <div className="flex flex-col h-full min-h-0">
             {/* Panel Header with Mode Toggle */}
             <div className="flex-shrink-0 border-b bg-muted/30">
                 <ContainerHeader
-                    title={mode === "inspector" ? "Inspector" : "AI Assistant"}
-                    subtitle={
-                        mode === "inspector"
-                            ? selectedDocument
-                                ? "Document Details"
-                                : "Select a document"
-                            : "Ask about documents"
-                    }
-                    icon={mode === "inspector" ? Info : Sparkles}
+                    title={panelInfo.title}
+                    subtitle={panelInfo.subtitle}
+                    icon={panelInfo.icon}
                     actions={
                         <div className="flex items-center gap-1">
-                            {/* Mode Toggle */}
+                            {/* Chat History - only in AI mode */}
+                            {mode === "ai" && (
+                                <ChatHistoryDropdown />
+                            )}
+                            {/* Mode Toggle - 3 buttons */}
                             <div className="flex border rounded-md">
                                 <Toggle
                                     pressed={mode === "inspector"}
@@ -107,6 +151,7 @@ export function DocumentRightPanel({
                                     size="sm"
                                     className="rounded-r-none h-7 w-7 p-0"
                                     aria-label="Inspector mode"
+                                    title="Inspector"
                                 >
                                     <Info className="h-3.5 w-3.5" />
                                 </Toggle>
@@ -114,10 +159,21 @@ export function DocumentRightPanel({
                                     pressed={mode === "ai"}
                                     onPressedChange={() => handleModeChange("ai")}
                                     size="sm"
-                                    className="rounded-l-none h-7 w-7 p-0"
+                                    className="rounded-none border-x h-7 w-7 p-0"
                                     aria-label="AI Assistant mode"
+                                    title="AI Assistant"
                                 >
                                     <Bot className="h-3.5 w-3.5" />
+                                </Toggle>
+                                <Toggle
+                                    pressed={mode === "debug"}
+                                    onPressedChange={() => handleModeChange("debug")}
+                                    size="sm"
+                                    className="rounded-l-none h-7 w-7 p-0"
+                                    aria-label="Debug mode"
+                                    title="Debug / Session Info"
+                                >
+                                    <Bug className="h-3.5 w-3.5" />
                                 </Toggle>
                             </div>
                             {/* Close Button */}
@@ -176,7 +232,7 @@ export function DocumentRightPanel({
                             </div>
                         </div>
                     )
-                ) : (
+                ) : mode === "ai" ? (
                     // AI Chat Mode
                     <AIChatPanel
                         featureId="documents"
@@ -186,6 +242,23 @@ export function DocumentRightPanel({
                             selectedDocumentId: selectedDocument?._id,
                             selectedDocumentTitle: selectedDocument?.title
                         }}
+                    />
+                ) : (
+                    // Debug Mode - Session Info with Tracing
+                    <SessionInfoTabs
+                        session={aiSession ? {
+                            _id: aiSession._id,
+                            title: aiSession.title,
+                            status: aiSession.status,
+                            messages: aiSession.messages,
+                            createdAt: aiSession.createdAt,
+                            updatedAt: aiSession.updatedAt,
+                            metadata: aiSession.metadata,
+                        } : null}
+                        tabs={["overview", "debug"]}
+                        defaultTab="debug"
+                        showCloseButton={false}
+                        compact={true}
                     />
                 )}
             </div>

@@ -41,7 +41,6 @@ export default function AccountingPage({ workspaceId }: AccountingPageProps) {
         icon={Calculator}
         title="Accounting"
         subtitle="Financial management, transactions, invoices, and reports"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Transaction",
           icon: Plus,

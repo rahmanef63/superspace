@@ -44,6 +44,10 @@ export interface AISession {
   isFavorite?: boolean;
   isMuted?: boolean;
   tags?: string[];
+  metadata?: {
+    agentId?: string;
+    [key: string]: any;
+  };
 }
 
 export interface AIStoreState {
@@ -56,7 +60,7 @@ export interface AIStoreState {
   isSending: boolean;
   error: string | null;
   globalMode: boolean; // true = personal/global sessions, false = workspace sessions
-  
+
   // Knowledge sources
   knowledgeEnabled: boolean; // Master toggle for knowledge
   selectedKnowledgeSources: KnowledgeSourceType[];
@@ -74,21 +78,21 @@ export interface AIStoreState {
   setGlobalMode: (global: boolean) => void;
   setKnowledgeEnabled: (enabled: boolean) => void;
   setKnowledgeSources: (sources: KnowledgeSourceType[]) => void;
-  
+
   // Session actions
   addSession: (session: AISession) => void;
   updateSession: (sessionId: Id<"aiChatSessions">, updates: Partial<AISession>) => void;
   removeSession: (sessionId: Id<"aiChatSessions">) => void;
-  
+
   // New conversation actions
   pinSession: (sessionId: Id<"aiChatSessions">, isPinned: boolean) => void;
   favoriteSession: (sessionId: Id<"aiChatSessions">, isFavorite: boolean) => void;
   archiveSession: (sessionId: Id<"aiChatSessions">, isArchived: boolean) => void;
   renameSession: (sessionId: Id<"aiChatSessions">, title: string, topic?: string) => void;
-  
+
   // Message actions
   addMessage: (sessionId: Id<"aiChatSessions">, message: AIMessage) => void;
-  
+
   // Reset
   reset: () => void;
 }
@@ -116,8 +120,8 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
 
   // Initialize store with workspace and user
   init: (workspaceId, userId) => {
-    set({ 
-      workspaceId, 
+    set({
+      workspaceId,
       userId,
       sessions: [],
       selectedSessionId: null,
@@ -129,10 +133,10 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   // Set sessions from query
   setSessions: (sessions) => {
     const state = get();
-    set({ 
+    set({
       sessions,
       // Update selectedSession if it exists in new sessions
-      selectedSession: state.selectedSessionId 
+      selectedSession: state.selectedSessionId
         ? sessions.find(s => s._id === state.selectedSessionId) || null
         : null,
     });
@@ -141,10 +145,10 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   // Select a session
   setSelectedSession: (sessionId) => {
     const sessions = get().sessions;
-    const selectedSession = sessionId 
+    const selectedSession = sessionId
       ? sessions.find(s => s._id === sessionId) || null
       : null;
-    set({ 
+    set({
       selectedSessionId: sessionId,
       selectedSession,
     });
@@ -169,7 +173,7 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   // Update a session
   updateSession: (sessionId, updates) => {
     set((state) => {
-      const newSessions = state.sessions.map(s => 
+      const newSessions = state.sessions.map(s =>
         s._id === sessionId ? { ...s, ...updates } : s
       );
       const selectedSession = state.selectedSessionId === sessionId
@@ -198,7 +202,7 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   // Pin/Unpin a session
   pinSession: (sessionId, isPinned) => {
     set((state) => {
-      const newSessions = state.sessions.map(s => 
+      const newSessions = state.sessions.map(s =>
         s._id === sessionId ? { ...s, isPinned, updatedAt: Date.now() } : s
       );
       // Sort pinned sessions to top
@@ -218,7 +222,7 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   // Favorite/Unfavorite a session
   favoriteSession: (sessionId, isFavorite) => {
     set((state) => {
-      const newSessions = state.sessions.map(s => 
+      const newSessions = state.sessions.map(s =>
         s._id === sessionId ? { ...s, isFavorite, updatedAt: Date.now() } : s
       );
       const selectedSession = state.selectedSessionId === sessionId
@@ -233,9 +237,9 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
   archiveSession: (sessionId, isArchived) => {
     set((state) => {
       const newStatus: AISession['status'] = isArchived ? 'archived' : 'active';
-      const newSessions: AISession[] = state.sessions.map(s => 
-        s._id === sessionId 
-          ? { ...s, status: newStatus, updatedAt: Date.now() } 
+      const newSessions: AISession[] = state.sessions.map(s =>
+        s._id === sessionId
+          ? { ...s, status: newStatus, updatedAt: Date.now() }
           : s
       );
       const selectedSession = state.selectedSessionId === sessionId
@@ -251,7 +255,7 @@ export const useAIStore = create<AIStoreState>()((set, get) => ({
     set((state) => {
       const updates: Partial<AISession> = { title, updatedAt: Date.now() };
       if (topic !== undefined) updates.topic = topic;
-      const newSessions = state.sessions.map(s => 
+      const newSessions = state.sessions.map(s =>
         s._id === sessionId ? { ...s, ...updates } : s
       );
       const selectedSession = state.selectedSessionId === sessionId

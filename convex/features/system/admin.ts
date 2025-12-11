@@ -89,7 +89,6 @@ export const getAvailableFeaturesForMenuStore = query({
         status: f.status || "stable",
         isReady: f.isReady ?? true,
         tags: f.tags,
-        expectedRelease: f.expectedRelease,
         requiresPermission: f.requiresPermission,
       }));
     }
@@ -567,7 +566,6 @@ export const seedSystemFeatures = internalMutation({
           isReady: feature.isReady ?? true,
           tags: feature.tags,
           requiresPermission: feature.requiresPermission,
-          expectedRelease: feature.expectedRelease,
           order: 100 + count, // Put optional features after default
           createdAt: now,
         });
@@ -920,7 +918,6 @@ export const seedSystemFeaturesFromCatalog = mutation({
         isReady: feature.isReady ?? true,
         tags: feature.tags,
         requiresPermission: feature.requiresPermission,
-        expectedRelease: feature.expectedRelease,
         order: 100 + i,
       });
     }

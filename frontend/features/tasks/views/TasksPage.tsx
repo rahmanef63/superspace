@@ -173,7 +173,6 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
         icon={CheckSquare}
         title="Tasks"
         subtitle="Track work, manage owners, and stay ahead of deadlines"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Task",
           icon: Plus,

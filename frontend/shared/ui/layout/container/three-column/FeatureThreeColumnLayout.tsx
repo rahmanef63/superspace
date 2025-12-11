@@ -63,63 +63,72 @@ export function FeatureThreeColumnLayout({
     ...layoutProps
 }: FeatureThreeColumnLayoutProps) {
 
+    // Check if we have any header content to show
+    const hasHeaderContent = sidebarStats || sidebarActions || searchProps || sortOptions || filterOptions || breadcrumbs;
+    const hasTopRow = sidebarStats || sidebarActions;
+    const hasBottomRow = searchProps || sortOptions || filterOptions || breadcrumbs;
+
     // ============================================================================
     // LEFT PANEL
     // ============================================================================
     const leftPanel = React.useMemo(() => (
         <div className="flex flex-col h-full min-h-0">
-            {/* Header Area */}
-            <div className="flex-shrink-0 border-b bg-muted/30">
-                {/* Top Row: Stats & Primary Actions */}
-                {(sidebarStats || sidebarActions) && (
-                    <div className="flex items-center justify-between px-3 py-2">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            {sidebarTitle && <span className="font-medium text-foreground">{sidebarTitle}</span>}
-                            {sidebarStats && <span>{sidebarStats}</span>}
+            {/* Header Area - only show if there's content */}
+            {hasHeaderContent && (
+                <div className="flex-shrink-0 border-b bg-muted/30">
+                    {/* Top Row: Stats & Primary Actions */}
+                    {hasTopRow && (
+                        <div className="flex items-center justify-between px-3 py-2">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {sidebarTitle && <span className="font-medium text-foreground">{sidebarTitle}</span>}
+                                {sidebarStats && <span>{sidebarStats}</span>}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                {sidebarActions}
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            {sidebarActions}
-                        </div>
-                    </div>
-                )}
-
-                {/* Bottom Row: Search, Sort, Filters */}
-                <div className="px-3 pb-2 space-y-2">
-                    {searchProps && (
-                        <HeaderControls
-                            searchable
-                            searchProps={{
-                                value: searchProps.value,
-                                onChange: searchProps.onChange,
-                                placeholder: searchProps.placeholder,
-                            }}
-                            responsive
-                        />
                     )}
 
-                    {sortOptions && (
-                        <UniversalToolbar
-                            tools={[
-                                {
-                                    id: "sort-tool" as any,
-                                    type: toolType.sort,
-                                    params: sortOptions,
-                                },
-                            ]}
-                            spacing="compact"
-                            background="transparent"
-                        />
-                    )}
+                    {/* Bottom Row: Search, Sort, Filters */}
+                    {hasBottomRow && (
+                        <div className="px-3 pb-2 space-y-2">
+                            {searchProps && (
+                                <HeaderControls
+                                    searchable
+                                    searchProps={{
+                                        value: searchProps.value,
+                                        onChange: searchProps.onChange,
+                                        placeholder: searchProps.placeholder,
+                                    }}
+                                    responsive
+                                />
+                            )}
 
-                    {filterOptions}
+                            {sortOptions && (
+                                <UniversalToolbar
+                                    tools={[
+                                        {
+                                            id: "sort-tool" as any,
+                                            type: toolType.sort,
+                                            params: sortOptions,
+                                        },
+                                    ]}
+                                    spacing="compact"
+                                    background="transparent"
+                                />
+                            )}
 
-                    {breadcrumbs && (
-                        <div className="pt-1">
-                            {breadcrumbs}
+                            {filterOptions}
+
+                            {breadcrumbs && (
+                                <div className="pt-1">
+                                    {breadcrumbs}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
-            </div>
+            )}
 
             {/* List Content */}
             <ScrollArea className="flex-1 min-h-0">
@@ -128,7 +137,7 @@ export function FeatureThreeColumnLayout({
                 </div>
             </ScrollArea>
         </div>
-    ), [sidebarTitle, sidebarStats, sidebarActions, sidebarContent, searchProps, sortOptions, filterOptions, breadcrumbs]);
+    ), [sidebarTitle, sidebarStats, sidebarActions, sidebarContent, searchProps, sortOptions, filterOptions, breadcrumbs, hasHeaderContent, hasTopRow, hasBottomRow]);
 
     // ============================================================================
     // CENTER PANEL

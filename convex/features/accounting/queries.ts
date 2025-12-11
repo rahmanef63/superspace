@@ -11,14 +11,20 @@ export const getData = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    // ✅ REQUIRED: Check workspace membership
-    const { membership, role } = await requireActiveMembership(ctx, args.workspaceId)
+    await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
+    // Return default accounting data structure
+    // In a real implementation, this would query actual accounting tables
     return {
-      message: "Query successful",
-      userId: membership.userDocId,
-      role: role.name,
+      stats: {
+        totalRevenue: 0,
+        netProfit: 0,
+        pendingInvoices: 0,
+        expenses: 0,
+        cashBalance: 0,
+      },
+      recentTransactions: [],
+      recentInvoices: [],
     }
   },
 })

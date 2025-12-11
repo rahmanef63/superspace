@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import {
   Image as ImageIcon,
   Video,
@@ -9,7 +9,8 @@ import {
   Link as LinkIcon,
   MoreHorizontal,
   Sparkles,
-  Check,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -21,8 +22,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import type { Id } from "@convex/_generated/dataModel"
-import type { ContentItem, ContentType } from "../types"
+import type { ContentItem, ContentType } from "../hooks/useContentLibrary"
 
 interface ContentListProps {
   items: ContentItem[]
@@ -33,6 +44,7 @@ interface ContentListProps {
   onToggleSelection?: (id: Id<"content">) => void
   onDelete?: (id: Id<"content">) => void
   onDuplicate?: (id: Id<"content">) => void
+  groupByType?: boolean
 }
 
 const typeIcons: Record<ContentType, React.ComponentType<{ className?: string }>> = {
@@ -43,6 +55,14 @@ const typeIcons: Record<ContentType, React.ComponentType<{ className?: string }>
   link: LinkIcon,
 }
 
+const typeLabels: Record<ContentType, string> = {
+  image: "Images",
+  video: "Videos",
+  audio: "Audio",
+  document: "Documents",
+  link: "Links",
+}
+
 const typeColors: Record<ContentType, string> = {
   image: "bg-pink-500/10 text-pink-500",
   video: "bg-purple-500/10 text-purple-500",
@@ -50,6 +70,8 @@ const typeColors: Record<ContentType, string> = {
   document: "bg-blue-500/10 text-blue-500",
   link: "bg-green-500/10 text-green-500",
 }
+
+const STORAGE_KEY = "content-list-collapsed-sections"
 
 function formatFileSize(bytes?: number): string {
   if (!bytes) return ""
@@ -71,6 +93,226 @@ function formatDate(timestamp: number): string {
   })
 }
 
+// Thumbnail component with optional hover zoom
+function ThumbnailWithZoom({
+  item,
+  Icon
+}: {
+  item: ContentItem
+  Icon: React.ComponentType<{ className?: string }>
+}) {
+  const hasImage = item.thumbnailUrl || (item.type === "image" && item.fileUrl)
+  const imageSrc = item.thumbnailUrl || item.fileUrl || ""
+
+  const thumbnailContent = (
+    <div
+      className={cn(
+        "flex-shrink-0 h-10 w-10 rounded-md flex items-center justify-center overflow-hidden",
+        hasImage ? "bg-muted" : typeColors[item.type]
+      )}
+    >
+      {hasImage ? (
+        <img
+          src={imageSrc}
+          alt={item.name}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <Icon className="h-5 w-5" />
+      )}
+    </div>
+  )
+
+  // Only show hover card for images with URLs
+  if (hasImage && (item.type === "image" || item.type === "video")) {
+    return (
+      <HoverCard openDelay={300} closeDelay={100}>
+        <HoverCardTrigger asChild>
+          {thumbnailContent}
+        </HoverCardTrigger>
+        <HoverCardContent
+          side="right"
+          align="start"
+          className="w-auto p-2"
+        >
+          <div className="overflow-hidden rounded-md">
+            <img
+              src={imageSrc}
+              alt={item.name}
+              className="max-w-[200px] max-h-[200px] object-contain"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 text-center truncate max-w-[200px]">
+            {item.name}
+          </p>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  }
+
+  return thumbnailContent
+}
+
+// Single content item row
+function ContentItemRow({
+  item,
+  isSelected,
+  isChecked,
+  selectionMode,
+  onSelect,
+  onToggleSelection,
+  onDelete,
+  onDuplicate,
+}: {
+  item: ContentItem
+  isSelected: boolean
+  isChecked: boolean
+  selectionMode: boolean
+  onSelect: (id: Id<"content">) => void
+  onToggleSelection?: (id: Id<"content">) => void
+  onDelete?: (id: Id<"content">) => void
+  onDuplicate?: (id: Id<"content">) => void
+}) {
+  const Icon = typeIcons[item.type]
+
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition-colors",
+        isSelected
+          ? "bg-accent text-accent-foreground"
+          : "hover:bg-muted/50"
+      )}
+      onClick={() => !selectionMode && onSelect(item._id)}
+    >
+      {/* Selection checkbox */}
+      {selectionMode && (
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={() => onToggleSelection?.(item._id)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      )}
+
+      {/* Thumbnail with hover zoom */}
+      <ThumbnailWithZoom item={item} Icon={Icon} />
+
+      {/* Content info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium truncate">{item.name}</p>
+          {item.aiGenerated && (
+            <Sparkles className="h-3 w-3 text-purple-500 flex-shrink-0" />
+          )}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{formatFileSize(item.fileSize)}</span>
+          {item.fileSize && <span>•</span>}
+          <span>{formatDate(item.createdAt)}</span>
+        </div>
+      </div>
+
+      {/* Actions */}
+      {!selectionMode && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-0 group-hover:opacity-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onDuplicate?.(item._id)}>
+              Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => onDelete?.(item._id)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  )
+}
+
+// Collapsible section for a content type
+function ContentTypeSection({
+  type,
+  items,
+  isOpen,
+  onToggle,
+  selectedId,
+  onSelect,
+  selectionMode,
+  selectedIds,
+  onToggleSelection,
+  onDelete,
+  onDuplicate,
+}: {
+  type: ContentType
+  items: ContentItem[]
+  isOpen: boolean
+  onToggle: () => void
+  selectedId: Id<"content"> | null
+  onSelect: (id: Id<"content">) => void
+  selectionMode: boolean
+  selectedIds: Set<string>
+  onToggleSelection?: (id: Id<"content">) => void
+  onDelete?: (id: Id<"content">) => void
+  onDuplicate?: (id: Id<"content">) => void
+}) {
+  const Icon = typeIcons[type]
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={onToggle}>
+      <CollapsibleTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-between h-8 px-2 mb-1"
+        >
+          <div className="flex items-center gap-2">
+            {isOpen ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+            <Icon className={cn("h-3.5 w-3.5", typeColors[type].split(" ")[1])} />
+            <span className="text-xs font-medium">{typeLabels[type]}</span>
+          </div>
+          <Badge variant="secondary" className="h-5 text-xs">
+            {items.length}
+          </Badge>
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="space-y-0.5 pl-2">
+          {items.map((item) => (
+            <ContentItemRow
+              key={item._id}
+              item={item}
+              isSelected={selectedId === item._id}
+              isChecked={selectedIds.has(item._id)}
+              selectionMode={selectionMode}
+              onSelect={onSelect}
+              onToggleSelection={onToggleSelection}
+              onDelete={onDelete}
+              onDuplicate={onDuplicate}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
 export function ContentList({
   items,
   selectedId,
@@ -80,7 +322,56 @@ export function ContentList({
   onToggleSelection,
   onDelete,
   onDuplicate,
+  groupByType = true,
 }: ContentListProps) {
+  // Load collapsed state from localStorage
+  const [collapsedSections, setCollapsedSections] = useState<Set<ContentType>>(() => {
+    if (typeof window === "undefined") return new Set()
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        return new Set(JSON.parse(saved) as ContentType[])
+      }
+    } catch {
+      // Ignore errors
+    }
+    return new Set()
+  })
+
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...collapsedSections]))
+    }
+  }, [collapsedSections])
+
+  const toggleSection = (type: ContentType) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(type)) {
+        next.delete(type)
+      } else {
+        next.add(type)
+      }
+      return next
+    })
+  }
+
+  // Group items by type
+  const groupedItems = useMemo(() => {
+    const groups: Partial<Record<ContentType, ContentItem[]>> = {}
+    const typeOrder: ContentType[] = ["image", "video", "audio", "document", "link"]
+
+    for (const type of typeOrder) {
+      const typeItems = items.filter((item) => item.type === type)
+      if (typeItems.length > 0) {
+        groups[type] = typeItems
+      }
+    }
+
+    return groups
+  }, [items])
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -92,103 +383,46 @@ export function ContentList({
     )
   }
 
+  // Grouped view with collapsible sections
+  if (groupByType) {
+    return (
+      <div className="space-y-1">
+        {(Object.entries(groupedItems) as [ContentType, ContentItem[]][]).map(([type, typeItems]) => (
+          <ContentTypeSection
+            key={type}
+            type={type}
+            items={typeItems}
+            isOpen={!collapsedSections.has(type)}
+            onToggle={() => toggleSection(type)}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelection={onToggleSelection}
+            onDelete={onDelete}
+            onDuplicate={onDuplicate}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  // Flat list view (original behavior)
   return (
     <div className="space-y-1">
-      {items.map((item) => {
-        const Icon = typeIcons[item.type]
-        const isSelected = selectedId === item._id
-        const isChecked = selectedIds.has(item._id)
-
-        return (
-          <div
-            key={item._id}
-            className={cn(
-              "group flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition-colors",
-              isSelected
-                ? "bg-accent text-accent-foreground"
-                : "hover:bg-muted/50"
-            )}
-            onClick={() => !selectionMode && onSelect(item._id)}
-          >
-            {/* Selection checkbox */}
-            {selectionMode && (
-              <Checkbox
-                checked={isChecked}
-                onCheckedChange={() => onToggleSelection?.(item._id)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-
-            {/* Thumbnail or Icon */}
-            <div
-              className={cn(
-                "flex-shrink-0 h-10 w-10 rounded-md flex items-center justify-center overflow-hidden",
-                item.thumbnailUrl || item.fileUrl
-                  ? "bg-muted"
-                  : typeColors[item.type]
-              )}
-            >
-              {(item.thumbnailUrl || (item.type === "image" && item.fileUrl)) ? (
-                <img
-                  src={item.thumbnailUrl || item.fileUrl || ""}
-                  alt={item.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Icon className="h-5 w-5" />
-              )}
-            </div>
-
-            {/* Content info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium truncate">{item.name}</p>
-                {item.aiGenerated && (
-                  <Sparkles className="h-3 w-3 text-purple-500 flex-shrink-0" />
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="capitalize">{item.type}</span>
-                {item.fileSize && (
-                  <>
-                    <span>•</span>
-                    <span>{formatFileSize(item.fileSize)}</span>
-                  </>
-                )}
-                <span>•</span>
-                <span>{formatDate(item.createdAt)}</span>
-              </div>
-            </div>
-
-            {/* Actions */}
-            {!selectionMode && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onDuplicate?.(item._id)}>
-                    Duplicate
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => onDelete?.(item._id)}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        )
-      })}
+      {items.map((item) => (
+        <ContentItemRow
+          key={item._id}
+          item={item}
+          isSelected={selectedId === item._id}
+          isChecked={selectedIds.has(item._id)}
+          selectionMode={selectionMode}
+          onSelect={onSelect}
+          onToggleSelection={onToggleSelection}
+          onDelete={onDelete}
+          onDuplicate={onDuplicate}
+        />
+      ))}
     </div>
   )
 }

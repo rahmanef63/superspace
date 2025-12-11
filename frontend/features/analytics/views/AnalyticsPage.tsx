@@ -72,7 +72,6 @@ export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
         icon={BarChart3}
         title="Analytics"
         subtitle="Workspace insights and performance metrics"
-        badge={{ text: "Beta", variant: "secondary" }}
         secondaryActions={[
           {
             id: "refresh",

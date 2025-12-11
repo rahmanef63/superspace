@@ -154,6 +154,7 @@ export {
   ContainerHeader,
   PageHeader,
   MinimalHeader,
+  StandardFeatureHeader,
 } from "./presets"
 
 export type {
@@ -162,6 +163,7 @@ export type {
   ContainerHeaderProps,
   PageHeaderProps,
   MinimalHeaderProps,
+  StandardFeatureHeaderProps,
 } from "./presets"
 
 // Mobile Header

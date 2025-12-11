@@ -40,7 +40,6 @@ export default function PosPage({ workspaceId }: PosPageProps) {
         icon={ShoppingCart}
         title="Point of Sale"
         subtitle="Retail management and sales terminal"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Sale",
           icon: Plus,

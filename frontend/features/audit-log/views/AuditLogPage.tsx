@@ -40,7 +40,6 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
         icon={Activity}
         title="Audit Log"
         subtitle="Monitor system activity and security events"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "Export Logs",
           icon: Download,

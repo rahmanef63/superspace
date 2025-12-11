@@ -40,7 +40,6 @@ export default function HrPage({ workspaceId }: HrPageProps) {
         icon={Users}
         title="HR Management"
         subtitle="Manage employees, attendance, payroll, and recruitment"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "Add Employee",
           icon: Plus,

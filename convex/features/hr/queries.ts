@@ -11,14 +11,43 @@ export const getData = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    // ✅ REQUIRED: Check workspace membership
-    const { membership, role } = await requireActiveMembership(ctx, args.workspaceId)
+    await requireActiveMembership(ctx, args.workspaceId)
 
-    // TODO: Implement your query logic
+    // Get workspace members as employees
+    const memberships = await ctx.db
+      .query("workspaceMemberships")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect()
+
+    // Get user details for members
+    const employees = await Promise.all(
+      memberships.slice(0, 10).map(async (m) => {
+        const user = await ctx.db.get(m.userId)
+        return {
+          id: m._id,
+          name: user?.name || user?.email || "Unknown",
+          role: "Member",
+          department: "General",
+          status: "active" as const,
+          avatar: user?.avatarUrl || user?.image,
+        }
+      })
+    )
+
     return {
-      message: "Query successful",
-      userId: membership.userDocId,
-      role: role.name,
+      stats: {
+        totalEmployees: memberships.length,
+        onLeave: 0,
+        openPositions: 0,
+        newHires: memberships.filter(m => {
+          const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
+          return m._creationTime > thirtyDaysAgo
+        }).length,
+        departmentCount: 1,
+      },
+      recentHires: employees,
+      leaveRequests: [],
     }
   },
 })

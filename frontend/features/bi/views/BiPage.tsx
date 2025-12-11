@@ -37,7 +37,6 @@ export default function BiPage({ workspaceId }: BiPageProps) {
         icon={LineChart}
         title="Business Intelligence"
         subtitle="Analytics and insights"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Dashboard",
           icon: Plus,

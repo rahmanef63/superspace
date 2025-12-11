@@ -81,6 +81,8 @@ export interface DocumentManagerOptions {
   editorMode?: DocumentEditorMode;
   /** Filter documents by category (article or document) */
   category?: DocumentCategory;
+  /** Mock data for preview features */
+  mockData?: DocumentRecord[];
 }
 
 export interface DocumentManagerState {

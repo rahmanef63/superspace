@@ -27,7 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import type { ContentType, ContentStatus, SortBy, SortOrder, ContentFilters } from "../hooks/useContent"
+import type { ContentType, ContentStatus, SortBy, SortOrder, ContentFiltersType as ContentFilters } from "../hooks/useContentLibrary"
 
 interface ContentFiltersProps {
   filters: ContentFilters

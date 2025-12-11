@@ -70,7 +70,7 @@ export default function MockDashboardCatchAllPage() {
     // Render guest content wrapper
     return (
       <GuestContentWrapper
-        workspaceId={workspaceId ?? undefined}
+        workspaceId={undefined}
         activeView={activeSlug}
         workspaceName={currentWorkspace?.name}
       />

@@ -25,16 +25,86 @@ const createDocumentHandler = async (
     }
 
     try {
-        const docId = await ctx.convex.mutation(api.features.docs.documents.create, {
-            title: params.title,
-            content: params.content || "",
-            isPublic: params.isPublic ?? false,
+        // If content is empty or missing, generate rich template based on the title
+        let contentToUse = params.content || "";
+
+        if (!contentToUse.trim()) {
+            // Generate rich content template based on title
+            const title = params.title || "Untitled Document";
+            contentToUse = `# ${title}
+
+## Overview
+
+Lorem ipsum dolor sit amet, **consectetur adipiscing elit**. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+
+## Key Points
+
+- **Point 1**: Ut enim ad minim veniam, quis nostrud exercitation
+- **Point 2**: Duis aute irure dolor in reprehenderit in voluptate
+- **Point 3**: Excepteur sint occaecat cupidatat non proident
+- *Italic text* for emphasis
+
+### Numbered List
+
+1. First item in the list
+2. Second item with details
+3. Third item to complete
+
+## Tasks
+
+- [ ] First task to complete
+- [ ] Second task to review  
+- [x] Completed task example
+
+## Code Example
+
+\`\`\`javascript
+// Sample code block
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+console.log(greet("World"));
+\`\`\`
+
+## Important Note
+
+> This is a **blockquote** example for important notes and callouts.
+> It can span multiple lines.
+
+## Table Example
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Row 1    | Data     | More     |
+| Row 2    | Info     | Details  |
+
+---
+
+*Document created by AI Document Agent*
+`;
+        }
+
+
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
             workspaceId: ctx.workspaceId,
+            feature: "documents",
+            tool: "create",
+            args: {
+                title: params.title,
+                content: contentToUse,
+                isPublic: params.isPublic ?? false,
+                workspaceId: ctx.workspaceId,
+            }
         });
+
+        if (!result.success) {
+            throw new Error(result.error);
+        }
 
         return {
             success: true,
-            data: { documentId: docId },
+            data: { documentId: result.data },
             message: `Created document "${params.title}" successfully`,
         };
     } catch (error) {
@@ -44,6 +114,7 @@ const createDocumentHandler = async (
         };
     }
 };
+
 
 const searchDocumentsHandler = async (
     params: any,
@@ -57,11 +128,22 @@ const searchDocumentsHandler = async (
     }
 
     try {
-        const results = await ctx.convex.query(api.features.docs.documents.searchDocuments, {
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
             workspaceId: ctx.workspaceId,
-            query: params.query,
+            feature: "documents",
+            tool: "search",
+            args: {
+                workspaceId: ctx.workspaceId,
+                query: params.query,
+            }
         });
 
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+
+        const results = result.data;
         const limitedResults = params.limit ? results.slice(0, params.limit) : results;
 
         return {
@@ -95,10 +177,21 @@ const listDocumentsHandler = async (
     }
 
     try {
-        const results = await ctx.convex.query(api.features.docs.documents.getWorkspaceDocuments, {
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
             workspaceId: ctx.workspaceId,
+            feature: "documents",
+            tool: "list",
+            args: {
+                workspaceId: ctx.workspaceId,
+            }
         });
 
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+
+        const results = result.data;
         const limitedResults = params.limit ? results.slice(0, params.limit) : results.slice(0, 20);
 
         return {
@@ -124,15 +217,29 @@ const getDocumentHandler = async (
     params: any,
     ctx: SubAgentContext
 ): Promise<ToolResult> => {
+    if (!ctx.workspaceId) {
+        return { success: false, error: "No workspace selected" };
+    }
     if (!ctx.convex) {
         return { success: false, error: "Database client not available" };
     }
 
     try {
-        const doc = await ctx.convex.query(api.features.docs.documents.get, {
-            id: params.documentId as Id<"documents">,
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
+            workspaceId: ctx.workspaceId,
+            feature: "documents",
+            tool: "get",
+            args: {
+                id: params.documentId,
+            }
         });
 
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+
+        const doc = result.data;
         if (!doc) {
             return { success: false, error: "Document not found" };
         }
@@ -160,17 +267,30 @@ const updateDocumentHandler = async (
     params: any,
     ctx: SubAgentContext
 ): Promise<ToolResult> => {
+    if (!ctx.workspaceId) {
+        return { success: false, error: "No workspace selected" };
+    }
     if (!ctx.convex) {
         return { success: false, error: "Database client not available" };
     }
 
     try {
-        await ctx.convex.mutation(api.features.docs.documents.update, {
-            id: params.documentId as Id<"documents">,
-            title: params.title,
-            content: params.content,
-            isPublic: params.isPublic,
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
+            workspaceId: ctx.workspaceId,
+            feature: "documents",
+            tool: "update",
+            args: {
+                id: params.documentId,
+                title: params.title,
+                content: params.content,
+                isPublic: params.isPublic,
+            }
         });
+
+        if (!result.success) {
+            throw new Error(result.error);
+        }
 
         return {
             success: true,
@@ -189,14 +309,27 @@ const deleteDocumentHandler = async (
     params: any,
     ctx: SubAgentContext
 ): Promise<ToolResult> => {
+    if (!ctx.workspaceId) {
+        return { success: false, error: "No workspace selected" };
+    }
     if (!ctx.convex) {
         return { success: false, error: "Database client not available" };
     }
 
     try {
-        await ctx.convex.mutation(api.features.docs.documents.deleteDocument, {
-            id: params.documentId as Id<"documents">,
+        // Use Secure Gateway
+        const result = await ctx.convex.action(api.features.ai.actions.callFeatureAgent, {
+            workspaceId: ctx.workspaceId,
+            feature: "documents",
+            tool: "delete",
+            args: {
+                id: params.documentId,
+            }
         });
+
+        if (!result.success) {
+            throw new Error(result.error);
+        }
 
         return {
             success: true,
@@ -218,7 +351,7 @@ const deleteDocumentHandler = async (
 const documentTools: SubAgentTool[] = [
     {
         name: "createDocument",
-        description: "Create a new document in the current workspace",
+        description: "Create a new document with a title AND full content. You MUST generate the document body - never create empty documents. Write the actual text, lists, or information the user requested.",
         parameters: {
             title: {
                 type: "string",
@@ -227,8 +360,8 @@ const documentTools: SubAgentTool[] = [
             },
             content: {
                 type: "string",
-                description: "The full body content of the document. Generate rich markdown content if the user requests a specific topic or format.",
-                required: false,
+                description: "REQUIRED. The full body content of the document in Markdown format. You MUST generate actual content here - never leave this empty. Include headers (# ##), bullet points, checkboxes (- [ ]), code blocks, etc. based on what the user requested.",
+                required: true,
             },
             isPublic: {
                 type: "boolean",
@@ -295,7 +428,7 @@ const documentTools: SubAgentTool[] = [
             },
             content: {
                 type: "string",
-                description: "New content for the document",
+                description: "New content for the document. If updating a list or text, provide the complete new content or the relevant section in Markdown.",
                 required: false,
             },
             isPublic: {
@@ -429,7 +562,7 @@ export const documentAgent: SubAgent = {
                 .map((doc: any) => `- "${doc.title}" (ID: ${doc._id}, ${doc.isPublic ? "public" : "private"})`)
                 .join("\n");
 
-            return `Recent documents in this workspace:\n${docList}`;
+            return `Recent documents:\n${docList}`;
         } catch (error) {
             console.error("[DocumentAgent] Failed to get context:", error);
             return "Unable to load document context.";
@@ -438,20 +571,13 @@ export const documentAgent: SubAgent = {
 
     systemPrompt: `You are a document management assistant. You help users create, find, read, update, and delete documents.
 
-CRITICAL INSTRUCTIONS FOR CREATING DOCUMENTS:
-- **Title Generation**: If the user does not provide an explicit title, you MUST generate a short, descriptive title based on their request. Do NOT use their full prompt as the title.
-- **Content Generation**: If the user asks for a specific type of content (e.g., "meal plan", "blog post", "meeting agenda", "bucket list"), you MUST generate rich, well-formatted Markdown content for them.
-  - Use headers (#, ##), bullet points (-), broad categories, and bold text to verify the document looks professional.
-  - Do NOT create empty documents unless explicitly asked.
-  - Do NOT just copy the user's prompt into the content. EXPAND on their request creatively and helpfully.
-
-When searching:
-- Use keywords from the user's query
-- Present results clearly with titles and IDs
-
-When updating or deleting:
-- Confirm the document ID if ambiguous
-- Warn before destructive operations`,
+CRITICAL INSTRUCTIONS:
+1. **CREATE RICH CONTENT**: When a user creates a document (e.g., "grocery list", "meeting notes"), you MUST generate the actual content for them.
+   - Do NOT just create a file with a title and empty body.
+   - Write out the list, the agenda, or the text they asked for in valid Markdown.
+   - Use headers, bullet points, and check boxes.
+2. **Title Generation**: If no title is given, generate a short, descriptive one.
+3. **Be Helpful**: If the user's request is vague, take initiative to create a useful template or starting point in the document.`,
 };
 
 export default documentAgent;

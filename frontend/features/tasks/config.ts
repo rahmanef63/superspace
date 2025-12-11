@@ -22,9 +22,8 @@ export default defineFeature({
   },
 
   status: {
-    state: 'beta',
+    state: 'stable',
     isReady: true,
-    expectedRelease: 'Q1 2025',
   },
 
   // Bundle membership

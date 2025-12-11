@@ -40,7 +40,6 @@ export default function MarketingPage({ workspaceId }: MarketingPageProps) {
         icon={Megaphone}
         title="Marketing"
         subtitle="Manage campaigns, ads, and digital assets"
-        badge={{ text: "Beta", variant: "secondary" }}
         primaryAction={{
           label: "New Campaign",
           icon: Plus,

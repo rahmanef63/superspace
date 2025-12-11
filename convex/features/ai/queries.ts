@@ -1,6 +1,18 @@
 import { query } from "../../_generated/server";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated/dataModel";
+import { requireActiveMembership } from "../../auth/helpers";
+
+/**
+ * Verify access for Feature Agent Gateway
+ */
+export const checkAgentAccess = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId);
+    return true;
+  },
+});
 
 /**
  * Get AI settings for a workspace
@@ -37,7 +49,7 @@ export const searchKnowledgeBase = query({
 
     // Basic text search (replace with vector search)
     const results = docs
-      .filter(doc => 
+      .filter(doc =>
         doc.title.toLowerCase().includes(args.query.toLowerCase()) ||
         doc.content.toLowerCase().includes(args.query.toLowerCase())
       )
@@ -73,7 +85,7 @@ export const listChatSessions = query({
   },
   handler: async (ctx, args) => {
     let sessions: Doc<"aiChatSessions">[];
-    
+
     if (args.global) {
       // Global mode: get sessions where isGlobal is true
       sessions = await ctx.db
@@ -148,8 +160,8 @@ export const getKbDocument = query({
       .query("knowledgeBaseDocuments")
       .withIndex("by_source", (q: any) =>
         q.eq("workspaceId", args.workspaceId)
-         .eq("sourceType", args.sourceType)
-         .eq("sourceId", args.sourceId)
+          .eq("sourceType", args.sourceType)
+          .eq("sourceId", args.sourceId)
       )
       .unique();
   },
@@ -173,7 +185,7 @@ export const getSimilarDocuments = query({
       .query("knowledgeBaseDocuments")
       .withIndex("by_source", (q: any) =>
         q.eq("workspaceId", args.workspaceId)
-         .eq("sourceType", args.sourceType)
+          .eq("sourceType", args.sourceType)
       )
       .collect();
 
@@ -211,8 +223,8 @@ export const getUsageStats = query({
       .query("aiUsageStats")
       .withIndex("by_workspace_date", (q: any) =>
         q.eq("workspaceId", args.workspaceId)
-         .gte("date", args.startDate)
-         .lte("date", args.endDate)
+          .gte("date", args.startDate)
+          .lte("date", args.endDate)
       );
 
     if (args.provider) {
@@ -241,14 +253,14 @@ export const getKnowledgeBySourceTypes = query({
       const docs = await ctx.db
         .query("knowledgeBaseDocuments")
         .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
-        .filter((q) => 
+        .filter((q) =>
           q.and(
             q.eq(q.field("sourceType"), sourceType),
             q.eq(q.field("status"), "active")
           )
         )
         .take(limitPerType);
-      
+
       allDocs.push(...docs);
     }
 
@@ -298,12 +310,12 @@ export const getAvailableKnowledgeSources = query({
 
     // Wiki / Knowledge Base Documents
     try {
-      const wikiDocs = args.workspaceId 
+      const wikiDocs = args.workspaceId
         ? await ctx.db
-            .query("knowledgeBaseDocuments")
-            .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
-            .filter((q) => q.eq(q.field("status"), "active"))
-            .collect()
+          .query("knowledgeBaseDocuments")
+          .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .collect()
         : [];
       sources.push({
         id: "wiki",
@@ -456,7 +468,7 @@ export const getFeatureContent = query({
       content: string;
       url?: string;
     }[] = [];
-    
+
     const limitPerType = Math.ceil((args.limit || 20) / args.sourceTypes.length);
 
     for (const sourceType of args.sourceTypes) {
@@ -560,36 +572,36 @@ export const getAggregatedKnowledgeContext = query({
   handler: async (ctx, args) => {
     const includeChildren = args.includeChildren ?? true;
     const documentLimit = args.documentLimit ?? 30;
-    
+
     // Verify this is a main workspace
     const mainWorkspace = await ctx.db.get(args.mainWorkspaceId);
     if (!mainWorkspace) {
       return { formattedContext: null, workspaces: [], totalDocuments: 0 };
     }
-    
+
     // Collect all workspace IDs to query
     const workspaceIds: Id<"workspaces">[] = [args.mainWorkspaceId];
     const workspaceInfo: Array<{ id: Id<"workspaces">; name: string; color?: string }> = [
       { id: args.mainWorkspaceId, name: mainWorkspace.name, color: mainWorkspace.color }
     ];
-    
+
     if (includeChildren && mainWorkspace.isMainWorkspace) {
       // Get direct children
       const directChildren = await ctx.db
         .query("workspaces")
         .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.mainWorkspaceId))
         .collect();
-      
+
       // Get linked children
       const links = await ctx.db
         .query("workspaceLinks")
         .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.mainWorkspaceId))
         .collect();
-      
+
       const linkedWorkspaces = await Promise.all(
         links.map(l => ctx.db.get(l.childWorkspaceId))
       ).then(arr => arr.filter(Boolean) as Doc<"workspaces">[]);
-      
+
       // Add children that share data to parent
       for (const child of [...directChildren, ...linkedWorkspaces]) {
         if (child.shareDataToParent !== false) {
@@ -598,7 +610,7 @@ export const getAggregatedKnowledgeContext = query({
         }
       }
     }
-    
+
     // Aggregate knowledge from all workspaces
     const allDocuments: Array<{
       workspaceId: Id<"workspaces">;
@@ -607,13 +619,13 @@ export const getAggregatedKnowledgeContext = query({
       content: string;
       sourceType: string;
     }> = [];
-    
+
     const limitPerWorkspace = Math.ceil(documentLimit / workspaceIds.length);
-    
+
     for (const wsId of workspaceIds) {
       const wsInfo = workspaceInfo.find(w => String(w.id) === String(wsId));
       const wsName = wsInfo?.name ?? "Unknown";
-      
+
       // Get knowledge base documents
       try {
         const kbDocs = await ctx.db
@@ -621,7 +633,7 @@ export const getAggregatedKnowledgeContext = query({
           .withIndex("by_workspace", (q: any) => q.eq("workspaceId", wsId))
           .filter((q) => q.eq(q.field("status"), "active"))
           .take(limitPerWorkspace);
-        
+
         for (const doc of kbDocs) {
           allDocuments.push({
             workspaceId: wsId,
@@ -634,18 +646,18 @@ export const getAggregatedKnowledgeContext = query({
       } catch {
         // Table might not exist or have different structure
       }
-      
+
       // Get documents from documents table
       try {
         const docs = await ctx.db
           .query("documents")
           .withIndex("by_workspace", (q: any) => q.eq("workspaceId", wsId))
-          .filter((q) => 
+          .filter((q) =>
             // Only include public documents for aggregation
             q.eq(q.field("isPublic"), true)
           )
           .take(limitPerWorkspace);
-        
+
         for (const doc of docs) {
           allDocuments.push({
             workspaceId: wsId,
@@ -659,10 +671,10 @@ export const getAggregatedKnowledgeContext = query({
         // Table might not exist or have different structure
       }
     }
-    
+
     // Format into context string grouped by workspace
     const sections: string[] = [];
-    
+
     // Group documents by workspace
     const byWorkspace = new Map<string, typeof allDocuments>();
     for (const doc of allDocuments) {
@@ -672,22 +684,22 @@ export const getAggregatedKnowledgeContext = query({
       }
       byWorkspace.get(key)!.push(doc);
     }
-    
+
     for (const [wsIdStr, docs] of byWorkspace.entries()) {
       const wsInfo = workspaceInfo.find(w => String(w.id) === wsIdStr);
       const wsName = wsInfo?.name ?? "Workspace";
-      
+
       const docContent = docs
         .map(d => `### ${d.title}\n${d.content}`)
         .join("\n\n");
-      
+
       sections.push(`## ${wsName}\n\n${docContent}`);
     }
-    
+
     const formattedContext = sections.length > 0
       ? `# Aggregated Knowledge Context\n\n${sections.join("\n\n---\n\n")}`
       : null;
-    
+
     return {
       formattedContext,
       workspaces: workspaceInfo,
@@ -709,23 +721,23 @@ export const getKnowledgeSharingChildren = query({
     if (!parentWorkspace || !parentWorkspace.isMainWorkspace) {
       return [];
     }
-    
+
     // Get direct children
     const directChildren = await ctx.db
       .query("workspaces")
       .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.parentWorkspaceId))
       .collect();
-    
+
     // Get linked children
     const links = await ctx.db
       .query("workspaceLinks")
       .withIndex("by_parent", (q) => q.eq("parentWorkspaceId", args.parentWorkspaceId))
       .collect();
-    
+
     const linkedWorkspaces = await Promise.all(
       links.map(l => ctx.db.get(l.childWorkspaceId))
     ).then(arr => arr.filter(Boolean) as Doc<"workspaces">[]);
-    
+
     // Filter to those that share data
     const sharingChildren = [...directChildren, ...linkedWorkspaces]
       .filter(ws => ws.shareDataToParent !== false)
@@ -735,7 +747,7 @@ export const getKnowledgeSharingChildren = query({
         type: ws.type,
         color: ws.color,
       }));
-    
+
     return sharingChildren;
   },
 });

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import {
   Image as ImageIcon,
   Video,
@@ -18,14 +18,19 @@ import {
   Trash2,
   Edit,
   Eye,
+  Check,
+  X,
+  Pencil,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Id } from "@convex/_generated/dataModel"
-import type { ContentType } from "../hooks/useContent"
+import type { ContentType } from "../hooks/useContentLibrary"
 
 interface ContentInspectorProps {
   content: {
@@ -53,6 +58,7 @@ interface ContentInspectorProps {
   onEdit?: () => void
   onDelete?: () => void
   onDownload?: () => void
+  onUpdate?: (id: Id<"content">, updates: { name?: string; description?: string }) => Promise<void>
 }
 
 const typeIcons: Record<ContentType, React.ComponentType<{ className?: string }>> = {
@@ -100,12 +106,136 @@ function formatDate(timestamp: number): string {
   })
 }
 
+// Inline editable field component
+function EditableField({
+  label,
+  value,
+  onSave,
+  multiline = false,
+  disabled = false,
+}: {
+  label: string
+  value: string
+  onSave: (value: string) => Promise<void>
+  multiline?: boolean
+  disabled?: boolean
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(value)
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    setEditValue(value)
+  }, [value])
+
+  const handleSave = async () => {
+    if (editValue === value) {
+      setIsEditing(false)
+      return
+    }
+    setIsSaving(true)
+    try {
+      await onSave(editValue)
+      setIsEditing(false)
+    } catch (error) {
+      console.error("Failed to save:", error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditValue(value)
+    setIsEditing(false)
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-start gap-3">
+        <span className="text-muted-foreground w-20 flex-shrink-0 pt-1">{label}</span>
+        <div className="flex-1 space-y-2">
+          {multiline ? (
+            <Textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              className="min-h-[60px] text-sm"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              className="h-8 text-sm"
+              autoFocus
+            />
+          )}
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              <Check className="h-3 w-3 mr-1" />
+              Save
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-start gap-3 group">
+      <span className="text-muted-foreground w-20 flex-shrink-0">{label}</span>
+      <div className="flex-1 flex items-start gap-2">
+        <span className={cn("font-medium", !value && "text-muted-foreground italic")}>
+          {value || "Not set"}
+        </span>
+        {!disabled && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function ContentInspector({
   content,
   onEdit,
   onDelete,
   onDownload,
+  onUpdate,
 }: ContentInspectorProps) {
+  const handleUpdateName = useCallback(async (newName: string) => {
+    if (content && onUpdate) {
+      await onUpdate(content._id, { name: newName })
+    }
+  }, [content, onUpdate])
+
+  const handleUpdateDescription = useCallback(async (newDescription: string) => {
+    if (content && onUpdate) {
+      await onUpdate(content._id, { description: newDescription })
+    }
+  }, [content, onUpdate])
+
   if (!content) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -169,22 +299,25 @@ export function ContentInspector({
 
         <Separator />
 
-        {/* Basic Info */}
+        {/* Basic Info with Inline Editing */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Details</h4>
-          
-          <div className="space-y-2 text-sm">
-            <div className="flex items-start gap-3">
-              <span className="text-muted-foreground w-20 flex-shrink-0">Name</span>
-              <span className="font-medium">{content.name}</span>
-            </div>
 
-            {content.description && (
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-20 flex-shrink-0">Description</span>
-                <span>{content.description}</span>
-              </div>
-            )}
+          <div className="space-y-2 text-sm">
+            <EditableField
+              label="Name"
+              value={content.name}
+              onSave={handleUpdateName}
+              disabled={!onUpdate}
+            />
+
+            <EditableField
+              label="Description"
+              value={content.description || ""}
+              onSave={handleUpdateDescription}
+              multiline
+              disabled={!onUpdate}
+            />
 
             <div className="flex items-center gap-3">
               <span className="text-muted-foreground w-20 flex-shrink-0">Type</span>
@@ -255,7 +388,7 @@ export function ContentInspector({
                 <Sparkles className="h-4 w-4 text-purple-500" />
                 AI Generated
               </h4>
-              
+
               <div className="space-y-2 text-sm">
                 {content.aiSource && (
                   <div className="flex items-center gap-3">
@@ -283,7 +416,7 @@ export function ContentInspector({
             <Separator />
             <div className="space-y-3">
               <h4 className="text-sm font-medium">Organization</h4>
-              
+
               <div className="space-y-2 text-sm">
                 {content.folder && (
                   <div className="flex items-center gap-3">
@@ -313,7 +446,7 @@ export function ContentInspector({
         <Separator />
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Metadata</h4>
-          
+
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-muted-foreground" />

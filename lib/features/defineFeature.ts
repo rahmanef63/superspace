@@ -120,6 +120,12 @@ const BaseFeatureConfigSchema = z.object({
   // Export/Import integration
   hasExportImport: z.boolean().optional(),
   exportConfigPath: z.string().optional(),
+
+  // Agent Configuration (New 10/10 Standard)
+  agent: z.object({
+    definitionPath: z.string().describe("Path to agent definition relative to feature root (e.g., 'convex/features/documents/agent.ts')"),
+    capabilities: z.array(z.enum(['create', 'read', 'update', 'delete', 'search'])).default([]),
+  }).optional(),
 })
 
 // Recursive type for children
@@ -178,10 +184,10 @@ export function defineFeature(config: FeatureConfig): FeatureConfig {
   // Warn if non-system feature has no bundle configuration
   if (
     validated.technical.featureType !== 'system' &&
-    (!validated.bundles || 
-      (validated.bundles.core.length === 0 && 
-       validated.bundles.recommended.length === 0 && 
-       validated.bundles.optional.length === 0))
+    (!validated.bundles ||
+      (validated.bundles.core.length === 0 &&
+        validated.bundles.recommended.length === 0 &&
+        validated.bundles.optional.length === 0))
   ) {
     console.warn(
       `[defineFeature] Feature "${validated.id}" has no bundle configuration. ` +

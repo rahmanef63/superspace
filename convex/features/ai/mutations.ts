@@ -73,6 +73,7 @@ export const createChatSession = mutation({
     userId: v.id("users"),
     title: v.string(),
     isGlobal: v.optional(v.boolean()), // true for global/private sessions
+    metadata: v.optional(v.record(v.string(), v.any())),
   },
   handler: async (ctx, args) => {
     // STEP 1: Permission check (only for workspace sessions)
@@ -99,6 +100,7 @@ export const createChatSession = mutation({
       userId: args.userId,
       title: args.title,
       isGlobal: args.isGlobal ?? false,
+      metadata: args.metadata,
       messages: [],
       status: "active",
       createdAt: now,
@@ -394,6 +396,9 @@ export const updateChatSession = mutation({
     sessionId: v.id("aiChatSessions"),
     title: v.optional(v.string()),
     status: v.optional(v.string()),
+    metadata: v.optional(v.record(v.string(), v.any())),
+    icon: v.optional(v.string()), // Also allow updating icon directly
+    topic: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // STEP 1: Get session and verify access
@@ -428,6 +433,15 @@ export const updateChatSession = mutation({
 
     if (args.status !== undefined) {
       updates.status = args.status;
+    }
+
+    if (args.icon !== undefined) updates.icon = args.icon;
+    if (args.topic !== undefined) updates.topic = args.topic;
+
+    if (args.metadata !== undefined) {
+      // Merge with existing metadata if present
+      const existingMetadata = session.metadata || {};
+      updates.metadata = { ...existingMetadata, ...args.metadata };
     }
 
     await ctx.db.patch(args.sessionId, updates);

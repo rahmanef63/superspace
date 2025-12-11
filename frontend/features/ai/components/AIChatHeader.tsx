@@ -1,24 +1,11 @@
-/**
- * AI Chat Header
- * Header for AI chat with knowledge context toggle and attachment viewer
- */
-
 "use client"
 
 import { useState } from "react"
 import * as LucideIcons from "lucide-react"
-import { Bot, Paperclip, Brain, ChevronLeft, Settings2 } from "lucide-react"
+import { Bot, Paperclip, Brain, ChevronLeft, Settings2, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import {
   Tooltip,
   TooltipContent,
@@ -30,14 +17,20 @@ import { useTheme } from "next-themes"
 import type { AISession } from "../stores"
 import { ContextSelectorDialog } from "./ContextSelectorDialog"
 import { IconPicker } from "./IconPicker"
+import { ChatHistoryDropdown } from "./ChatHistoryDropdown"
+import { AgentSelector } from "./AgentSelector"
 
 interface AIChatHeaderProps {
   session: AISession | null
   knowledgeEnabled: boolean
   onKnowledgeToggle: (enabled: boolean) => void
   onIconChange?: (icon: string) => void
+  onAgentSelect?: (agentId: string | null) => void
   onBack?: () => void
   className?: string
+  // New props
+  onToggleInfo?: () => void
+  isInfoOpen?: boolean
 }
 
 export function AIChatHeader({
@@ -45,8 +38,11 @@ export function AIChatHeader({
   knowledgeEnabled,
   onKnowledgeToggle,
   onIconChange,
+  onAgentSelect,
   onBack,
   className,
+  onToggleInfo,
+  isInfoOpen,
 }: AIChatHeaderProps) {
   const [showContextSelector, setShowContextSelector] = useState(false)
   const { theme } = useTheme()
@@ -65,8 +61,12 @@ export function AIChatHeader({
       "border-border",
       className
     )}>
-      {/* Left: Back button + Avatar + Title */}
+      {/* Left: Back button + History + Avatar + Title */}
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+
+        {/* Chat History Dropdown */}
+        <ChatHistoryDropdown />
+
         {onBack && (
           <Button
             variant="ghost"
@@ -79,7 +79,7 @@ export function AIChatHeader({
         )}
 
         <div className="flex items-center gap-2 min-w-0">
-          {/* Icon Picker */}
+          {/* Icon Picker or Avatar */}
           {onIconChange ? (
             <IconPicker
               value={session?.icon}
@@ -94,20 +94,31 @@ export function AIChatHeader({
             </Avatar>
           )}
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 flex flex-col justify-center">
             <h2 className="font-semibold truncate text-sm md:text-base text-foreground">
               {session?.title || "AI Assistant"}
             </h2>
-            {session?.topic && (
-              <p className="text-xs text-muted-foreground truncate hidden sm:block">
-                {session.topic}
-              </p>
+            {/* Agent Selector in Header */}
+            {onAgentSelect ? (
+              <div className="mt-0.5">
+                <AgentSelector
+                  selectedAgentId={session?.metadata?.agentId || null}
+                  onAgentSelect={onAgentSelect}
+                  disabled={!!session?.metadata?.agentId && session.messages.length > 0} // Lock agent once chat starts if desired, or allow switching
+                />
+              </div>
+            ) : (
+              session?.topic && (
+                <p className="text-xs text-muted-foreground truncate hidden sm:block">
+                  {session.topic}
+                </p>
+              )
             )}
           </div>
         </div>
       </div>
 
-      {/* Right: Context Toggle */}
+      {/* Right: Actions */}
       <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
         <TooltipProvider delayDuration={300}>
           <Tooltip>
@@ -135,6 +146,25 @@ export function AIChatHeader({
             </TooltipContent>
           </Tooltip>
 
+          {/* Info Panel Toggle */}
+          {onToggleInfo && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isInfoOpen ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={onToggleInfo}
+                  className="h-8 w-8"
+                >
+                  <PanelLeft className={`h-4 w-4 ${isInfoOpen ? "text-primary" : ""}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isInfoOpen ? "Close info" : "Open session info"}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {knowledgeEnabled && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -155,9 +185,9 @@ export function AIChatHeader({
         </TooltipProvider>
 
         {/* Context Selector Dialog */}
-        <ContextSelectorDialog 
-          open={showContextSelector} 
-          onOpenChange={setShowContextSelector} 
+        <ContextSelectorDialog
+          open={showContextSelector}
+          onOpenChange={setShowContextSelector}
         />
       </div>
     </div>

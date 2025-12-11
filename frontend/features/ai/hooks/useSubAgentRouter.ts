@@ -2,6 +2,7 @@
  * useSubAgentRouter Hook
  * 
  * React hook for routing queries to sub-agents and managing tool execution.
+ * Integrates with SessionDebugStore for real-time tracing.
  */
 
 "use client";
@@ -10,6 +11,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useConvex } from "convex/react";
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
 import { useUser } from "@clerk/nextjs";
+import { useSessionDebugStore } from "@/frontend/shared/ui/components/session-info";
 import {
     subAgentRegistry,
     processSubAgentQuery,
@@ -143,16 +145,46 @@ export function useSubAgentRouter(): SubAgentRouterState & SubAgentRouterActions
             setIsProcessing(true);
             setError(null);
 
+            // Get debug store for tracing
+            const debugStore = useSessionDebugStore.getState();
+            let traceId: string | undefined;
+
+            // Route first to get agent info
+            const routeResult = subAgentRegistry.routeQuery(query, context, options);
+            
+            // Start trace if debugging
+            if (debugStore.isDebugging && routeResult.agent) {
+                traceId = debugStore.addAgentTrace({
+                    timestamp: Date.now(),
+                    agentId: routeResult.agent.id,
+                    agentName: routeResult.agent.name,
+                    query,
+                    confidence: routeResult.confidence,
+                    status: "processing",
+                });
+            }
+
             try {
                 const response = await processSubAgentQuery(query, context, options);
                 if (response) {
                     setLastAgentUsed(response.agentId);
+                    
+                    // Complete trace
+                    if (traceId) {
+                        debugStore.completeAgentTrace(traceId, response.response);
+                    }
                 }
                 return response;
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : "Failed to process query";
                 setError(errorMessage);
                 console.error("[useSubAgentRouter] Process query error:", err);
+                
+                // Log error to trace
+                if (traceId) {
+                    debugStore.completeAgentTrace(traceId, undefined, errorMessage);
+                }
+                
                 return null;
             } finally {
                 setIsProcessing(false);
@@ -171,14 +203,43 @@ export function useSubAgentRouter(): SubAgentRouterState & SubAgentRouterActions
             setIsProcessing(true);
             setError(null);
 
+            // Get debug store for tracing
+            const debugStore = useSessionDebugStore.getState();
+            const agent = subAgentRegistry.getAgent(agentId);
+            let traceId: string | undefined;
+            
+            // Start tool trace if debugging
+            if (debugStore.isDebugging) {
+                traceId = debugStore.addToolCallTrace({
+                    timestamp: Date.now(),
+                    agentId,
+                    agentName: agent?.name || agentId,
+                    toolName,
+                    params,
+                    status: "pending",
+                });
+            }
+
             try {
                 const result = await executeTool(agentId, toolName, params, context);
                 setLastAgentUsed(agentId);
                 setLastToolUsed(toolName);
+                
+                // Complete tool trace
+                if (traceId) {
+                    debugStore.completeToolCall(traceId, result.data, result.error);
+                }
+                
                 return result;
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : "Tool execution failed";
                 setError(errorMessage);
+                
+                // Log error to trace
+                if (traceId) {
+                    debugStore.completeToolCall(traceId, undefined, errorMessage);
+                }
+                
                 return {
                     success: false,
                     error: errorMessage,
@@ -197,22 +258,49 @@ export function useSubAgentRouter(): SubAgentRouterState & SubAgentRouterActions
             setError(null);
 
             const results: Array<{ toolName: string; result: ToolResult }> = [];
+            const debugStore = useSessionDebugStore.getState();
 
             try {
                 for (const toolCall of toolCalls) {
+                    // Parse tool call to get agent info
+                    const parsed = subAgentRegistry.parseToolCall(toolCall.function.name);
+                    const agent = parsed ? subAgentRegistry.getAgent(parsed.agentId) : null;
+                    let traceId: string | undefined;
+                    
+                    // Start tool trace if debugging
+                    if (debugStore.isDebugging && parsed) {
+                        traceId = debugStore.addToolCallTrace({
+                            timestamp: Date.now(),
+                            agentId: parsed.agentId,
+                            agentName: agent?.name || parsed.agentId,
+                            toolName: parsed.toolName,
+                            params: JSON.parse(toolCall.function.arguments || "{}"),
+                            status: "pending",
+                        });
+                    }
+                    
                     const result = await executeToolCall(toolCall, context);
                     results.push(result);
 
                     // Track the last tool used
-                    const parsed = subAgentRegistry.parseToolCall(toolCall.function.name);
                     if (parsed) {
                         setLastAgentUsed(parsed.agentId);
                         setLastToolUsed(parsed.toolName);
+                    }
+                    
+                    // Complete tool trace
+                    if (traceId) {
+                        debugStore.completeToolCall(
+                            traceId,
+                            result.result.data,
+                            result.result.error
+                        );
                     }
                 }
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : "Tool execution failed";
                 setError(errorMessage);
+                debugStore.log("error", "ToolCalls", errorMessage);
             } finally {
                 setIsProcessing(false);
             }

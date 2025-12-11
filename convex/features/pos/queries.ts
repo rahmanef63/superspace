@@ -7,6 +7,90 @@ import { requireActiveMembership } from "../../auth/helpers"
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Dashboard Data Query
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const getData = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    // Get products
+    const products = await ctx.db
+      .query("posProducts")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    // Get transactions
+    const transactions = await ctx.db
+      .query("posTransactions")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .order("desc")
+      .take(50)
+
+    // Calculate stats
+    const completedTx = transactions.filter(t => t.status === "completed")
+    const totalSales = completedTx.reduce((sum, t) => sum + (t.total || 0), 0)
+    const avgOrderValue = completedTx.length > 0 ? totalSales / completedTx.length : 0
+    const returns = transactions.filter(t => t.status === "refunded").length
+
+    // Popular products (by sales count)
+    const productSales: Record<string, number> = {}
+    for (const tx of completedTx) {
+      if (tx.items) {
+        for (const item of tx.items) {
+          productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity
+        }
+      }
+    }
+    
+    const topProductId = Object.entries(productSales)
+      .sort(([,a], [,b]) => b - a)[0]?.[0]
+    const topProduct = topProductId 
+      ? products.find(p => p._id === topProductId)?.name || "N/A"
+      : "N/A"
+
+    // Format popular products
+    const popularProducts = products
+      .filter(p => p.isActive)
+      .slice(0, 10)
+      .map(p => ({
+        id: p._id,
+        name: p.name,
+        category: p.category || "Uncategorized",
+        price: p.price,
+        stock: p.stockQuantity || 0,
+        image: p.image,
+      }))
+
+    // Format recent transactions
+    const recentTransactions = completedTx.slice(0, 10).map(t => ({
+      id: t._id,
+      date: new Date(t.createdAt || t._creationTime).toISOString().split("T")[0],
+      time: new Date(t.createdAt || t._creationTime).toISOString().split("T")[1].slice(0, 5),
+      items: t.items?.length || 0,
+      total: t.total || 0,
+      method: (t.paymentMethod || "cash") as "card" | "cash" | "digital",
+      status: (t.status || "completed") as "completed" | "voided" | "refunded",
+    }))
+
+    return {
+      stats: {
+        totalSales,
+        transactionCount: completedTx.length,
+        topProduct,
+        averageOrderValue: Math.round(avgOrderValue * 100) / 100,
+        returns,
+      },
+      popularProducts,
+      recentTransactions,
+    }
+  },
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Product Queries
 // ═══════════════════════════════════════════════════════════════════════════════
 

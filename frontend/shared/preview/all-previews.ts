@@ -21,7 +21,6 @@ import CRMPreview from '@/frontend/features/crm/features-preview/index'
 import CalendarPreview from '@/frontend/features/calendar/features-preview/index'
 import UserManagementPreview from '@/frontend/features/user-management/features-preview/index'
 import CommunicationsPreview from '@/frontend/features/communications/features-preview/index'
-// NEW: Additional feature previews
 import InventoryPreview from '@/frontend/features/inventory/features-preview/index'
 import FormsPreview from '@/frontend/features/forms/features-preview/index'
 import AutomationPreview from '@/frontend/features/automation/features-preview/index'
@@ -29,6 +28,18 @@ import SalesPreview from '@/frontend/features/sales/features-preview/index'
 import ReportsPreview from '@/frontend/features/reports/features-preview/index'
 import SupportPreview from '@/frontend/features/support/features-preview/index'
 import StatusPreview from '@/frontend/features/status/features-preview/index'
+// Additional feature previews - Phase 2
+import AccountingPreview from '@/frontend/features/accounting/features-preview/index'
+import ApprovalsPreview from '@/frontend/features/approvals/features-preview/index'
+import AuditLogPreview from '@/frontend/features/audit-log/features-preview/index'
+import BiPreview from '@/frontend/features/bi/features-preview/index'
+import BuilderPreview from '@/frontend/features/builder/features-preview/index'
+import ContentPreview from '@/frontend/features/content/features-preview/index'
+import HrPreview from '@/frontend/features/hr/features-preview/index'
+import ImportExportPreview from '@/frontend/features/import-export/features-preview/index'
+import IntegrationsPreview from '@/frontend/features/integrations/features-preview/index'
+import MarketingPreview from '@/frontend/features/marketing/features-preview/index'
+import PosPreview from '@/frontend/features/pos/features-preview/index'
 
 import { registerFeaturePreview, getFeaturePreview, getAllFeaturePreviews } from './registry'
 import type { FeaturePreviewDefinition } from './types'
@@ -50,7 +61,6 @@ const allPreviews: FeaturePreviewDefinition[] = [
   CalendarPreview,
   UserManagementPreview,
   CommunicationsPreview,
-  // NEW: Additional feature previews
   InventoryPreview,
   FormsPreview,
   AutomationPreview,
@@ -58,6 +68,18 @@ const allPreviews: FeaturePreviewDefinition[] = [
   ReportsPreview,
   SupportPreview,
   StatusPreview,
+  // Additional feature previews - Phase 2
+  AccountingPreview,
+  ApprovalsPreview,
+  AuditLogPreview,
+  BiPreview,
+  BuilderPreview,
+  ContentPreview,
+  HrPreview,
+  ImportExportPreview,
+  IntegrationsPreview,
+  MarketingPreview,
+  PosPreview,
 ]
 
 // Register all previews
@@ -89,7 +111,6 @@ export {
   CalendarPreview,
   UserManagementPreview,
   CommunicationsPreview,
-  // NEW: Additional feature previews
   InventoryPreview,
   FormsPreview,
   AutomationPreview,
@@ -97,6 +118,18 @@ export {
   ReportsPreview,
   SupportPreview,
   StatusPreview,
+  // Additional feature previews - Phase 2
+  AccountingPreview,
+  ApprovalsPreview,
+  AuditLogPreview,
+  BiPreview,
+  BuilderPreview,
+  ContentPreview,
+  HrPreview,
+  ImportExportPreview,
+  IntegrationsPreview,
+  MarketingPreview,
+  PosPreview,
 }
 
 // Export preview definitions map for type-safe lookups

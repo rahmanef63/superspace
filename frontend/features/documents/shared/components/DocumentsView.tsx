@@ -45,7 +45,7 @@ export interface DocumentsViewProps {
   manager: DocumentsManagerHook;
   editorMode?: DocumentEditorMode;
   storageKey?: string;
-  workspaceId: Id<"workspaces">;
+  workspaceId?: Id<"workspaces"> | null;
   category?: DocumentCategory;
 }
 
@@ -72,7 +72,7 @@ export function DocumentsViewContent({
 
   // Layout State
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
-  const [rightPanelMode, setRightPanelMode] = useState<"inspector" | "ai">("inspector");
+  const [rightPanelMode, setRightPanelMode] = useState<"inspector" | "ai" | "debug">("inspector");
 
   useEffect(() => {
     setIsMounted(true);
@@ -486,12 +486,13 @@ export function DocumentsViewContent({
 }
 
 export interface DocumentsViewWrapperProps {
-  workspaceId: Id<"workspaces">;
+  workspaceId?: Id<"workspaces"> | null;
   editorMode?: DocumentEditorMode;
   storageKey?: string;
   initialDocumentId?: Id<"documents"> | null;
   /** Filter documents by category (article or document) */
   category?: DocumentCategory;
+  mockData?: DocumentRecord[];
 }
 
 export function DocumentsView({
@@ -500,8 +501,9 @@ export function DocumentsView({
   storageKey,
   initialDocumentId = null,
   category,
+  mockData,
 }: DocumentsViewWrapperProps) {
-  const manager = useDocumentsManager({ workspaceId, initialDocumentId, editorMode, category });
+  const manager = useDocumentsManager({ workspaceId, initialDocumentId, editorMode, category, mockData });
 
   if (manager.isLoading) {
     return <FeatureSkeletons.Documents />;

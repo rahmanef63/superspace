@@ -182,3 +182,78 @@ export const recommend = action({
     }));
   },
 });
+
+import { featureAgentRegistry } from "./registry";
+
+/**
+ * Gateway for Feature Agents
+ * Securely routes AI tool calls to feature-specific logic with Runtime Validation
+ */
+export const callFeatureAgent = action({
+  args: {
+    workspaceId: v.id("workspaces"),
+    feature: v.string(), // e.g. "documents"
+    tool: v.string(),    // e.g. "create"
+    args: v.any(),       // JSON arguments
+  },
+  handler: async (ctx, args) => {
+    // 1. Verify Access
+    await ctx.runQuery(api.features.ai.queries.checkAgentAccess, {
+      workspaceId: args.workspaceId
+    });
+
+    // 2. Lookup Feature Agent
+    const agent = featureAgentRegistry[args.feature];
+    if (!agent) {
+      // Structured failure for AI
+      return {
+        success: false,
+        error: `Feature agent '${args.feature}' not found. Available: ${Object.keys(featureAgentRegistry).join(", ")}`
+      };
+    }
+
+    // 3. Lookup Tool
+    const toolDef = agent.tools[args.tool];
+    if (!toolDef) {
+      return {
+        success: false,
+        error: `Tool '${args.tool}' not found in feature '${args.feature}'. Available: ${Object.keys(agent.tools).join(", ")}`
+      };
+    }
+
+    // 4. Runtime Validation (Strict Zod)
+    const validation = toolDef.args.safeParse(args.args);
+    if (!validation.success) {
+      console.warn(`[AI Gateway] Validation Failed for ${args.feature}.${args.tool}`, validation.error.format());
+      return {
+        success: false,
+        error: "Validation Failed",
+        details: validation.error.format(),
+        schemaDescription: toolDef.description
+      };
+    }
+
+    // 5. Execution
+    try {
+      let result;
+      // We allow the handler to be either a mutation or query
+      if (toolDef.type === "mutation") {
+        result = await ctx.runMutation(toolDef.handler, validation.data);
+      } else {
+        result = await ctx.runQuery(toolDef.handler, validation.data);
+      }
+
+      return {
+        success: true,
+        data: result
+      };
+
+    } catch (error: any) {
+      console.error(`[AI Gateway] Execution Error [${args.feature}.${args.tool}]`, error);
+      return {
+        success: false,
+        error: error.message || "Unknown execution error"
+      };
+    }
+  }
+});

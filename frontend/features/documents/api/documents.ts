@@ -6,7 +6,7 @@ import type { DocumentRecord } from "../shared/types";
 export const useWorkspaceDocuments = (workspaceId?: Id<"workspaces"> | null) => {
   return useQuery(
     (api as any)["features/docs/documents"].getWorkspaceDocuments,
-    workspaceId ? { workspaceId } : undefined
+    workspaceId ? { workspaceId } : "skip"
   ) as DocumentRecord[] | undefined;
 };
 

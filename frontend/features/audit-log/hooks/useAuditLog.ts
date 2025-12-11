@@ -19,7 +19,7 @@ const INITIAL_DATA: AuditLogData = {
  */
 export function useAuditLog(workspaceId: Id<"workspaces"> | null | undefined): { isLoading: boolean, data: AuditLogData } {
   const remoteData = useQuery(
-    api.features.audit_log.queries.getData,
+    api.features.auditLog.queries.getData,
     workspaceId ? { workspaceId } : "skip"
   )
 

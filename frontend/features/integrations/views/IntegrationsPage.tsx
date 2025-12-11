@@ -52,7 +52,6 @@ export default function IntegrationsPage({ workspaceId }: IntegrationsPageProps)
         icon={Plug}
         title="Integrations"
         subtitle={`${data.integrations.length} connected`}
-        badge={{ text: "Beta", variant: "secondary" }}
       />
 
       <div className="flex-1 overflow-auto p-4">

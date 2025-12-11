@@ -30,35 +30,39 @@ import {
   UserPlus,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import type { OverviewData } from "./types"
 
 interface OverviewViewProps {
   workspaceId?: Id<"workspaces"> | null
+  mockData?: OverviewData
 }
 
 type TimeRange = "today" | "7d" | "30d" | "90d"
 
-export function OverviewView({ workspaceId }: OverviewViewProps) {
+export function OverviewView({ workspaceId, mockData }: OverviewViewProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d")
-  
+
+  const shouldUseRealData = !mockData && !!workspaceId
+
   // Query workspace data
   const workspace = useQuery(
     api.workspace.workspaces.getWorkspace,
-    workspaceId ? { workspaceId } : "skip"
+    shouldUseRealData && workspaceId ? { workspaceId } : "skip"
   )
 
   const members = useQuery(
     api.workspace.workspaces.getWorkspaceMembers,
-    workspaceId ? { workspaceId } : "skip"
+    shouldUseRealData && workspaceId ? { workspaceId } : "skip"
   )
 
   // Get analytics overview with real data
   const analytics = useQuery(
     api.features.analytics.queries.getOverview,
-    workspaceId ? { workspaceId, timeRange } : "skip"
+    shouldUseRealData && workspaceId ? { workspaceId, timeRange } : "skip"
   )
 
-  // No workspace state
-  if (!workspaceId) {
+  // No workspace state only if not using mock data
+  if (!mockData && !workspaceId) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <div className="text-center">
@@ -70,17 +74,22 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
   }
 
   // Loading state
-  if (workspace === undefined || members === undefined) {
+  if (shouldUseRealData && (workspace === undefined || members === undefined)) {
     return <OverviewSkeleton />
   }
 
-  // Use real data where available
-  const activeUsers = analytics?.members?.total ?? members?.length ?? 0
-  const tasksTotal = analytics?.tasks?.total ?? 0
-  const tasksCompleted = analytics?.tasks?.completed ?? 0
-  const projectsTotal = analytics?.projects?.total ?? 0
-  const projectsActive = analytics?.projects?.active ?? 0
-  const documentsCount = analytics?.documents ?? 0
+  // Use real data where available, fallback to mock data
+  const workspaceName = mockData?.workspaceName ?? workspace?.name ?? "Dashboard"
+  const activeUsers = mockData?.members?.total ?? analytics?.members?.total ?? members?.length ?? 0
+  const tasksTotal = mockData?.tasks?.total ?? analytics?.tasks?.total ?? 0
+  const tasksCompleted = mockData?.tasks?.completed ?? analytics?.tasks?.completed ?? 0
+  const projectsTotal = mockData?.projects?.total ?? analytics?.projects?.total ?? 0
+  const projectsActive = mockData?.projects?.active ?? analytics?.projects?.active ?? 0
+  const documentsCount = mockData?.documents ?? analytics?.documents ?? 0
+
+  const recentActivity = mockData?.recentActivity ?? analytics?.recentActivity
+  const roles = mockData?.members?.roles ?? analytics?.members?.roles
+  const lastUpdated = mockData?.generatedAt ?? analytics?.generatedAt
 
   const handleRefresh = () => {
     // Trigger re-render
@@ -90,8 +99,8 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
   return (
     <div className="flex flex-col gap-6 p-6">
       <FeatureHeader
-        title={workspace?.name || "Dashboard"}
-        description="Workspace overview and analytics"
+        title={workspaceName}
+        subtitle="Workspace overview and analytics"
         primaryAction={{
           label: "Refresh",
           icon: RefreshCcw,
@@ -102,13 +111,13 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
             id: "settings",
             label: "Settings",
             icon: Settings,
-            onClick: () => {},
+            onClick: () => { },
           },
           {
             id: "export",
             label: "Export",
             icon: Download,
-            onClick: () => {},
+            onClick: () => { },
           },
         ]}
       />
@@ -129,9 +138,12 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
             </SelectContent>
           </Select>
         </div>
-        {analytics?.generatedAt && (
+        {lastUpdated && (
           <span className="text-xs text-muted-foreground">
-            Updated {formatDistanceToNow(analytics.generatedAt, { addSuffix: true })}
+            Updated {typeof lastUpdated === 'number'
+              ? formatDistanceToNow(lastUpdated, { addSuffix: true })
+              : lastUpdated
+            }
           </span>
         )}
       </div>
@@ -148,11 +160,11 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
           <CardContent>
             <div className="text-2xl font-bold">{activeUsers}</div>
             <p className="text-xs text-muted-foreground">Active members</p>
-            {analytics?.members?.roles && (
+            {roles && (
               <div className="flex gap-1 mt-2">
-                {Object.entries(analytics.members.roles).map(([role, count]) => (
+                {Object.entries(roles).map(([role, count]) => (
                   <Badge key={role} variant="secondary" className="text-xs">
-                    {count} {role}
+                    {count as number} {role}
                   </Badge>
                 ))}
               </div>
@@ -218,9 +230,9 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
             <CardDescription>Latest updates from your workspace</CardDescription>
           </CardHeader>
           <CardContent>
-            {analytics?.recentActivity && analytics.recentActivity.length > 0 ? (
+            {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-4">
-                {analytics.recentActivity.slice(0, 5).map((activity: any, index: number) => (
+                {recentActivity.slice(0, 5).map((activity: any, index: number) => (
                   <div key={index} className="flex items-start gap-3 text-sm">
                     <div className="p-1.5 rounded-full bg-muted">
                       <Activity className="h-3 w-3 text-muted-foreground" />
@@ -230,8 +242,10 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
                         {activity.action || activity.type || "Activity"}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {activity.timestamp 
-                          ? formatDistanceToNow(activity.timestamp, { addSuffix: true })
+                        {activity.timestamp
+                          ? (typeof activity.timestamp === 'number'
+                            ? formatDistanceToNow(activity.timestamp, { addSuffix: true })
+                            : activity.timestamp)
                           : "Recently"
                         }
                       </p>
@@ -261,9 +275,9 @@ export function OverviewView({ workspaceId }: OverviewViewProps) {
             <CardDescription>Members by role</CardDescription>
           </CardHeader>
           <CardContent>
-            {analytics?.members?.roles && Object.keys(analytics.members.roles).length > 0 ? (
+            {roles && Object.keys(roles).length > 0 ? (
               <div className="space-y-4">
-                {Object.entries(analytics.members.roles).map(([role, count]) => (
+                {Object.entries(roles).map(([role, count]) => (
                   <div key={role} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-primary" />

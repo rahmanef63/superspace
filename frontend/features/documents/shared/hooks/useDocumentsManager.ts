@@ -45,7 +45,7 @@ export interface DocumentsManagerHook {
 }
 
 export function useDocumentsManager(options: DocumentManagerOptions = {}): DocumentsManagerHook {
-  const { workspaceId, initialDocumentId = null, category } = options;
+  const { workspaceId, initialDocumentId = null, category, mockData } = options;
 
   const [state, setState] = useState<DocumentManagerState>({
     selectedDocumentId: initialDocumentId,
@@ -54,7 +54,10 @@ export function useDocumentsManager(options: DocumentManagerOptions = {}): Docum
   const [search, setSearch] = useState("");
   const [visibility, setVisibility] = useState<VisibilityFilter>("all");
 
-  const documents = useWorkspaceDocuments(workspaceId);
+  const shouldUseRealData = !mockData && !!workspaceId;
+  const realDocuments = useWorkspaceDocuments(shouldUseRealData ? workspaceId : undefined);
+
+  const documents = mockData ?? realDocuments;
   const isLoading = documents === undefined;
   const availableDocuments = documents ?? [];
 
@@ -63,7 +66,7 @@ export function useDocumentsManager(options: DocumentManagerOptions = {}): Docum
     return availableDocuments.filter((document) => {
       const matchesQuery = loweredQuery
         ? document.title.toLowerCase().includes(loweredQuery) ||
-          (document.content ? stripHtml(document.content).toLowerCase().includes(loweredQuery) : false)
+        (document.content ? stripHtml(document.content).toLowerCase().includes(loweredQuery) : false)
         : true;
 
       const matches = matchesQuery && matchesVisibility(document, visibility) && matchesCategory(document, category);

@@ -27,6 +27,8 @@
 // Types
 export type {
   ThreeColumnLayoutAdvancedProps,
+  ThreeColumnPresetName,
+  ThreeColumnPresetConfig,
   ThreeColumnContextValue,
   CollapseButtonProps,
   PanelHeaderProps,
@@ -47,3 +49,6 @@ export { CollapseButton } from "./CollapseButton"
 export { PanelHeader } from "./PanelHeader"
 export { CollapsedPanel } from "./CollapsedPanel"
 export { LeftPanel, CenterPanel, RightPanel } from "./Panels"
+
+// Presets
+export { THREE_COLUMN_PRESETS, resolveThreeColumnPreset } from "./presets"

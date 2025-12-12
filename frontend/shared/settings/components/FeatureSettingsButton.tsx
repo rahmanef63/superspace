@@ -17,9 +17,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-// Import feature settings initializers to ensure they're loaded before checking
-import "@/frontend/features/initFeatureSettings"
-
 import { hasFeatureSettings, getFeatureSettingsBuilder } from "../featureSettingsRegistry"
 import { FeatureSettingsSheet } from "./FeatureSettingsSheet"
 import { SettingsRegistryProvider } from "../SettingsRegistry"

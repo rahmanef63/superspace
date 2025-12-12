@@ -16,7 +16,7 @@
  * - 0: All mutations have audit logging ✅
  * - 1: Some mutations are missing audit logging ❌
  *
- * @see docs/MUTATION_TEMPLATE_GUIDE.md
+ * @see docs/2-rules/MUTATION_TEMPLATE_GUIDE.md
  * @see .claude/CLAUDE.md (DoD #3)
  */
 
@@ -34,6 +34,7 @@ const colors = {
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   bold: "\x1b[1m",
+  dim: "\x1b[2m",
 };
 
 interface ValidationResult {
@@ -43,6 +44,9 @@ interface ValidationResult {
   lineNumber?: number;
   issue?: string;
   mutationType?: "create" | "update" | "delete" | "other";
+  skipped?: boolean;
+  skipReason?: string;
+  skipLineNumber?: number;
 }
 
 interface SummaryStats {
@@ -50,7 +54,129 @@ interface SummaryStats {
   totalMutations: number;
   mutationsWithAuditLogs: number;
   mutationsWithoutAuditLogs: number;
+  mutationsSkipped: number;
   violations: ValidationResult[];
+  skipped: ValidationResult[];
+}
+
+const BASELINE_PATH = path.join(process.cwd(), "scripts", "baselines", "audit-violations.txt");
+const SKIP_DIRECTIVE = "@dod:skip-audit";
+
+function normalizeViolationPath(filePath: string): string {
+  const relative = path.relative(process.cwd(), filePath);
+  return relative.split(path.sep).join("/");
+}
+
+function isGitHubActions(): boolean {
+  return process.env.GITHUB_ACTIONS === "true";
+}
+
+function appendGitHubStepSummary(markdown: string): void {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+  try {
+    fs.appendFileSync(summaryPath, markdown, "utf-8");
+  } catch (error: any) {
+    console.error(`${colors.yellow}Warning: failed to write CI summary: ${error.message}${colors.reset}`);
+  }
+}
+
+function safeGitHubAnnotationMessage(message: string): string {
+  return message.replace(/\r?\n/g, " ").trim();
+}
+
+function emitGitHubErrorAnnotations(violations: ValidationResult[]): void {
+  if (!isGitHubActions()) return;
+
+  for (const violation of violations) {
+    const file = normalizeViolationPath(violation.file);
+    const line = violation.lineNumber ?? 1;
+    const message = safeGitHubAnnotationMessage(
+      `${violation.mutationName}: ${violation.issue ?? "Missing audit log"}`
+    );
+    console.log(`::error title=Missing audit log,file=${file},line=${line}::${message}`);
+  }
+}
+
+function emitGitHubSkipNotices(skipped: ValidationResult[]): void {
+  if (!isGitHubActions()) return;
+
+  for (const item of skipped) {
+    const file = normalizeViolationPath(item.file);
+    const line = item.skipLineNumber ?? item.lineNumber ?? 1;
+    const reason = item.skipReason ?? "no reason provided";
+    const message = safeGitHubAnnotationMessage(`${item.mutationName}: ${SKIP_DIRECTIVE} reason=${reason}`);
+    console.log(`::notice title=DoD check skipped,file=${file},line=${line}::${message}`);
+  }
+}
+
+function normalizeSkipReason(reason: string): string {
+  const trimmed = reason.trim();
+  if (
+    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function parseSkipDirectiveFromLine(line: string): { reason: string | null } | null {
+  const haystack = line.trimEnd();
+  const index = haystack.indexOf(SKIP_DIRECTIVE);
+  if (index === -1) return null;
+
+  const rest = haystack.slice(index + SKIP_DIRECTIVE.length);
+  const match = rest.match(/reason\s*=\s*(.+)\s*$/i);
+  if (!match) return { reason: null };
+
+  const reason = normalizeSkipReason(match[1]);
+  if (reason.length === 0) return { reason: null };
+
+  return { reason };
+}
+
+function findSkipDirectiveForMutation(
+  fileContent: string,
+  mutation: { content: string; startLine: number }
+): { lineNumber: number; reason: string | null } | null {
+  const fileLines = fileContent.split("\n");
+
+  const preStart = Math.max(1, mutation.startLine - 3);
+  for (let lineNumber = preStart; lineNumber <= mutation.startLine; lineNumber++) {
+    const parsed = parseSkipDirectiveFromLine(fileLines[lineNumber - 1] ?? "");
+    if (parsed) return { lineNumber, reason: parsed.reason };
+  }
+
+  const mutationLines = mutation.content.split("\n");
+  for (let index = 0; index < mutationLines.length; index++) {
+    const parsed = parseSkipDirectiveFromLine(mutationLines[index]);
+    if (parsed) return { lineNumber: mutation.startLine + index, reason: parsed.reason };
+  }
+
+  return null;
+}
+
+function toViolationKey(violation: ValidationResult): string {
+  return `${normalizeViolationPath(violation.file)}::${violation.mutationName}`;
+}
+
+function loadBaselineKeys(baselinePath: string): Set<string> {
+  if (!fs.existsSync(baselinePath)) return new Set();
+
+  const raw = fs.readFileSync(baselinePath, "utf-8");
+  const keys = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith("#"));
+
+  return new Set(keys);
+}
+
+function writeBaselineKeys(baselinePath: string, keys: string[]): void {
+  fs.mkdirSync(path.dirname(baselinePath), { recursive: true });
+  const contents = `${keys.sort().join("\n")}\n`;
+  fs.writeFileSync(baselinePath, contents, "utf-8");
 }
 
 /**
@@ -255,6 +381,33 @@ function validateFile(filePath: string): ValidationResult[] {
     // Validate each mutation
     for (const mutation of mutations) {
       const mutationType = detectMutationType(mutation.name, mutation.content);
+      const skip = findSkipDirectiveForMutation(fileContent, mutation);
+      if (skip) {
+        if (!skip.reason) {
+          results.push({
+            file: filePath,
+            mutationName: mutation.name,
+            hasAuditLog: false,
+            lineNumber: skip.lineNumber,
+            mutationType,
+            issue: `${SKIP_DIRECTIVE} requires reason=...`,
+          });
+          continue;
+        }
+
+        results.push({
+          file: filePath,
+          mutationName: mutation.name,
+          hasAuditLog: true,
+          lineNumber: mutation.startLine,
+          mutationType,
+          skipped: true,
+          skipReason: skip.reason,
+          skipLineNumber: skip.lineNumber,
+        });
+        continue;
+      }
+
       const isReadOnly = isReadOnlyMutation(mutation.name, mutation.content);
 
       // Skip read-only mutations (they don't need audit logs)
@@ -262,7 +415,7 @@ function validateFile(filePath: string): ValidationResult[] {
         continue;
       }
 
-      const { hasLog, details } = hasAuditLog(mutation.content);
+      const { hasLog } = hasAuditLog(mutation.content);
 
       results.push({
         file: filePath,
@@ -302,12 +455,15 @@ function validateAllMutations(): SummaryStats {
   }
 
   // Calculate stats
+  const skipped = allResults.filter((r) => r.skipped);
   const stats: SummaryStats = {
     totalFiles: files.length,
     totalMutations: allResults.length,
-    mutationsWithAuditLogs: allResults.filter((r) => r.hasAuditLog).length,
+    mutationsWithAuditLogs: allResults.filter((r) => r.hasAuditLog && !r.skipped).length,
     mutationsWithoutAuditLogs: allResults.filter((r) => !r.hasAuditLog).length,
+    mutationsSkipped: skipped.length,
     violations: allResults.filter((r) => !r.hasAuditLog),
+    skipped,
   };
 
   return stats;
@@ -316,7 +472,11 @@ function validateAllMutations(): SummaryStats {
 /**
  * Print validation results
  */
-function printResults(stats: SummaryStats): void {
+function printResults(
+  stats: SummaryStats,
+  displayViolations: ValidationResult[] = stats.violations,
+  baselineInfo?: { baselinePath: string; ignoredCount: number }
+): void {
   console.log(`${colors.bold}📊 Validation Results:${colors.reset}\n`);
 
   // Print summary
@@ -328,16 +488,32 @@ function printResults(stats: SummaryStats): void {
   console.log(
     `Mutations without audit logs: ${colors.red}${colors.bold}${stats.mutationsWithoutAuditLogs}${colors.reset}`
   );
+  if (stats.mutationsSkipped > 0) {
+    console.log(`Mutations skipped: ${colors.yellow}${colors.bold}${stats.mutationsSkipped}${colors.reset}`);
+  }
 
   console.log();
 
   // Print violations
-  if (stats.violations.length > 0) {
+  if (baselineInfo) {
+    const totalViolations = stats.violations.length;
+    const newViolations = displayViolations.length;
+
+    console.log(`${colors.dim}Baseline: ${baselineInfo.baselinePath}${colors.reset}`);
+    console.log(
+      `${colors.dim}Known (baseline) violations: ${baselineInfo.ignoredCount}/${totalViolations}${colors.reset}`
+    );
+    console.log(`${colors.dim}New violations: ${newViolations}${colors.reset}`);
+    console.log();
+  }
+
+  if (displayViolations.length > 0) {
     console.log(`${colors.red}${colors.bold}❌ Violations Found:${colors.reset}\n`);
+    emitGitHubErrorAnnotations(displayViolations);
 
     // Group violations by file
     const violationsByFile = new Map<string, ValidationResult[]>();
-    for (const violation of stats.violations) {
+    for (const violation of displayViolations) {
       if (!violationsByFile.has(violation.file)) {
         violationsByFile.set(violation.file, []);
       }
@@ -380,12 +556,50 @@ function printResults(stats: SummaryStats): void {
     console.log(`     userId: user._id,`);
     console.log(`     metadata: { ... },`);
     console.log(`   });${colors.reset}\n`);
-        console.log(`2. Add audit logging using logAudit() helper`);
-    console.log(`3. See template: ${colors.cyan}convex/templates/mutation_template.ts${colors.reset}`);
+    console.log(`3. Add audit logging using logAudit() helper`);
+    console.log(`4. See template: ${colors.cyan}convex/templates/mutation_template.ts${colors.reset}`);
     console.log();
-    console.log(`4. See guide: ${colors.cyan}docs/MUTATION_TEMPLATE_GUIDE.md${colors.reset}\n`);
+    console.log(`5. See guide: ${colors.cyan}docs/2-rules/MUTATION_TEMPLATE_GUIDE.md${colors.reset}\n`);
+    console.log(
+      `${colors.dim}If this is a false positive, you can temporarily add: // ${SKIP_DIRECTIVE} reason=...${colors.reset}\n`
+    );
   } else {
-    console.log(`${colors.green}${colors.bold}✅ All mutations have proper audit logging!${colors.reset}\n`);
+    if (baselineInfo && stats.violations.length > 0) {
+      console.log(
+        `${colors.yellow}${colors.bold}PASS: no NEW audit violations (baseline still has ${stats.violations.length}).${colors.reset}\n`
+      );
+    } else {
+      console.log(`${colors.green}${colors.bold}PASS: all mutations have proper audit logging.${colors.reset}\n`);
+    }
+  }
+
+  if (stats.skipped.length > 0) {
+    emitGitHubSkipNotices(stats.skipped);
+
+    console.log(`${colors.yellow}${colors.bold}Skipped mutations (${stats.skipped.length}):${colors.reset}`);
+    for (const item of stats.skipped) {
+      const reason = item.skipReason ?? "no reason provided";
+      const line = item.skipLineNumber ?? item.lineNumber ?? 1;
+      console.log(
+        `  ${colors.yellow}SKIP${colors.reset} ${normalizeViolationPath(item.file)}:${line} ${colors.bold}${item.mutationName}${colors.reset} (${reason})`
+      );
+    }
+    console.log();
+  }
+
+  if (isGitHubActions()) {
+    const summaryLines: string[] = [];
+    summaryLines.push(`### Audit validator`);
+    summaryLines.push(`- Total mutations checked: ${stats.totalMutations}`);
+    summaryLines.push(`- New violations: ${displayViolations.length}`);
+    if (baselineInfo) {
+      summaryLines.push(`- Baseline ignored: ${baselineInfo.ignoredCount}`);
+    }
+    if (stats.skipped.length > 0) {
+      summaryLines.push(`- Skipped: ${stats.skipped.length} (${SKIP_DIRECTIVE})`);
+    }
+    summaryLines.push("");
+    appendGitHubStepSummary(`${summaryLines.join("\n")}\n`);
   }
 }
 
@@ -394,11 +608,29 @@ function printResults(stats: SummaryStats): void {
  */
 function main(): void {
   try {
+    const args = new Set(process.argv.slice(2));
+    const shouldWriteBaseline = args.has("--write-baseline");
+
     const stats = validateAllMutations();
-    printResults(stats);
+    const baselineKeys = loadBaselineKeys(BASELINE_PATH);
+    const allViolationKeys = stats.violations.map(toViolationKey);
+
+    if (shouldWriteBaseline) {
+      writeBaselineKeys(BASELINE_PATH, allViolationKeys);
+      console.log(`${colors.green}${colors.bold}PASS: wrote baseline${colors.reset} ${BASELINE_PATH}`);
+      process.exit(0);
+    }
+
+    const baselineUsed = baselineKeys.size > 0;
+    const newViolations = baselineUsed
+      ? stats.violations.filter((v) => !baselineKeys.has(toViolationKey(v)))
+      : stats.violations;
+    const ignoredCount = baselineUsed ? stats.violations.length - newViolations.length : 0;
+
+    printResults(stats, newViolations, baselineUsed ? { baselinePath: BASELINE_PATH, ignoredCount } : undefined);
 
     // Exit with appropriate code
-    if (stats.violations.length > 0) {
+    if (newViolations.length > 0) {
       console.log(`${colors.red}${colors.bold}❌ Validation FAILED${colors.reset}\n`);
       console.log(`Fix the violations above before committing.\n`);
       process.exit(1);

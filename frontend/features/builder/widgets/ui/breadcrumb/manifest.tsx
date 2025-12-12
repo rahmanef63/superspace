@@ -6,7 +6,7 @@ import React from 'react';
 
 export const breadcrumbManifest: WidgetConfig = {
     label: "Breadcrumb",
-    category: "UI",
+    category: "Navigation",
     description: "Navigation breadcrumb trail for page hierarchy.",
     icon: resolveWidgetIcon(undefined, 'UI', 'breadcrumb'),
     defaults: {

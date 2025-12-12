@@ -52,6 +52,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate permission checks
+        run: pnpm run validate:permissions
+
+      - name: Validate audit logging
+        run: pnpm run validate:audit
+
       - name: Validate feature config schema
         run: pnpm run validate:features
 

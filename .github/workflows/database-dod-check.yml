@@ -4,6 +4,7 @@ name: Database DoD Check
 on:
   pull_request:
     paths:
+      - 'convex/**'
       - 'convex/features/database/**'
       - 'convex/lib/rbac/**'
       - 'convex/lib/audit/**'
@@ -189,7 +190,7 @@ jobs:
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "📚 **Resources:**" >> $GITHUB_STEP_SUMMARY
           echo "- [Mutation Template](convex/templates/mutation_template.ts)" >> $GITHUB_STEP_SUMMARY
-          echo "- [Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Template Guide](docs/2-rules/MUTATION_TEMPLATE_GUIDE.md)" >> $GITHUB_STEP_SUMMARY
           echo "- [Project Guardrails](.claude/CLAUDE.md)" >> $GITHUB_STEP_SUMMARY
 
       # Post comment on PR with results
@@ -212,12 +213,12 @@ jobs:
             | DoD #4: Tests | ${{ steps.check-tests.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
             | DoD #5: CI/CD Config | ${{ steps.check-cicd.outcome == 'success' && '✅ PASS' || '❌ FAIL' }} |
 
-            ${dodPassed ? '' : '### 🔧 How to Fix\n\nRun locally:\n```bash\nnpm run validate:dod\n```\n\nSee [Mutation Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md) for details.'}
+            ${dodPassed ? '' : '### 🔧 How to Fix\n\nRun locally:\n```bash\nnpm run validate:dod\n```\n\nSee [Mutation Template Guide](docs/2-rules/MUTATION_TEMPLATE_GUIDE.md) for details.'}
 
             ---
             📚 **Resources:**
             - [Mutation Template](convex/templates/mutation_template.ts)
-            - [Template Guide](docs/MUTATION_TEMPLATE_GUIDE.md)
+            - [Template Guide](docs/2-rules/MUTATION_TEMPLATE_GUIDE.md)
             - [Project Guardrails](.claude/CLAUDE.md)
             `;
 

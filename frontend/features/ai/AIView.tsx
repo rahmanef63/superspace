@@ -114,6 +114,7 @@ export function AIView() {
   return (
     <div className="h-full flex flex-col">
       <ThreeColumnLayoutAdvanced
+        preset="ide"
         // Panel Components
         left={
           <AILeftPanel
@@ -141,24 +142,9 @@ export function AIView() {
         leftLabel="Sessions"
         centerLabel="AI Chat"
         rightLabel="Session Info"
-        // Widths
-        leftWidth={280}
-        rightWidth={360}
-        centerMinWidth={400}
-        minSideWidth={220}
-        maxSideWidth={480}
-        collapsedWidth={44}
-        // Space distribution
-        spaceDistribution="center-priority"
-        // Features - enable resize and collapse
-        resizable={true}
-        showCollapseButtons={true}
         persistState={true}
         storageKey="ai-layout"
-        // Responsive - right panel collapses first, left panel stays visible longer
-        collapseRightAt={1024}
         collapseLeftAt={640}
-        stackAt={480}
         // Controlled left panel state
         leftCollapsed={leftPanelCollapsed}
         onLeftCollapsedChange={setLeftPanelCollapsed}

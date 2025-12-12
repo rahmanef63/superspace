@@ -25,7 +25,7 @@ const textareaInspectorConfig: InspectorField[] = [
 
 export const textareaManifest: WidgetConfig = {
   label: 'Textarea',
-  category: 'UI',
+  category: 'Form',
   description: 'A multi-line text input control.',
   icon: FileText,
   tags: ['ui', 'form', 'input', 'text'],

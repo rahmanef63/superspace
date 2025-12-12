@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { useMutation } from "convex/react";
 import type { Id } from "@convex/_generated/dataModel";
+import { api } from "@convex/_generated/api";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { IconPicker } from "@/frontend/shared/ui";
+import { cn } from "@/lib/utils";
 import { useDatabaseMutations } from "../hooks/useDatabase";
+import {
+  DATABASE_STARTER_TEMPLATES,
+  getDatabaseStarterTemplate,
+  type DatabaseStarterTemplateId,
+} from "../constants/templates";
 
 export interface CreateDatabaseDialogProps {
   workspaceId: Id<"workspaces">;
@@ -23,6 +33,7 @@ export interface CreateDatabaseDialogProps {
   onCreated?: (tableId: Id<"dbTables">) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  initialTemplateId?: DatabaseStarterTemplateId;
 }
 
 export function CreateDatabaseDialog({
@@ -31,15 +42,22 @@ export function CreateDatabaseDialog({
   onCreated,
   open,
   onOpenChange,
+  initialTemplateId,
 }: CreateDatabaseDialogProps) {
+  const { toast } = useToast();
+  const pathname = usePathname();
+  const trackEvent = useMutation(api.features.analytics.mutations.trackEvent as any);
   const [internalOpen, setInternalOpen] = useState(false);
+  const [templateId, setTemplateId] = useState<DatabaseStarterTemplateId>(
+    initialTemplateId ?? "blank"
+  );
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("Database");
   const [color, setColor] = useState("default");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { createTable } = useDatabaseMutations();
+  const { createTable, createField } = useDatabaseMutations();
 
   const resolvedOpen = open ?? internalOpen;
 
@@ -56,8 +74,23 @@ export function CreateDatabaseDialog({
     setDescription("");
     setIcon("Database");
     setColor("default");
+    setTemplateId(initialTemplateId ?? "blank");
     setError(null);
   };
+
+  const applyTemplate = useCallback((nextTemplateId: DatabaseStarterTemplateId) => {
+    const template = getDatabaseStarterTemplate(nextTemplateId);
+    setTemplateId(template.id);
+    setName(template.defaultTableName);
+    setDescription(template.defaultDescription ?? "");
+    setIcon(template.defaultIcon);
+    setColor(template.defaultIconColor);
+  }, []);
+
+  useEffect(() => {
+    if (!resolvedOpen) return;
+    applyTemplate(initialTemplateId ?? "blank");
+  }, [applyTemplate, resolvedOpen, initialTemplateId]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -68,6 +101,7 @@ export function CreateDatabaseDialog({
     setError(null);
 
     try {
+      const template = getDatabaseStarterTemplate(templateId);
       // Store icon as JSON string to preserve both icon name and color
       const iconData = JSON.stringify({ name: icon, color });
 
@@ -78,11 +112,63 @@ export function CreateDatabaseDialog({
         icon: iconData,
       });
 
+      void trackEvent({
+        workspaceId,
+        eventType: "database",
+        eventName: "database.created",
+        properties: {
+          tableId,
+          templateId: template.id,
+          templateName: template.name,
+        },
+        metadata: {
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+          referrer: typeof document !== "undefined" ? document.referrer : undefined,
+          path: pathname ?? undefined,
+        },
+      }).catch((trackError: any) => {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[Database] analytics trackEvent failed", trackError);
+        }
+      });
+
+      const fields = template.fields ?? [];
+      let fieldFailures = 0;
+      for (const field of fields) {
+        try {
+          await createField({
+            tableId,
+            name: field.name,
+            type: field.type as any,
+            options: field.options as any,
+            isRequired: field.isRequired ?? false,
+          });
+        } catch (fieldError) {
+          fieldFailures += 1;
+          console.error("Failed to create template field:", fieldError);
+        }
+      }
+
       resetForm();
       updateOpenState(false);
 
       if (onCreated && tableId) {
         onCreated(tableId as Id<"dbTables">);
+      }
+
+      if (template.id !== "blank") {
+        if (fieldFailures > 0) {
+          toast({
+            title: "Database created",
+            description: `Created "${template.name}" template, but ${fieldFailures} field(s) failed to apply.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Database created",
+            description: `Started from "${template.name}" template.`,
+          });
+        }
       }
     } catch (err) {
       let message =
@@ -115,6 +201,33 @@ export function CreateDatabaseDialog({
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Template
+              </label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {DATABASE_STARTER_TEMPLATES.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-left transition",
+                      "hover:bg-muted",
+                      template.id === templateId
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    )}
+                    onClick={() => applyTemplate(template.id)}
+                  >
+                    <div className="text-sm font-medium">{template.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {template.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="text-sm font-medium text-muted-foreground">
                 Name

@@ -41,6 +41,12 @@ import type { DocumentCategory, DocumentEditorMode, DocumentRecord, DocumentSort
 import { sortDocuments } from "../utils";
 import { formatRelativeTime } from "../utils";
 
+function isWorkspaceId(
+  value: Id<"workspaces"> | null | undefined
+): value is Id<"workspaces"> {
+  return typeof value === "string" && value.length > 0;
+}
+
 export interface DocumentsViewProps {
   manager: DocumentsManagerHook;
   editorMode?: DocumentEditorMode;
@@ -401,16 +407,18 @@ export function DocumentsViewContent({
           {sidebarContent}
         </div>
 
-        <CreateDocumentDialog
-          open={manager.state.createOpen}
-          onOpenChange={manager.toggleCreateDialog}
-          workspaceId={workspaceId}
-          category={category}
-          onCreated={(documentId) => {
-            manager.toggleCreateDialog(false);
-            manager.selectDocument(documentId);
-          }}
-        />
+        {isWorkspaceId(workspaceId) ? (
+          <CreateDocumentDialog
+            open={manager.state.createOpen}
+            onOpenChange={manager.toggleCreateDialog}
+            workspaceId={workspaceId}
+            category={category}
+            onCreated={(documentId) => {
+              manager.toggleCreateDialog(false);
+              manager.selectDocument(documentId);
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -435,7 +443,7 @@ export function DocumentsViewContent({
           mainContent={editorContent}
           mainHeader={
             // Minimal header for the editor area
-            <div className="flex items-center justify-between px-4 py-2 border-b h-12 bg-muted/10">
+            <div className="flex items-center justify-between px-4 py-2 border-b h-10 bg-muted/10">
               <DocumentsBreadcrumbs
                 documents={manager.documents}
                 selectedId={manager.state.selectedDocumentId ?? undefined}
@@ -471,16 +479,18 @@ export function DocumentsViewContent({
         />
       </div>
 
-      <CreateDocumentDialog
-        open={manager.state.createOpen}
-        onOpenChange={manager.toggleCreateDialog}
-        workspaceId={workspaceId}
-        category={category}
-        onCreated={(documentId) => {
-          manager.toggleCreateDialog(false);
-          manager.selectDocument(documentId);
-        }}
-      />
+      {isWorkspaceId(workspaceId) ? (
+        <CreateDocumentDialog
+          open={manager.state.createOpen}
+          onOpenChange={manager.toggleCreateDialog}
+          workspaceId={workspaceId}
+          category={category}
+          onCreated={(documentId) => {
+            manager.toggleCreateDialog(false);
+            manager.selectDocument(documentId);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

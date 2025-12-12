@@ -25,7 +25,7 @@ const ERROR_PATTERNS = {
     /resource.?exhausted/i,
     /429/,
   ],
-  
+
   // Authentication errors
   authPatterns: [
     /invalid.?api.?key/i,
@@ -35,14 +35,14 @@ const ERROR_PATTERNS = {
     /401/,
     /403/,
   ],
-  
+
   // Model errors
   modelPatterns: [
     /model.?not.?found/i,
     /invalid.?model/i,
     /model.?does.?not.?exist/i,
   ],
-  
+
   // Network errors
   networkPatterns: [
     /network/i,
@@ -54,7 +54,7 @@ const ERROR_PATTERNS = {
     /503/,
     /504/,
   ],
-  
+
   // Content/Safety errors
   contentPatterns: [
     /content.?policy/i,
@@ -79,6 +79,9 @@ export const PROVIDER_KEY_URLS: Record<string, string> = {
   fireworks: 'https://fireworks.ai/account/api-keys',
   deepseek: 'https://platform.deepseek.com/api_keys',
   xai: 'https://console.x.ai',
+  glm: 'https://z.ai/manage-apikey/apikey-list',
+  'z-ai': 'https://z.ai/manage-apikey/apikey-list',
+  openrouter: 'https://openrouter.ai/keys',
 }
 
 /**
@@ -97,6 +100,9 @@ export const PROVIDER_NAMES: Record<string, string> = {
   deepseek: 'DeepSeek',
   xai: 'xAI (Grok)',
   ollama: 'Ollama (Local)',
+  glm: 'Z.AI (GLM)',
+  'z-ai': 'Z.AI (GLM)',
+  openrouter: 'OpenRouter',
 }
 
 /**
@@ -109,14 +115,14 @@ function extractRetryDelay(errorMessage: string): number | undefined {
     /(\d+(?:\.\d+)?)\s*s(?:econds?)?\s*(?:delay|wait)/i,
     /"retryDelay":\s*"(\d+)s?"/i,
   ]
-  
+
   for (const pattern of patterns) {
     const match = errorMessage.match(pattern)
     if (match) {
       return Math.ceil(parseFloat(match[1]))
     }
   }
-  
+
   return undefined
 }
 
@@ -137,18 +143,30 @@ export function parseAIError(
   const errorMessage = typeof error === 'string' ? error : error.message
   const providerName = provider ? (PROVIDER_NAMES[provider] || provider) : 'AI Provider'
   const keyUrl = provider ? PROVIDER_KEY_URLS[provider] : undefined
-  
+
+  // Billing / insufficient balance (some providers return 429 for this)
+  if (/insufficient\s+balance|no\s+resource\s+package|please\s+recharge/i.test(errorMessage)) {
+    const billingUrl = provider === 'glm' || provider === 'z-ai' ? 'https://z.ai/subscribe' : keyUrl
+    return {
+      title: 'Insufficient Balance',
+      message: `Your ${providerName} account has insufficient balance/credits to process this request. Please recharge or add a resource package.`,
+      action: 'Recharge / Billing',
+      actionUrl: billingUrl,
+      isRetryable: false,
+      severity: 'error',
+    }
+  }
+
   // Rate limit / Quota exceeded
   if (matchesPatterns(errorMessage, ERROR_PATTERNS.rateLimitPatterns)) {
     const retryDelay = extractRetryDelay(errorMessage)
-    
+
     return {
       title: 'Rate Limit Exceeded',
-      message: `You've exceeded the API rate limit for ${providerName}. ${
-        retryDelay 
-          ? `Please wait ${retryDelay} seconds before trying again.` 
+      message: `You've exceeded the API rate limit for ${providerName}. ${retryDelay
+          ? `Please wait ${retryDelay} seconds before trying again.`
           : 'Please wait a moment before trying again.'
-      }`,
+        }`,
       action: 'Check your usage & billing',
       actionUrl: keyUrl,
       retryDelay,
@@ -156,7 +174,7 @@ export function parseAIError(
       severity: 'warning',
     }
   }
-  
+
   // Authentication errors
   if (matchesPatterns(errorMessage, ERROR_PATTERNS.authPatterns)) {
     return {
@@ -168,7 +186,7 @@ export function parseAIError(
       severity: 'error',
     }
   }
-  
+
   // Model errors
   if (matchesPatterns(errorMessage, ERROR_PATTERNS.modelPatterns)) {
     return {
@@ -180,20 +198,20 @@ export function parseAIError(
       severity: 'error',
     }
   }
-  
+
   // Network errors
   if (matchesPatterns(errorMessage, ERROR_PATTERNS.networkPatterns)) {
     const isTimeout = /timeout|timed.?out|504/i.test(errorMessage)
     return {
       title: isTimeout ? 'Request Timed Out' : 'Connection Error',
-      message: isTimeout 
+      message: isTimeout
         ? `The request to ${providerName} took too long. The service may be slow or overloaded. Please try again.`
         : `Unable to connect to ${providerName}. Please check your internet connection and try again.`,
       isRetryable: true,
       severity: 'warning',
     }
   }
-  
+
   // Content/Safety errors
   if (matchesPatterns(errorMessage, ERROR_PATTERNS.contentPatterns)) {
     return {
@@ -203,17 +221,16 @@ export function parseAIError(
       severity: 'warning',
     }
   }
-  
+
   // Specific provider error parsing
   if (errorMessage.includes('RESOURCE_EXHAUSTED')) {
     const retryDelay = extractRetryDelay(errorMessage)
     return {
       title: 'Quota Exceeded',
-      message: `Your ${providerName} quota has been exhausted. ${
-        retryDelay 
-          ? `Try again in ${retryDelay} seconds, or upgrade your plan.` 
+      message: `Your ${providerName} quota has been exhausted. ${retryDelay
+          ? `Try again in ${retryDelay} seconds, or upgrade your plan.`
           : 'Please upgrade your plan or wait for quota reset.'
-      }`,
+        }`,
       action: 'Upgrade plan',
       actionUrl: keyUrl,
       retryDelay,
@@ -221,7 +238,7 @@ export function parseAIError(
       severity: 'warning',
     }
   }
-  
+
   // API key not configured
   if (errorMessage.includes('No API key configured')) {
     return {
@@ -233,7 +250,7 @@ export function parseAIError(
       severity: 'error',
     }
   }
-  
+
   // Unknown provider
   if (errorMessage.includes('Unknown provider')) {
     return {
@@ -243,7 +260,7 @@ export function parseAIError(
       severity: 'error',
     }
   }
-  
+
   // Default error
   return {
     title: 'AI Error',
@@ -261,11 +278,11 @@ export function formatErrorForToast(parsedError: ParsedAIError): {
   description: string
 } {
   let description = parsedError.message
-  
+
   if (parsedError.action && parsedError.actionUrl) {
     description += ` [${parsedError.action}](${parsedError.actionUrl})`
   }
-  
+
   return {
     title: parsedError.title,
     description,

@@ -24,7 +24,7 @@ import { GrokInput } from "@/frontend/shared/communications/components/grok-chat
 import { useAIStore } from "../stores"
 import { useAIActions, useSubAgentRouter } from "../hooks"
 import { useAIKnowledgeContext } from "../hooks/useAIKnowledgeContext"
-import { useAISettingsStorage } from "../settings/useAISettings"
+import { getProviderModels, useAISettingsStorage } from "../settings/useAISettings"
 import { AIChatHeader } from "../components/AIChatHeader"
 import { AIWelcomeMode } from "../components/AIWelcomeMode"
 import { AIMessageList } from "../components/AIMessageList"
@@ -235,9 +235,17 @@ export function AICenterPanel({
 
         if (!lastUserMessage) return
 
-        const provider = settings?.defaultProvider || DEFAULT_PROVIDER
-        const model = settings?.defaultModel || DEFAULT_MODEL_ID
-        const apiKeyConfig = settings?.apiKeys?.find((k: any) => k.providerId === provider && k.isEnabled)
+        const providerRaw = settings?.defaultProvider || DEFAULT_PROVIDER
+        const provider = providerRaw === "z-ai" ? "glm" : providerRaw
+        const configuredModel = settings?.defaultModel || DEFAULT_MODEL_ID
+        const availableModels = getProviderModels(provider)
+        const model =
+          availableModels.length > 0 && !availableModels.some((m) => m.id === configuredModel)
+            ? availableModels[0].id
+            : configuredModel
+        const apiKeyConfig =
+          settings?.apiKeys?.find((k: any) => k.providerId === provider && k.isEnabled) ||
+          settings?.apiKeys?.find((k: any) => k.providerId === (provider === "glm" ? "z-ai" : provider) && k.isEnabled)
 
         if (!apiKeyConfig?.apiKey && provider !== "ollama") {
           toast.error(`No API key configured for ${provider}`)
@@ -343,9 +351,17 @@ export function AICenterPanel({
 
       setIsGeneratingSuggestions(true)
       try {
-        const provider = settings.defaultProvider || "groq"
-        const model = settings.defaultModel || "llama-3.3-70b-versatile"
-        const apiKeyConfig = settings.apiKeys?.find((k: { providerId: string; isEnabled: boolean }) => k.providerId === provider && k.isEnabled)
+        const providerRaw = settings.defaultProvider || "groq"
+        const provider = providerRaw === "z-ai" ? "glm" : providerRaw
+        const configuredModel = settings.defaultModel || "llama-3.3-70b-versatile"
+        const availableModels = getProviderModels(provider)
+        const model =
+          availableModels.length > 0 && !availableModels.some((m) => m.id === configuredModel)
+            ? availableModels[0].id
+            : configuredModel
+        const apiKeyConfig =
+          settings.apiKeys?.find((k: { providerId: string; isEnabled: boolean }) => k.providerId === provider && k.isEnabled) ||
+          settings.apiKeys?.find((k: { providerId: string; isEnabled: boolean }) => k.providerId === (provider === "glm" ? "z-ai" : provider) && k.isEnabled)
 
         if (!apiKeyConfig?.apiKey && provider !== "ollama") {
           setAiSuggestions([])

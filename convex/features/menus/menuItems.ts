@@ -34,6 +34,21 @@ function normalizePermissionKey(permKey?: string): string | undefined {
   return permsRecord[upper as keyof typeof PERMS] ?? permKey
 }
 
+function isFeatureDisabledByAccess(access: any | null | undefined): boolean {
+  if (!access) return false
+  if (access.accessLevel === "disabled") return true
+  if (access.configOverrides?.enabled === false) return true
+  return false
+}
+
+function isFeatureEnabledByAccess(access: any | null | undefined): boolean {
+  if (!access) return false
+  if (access.accessLevel === "disabled") return false
+  if (access.configOverrides?.enabled === false) return false
+  if (access.configOverrides?.enabled === true) return true
+  return access.accessLevel === "owner" || access.accessLevel === "admin" || access.accessLevel === "user"
+}
+
 async function getRoleIdsForPermission(ctx: any, workspaceId: Id<"workspaces">, permKey?: string) {
   const resolved = normalizePermissionKey(permKey)
   if (!resolved) return []
@@ -145,6 +160,91 @@ export const getWorkspaceMenuItems = query({
         .collect()
     }
 
+    // === SSOT: Feature/menu visibility is controlled by:
+    // 1) DEFAULT_MENU_ITEMS manifest for default/system features
+    // 2) systemFeatures table (platform admin) if present
+    // 3) OPTIONAL_FEATURES_CATALOG fallback if systemFeatures is not seeded
+    // 4) featureAccess table for per-workspace enable/disable overrides
+
+    const manifestBySlug = new Map(DEFAULT_MENU_ITEMS.map((m: any) => [m.slug, m]))
+    const manifestSlugs = new Set(manifestBySlug.keys())
+
+    const systemFeatures = await ctx.db.query("systemFeatures").collect()
+    const hasSystemRegistry = systemFeatures.length > 0
+    const systemById = new Map(systemFeatures.map((f: any) => [f.featureId, f]))
+
+    const optionalFallbackSlugs = new Set(OPTIONAL_FEATURES_CATALOG.map((f: any) => f.slug))
+    const optionalSlugs = hasSystemRegistry
+      ? new Set(Array.from(systemById.values()).filter((f: any) => f.featureType === "optional").map((f: any) => f.featureId))
+      : optionalFallbackSlugs
+
+    const featureAccess = await ctx.db
+      .query("featureAccess")
+      .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+    const accessByFeatureId = new Map(featureAccess.map((a: any) => [a.featureId, a]))
+
+    const systemAllows = (featureId: string, featureType?: string) => {
+      if (!hasSystemRegistry) return true
+      const sys = systemById.get(featureId)
+      if (!sys) {
+        // If the platform registry exists but doesn't include this feature:
+        // - allow default/system features if they still exist in the code manifest
+        // - treat optional features as removed from the platform catalog
+        return featureType === "default" || featureType === "system"
+      }
+      if (sys.isEnabled === false) return false
+      if (sys.status === "disabled") return false
+      return true
+    }
+
+    const isFeatureMenuCandidate = (item: any) => {
+      const slug = String(item?.slug ?? "")
+      return Boolean(item?.metadata?.featureType) || manifestSlugs.has(slug) || optionalSlugs.has(slug)
+    }
+
+    const isFeatureMenuAllowed = (item: any) => {
+      const slug = String(item?.slug ?? "")
+      const manifestItem = manifestBySlug.get(slug)
+      const inferredType =
+        item?.metadata?.featureType ??
+        item?.metadata?.originalFeatureType ??
+        manifestItem?.metadata?.featureType ??
+        (optionalSlugs.has(slug) ? "optional" : undefined)
+
+      const access = accessByFeatureId.get(slug)
+
+      if (inferredType === "default" || inferredType === "system") {
+        // Must still exist in code manifest; can be explicitly disabled via admin overrides.
+        if (!manifestSlugs.has(slug)) return false
+        if (!systemAllows(slug, inferredType)) return false
+        if (isFeatureDisabledByAccess(access)) return false
+        return true
+      }
+
+      if (inferredType === "optional") {
+        // Optional features are admin-controlled; if the platform registry exists, it is authoritative.
+        if (!optionalSlugs.has(slug)) return false
+        if (!systemAllows(slug, inferredType)) return false
+        // If there is an explicit per-workspace access record, respect it.
+        // If there is no record, keep backward-compat with existing installed menu items.
+        if (access) return isFeatureEnabledByAccess(access)
+        return true
+      }
+
+      // Unknown type: if it's not in manifest or optional catalog, treat as stale feature and hide.
+      if (manifestSlugs.has(slug)) return systemAllows(slug, "default") && !isFeatureDisabledByAccess(access)
+      if (optionalSlugs.has(slug)) return systemAllows(slug, "optional") && (access ? isFeatureEnabledByAccess(access) : true)
+      return false
+    }
+
+    // Remove stale/disabled feature menu items from the response.
+    // (We do not delete DB rows here; we just stop showing them to users.)
+    menuItems = menuItems.filter((item) => {
+      if (!isFeatureMenuCandidate(item)) return true
+      return isFeatureMenuAllowed(item)
+    })
+
     // === SSOT: Merge missing default/system features from manifest ===
     // This ensures new features appear immediately without requiring a sync
     const dbSlugs = new Set(menuItems.map((item) => item.slug))
@@ -188,12 +288,15 @@ export const getWorkspaceMenuItems = query({
       return item
     })
     
-    // Add missing default/system features from manifest
+    // Add missing default/system features from manifest (respect platform/admin disabling)
     for (const manifestItem of DEFAULT_MENU_ITEMS) {
       if (!dbSlugs.has(manifestItem.slug)) {
         // Only include default and system features (not optional)
         const featureType = manifestItem.metadata?.featureType
         if (featureType === "default" || featureType === "system") {
+          if (!systemAllows(manifestItem.slug, featureType)) continue
+          const access = accessByFeatureId.get(manifestItem.slug)
+          if (isFeatureDisabledByAccess(access)) continue
           const visibleForRoleIds = getVisibleRoleIds(manifestItem.requiresPermission)
           
           // Create a virtual menu item from manifest
@@ -312,6 +415,58 @@ export const getMenuItemBySlug = query({
 
     const item = items[0] || null
     if (!item) return null
+
+    // Enforce SSOT feature visibility (same rules as getWorkspaceMenuItems)
+    const manifestBySlug = new Map(DEFAULT_MENU_ITEMS.map((m: any) => [m.slug, m]))
+    const manifestSlugs = new Set(manifestBySlug.keys())
+
+    const systemFeatures = await ctx.db.query("systemFeatures").collect()
+    const hasSystemRegistry = systemFeatures.length > 0
+    const systemById = new Map(systemFeatures.map((f: any) => [f.featureId, f]))
+
+    const optionalFallbackSlugs = new Set(OPTIONAL_FEATURES_CATALOG.map((f: any) => f.slug))
+    const optionalSlugs = hasSystemRegistry
+      ? new Set(Array.from(systemById.values()).filter((f: any) => f.featureType === "optional").map((f: any) => f.featureId))
+      : optionalFallbackSlugs
+
+    const access = await ctx.db
+      .query("featureAccess")
+      .withIndex("by_feature_workspace", (q: any) => q.eq("featureId", args.slug).eq("workspaceId", args.workspaceId))
+      .first()
+
+    const systemAllows = (featureId: string, featureType?: string) => {
+      if (!hasSystemRegistry) return true
+      const sys = systemById.get(featureId)
+      if (!sys) {
+        return featureType === "default" || featureType === "system"
+      }
+      if (sys.isEnabled === false) return false
+      if (sys.status === "disabled") return false
+      return true
+    }
+
+    const manifestItem = manifestBySlug.get(args.slug)
+    const inferredType =
+      item?.metadata?.featureType ??
+      item?.metadata?.originalFeatureType ??
+      manifestItem?.metadata?.featureType ??
+      (optionalSlugs.has(args.slug) ? "optional" : undefined)
+
+    const isCandidate = Boolean(inferredType) || manifestSlugs.has(args.slug) || optionalSlugs.has(args.slug)
+    if (isCandidate) {
+      if (inferredType === "default" || inferredType === "system") {
+        if (!manifestSlugs.has(args.slug)) return null as any
+        if (!systemAllows(args.slug, inferredType)) return null as any
+        if (isFeatureDisabledByAccess(access)) return null as any
+      } else if (inferredType === "optional") {
+        if (!optionalSlugs.has(args.slug)) return null as any
+        if (!systemAllows(args.slug, inferredType)) return null as any
+        if (access && !isFeatureEnabledByAccess(access)) return null as any
+      } else {
+        // Unknown feature-type candidate: hide if not known.
+        if (!manifestSlugs.has(args.slug) && !optionalSlugs.has(args.slug)) return null as any
+      }
+    }
 
     // Role-based visibility (if configured)
     if (item.visibleForRoleIds.length > 0 && !item.visibleForRoleIds.includes(membership.roleId)) {

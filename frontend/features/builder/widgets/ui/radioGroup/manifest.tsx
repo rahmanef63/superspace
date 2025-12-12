@@ -10,21 +10,21 @@ const radioGroupInspectorConfig: InspectorField[] = [
     type: 'custom',
     component: ({ value, onChange }: { value: any[], onChange: (v: any[]) => void }) => {
       const options = value || [];
-      
+
       const addOption = () => {
         onChange([...options, { value: `option${options.length + 1}`, label: 'New Option' }]);
       };
-      
+
       const updateOption = (index: number, field: string, newValue: string) => {
         const newOptions = [...options];
         newOptions[index] = { ...newOptions[index], [field]: newValue };
         onChange(newOptions);
       };
-      
+
       const removeOption = (index: number) => {
         onChange(options.filter((_: any, i: number) => i !== index));
       };
-      
+
       return (
         <div className="space-y-2">
           {options.map((option: any, index: number) => (
@@ -65,7 +65,7 @@ const radioGroupInspectorConfig: InspectorField[] = [
 
 export const radioGroupManifest: WidgetConfig = {
   label: 'Radio Group',
-  category: 'UI',
+  category: 'Form',
   description: 'A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.',
   icon: Circle,
   tags: ['ui', 'form', 'input', 'radio'],

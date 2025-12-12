@@ -276,13 +276,15 @@ describe('UniversalCalendarView', () => {
       
       expect(screen.getByText(/march 2024/i)).toBeInTheDocument();
       
-      // Click today button - goes to real "today" (November 2025)
+      // Click today button - goes to real "today"
       const todayButton = screen.getByRole('button', { name: /today/i });
       await user.click(todayButton);
       
-      // Should navigate to November 2025 (actual current date)
+      const nowLabel = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+      // Should navigate back to the real current month
       await waitFor(() => {
-        expect(screen.getByText(/november 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(nowLabel, 'i'))).toBeInTheDocument();
       });
     });
   });
@@ -522,8 +524,9 @@ describe('UniversalCalendarView', () => {
         />
       );
       
-      // Should render calendar with current month (November 2025)
-      expect(screen.getByText(/november 2025/i)).toBeInTheDocument();
+      const nowLabel = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      // Should render calendar with current month
+      expect(screen.getByText(new RegExp(nowLabel, 'i'))).toBeInTheDocument();
       expect(screen.queryByText('Event 1')).not.toBeInTheDocument();
     });
 
@@ -543,8 +546,9 @@ describe('UniversalCalendarView', () => {
         />
       );
       
+      const nowLabel = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
       // Should render without crashing (shows current month since no date in record)
-      expect(screen.getByText(/november 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(nowLabel, 'i'))).toBeInTheDocument();
     });
 
     it('handles very long event titles', () => {

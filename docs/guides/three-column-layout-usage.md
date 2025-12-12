@@ -1,7 +1,7 @@
 # Three Column Layout Usage Guide
 
 ## Overview
-Gunakan komponen `ThreeColumnLayoutAdvanced` yang sudah ada di `frontend/shared/ui/layout/container/three-column` untuk membuat tampilan three-column di Chat dan AI features.
+Gunakan komponen `ThreeColumnLayoutAdvanced` (SSOT) di `frontend/shared/ui/layout/container/three-column` untuk membuat tampilan three‑column yang konsisten. Sekarang tersedia juga prop `preset` untuk mengurangi duplikasi konfigurasi width/responsive.
 
 ## Import
 ```typescript
@@ -41,11 +41,10 @@ export function ChatView() {
             />
           ) : null
         }
-        leftWidth={320}
+        preset="feature"
+        leftWidth={320}       // override preset jika perlu
         rightWidth={400}
         centerMinWidth={400}
-        resizable
-        showCollapseButtons
         persistState
         storageKey="chat-three-column"
         leftLabel="Chats"
@@ -84,11 +83,8 @@ export function AIView() {
             />
           ) : null
         }
-        leftWidth={280}
-        rightWidth={380}
-        centerMinWidth={400}
-        resizable
-        showCollapseButtons
+        preset="ide"
+        rightWidth={380}      // override preset jika perlu
         persistState
         storageKey="ai-three-column"
         leftLabel="Sessions"
@@ -104,15 +100,19 @@ export function AIView() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `left` | `ReactNode` | - | Left panel content (sidebar) |
+| `left` | `ReactNode` | optional | Left panel content (sidebar). Jika `null/undefined`, panel kiri otomatis hidden. |
 | `center` | `ReactNode` | - | Center panel content (main area) |
-| `right` | `ReactNode` | - | Right panel content (detail/inspector) |
+| `right` | `ReactNode` | optional | Right panel content (detail/inspector). Jika `null/undefined`, panel kanan otomatis hidden. |
+| `preset` | `"feature" \| "store" \| "admin" \| "ide"` atau config | - | Preset untuk width + responsive default (boleh di‑override). |
 | `leftWidth` | `number` | `280` | Default width for left panel (px) |
 | `rightWidth` | `number` | `400` | Default width for right panel (px) |
 | `centerMinWidth` | `number` | `280` | Minimum width for center panel (px) |
 | `minSideWidth` | `number` | `200` | Minimum width for side panels (px) |
 | `maxSideWidth` | `number` | `600` | Maximum width for side panels (px) |
 | `collapsedWidth` | `number` | `40` | Width when collapsed (px) |
+| `leftHidden` / `rightHidden` | `boolean` | `false` | Force hide panel kiri/kanan walau konten ada. |
+| `leftHeader` / `centerHeader` / `rightHeader` | `ReactNode` | - | Custom header untuk masing‑masing panel (render saat expanded). |
+| `showLeftCollapseButton` / `showRightCollapseButton` | `boolean` | - | Override global collapse button per panel. |
 | `resizable` | `boolean` | `true` | Enable panel resizing |
 | `showCollapseButtons` | `boolean` | `true` | Show collapse/expand buttons |
 | `persistState` | `boolean` | `false` | Persist collapse state to localStorage |

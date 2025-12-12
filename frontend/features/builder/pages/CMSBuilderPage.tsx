@@ -24,6 +24,11 @@ import {
   BookOpen,
   Settings,
   Plus,
+  Undo2,
+  Redo2,
+  Copy,
+  Scissors,
+  ClipboardPaste,
 } from 'lucide-react';
 
 import { SharedCanvasProvider, useSharedCanvas } from "@/frontend/shared/builder";
@@ -37,6 +42,7 @@ import { ShadcnNode } from '../slices/canvas/components/ShadcnNode';
 import { Renderer } from '../slices/renderer/components/Renderer';
 import { toSchema } from '../shared/hooks/useSchema';
 import { CMSInspectorRenderer } from '../components/CMSInspectorRenderer';
+import { KeyboardShortcutsDialog, useKeyboardShortcutsDialog } from '../components/KeyboardShortcutsDialog';
 
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { registerCMSComponents } from '../registry/cmsRegistry';
@@ -173,6 +179,15 @@ const CMSBuilderPageInner: React.FC = () => {
     pin,
     unpin,
     pinnedIds,
+    // History and Clipboard
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    copy,
+    cut,
+    paste,
+    canPaste,
   } = useSharedCanvas();
 
   const [layoutTab, setLayoutTab] = useState<"split" | "canvas" | "preview">("split");
@@ -188,6 +203,9 @@ const CMSBuilderPageInner: React.FC = () => {
   // Selection context menu
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; open: boolean }>({ x: 0, y: 0, open: false });
   const selectedIds = useMemo(() => nodes.filter((n: any) => n.selected).map(n => n.id), [nodes]);
+
+  // Keyboard shortcuts dialog
+  const shortcutsDialog = useKeyboardShortcutsDialog();
 
   useEffect(() => {
     loadFromStorage();
@@ -460,6 +478,16 @@ const CMSBuilderPageInner: React.FC = () => {
           </div>
           <div className="h-6 w-px bg-border" />
           <div className="flex items-center gap-2">
+            {/* Undo/Redo */}
+            <TopBarButton onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)"><Undo2 size={16} /></TopBarButton>
+            <TopBarButton onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"><Redo2 size={16} /></TopBarButton>
+            <div className="h-6 w-px bg-border" />
+            {/* Clipboard */}
+            <TopBarButton onClick={copy} disabled={!selectedNodeId} title="Copy (Ctrl+C)"><Copy size={16} /></TopBarButton>
+            <TopBarButton onClick={cut} disabled={!selectedNodeId} title="Cut (Ctrl+X)"><Scissors size={16} /></TopBarButton>
+            <TopBarButton onClick={paste} disabled={!canPaste} title="Paste (Ctrl+V)"><ClipboardPaste size={16} /></TopBarButton>
+            <div className="h-6 w-px bg-border" />
+            {/* Import/Export */}
             <TopBarButton onClick={importJSON} title="Import JSON"><Upload size={16} /></TopBarButton>
             <TopBarButton onClick={downloadJSON} title="Export JSON"><Download size={16} /></TopBarButton>
             <TopBarButton onClick={removeSelectedNode} disabled={!selectedNodeId} title="Delete Selected"><Trash2 size={16} /></TopBarButton>
@@ -498,6 +526,7 @@ const CMSBuilderPageInner: React.FC = () => {
       {/* Main 3-pane layout using ThreeColumnLayoutAdvanced */}
       <div className="flex-1 overflow-hidden">
         <ThreeColumnLayoutAdvanced
+          preset="ide"
           left={
             <LeftTabs
               active={leftTab}
@@ -569,10 +598,7 @@ const CMSBuilderPageInner: React.FC = () => {
               />
             </Card>
           }
-          leftWidth={280}
           rightWidth={350}
-          resizable={true}
-          showCollapseButtons={true}
           persistState={true}
           storageKey="builder-layout"
           leftLabel="Library"
@@ -580,6 +606,12 @@ const CMSBuilderPageInner: React.FC = () => {
           rightLabel="Inspector"
         />
       </div>
+
+      {/* Keyboard shortcuts dialog - press ? to open */}
+      <KeyboardShortcutsDialog
+        open={shortcutsDialog.open}
+        onOpenChange={shortcutsDialog.setOpen}
+      />
     </div>
   );
 };

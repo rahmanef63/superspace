@@ -34,6 +34,7 @@ import type * as features_auditLog_queries from "../features/auditLog/queries.js
 import type * as features_bi_mutations from "../features/bi/mutations.js";
 import type * as features_bi_queries from "../features/bi/queries.js";
 import type * as features_bundles_mutations from "../features/bundles/mutations.js";
+import type * as features_calendar_agent from "../features/calendar/agent.js";
 import type * as features_calendar_index from "../features/calendar/index.js";
 import type * as features_calendar_mutations from "../features/calendar/mutations.js";
 import type * as features_calendar_queries from "../features/calendar/queries.js";
@@ -185,6 +186,7 @@ import type * as features_support_queries from "../features/support/queries.js";
 import type * as features_system_admin from "../features/system/admin.js";
 import type * as features_tags_mutations from "../features/tags/mutations.js";
 import type * as features_tags_queries from "../features/tags/queries.js";
+import type * as features_tasks_agent from "../features/tasks/agent.js";
 import type * as features_tasks_index from "../features/tasks/index.js";
 import type * as features_tasks_mutations from "../features/tasks/mutations.js";
 import type * as features_tasks_queries from "../features/tasks/queries.js";
@@ -281,6 +283,7 @@ declare const fullApi: ApiFromModules<{
   "features/bi/mutations": typeof features_bi_mutations;
   "features/bi/queries": typeof features_bi_queries;
   "features/bundles/mutations": typeof features_bundles_mutations;
+  "features/calendar/agent": typeof features_calendar_agent;
   "features/calendar/index": typeof features_calendar_index;
   "features/calendar/mutations": typeof features_calendar_mutations;
   "features/calendar/queries": typeof features_calendar_queries;
@@ -432,6 +435,7 @@ declare const fullApi: ApiFromModules<{
   "features/system/admin": typeof features_system_admin;
   "features/tags/mutations": typeof features_tags_mutations;
   "features/tags/queries": typeof features_tags_queries;
+  "features/tasks/agent": typeof features_tasks_agent;
   "features/tasks/index": typeof features_tasks_index;
   "features/tasks/mutations": typeof features_tasks_mutations;
   "features/tasks/queries": typeof features_tasks_queries;

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import type { InspectorField as IField } from '@/frontend/shared/foundation';
+import type { InspectorField as IField } from '@/frontend/features/builder/shared/types';
 import type { CMSNode, CMSEdge } from '@/frontend/features/builder/shared/types';
-import { Input, Label, Select, Switch } from '@/components/ui';
+import { Input, Label, Button } from '@/components/ui';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 import { NodeSelectorField } from './NodeSelectorField';
 import { AutoConnectButton } from './AutoConnectButton';
 import { AIGenerationButton } from './AIGenerationButton';
@@ -37,11 +41,9 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
   };
 
   const handleGenerate = async (prompt: string, contentType: string) => {
-    // Mock AI generation - in real app this would call an AI service
     let generatedContent = '';
-    
+
     if (generationType === 'ai') {
-      // Simulate AI generation based on content type and prompt
       switch (contentType) {
         case 'text':
           generatedContent = `AI Generated: ${prompt.slice(0, 50)}...`;
@@ -56,10 +58,9 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
           generatedContent = `Generated content for ${contentType}`;
       }
     } else {
-      // Custom node connection logic
       generatedContent = `Custom: ${prompt}`;
     }
-    
+
     onChange(generatedContent);
   };
 
@@ -74,7 +75,10 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
               value={value || ''}
               onChange={onChange}
               placeholder={field.placeholder}
-              className="flex-1"
+              min={field.min}
+              max={field.max}
+              step={field.step}
+              className="flex-1 h-9 bg-muted/50 border-border/50 focus:bg-background"
             />
             <AutoConnectButton
               selectedNode={selectedNode}
@@ -90,17 +94,15 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
       case 'textarea':
         return (
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <textarea
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  value={value || ''}
-                  onChange={(e) => onChange(e.target.value)}
-                  placeholder={field.placeholder}
-                  rows={3}
-                />
-              </div>
-              <div className="ml-2 flex flex-col gap-1">
+            <div className="flex items-start justify-between gap-2">
+              <textarea
+                className="w-full rounded-lg border border-border/50 bg-muted/50 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background resize-none"
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={field.placeholder}
+                rows={3}
+              />
+              <div className="flex flex-col gap-1">
                 <AutoConnectButton
                   selectedNode={selectedNode}
                   connectKey={field.key}
@@ -117,37 +119,148 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
       case 'select':
         return (
           <div className="flex items-center gap-2">
-            <Select
+            <select
               value={value || ''}
-              onChange={onChange}
-              options={field.options || []}
-              className="flex-1"
-            />
+              onChange={(e) => onChange(e.target.value)}
+              className="flex-1 h-9 rounded-lg border border-border/50 bg-muted/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background"
+            >
+              <option value="">{field.placeholder || 'Select...'}</option>
+              {(field.options || []).map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
             <AIGenerationButton onGenerate={handleAIGeneration} />
           </div>
         );
 
       case 'switch':
         return (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between py-1">
+            <span className="text-sm text-muted-foreground">{value ? 'Enabled' : 'Disabled'}</span>
             <Switch
               checked={!!value}
-              onChange={onChange}
+              onCheckedChange={onChange}
             />
-            <AIGenerationButton onGenerate={handleAIGeneration} />
+          </div>
+        );
+
+      case 'checkbox':
+        return (
+          <div className="flex items-center gap-3 py-1">
+            <Checkbox
+              checked={!!value}
+              onCheckedChange={onChange}
+              className="h-5 w-5"
+            />
+            <span className="text-sm text-muted-foreground">{value ? 'Yes' : 'No'}</span>
+          </div>
+        );
+
+      case 'slider':
+        return (
+          <div className="space-y-3 py-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{field.min ?? 0}</span>
+              <span className="font-medium text-foreground">{value ?? field.min ?? 0}</span>
+              <span className="text-muted-foreground">{field.max ?? 100}</span>
+            </div>
+            <Slider
+              value={[value ?? field.min ?? 0]}
+              onValueChange={(v) => onChange(v[0])}
+              min={field.min ?? 0}
+              max={field.max ?? 100}
+              step={field.step ?? 1}
+              className="w-full"
+            />
+          </div>
+        );
+
+      case 'range':
+        return (
+          <div className="space-y-2 py-1">
+            <input
+              type="range"
+              value={value ?? field.min ?? 0}
+              onChange={(e) => onChange(Number(e.target.value))}
+              min={field.min ?? 0}
+              max={field.max ?? 100}
+              step={field.step ?? 1}
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{field.min ?? 0}</span>
+              <span className="font-medium text-foreground">{value ?? field.min ?? 0}</span>
+              <span>{field.max ?? 100}</span>
+            </div>
+          </div>
+        );
+
+      case 'color':
+        return (
+          <div className="flex items-center gap-3 py-1">
+            <div className="relative">
+              <input
+                type="color"
+                value={value || '#000000'}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-10 h-10 rounded-lg border border-border/50 cursor-pointer overflow-hidden"
+                style={{ padding: 0 }}
+              />
+            </div>
+            <Input
+              type="text"
+              value={value || '#000000'}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="#000000"
+              className="flex-1 h-9 font-mono text-sm bg-muted/50"
+            />
+          </div>
+        );
+
+      case 'button':
+        return (
+          <Button
+            variant={field.buttonVariant || 'outline'}
+            size="sm"
+            onClick={field.onButtonClick}
+            className="w-full"
+          >
+            {field.buttonLabel || 'Click'}
+          </Button>
+        );
+
+      case 'buttonGroup':
+        return (
+          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+            {(field.buttons || []).map((btn) => (
+              <Button
+                key={btn.value}
+                variant={value === btn.value ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onChange(btn.value)}
+                className={cn(
+                  "flex-1 h-8 text-xs",
+                  value === btn.value && "shadow-sm"
+                )}
+              >
+                {btn.icon && <btn.icon className="w-3.5 h-3.5 mr-1.5" />}
+                {btn.label}
+              </Button>
+            ))}
           </div>
         );
 
       case 'nodeSelector':
         return (
           <div className="flex items-center gap-2">
-            <NodeSelectorField
-              value={value || ''}
-              onChange={onChange}
-              nodes={nodes}
-              placeholder={field.placeholder}
-              className="flex-1"
-            />
+            <div className="flex-1">
+              <NodeSelectorField
+                value={value || ''}
+                onChange={onChange}
+                nodes={nodes}
+                placeholder={field.placeholder}
+              />
+            </div>
             <AIGenerationButton onGenerate={handleAIGeneration} />
           </div>
         );
@@ -179,7 +292,7 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
               value={value || ''}
               onChange={onChange}
               placeholder={field.placeholder}
-              className="flex-1"
+              className="flex-1 h-9 bg-muted/50"
             />
             <AIGenerationButton onGenerate={handleAIGeneration} />
           </div>
@@ -188,10 +301,12 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
   };
 
   return (
-    <div>
-      <Label>{field.label}</Label>
+    <div className="space-y-2">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {field.label}
+      </Label>
       {renderField()}
-      
+
       <AIGenerationModal
         isOpen={showAIModal}
         onClose={() => setShowAIModal(false)}
@@ -201,3 +316,4 @@ export const InspectorField: React.FC<InspectorFieldProps> = ({
     </div>
   );
 };
+

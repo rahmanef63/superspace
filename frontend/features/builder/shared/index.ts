@@ -13,5 +13,9 @@ export * from './utils/widgetValidation';
 export * from './hooks/useSchema';
 export * from './hooks/useSchemaParser';
 
+// Builder foundation hooks
+export * from './hooks/useBuilderHistory';
+export * from './hooks/useBuilderClipboard';
+
 // Registry utilities
 export * from './registry';

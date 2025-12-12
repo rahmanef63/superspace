@@ -7,7 +7,9 @@
 // Bundle components
 export { default as BundleMultiSelect, BundleBadges } from './BundleMultiSelect'
 export type { BundleOption, SelectedBundle, BundleRole } from './BundleMultiSelect'
-export { default as BundleCategoriesTable } from './BundleCategoriesTable'
+export { BundleCategoriesTable } from './BundleCategoriesTable'
+export { default as BundleEditSheet } from './BundleEditSheet'
+export type { BundleCategoryDataForEdit } from './BundleEditSheet'
 
 // Navigation
 export { AdminNavigation, ADMIN_NAV_ITEMS } from './navigation/AdminNavigation'

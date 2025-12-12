@@ -45,6 +45,22 @@ import { breadcrumbManifest } from './ui/breadcrumb/manifest';
 import { dialogManifest } from './ui/dialog/manifest';
 import { hoverCardManifest } from './ui/hoverCard/manifest';
 
+// Form Widgets (P2)
+import { inputManifest } from './ui/input/manifest';
+import { selectManifest } from './ui/select/manifest';
+import { switchManifest } from './ui/switch/manifest';
+
+// Content Widgets (P2)
+import { dividerManifest } from './ui/divider/manifest';
+import { spacerManifest } from './ui/spacer/manifest';
+import { headingManifest } from './ui/heading/manifest';
+
+// Navigation Widgets
+import { linkManifest } from './ui/link/manifest';
+
+// Action Widgets
+import { iconButtonManifest } from './ui/iconButton/manifest';
+
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
   // Layout
@@ -66,9 +82,11 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
 
   // Action
   button: buttonManifest,
+  iconButton: iconButtonManifest,
 
   // Navigation
   navGroup: navGroupManifest,
+  link: linkManifest,
 
   // Templates
   hero: heroManifest,
@@ -98,6 +116,16 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   breadcrumb: breadcrumbManifest,
   dialog: dialogManifest,
   hoverCard: hoverCardManifest,
+
+  // Form Widgets (P2)
+  input: inputManifest,
+  select: selectManifest,
+  switch: switchManifest,
+
+  // Content Widgets (P2)
+  divider: dividerManifest,
+  spacer: spacerManifest,
+  heading: headingManifest,
 };
 
 // Standardize all widgets and validate in development

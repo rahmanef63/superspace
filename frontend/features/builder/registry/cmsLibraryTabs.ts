@@ -21,22 +21,28 @@ export const registerCMSLibraryTabs = (registerFeatureTabs: (feature: string, ta
       categories: ['Media'],
     },
     {
+      id: 'forms',
+      label: 'Forms',
+      feature: 'cms',
+      categories: ['Form', 'Forms', 'Input'],
+    },
+    {
       id: 'navigation',
-      label: 'Navigation',
+      label: 'Nav',
       feature: 'cms',
       categories: ['Navigation'],
     },
     {
       id: 'action',
-      label: 'Action',
+      label: 'Actions',
       feature: 'cms',
       categories: ['Action'],
     },
     {
       id: 'ui',
-      label: 'UI Components',
+      label: 'UI',
       feature: 'cms',
-      categories: ['UI'],
+      categories: ['UI', 'Components'],
     },
     {
       id: 'templates',
@@ -46,11 +52,12 @@ export const registerCMSLibraryTabs = (registerFeatureTabs: (feature: string, ta
     },
     {
       id: 'all',
-      label: 'All Components',
+      label: 'All',
       feature: 'cms',
-      categories: ['Layout', 'Content', 'Media', 'Navigation', 'Action', 'UI', 'Templates'],
+      categories: ['Layout', 'Content', 'Media', 'Form', 'Forms', 'Input', 'Navigation', 'Action', 'UI', 'Components', 'Templates'],
     },
   ];
 
   registerFeatureTabs('cms', cmsLibraryTabs);
 };
+

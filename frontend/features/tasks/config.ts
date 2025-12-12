@@ -26,6 +26,11 @@ export default defineFeature({
     isReady: true,
   },
 
+  agent: {
+    definitionPath: "convex/features/tasks/agent.ts",
+    capabilities: ["create", "read", "update", "delete", "search"],
+  },
+
   // Bundle membership
   bundles: {
     core: [],

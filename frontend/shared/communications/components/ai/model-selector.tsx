@@ -149,6 +149,7 @@ export type ProviderName =
   | "cerebras"
   | "openrouter"
   | "lmstudio"
+  | "z-ai"
   | (string & {});
 
 export type ModelSelectorLogoProps = Omit<

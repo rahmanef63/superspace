@@ -15,10 +15,27 @@ interface ChatRequest {
   maxTokens?: number
   tools?: any[]
   tool_choice?: any
+  // Z.AI (GLM) supports OpenAI-compatible fields plus vendor extensions like `thinking`.
+  // Only forwarded for providers that support it.
+  thinking?: any
 }
 
 // Request timeout in milliseconds (30 seconds)
 const REQUEST_TIMEOUT = 30000
+
+function normalizeBaseUrl(url: string): string {
+  return url.replace(/\/+$/, "")
+}
+
+function findInvalidHeaderValueChar(value: string): { index: number; code: number } | null {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i)
+    if (code > 0xff || code < 0x20 || code === 0x7f) {
+      return { index: i, code }
+    }
+  }
+  return null
+}
 
 /**
  * Create a fetch request with timeout
@@ -99,6 +116,20 @@ const PROVIDER_CONFIGS: Record<string, { baseUrl: string; headers?: Record<strin
   cohere: {
     baseUrl: "https://api.cohere.ai/v1",
   },
+  "z-ai": {
+    // Z.AI (GLM) HTTP API: https://docs.z.ai/guides/develop/http/introduction
+    // Base path is /api/paas/v4 and the chat endpoint is /chat/completions
+    baseUrl: "https://api.z.ai/api/paas/v4",
+  },
+  glm: {
+    // Alias for Z.AI (GLM)
+    baseUrl: "https://api.z.ai/api/paas/v4",
+  },
+  openrouter: {
+    // OpenRouter - Access 100+ AI models from one API
+    // https://openrouter.ai/docs
+    baseUrl: "https://openrouter.ai/api/v1",
+  },
 }
 
 export async function POST(request: NextRequest) {
@@ -107,7 +138,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: ChatRequest = await request.json()
-    const { messages, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048, tools, tool_choice } = body
+    const { messages, model, apiKey, baseUrl, temperature = 0.7, maxTokens = 2048, tools, tool_choice, thinking } = body
     provider = body.provider
 
     if (!messages || messages.length === 0) {
@@ -118,13 +149,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `No API key configured for ${provider}` }, { status: 400 })
     }
 
+    if (apiKey) {
+      const invalidChar = findInvalidHeaderValueChar(apiKey)
+      if (invalidChar) {
+        const codeHex = invalidChar.code.toString(16).toUpperCase().padStart(4, "0")
+        return NextResponse.json(
+          {
+            error:
+              `API key contains an unsupported character at position ${invalidChar.index + 1} (U+${codeHex}). ` +
+              `This often happens when '-' becomes an em dash '—'. Please re-copy the key from the provider dashboard.`,
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Get provider config
     const providerConfig = PROVIDER_CONFIGS[provider]
     if (!providerConfig && !baseUrl) {
       return NextResponse.json({ error: `Unknown provider: ${provider}` }, { status: 400 })
     }
 
-    const apiBaseUrl = baseUrl || providerConfig?.baseUrl
+    const apiBaseUrlRaw = baseUrl || providerConfig?.baseUrl
+    const apiBaseUrl = apiBaseUrlRaw ? normalizeBaseUrl(apiBaseUrlRaw) : apiBaseUrlRaw
 
     // Handle specific providers
     if (provider === "anthropic") {
@@ -147,10 +194,21 @@ export async function POST(request: NextRequest) {
       max_tokens: maxTokens,
     }
 
+    // Z.AI docs: https://docs.z.ai/guides/llm/glm-4.6#ai-coding
+    // Supports vendor extension: { thinking: { type: "enabled" } }
+    if ((provider === "glm" || provider === "z-ai") && thinking) {
+      requestBody.thinking = thinking
+    }
+
     // Add tools if present
     if (tools && tools.length > 0) {
       requestBody.tools = tools
       requestBody.tool_choice = tool_choice || "auto"
+    }
+
+    // Log request details for debugging GLM/Z.AI issues
+    if (provider === "glm" || provider === "z-ai") {
+      console.log(`GLM Request: URL=${apiBaseUrl}/chat/completions, Model=${model}, Body=`, JSON.stringify(requestBody, null, 2))
     }
 
     const response = await fetchWithTimeout(`${apiBaseUrl}/chat/completions`, {
@@ -164,7 +222,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`AI API error (${provider}):`, errorText)
+      console.error(`AI API error (${provider}): Status ${response.status}, Headers:`, JSON.stringify(Object.fromEntries(response.headers.entries())), "Body:", errorText)
       const errorMessage = parseProviderError(provider, response.status, errorText)
       return NextResponse.json(
         { error: errorMessage },

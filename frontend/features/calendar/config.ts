@@ -31,6 +31,11 @@ export default defineFeature({
     isReady: true,
   },
 
+  agent: {
+    definitionPath: "convex/features/calendar/agent.ts",
+    capabilities: ["create", "read", "update", "delete", "search"],
+  },
+
   bundles: {
     core: [],
     recommended: ['business-pro', 'project-management'],

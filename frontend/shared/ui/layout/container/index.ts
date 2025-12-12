@@ -108,10 +108,14 @@ export {
   useResponsiveCollapse,
   useStackedLayout,
   useWindowWidth,
+  THREE_COLUMN_PRESETS,
+  resolveThreeColumnPreset,
 } from "./three-column"
 export type { 
   ThreeColumnLayoutAdvancedProps,
   ThreeColumnContextValue,
+  ThreeColumnPresetName,
+  ThreeColumnPresetConfig,
 } from "./three-column"
 
 // Page Container

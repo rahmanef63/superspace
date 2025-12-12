@@ -65,10 +65,32 @@ export interface WidgetConfig {
 export interface InspectorField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'switch' | 'textarea' | 'custom' | 'nodeSelector';
+  type:
+  | 'text'
+  | 'number'
+  | 'select'
+  | 'switch'
+  | 'textarea'
+  | 'custom'
+  | 'nodeSelector'
+  // New field types
+  | 'slider'
+  | 'color'
+  | 'checkbox'
+  | 'button'
+  | 'buttonGroup'
+  | 'range';
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;
+  // New configuration options
+  min?: number; // For slider/number/range
+  max?: number; // For slider/number/range
+  step?: number; // For slider/number/range
+  buttonLabel?: string; // For button type
+  buttonVariant?: 'default' | 'outline' | 'ghost' | 'destructive'; // For button type
+  onButtonClick?: () => void; // For button type
+  buttons?: Array<{ value: string; label: string; icon?: React.ComponentType<any> }>; // For buttonGroup
 }
 
 export interface ChildInfo {

@@ -15,9 +15,6 @@ import { useSettingsRegistry } from "../SettingsRegistry"
 import { getFeatureSettingsBuilder, getAllRegisteredFeatures } from "../featureSettingsRegistry"
 import type { SettingsCategory } from "../types"
 
-// Import feature settings initializers
-import "@/frontend/features/initFeatureSettings"
-
 type MenuItemRecord = {
   _id: Id<"menuItems">
   name: string

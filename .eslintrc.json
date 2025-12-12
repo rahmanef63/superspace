@@ -11,43 +11,6 @@
     "no-restricted-imports": [
       "error",
       {
-        "patterns": [
-          {
-            "group": [
-              "@/frontend/shared/builder/*",
-              "@/frontend/shared/builder/**"
-            ],
-            "message": "❌ Use facade import: import { ... } from '@/frontend/shared/builder'"
-          },
-          {
-            "group": [
-              "@/frontend/shared/settings/*",
-              "@/frontend/shared/settings/**"
-            ],
-            "message": "❌ Use facade import: import { ... } from '@/frontend/shared/settings'"
-          },
-          {
-            "group": [
-              "@/frontend/shared/communications/*",
-              "@/frontend/shared/communications/**"
-            ],
-            "message": "❌ Use facade import: import { ... } from '@/frontend/shared/communications'"
-          },
-          {
-            "group": [
-              "@/frontend/shared/ui/*",
-              "@/frontend/shared/ui/**"
-            ],
-            "message": "❌ Use facade import: import { ... } from '@/frontend/shared/ui'"
-          },
-          {
-            "group": [
-              "@/frontend/shared/foundation/*",
-              "@/frontend/shared/foundation/**"
-            ],
-            "message": "❌ Use facade import: import { ... } from '@/frontend/shared/foundation'"
-          }
-        ],
         "paths": [
           {
             "name": "@/frontend/shared",

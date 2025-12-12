@@ -1,10 +1,55 @@
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui';
-import { Trash2, Pin, PinOff } from 'lucide-react';
+import {
+  Trash2,
+  MoreHorizontal,
+  Settings,
+  Maximize2,
+  Lock,
+} from 'lucide-react';
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
-import { useSharedCanvas } from '@/frontend/shared/builder';
+import { useSharedCanvas } from '../canvas/core';
 import { useInspectorControls, getNestedValue, setNestedValue } from './hooks/useInspectorControls';
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl';
+import {
+  InspectorSection,
+  InspectorSubsection,
+  InspectorRow,
+  InspectorInput,
+  InspectorSelect,
+  InspectorButtonGroup,
+  InspectorColorPicker,
+} from './components/InspectorSection';
+import {
+  INSPECTOR_SECTIONS,
+  INSPECTOR_DEFAULTS,
+  FONT_FAMILIES,
+  FONT_WEIGHTS,
+  FONT_SIZES,
+  TEXT_ALIGNMENTS,
+  TEXT_DECORATIONS,
+  BORDER_STYLES,
+  BORDER_COLORS,
+  BORDER_RADII,
+  BOX_SHADOWS,
+  SPACING_ICONS,
+  SUBSECTION_COLORS,
+  // Dimension & Display
+  SIZE_PRESETS,
+  DISPLAY_OPTIONS,
+  FLEX_DIRECTIONS,
+  FLEX_WRAPS,
+  ALIGN_ITEMS,
+  JUSTIFY_CONTENT,
+  GAP_OPTIONS,
+  POSITION_OPTIONS,
+  OVERFLOW_OPTIONS,
+  // Helpers
+  getColorLabel,
+  toSelectOptions,
+  toLabeledSelectOptions,
+} from './config/inspector.config';
+import { Layers } from 'lucide-react';
 
 interface DynamicInspectorProps {
   selectedNode: any | null;
@@ -15,255 +60,398 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
   const canvas = useSharedCanvas();
   const controls = useInspectorControls(selectedNode?.data.comp || '');
 
-  // Memoize the current props to prevent unnecessary re-renders
   const currentProps = useMemo(() => {
     if (!selectedNode) return {};
-    const props = selectedNode.data.props || {};
-    console.log('Current inspector props:', props);
-    return props;
+    return selectedNode.data.props || {};
   }, [selectedNode?.data.props, selectedNode?.id]);
 
-  // Enhanced setProp function with better error handling and logging
+  // Helper to get prop value with default fallback
+  const getProp = useCallback((key: string) => {
+    return currentProps[key] ?? INSPECTOR_DEFAULTS[key as keyof typeof INSPECTOR_DEFAULTS] ?? '';
+  }, [currentProps]);
+
   const setProp = useCallback((path: string, value: any) => {
-    if (!selectedNode) {
-      console.warn('No selected node to set props');
-      return;
-    }
-    console.log('Setting prop:', {
-      nodeId: selectedNode.id,
-      path,
-      value
-    });
-    const newProps = {
-      ...currentProps
-    };
+    if (!selectedNode) return;
+    const newProps = { ...currentProps };
     setNestedValue(newProps, path, value);
-    console.log('New props after update:', newProps);
     canvas.setNodeProps(selectedNode.id, newProps);
   }, [selectedNode, currentProps, canvas]);
 
   if (!selectedNode) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
-        Select a node on the canvas to edit its properties.
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+          <Layers className="w-8 h-8 text-muted-foreground/50" />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Select a node to edit its properties.
+        </p>
       </div>
     );
   }
 
   const widget = registry.getWidget(selectedNode.data.comp) || registry.getComponent(selectedNode.data.comp);
+  const nodeType = widget?.label || selectedNode.data.comp;
+
+  // Convert SSOT arrays to button group options
+  const alignmentOptions = TEXT_ALIGNMENTS.map(a => ({
+    value: a.value,
+    icon: <a.icon className="h-3.5 w-3.5" />,
+    label: a.label,
+  }));
+
+  const decorationOptions = TEXT_DECORATIONS.map(d => ({
+    value: d.value,
+    icon: <d.icon className="h-3.5 w-3.5" />,
+    label: d.label,
+  }));
+
+  // Reusable spacing input renderer (DRY)
+  const renderSpacingInputs = (prefix: 'margin' | 'padding') => (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 grid grid-cols-2 gap-1.5">
+        {(['Top', 'Bottom', 'Left', 'Right'] as const).map(side => {
+          const key = `${prefix}${side}` as keyof typeof INSPECTOR_DEFAULTS;
+          const iconKey = side.toLowerCase() as keyof typeof SPACING_ICONS;
+          return (
+            <InspectorInput
+              key={key}
+              icon={<span className="text-xs text-muted-foreground">{SPACING_ICONS[iconKey]}</span>}
+              value={getProp(key)}
+              onChange={(v) => setProp(key, v)}
+            />
+          );
+        })}
+      </div>
+      <div className="flex flex-col gap-1">
+        <Button variant="ghost" size="icon" className="h-6 w-6">
+          <Maximize2 className="h-3 w-3" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-6 w-6">
+          <Lock className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header - Fixed */}
-      <div className="p-3 border-b flex items-center justify-between flex-shrink-0">
-        <div className="text-xs font-semibold">
-          {widget?.label || selectedNode.data.comp}
-        </div>
+    <div className="h-full flex flex-col bg-background">
+      {/* Header - Element Type Display */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50">
         <div className="flex items-center gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={() => canvas.isPinned?.(selectedNode.id) ? canvas.unpin?.(selectedNode.id) : canvas.pin?.(selectedNode.id)}
-          >
-            {canvas.isPinned?.(selectedNode.id) ? <PinOff size={16} /> : <Pin size={16} />}
+          <span className="text-primary">◇</span>
+          <span className="text-sm font-semibold">{nodeType}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={() => canvas.removeSelectedNode()}
-          >
-            <Trash2 size={16} />
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Settings className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Properties Section - Scrollable */}
-      <div className="flex-1 overflow-hidden min-h-0">
-        <div className="h-full overflow-y-auto">
-          <div className="p-3 space-y-4">
-            {/* Debug info */}
-            <div className="text-xs text-muted-foreground">
-              Node ID: {selectedNode.id} | Props: {Object.keys(currentProps).length}
-            </div>
+      {/* Scrollable Content - Design Properties */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Content Section */}
+        {currentProps.content !== undefined && (
+          <InspectorSection {...INSPECTOR_SECTIONS.content}>
+            <textarea
+              value={currentProps.content || ''}
+              onChange={(e) => setProp('content', e.target.value)}
+              placeholder="Add to canvas"
+              className="w-full min-h-[80px] px-3 py-2 text-sm rounded-md border border-border/50 bg-background resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </InspectorSection>
+        )}
 
-            {/* Preset-based controls (preferred) */}
-            {controls.length > 0 ? (
-              // Group controls by category
-              (() => {
-                const groupedControls = controls.reduce((acc, control) => {
-                  const category = control.path.split('.')[0];
-                  if (!acc[category]) acc[category] = [];
-                  acc[category].push(control);
-                  return acc;
-                }, {} as Record<string, typeof controls>);
+        {/* Typography Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.typography}>
+          <InspectorSelect
+            value={getProp('fontFamily')}
+            onChange={(v) => setProp('fontFamily', v)}
+            options={toSelectOptions(FONT_FAMILIES)}
+          />
 
-                return Object.entries(groupedControls).map(([category, categoryControls]) => {
-                  const singleColumnControls = categoryControls.filter(c => !c.layout || c.layout === 'single');
-                  const doubleColumnControls = categoryControls.filter(c => c.layout === 'double');
-                  const tripleColumnControls = categoryControls.filter(c => c.layout === 'triple');
-                  const spacingControls = categoryControls.filter(c => c.ui === 'spacing');
+          <InspectorRow>
+            <InspectorSelect
+              value={getProp('fontWeight')}
+              onChange={(v) => setProp('fontWeight', v)}
+              options={toLabeledSelectOptions(FONT_WEIGHTS)}
+            />
+            <InspectorSelect
+              value={getProp('fontSize')}
+              onChange={(v) => setProp('fontSize', v)}
+              options={toLabeledSelectOptions(FONT_SIZES)}
+            />
+          </InspectorRow>
 
-                  return (
-                    <div key={category} className="space-y-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                        {category.toUpperCase()}
-                      </div>
-                      
-                      {/* Single column controls */}
-                      {singleColumnControls.length > 0 && (
-                        <div className="space-y-3">
-                          {singleColumnControls.map(control => (
-                            <DynamicInspectorControl
-                              key={`${selectedNode.id}-${control.path}`}
-                              control={control}
-                              value={getNestedValue(currentProps, control.path)}
-                              onChange={value => setProp(control.path, value)}
-                            />
-                          ))}
-                        </div>
-                      )}
+          <InspectorRow>
+            <InspectorSubsection label="Line Height" color={SUBSECTION_COLORS.lineHeight}>
+              <InspectorInput
+                value={getProp('lineHeight')}
+                onChange={(v) => setProp('lineHeight', v)}
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Letter Spacing" color={SUBSECTION_COLORS.letterSpacing}>
+              <InspectorInput
+                value={getProp('letterSpacing')}
+                onChange={(v) => setProp('letterSpacing', v)}
+              />
+            </InspectorSubsection>
+          </InspectorRow>
 
-                      {/* Spacing controls */}
-                      {spacingControls.length > 0 && (
-                        <div className="space-y-3">
-                          {spacingControls.map(control => (
-                            <DynamicInspectorControl
-                              key={`${selectedNode.id}-${control.path}`}
-                              control={control}
-                              value={getNestedValue(currentProps, control.path)}
-                              onChange={value => setProp(control.path, value)}
-                            />
-                          ))}
-                        </div>
-                      )}
+          <InspectorRow>
+            <InspectorSubsection label="Alignment">
+              <InspectorButtonGroup
+                value={getProp('textAlign')}
+                onChange={(v) => setProp('textAlign', v)}
+                options={alignmentOptions}
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Decoration">
+              <InspectorButtonGroup
+                value={getProp('textDecoration')}
+                onChange={(v) => setProp('textDecoration', v)}
+                options={decorationOptions}
+              />
+            </InspectorSubsection>
+          </InspectorRow>
+        </InspectorSection>
 
-                      {/* Double column controls */}
-                      {doubleColumnControls.length > 0 && (
-                        <div className="grid grid-cols-2 gap-3">
-                          {doubleColumnControls.map(control => (
-                            <DynamicInspectorControl
-                              key={`${selectedNode.id}-${control.path}`}
-                              control={control}
-                              value={getNestedValue(currentProps, control.path)}
-                              onChange={value => setProp(control.path, value)}
-                            />
-                          ))}
-                        </div>
-                      )}
+        {/* Color Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.color}>
+          <InspectorColorPicker
+            value={getProp('color')}
+            onChange={(v) => setProp('color', v)}
+            label={getColorLabel(currentProps.color, 'text')}
+          />
+        </InspectorSection>
 
-                      {/* Triple column controls */}
-                      {tripleColumnControls.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2">
-                          {tripleColumnControls.map(control => (
-                            <DynamicInspectorControl
-                              key={`${selectedNode.id}-${control.path}`}
-                              control={control}
-                              value={getNestedValue(currentProps, control.path)}
-                              onChange={value => setProp(control.path, value)}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                });
-              })()
-            ) : (
-              /* Legacy inspector fields fallback */
-              widget?.inspector?.fields && (
-                <div className="space-y-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Properties
-                  </div>
-                  {widget.inspector.fields.map(field => (
-                    <DynamicInspectorControl
-                      key={`${selectedNode.id}-${field.key}`}
-                      control={{
-                        label: field.label,
-                        ui: field.type as any,
-                        uiComponentPath: field.type,
-                        path: field.key,
-                        options: field.options,
-                        default: field.placeholder || ''
-                      }}
-                      value={currentProps[field.key]}
-                      onChange={value => setProp(field.key, value)}
-                    />
-                  ))}
-                </div>
-              )
-            )}
+        {/* Background Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.background}>
+          <InspectorColorPicker
+            value={getProp('backgroundColor')}
+            onChange={(v) => setProp('backgroundColor', v)}
+            label={getColorLabel(currentProps.backgroundColor, 'bg')}
+          />
+        </InspectorSection>
 
-            {/* Fallback for widgets with inspectorFields */}
-            {!controls.length && !widget?.inspector?.fields && widget?.inspectorFields && (
-              <div className="space-y-3">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Properties
-                </div>
-                {widget.inspector.fields.map(field => (
-                  <DynamicInspectorControl
-                    key={`${selectedNode.id}-${field.key}`}
-                    control={{
-                      label: field.label,
-                      ui: field.type as any,
-                      uiComponentPath: field.type,
-                      path: field.key,
-                      options: field.options,
-                      default: field.placeholder || ''
-                    }}
-                    value={currentProps[field.key]}
-                    onChange={value => setProp(field.key, value)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        {/* Dimensions Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.dimensions}>
+          <InspectorRow>
+            <InspectorSubsection label="Width">
+              <InspectorInput
+                value={getProp('width')}
+                onChange={(v) => setProp('width', v)}
+                placeholder="auto"
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Height">
+              <InspectorInput
+                value={getProp('height')}
+                onChange={(v) => setProp('height', v)}
+                placeholder="auto"
+              />
+            </InspectorSubsection>
+          </InspectorRow>
 
-      {/* Children Section - Scrollable if has children */}
-      {canvas.childrenOrdered && canvas.childrenOrdered.length > 0 && (
-        <div className="border-t flex-shrink-0 max-h-48 flex flex-col">
-          <div className="p-3 pb-2 border-b bg-muted">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              Children ({canvas.childrenOrdered.length})
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3 pt-2 space-y-2">
-              {canvas.childrenOrdered.map((child: any, idx: number) => (
-                <div key={child.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-xs">
-                  <div className="flex-1 truncate">
-                    {child.label}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => canvas.reorderChild?.(idx, idx - 1)} 
-                      disabled={idx === 0}
-                    >
-                      ↑
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => canvas.reorderChild?.(idx, idx + 1)} 
-                      disabled={idx === canvas.childrenOrdered.length - 1}
-                    >
-                      ↓
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive" 
-                      onClick={() => canvas.removeChildEdge?.(child.edgeId)}
-                    >
-                      <Trash2 size={12} />
-                    </Button>
-                  </div>
-                </div>
+          <InspectorSubsection label="Display">
+            <InspectorSelect
+              value={getProp('display')}
+              onChange={(v) => setProp('display', v)}
+              options={toLabeledSelectOptions(DISPLAY_OPTIONS)}
+            />
+          </InspectorSubsection>
+
+          <InspectorRow>
+            <InspectorSubsection label="Direction">
+              <InspectorSelect
+                value={getProp('flexDirection')}
+                onChange={(v) => setProp('flexDirection', v)}
+                options={toLabeledSelectOptions(FLEX_DIRECTIONS)}
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Wrap">
+              <InspectorSelect
+                value={getProp('flexWrap')}
+                onChange={(v) => setProp('flexWrap', v)}
+                options={toLabeledSelectOptions(FLEX_WRAPS)}
+              />
+            </InspectorSubsection>
+          </InspectorRow>
+
+          <InspectorRow>
+            <InspectorSubsection label="Align Items">
+              <InspectorSelect
+                value={getProp('alignItems')}
+                onChange={(v) => setProp('alignItems', v)}
+                options={toLabeledSelectOptions(ALIGN_ITEMS)}
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Justify">
+              <InspectorSelect
+                value={getProp('justifyContent')}
+                onChange={(v) => setProp('justifyContent', v)}
+                options={toLabeledSelectOptions(JUSTIFY_CONTENT)}
+              />
+            </InspectorSubsection>
+          </InspectorRow>
+
+          <InspectorSubsection label="Gap">
+            <InspectorSelect
+              value={getProp('gap')}
+              onChange={(v) => setProp('gap', v)}
+              options={toLabeledSelectOptions(GAP_OPTIONS)}
+            />
+          </InspectorSubsection>
+        </InspectorSection>
+
+        {/* Layout Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.layout}>
+          <InspectorSubsection label="Margin" color={SUBSECTION_COLORS.margin}>
+            {renderSpacingInputs('margin')}
+          </InspectorSubsection>
+          <InspectorSubsection label="Padding" color={SUBSECTION_COLORS.padding}>
+            {renderSpacingInputs('padding')}
+          </InspectorSubsection>
+        </InspectorSection>
+
+        {/* Border Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.border}>
+          <InspectorRow>
+            <InspectorSelect
+              value={getProp('borderStyle')}
+              onChange={(v) => setProp('borderStyle', v)}
+              options={toSelectOptions(BORDER_STYLES)}
+            />
+            <InspectorSelect
+              value={getProp('borderColor')}
+              onChange={(v) => setProp('borderColor', v)}
+              options={toLabeledSelectOptions(BORDER_COLORS)}
+            />
+          </InspectorRow>
+          <InspectorInput
+            value={getProp('borderWidth')}
+            onChange={(v) => setProp('borderWidth', v)}
+          />
+        </InspectorSection>
+
+        {/* Appearance Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.appearance}>
+          <InspectorRow>
+            <InspectorSubsection label="Opacity" color={SUBSECTION_COLORS.opacity}>
+              <InspectorInput
+                value={getProp('opacity')}
+                onChange={(v) => setProp('opacity', v)}
+                type="number"
+              />
+            </InspectorSubsection>
+            <InspectorSubsection label="Radius">
+              <InspectorSelect
+                value={getProp('borderRadius')}
+                onChange={(v) => setProp('borderRadius', v)}
+                options={toLabeledSelectOptions(BORDER_RADII)}
+              />
+            </InspectorSubsection>
+          </InspectorRow>
+        </InspectorSection>
+
+        {/* Shadow Section */}
+        <InspectorSection {...INSPECTOR_SECTIONS.shadow}>
+          <InspectorSelect
+            value={getProp('boxShadow')}
+            onChange={(v) => setProp('boxShadow', v)}
+            options={toLabeledSelectOptions(BOX_SHADOWS)}
+          />
+        </InspectorSection>
+
+        {/* Dynamic Controls from Widget Config */}
+        {controls.length > 0 && (
+          <InspectorSection {...INSPECTOR_SECTIONS.properties}>
+            <div className="space-y-3">
+              {controls.map(control => (
+                <DynamicInspectorControl
+                  key={`${selectedNode.id}-${control.path}`}
+                  control={control}
+                  value={getNestedValue(currentProps, control.path)}
+                  onChange={value => setProp(control.path, value)}
+                />
               ))}
             </div>
+          </InspectorSection>
+        )}
+
+        {/* Legacy fields fallback */}
+        {!controls.length && widget?.inspector?.fields && (
+          <InspectorSection {...INSPECTOR_SECTIONS.properties}>
+            <div className="space-y-3">
+              {widget.inspector.fields.map(field => (
+                <DynamicInspectorControl
+                  key={`${selectedNode.id}-${field.key}`}
+                  control={{
+                    label: field.label,
+                    ui: field.type as any,
+                    uiComponentPath: field.type,
+                    path: field.key,
+                    options: field.options,
+                    default: field.placeholder || ''
+                  }}
+                  value={currentProps[field.key]}
+                  onChange={value => setProp(field.key, value)}
+                />
+              ))}
+            </div>
+          </InspectorSection>
+        )}
+      </div>
+
+      {/* Children Section */}
+      {canvas.childrenOrdered && canvas.childrenOrdered.length > 0 && (
+        <div className="border-t border-border/50 max-h-48 flex flex-col shrink-0">
+          <div className="px-4 py-2 border-b border-border/50 bg-muted/30">
+            <span className="text-xs font-medium text-muted-foreground">
+              Children ({canvas.childrenOrdered.length})
+            </span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+            {canvas.childrenOrdered.map((child: any, idx: number) => (
+              <div
+                key={child.id}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-border/50 bg-background text-xs"
+              >
+                <span className="flex-1 truncate">{child.label}</span>
+                <div className="flex items-center gap-0.5">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-5"
+                    onClick={() => canvas.reorderChild?.(idx, idx - 1)}
+                    disabled={idx === 0}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-5"
+                    onClick={() => canvas.reorderChild?.(idx, idx + 1)}
+                    disabled={idx === canvas.childrenOrdered.length - 1}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-5 text-destructive hover:text-destructive"
+                    onClick={() => canvas.removeChildEdge?.(child.edgeId)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

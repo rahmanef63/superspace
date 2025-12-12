@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo, useCallback } from "react"
 import {
   Shield,
   Users,
@@ -30,7 +30,9 @@ import {
   type AdminSection,
   type SelectedBundle,
   type BundleOption,
+  type BundleCategoryDataForEdit,
 } from "../components"
+import { BundleEditInspectorPanel } from "../components/inspector/BundleEditInspectorPanel"
 import { FEATURE_TAGS, type FeatureStatus } from "../types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -194,6 +196,15 @@ function PlatformAdminContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [selectedBundles, setSelectedBundles] = useState<SelectedBundle[]>([])
 
+  // Bundle edit sheet (driven by inspector, like Menu Store)
+  const [editingBundle, setEditingBundle] = useState<BundleCategoryDataForEdit | null>(null)
+  const [isBundleEditMode, setIsBundleEditMode] = useState(false)
+
+  useEffect(() => {
+    // If selection changes, exit edit mode to avoid editing the wrong item.
+    setIsBundleEditMode(false)
+  }, [selectedItem?._id])
+
   // Form state for editing
   const [editForm, setEditForm] = useState({
     name: "",
@@ -269,6 +280,11 @@ function PlatformAdminContent() {
     })
     setSelectedBundles([])
     setIsEditSheetOpen(true)
+  }, [])
+
+  const handleOpenBundleEdit = useCallback((bundle: any) => {
+    setEditingBundle(bundle)
+    setIsBundleEditMode(true)
   }, [])
 
   // Handle saving edit
@@ -368,7 +384,10 @@ function PlatformAdminContent() {
       case "bundle-categories":
         content = (
           <div className="p-4">
-            <BundleCategoriesTable />
+            <BundleCategoriesTable
+              onItemSelect={handleItemSelect}
+              selectedItemId={selectedItem?._id}
+            />
           </div>
         )
         break
@@ -443,28 +462,38 @@ function PlatformAdminContent() {
   // RIGHT PANEL - Inspector
   // ============================================================================
   const rightPanel = (
-    <AdminInspector
-      section={activeSection}
-      selectedItem={selectedItem}
-      onEdit={() => {
-        if (selectedItem) {
+    activeSection === "bundle-categories" && isBundleEditMode && editingBundle ? (
+      <BundleEditInspectorPanel
+        bundle={editingBundle}
+        onClose={() => setIsBundleEditMode(false)}
+      />
+    ) : (
+      <AdminInspector
+        section={activeSection}
+        selectedItem={selectedItem}
+        onEdit={() => {
+          if (!selectedItem) return
+          if (activeSection === "bundle-categories") {
+            handleOpenBundleEdit(selectedItem)
+            return
+          }
           handleOpenEdit(selectedItem)
-        }
-      }}
-      onDelete={() => {
-        // TODO: Confirm and delete
-        console.log("Delete:", selectedItem)
-      }}
-      onTogglePublic={() => {
-        // TODO: Toggle public visibility
-        console.log("Toggle public:", selectedItem)
-      }}
-      onToggleEnabled={() => {
-        // TODO: Toggle enabled state
-        console.log("Toggle enabled:", selectedItem)
-      }}
-      onClose={handleInspectorClose}
-    />
+        }}
+        onDelete={() => {
+          // TODO: Confirm and delete
+          console.log("Delete:", selectedItem)
+        }}
+        onTogglePublic={() => {
+          // TODO: Toggle public visibility
+          console.log("Toggle public:", selectedItem)
+        }}
+        onToggleEnabled={() => {
+          // TODO: Toggle enabled state
+          console.log("Toggle enabled:", selectedItem)
+        }}
+        onClose={handleInspectorClose}
+      />
+    )
   )
 
   return (
@@ -493,6 +522,7 @@ function PlatformAdminContent() {
       {/* Three Column Layout */}
       <div className="flex-1 min-h-0">
         <ThreeColumnLayoutAdvanced
+          preset="admin"
           left={leftPanel}
           center={centerPanel}
           right={rightPanel}
@@ -500,26 +530,8 @@ function PlatformAdminContent() {
           leftLabel="Navigation"
           centerLabel="Content"
           rightLabel="Inspector"
-          // Widths
-          leftWidth={240}
-          rightWidth={380}
-          centerMinWidth={400}
-          minSideWidth={200}
-          maxSideWidth={500}
-          collapsedWidth={44}
-          // Space distribution
-          spaceDistribution="center-priority"
-          // Features
-          resizable={true}
-          showCollapseButtons={true}
           persistState={true}
           storageKey="platform-admin-layout"
-          // Responsive
-          collapseRightAt={1200}
-          collapseLeftAt={768}
-          stackAt={640}
-          // Controlled right panel
-          defaultLeftCollapsed={false}
           rightCollapsed={rightPanelCollapsed}
           onRightCollapsedChange={setRightPanelCollapsed}
         />
@@ -778,6 +790,7 @@ function PlatformAdminContent() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
     </div>
   )
 }

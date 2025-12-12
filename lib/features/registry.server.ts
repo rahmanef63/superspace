@@ -78,9 +78,9 @@ export async function loadFeatures(): Promise<FeatureConfig[]> {
   for (const configPath of configFiles) {
     try {
       // Dynamic import for ESM/TS files
-      const module = await import(configPath)
-      if (module.default) {
-        const feature = module.default as FeatureConfig
+      const loadedModule = await import(configPath)
+      if (loadedModule.default) {
+        const feature = loadedModule.default as FeatureConfig
         // Handle both config.ts and config/index.ts paths
         const featureDir = configPath.endsWith('config/index.ts') 
           ? path.dirname(path.dirname(configPath))
@@ -144,9 +144,9 @@ export function loadFeaturesSync(): FeatureConfig[] {
     try {
       // Use require for sync loading
       delete require.cache[configPath] // Clear cache
-      const module = require(configPath)
-      if (module.default) {
-        const feature = module.default as FeatureConfig
+      const loadedModule = require(configPath)
+      if (loadedModule.default) {
+        const feature = loadedModule.default as FeatureConfig
         // Handle both config.ts and config/index.ts paths
         const featureDir = configPath.endsWith('config/index.ts') || configPath.endsWith('config\\index.ts')
           ? path.dirname(path.dirname(configPath))

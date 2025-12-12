@@ -94,6 +94,10 @@ Deep technical documentation for specific implementations.
 - [COLUMN_RESIZE_PERFORMANCE_OPTIMIZATION.md](technical/COLUMN_RESIZE_PERFORMANCE_OPTIMIZATION.md) - Column resize optimization
 - [DATABASE_IMPROVEMENTS_SKELETON_AND_COLUMNS.md](technical/DATABASE_IMPROVEMENTS_SKELETON_AND_COLUMNS.md) - Skeleton loading & columns
 - [PERFORMANCE_SOLUTIONS_COMPARISON.md](technical/PERFORMANCE_SOLUTIONS_COMPARISON.md) - Performance solution analysis
+- [PARETO_PRIORITY_FOUNDATION_HARDENING.md](technical/PARETO_PRIORITY_FOUNDATION_HARDENING.md) - 80/20 foundation hardening plan
+- [GOLDEN_PATH_WORKFLOWS_UX_POLISH.md](technical/GOLDEN_PATH_WORKFLOWS_UX_POLISH.md) - Golden path UX polish plan
+- [BUNDLE_SPLITTING_AND_LAZY_LOADING_PLAN.md](technical/BUNDLE_SPLITTING_AND_LAZY_LOADING_PLAN.md) - Bundle splitting plan
+- [GLOBAL_CI_GUARDRAILS_RBAC_AUDIT.md](technical/GLOBAL_CI_GUARDRAILS_RBAC_AUDIT.md) - CI guardrails for RBAC/audit
 
 ---
 

@@ -11,6 +11,7 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
+  children?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -18,6 +19,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+  children,
 }: EmptyStateProps) {
   return (
     <div className="flex h-full flex-1 flex-col items-center justify-center gap-3 text-center">
@@ -37,6 +39,7 @@ export function EmptyState({
           {actionLabel}
         </button>
       ) : null}
+      {children ? <div className="mt-2 flex flex-wrap justify-center gap-2">{children}</div> : null}
     </div>
   );
 }

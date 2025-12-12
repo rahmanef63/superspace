@@ -23,7 +23,7 @@
  * - 1: Some DoD requirements not met ❌
  *
  * @see .claude/CLAUDE.md
- * @see docs/MUTATION_TEMPLATE_GUIDE.md
+ * @see docs/2-rules/MUTATION_TEMPLATE_GUIDE.md
  */
 
 import * as fs from "fs";
@@ -418,7 +418,7 @@ function printReport(report: DoDReport): void {
     // Print remediation steps
     console.log(`${colors.bold}📚 Resources:${colors.reset}`);
     console.log(`- Mutation Template: ${colors.cyan}convex/templates/mutation_template.ts${colors.reset}`);
-    console.log(`- Template Guide: ${colors.cyan}docs/MUTATION_TEMPLATE_GUIDE.md${colors.reset}`);
+    console.log(`- Template Guide: ${colors.cyan}docs/2-rules/MUTATION_TEMPLATE_GUIDE.md${colors.reset}`);
     console.log(`- Project Guardrails: ${colors.cyan}.claude/CLAUDE.md${colors.reset}`);
     console.log();
   }

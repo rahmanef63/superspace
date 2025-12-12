@@ -8,11 +8,11 @@ import { api } from "@/convex/_generated/api"
 import { SetBreadcrumbs } from "./SetBreadcrumbs"
 import type { SidebarBreadcrumbItem } from "@/frontend/shared/ui/layout/sidebar/components/breadcrumbs-context"
 import { WORKSPACE_NAVIGATION_ITEMS } from "@/frontend/shared/foundation/workspaces/constants/navigation"
-import { useAuthed } from "@/frontend/shared/foundation"
+import { useAuthed } from "@/frontend/shared/foundation/auth/hooks/useAuthed"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { getPageById } from "@/frontend/shared/foundation/manifest"
 import { AppContentWrapper } from "@/frontend/shared/context/AppContentWrapper"
-import { FeatureNotReady } from "@/frontend/shared/ui"
+import { FeatureNotReady } from "@/frontend/shared/ui/components/FeatureNotReady"
 import { useToast } from "@/hooks/use-toast"
 
 function toTitleCase(segment: string) {

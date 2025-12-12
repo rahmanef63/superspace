@@ -3,12 +3,6 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 // Protected app areas
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)'])
 
-// Public auth routes (NOT landing page)
-const isPublicAuthRoute = createRouteMatcher([
-  '/sign-in(.*)',
-  '/sign-up(.*)'
-])
-
 export default clerkMiddleware(async (auth, req) => {
   // Simply protect routes - let Clerk handle everything else
   // Don't do complex logic that might cause race conditions

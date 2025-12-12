@@ -25,5 +25,18 @@ export { FeaturePreviewWrapper } from './FeaturePreviewWrapper'
 export { FeatureListPanel } from './FeatureListPanel'
 export { PreviewPanel } from './PreviewPanel'
 
-// Re-export the all-previews registry (this auto-registers all previews when imported)
-export * from './all-previews'
+let allPreviewsPromise: Promise<void> | null = null
+
+/**
+ * Lazily load and register all feature previews.
+ *
+ * This keeps the (potentially large) preview graph out of the initial bundle
+ * for pages that only need the preview system API.
+ */
+export function loadAllFeaturePreviews(): Promise<void> {
+  if (!allPreviewsPromise) {
+    allPreviewsPromise = import('./all-previews').then(() => undefined)
+  }
+
+  return allPreviewsPromise
+}

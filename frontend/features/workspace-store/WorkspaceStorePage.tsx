@@ -25,7 +25,12 @@ import {
   WorkspaceInspector,
 } from "./components"
 import { useWorkspaceStore } from "./store"
-import { FeatureListPanel, PreviewPanel, getAllFeaturePreviews } from "@/frontend/shared/preview"
+import {
+  FeatureListPanel,
+  PreviewPanel,
+  getAllFeaturePreviews,
+  loadAllFeaturePreviews,
+} from "@/frontend/shared/preview"
 import { WorkspaceDnDTree, type WorkspaceDnDItem } from "@/frontend/shared/ui/layout/dnd"
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container"
 import {
@@ -91,8 +96,40 @@ export function WorkspaceStorePage() {
   const [previewVisible, setPreviewVisible] = React.useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = React.useState(true)
 
-  // Get all available feature previews (global registry)
-  const allFeaturePreviews = React.useMemo(() => getAllFeaturePreviews(), [])
+  const [previewsLoaded, setPreviewsLoaded] = React.useState(false)
+  const [previewsLoading, setPreviewsLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    if (previewsLoaded || previewsLoading) return
+    if (centerPanelMode !== "features") return
+
+    let cancelled = false
+    setPreviewsLoading(true)
+
+    loadAllFeaturePreviews()
+      .then(() => {
+        if (!cancelled) {
+          setPreviewsLoaded(true)
+        }
+      })
+      .catch((err) => {
+        console.error("[WorkspaceStore] Failed to load feature previews", err)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setPreviewsLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [centerPanelMode, previewsLoaded, previewsLoading])
+
+  const allFeaturePreviews = React.useMemo(
+    () => (previewsLoaded ? getAllFeaturePreviews() : []),
+    [previewsLoaded]
+  )
 
   // Query menu items for selected workspace to get workspace-specific features
   const workspaceMenuItems = useQuery(
@@ -636,6 +673,7 @@ export function WorkspaceStorePage() {
               selectedFeatureId={selectedFeatureId}
               onTogglePreview={handleTogglePreview}
               previewVisibleFor={previewVisible ? selectedFeatureId : null}
+              isLoading={previewsLoading && !previewsLoaded}
               hideHeader
             />
           )}
@@ -846,6 +884,7 @@ export function WorkspaceStorePage() {
       {/* Three Column Layout */}
       <div className="flex-1 min-h-0">
         <ThreeColumnLayoutAdvanced
+          preset="store"
           left={leftPanelContent}
           center={centerPanelContent}
           right={rightPanelContent}
@@ -853,26 +892,9 @@ export function WorkspaceStorePage() {
           leftLabel="Workspaces"
           centerLabel="Features"
           rightLabel="Preview"
-          // Widths - flexible for desktop preview
-          leftWidth={280}
-          rightWidth={500}
-          centerMinWidth={200}
-          minSideWidth={180}
-          maxSideWidth={1200}
-          collapsedWidth={44}
-          // Space distribution - prioritize right panel for preview
-          spaceDistribution="right-priority"
-          // Features
-          resizable={true}
-          showCollapseButtons={true}
           persistState={true}
           storageKey="workspace-store-layout"
-          // Responsive - right panel collapses first, left panel stays visible longer
-          collapseRightAt={1024}
-          collapseLeftAt={640}
-          stackAt={480}
           // Default states - right panel controlled for preview toggle
-          defaultLeftCollapsed={false}
           rightCollapsed={rightPanelCollapsed}
           onRightCollapsedChange={setRightPanelCollapsed}
         />

@@ -43,7 +43,7 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
           return (
             <div key={category}>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2">
-                <CatIcon size={14} />
+                {CatIcon && <CatIcon size={14} />}
                 <span>{category}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -62,11 +62,11 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
                     >
                       <div
                         onClick={() => onAdd?.(component.key, component.category)}
-                        className="h-20 rounded-xl border border-border bg-card p-2 text-left hover:border-primary transition group cursor-pointer"
+                        className="h-20 border border-border bg-card p-2 text-left hover:border-primary transition group cursor-pointer"
                       >
                         <div className="text-xs font-semibold truncate flex items-center gap-1">
-                          <FeatureIcon size={12} className="text-muted-foreground" />
-                          <CatIconI size={14} className="text-foreground" />
+                          {FeatureIcon && <FeatureIcon size={12} className="text-muted-foreground" />}
+                          {CatIconI && <CatIconI size={14} className="text-foreground" />}
                           <span className="truncate">{component.label}</span>
                         </div>
                         <div className="text-[10px] text-muted-foreground mt-1 truncate">
@@ -95,11 +95,15 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
       </div>
 
       <Tabs defaultValue={currentTabs[0]?.id || 'layout'} className="flex-1 flex flex-col">
-        <TabsList className="px-3 pt-2 overflow-x-auto">
+        <TabsList className="px-2 pt-2 flex flex-wrap gap-1 h-auto justify-start bg-transparent">
           {currentTabs.map((tab: FeatureTab) => {
             const Icon = getFeatureIcon(tab.feature);
             return (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1">
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex items-center gap-1 text-xs px-2 py-1.5 h-auto data-[state=active]:bg-muted"
+              >
                 {tab.label}
               </TabsTrigger>
             );

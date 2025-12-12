@@ -12,11 +12,11 @@
 
 import * as React from "react";
 import { ThreeColumnLayoutAdvanced } from "./ThreeColumnLayout";
+import { CollapseButton } from "./CollapseButton";
+import { useThreeColumnLayoutSafe } from "./context";
 import { HeaderControls } from "@/frontend/shared/ui/layout/header";
 import { UniversalToolbar, toolType, type SortToolParams } from "@/frontend/shared/ui/layout/toolbar";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import type { ThreeColumnLayoutAdvancedProps } from "./types";
 
 export interface FeatureThreeColumnLayoutProps extends Omit<ThreeColumnLayoutAdvancedProps, "left" | "center" | "right"> {
@@ -60,84 +60,102 @@ export function FeatureThreeColumnLayout({
 
     // Layout Props
     className,
+    preset,
+    leftLabel: leftLabelProp,
+    centerLabel: centerLabelProp,
+    rightLabel: rightLabelProp,
+    leftHeader: leftHeaderProp,
+    showLeftCollapseButton: showLeftCollapseButtonProp,
     ...layoutProps
 }: FeatureThreeColumnLayoutProps) {
 
     // Check if we have any header content to show
-    const hasHeaderContent = sidebarStats || sidebarActions || searchProps || sortOptions || filterOptions || breadcrumbs;
-    const hasTopRow = sidebarStats || sidebarActions;
+    const hasHeaderContent = sidebarTitle || sidebarStats || sidebarActions || searchProps || sortOptions || filterOptions || breadcrumbs;
+    const hasTopRow = sidebarTitle || sidebarStats || sidebarActions;
     const hasBottomRow = searchProps || sortOptions || filterOptions || breadcrumbs;
 
-    // ============================================================================
-    // LEFT PANEL
-    // ============================================================================
-    const leftPanel = React.useMemo(() => (
-        <div className="flex flex-col h-full min-h-0">
-            {/* Header Area - only show if there's content */}
-            {hasHeaderContent && (
-                <div className="flex-shrink-0 border-b bg-muted/30">
-                    {/* Top Row: Stats & Primary Actions */}
-                    {hasTopRow && (
-                        <div className="flex items-center justify-between px-3 py-2">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                {sidebarTitle && <span className="font-medium text-foreground">{sidebarTitle}</span>}
-                                {sidebarStats && <span>{sidebarStats}</span>}
-                            </div>
-                            <div className="flex items-center gap-1">
-                                {sidebarActions}
-                            </div>
-                        </div>
-                    )}
+    const effectiveLeftLabel = leftLabelProp ?? sidebarTitle ?? "Sidebar"
+    const effectiveCenterLabel = centerLabelProp ?? "Main Content"
+    const effectiveRightLabel = rightLabelProp ?? "Inspector"
+    const effectivePreset = preset ?? "feature"
 
-                    {/* Bottom Row: Search, Sort, Filters */}
-                    {hasBottomRow && (
-                        <div className="px-3 pb-2 space-y-2">
-                            {searchProps && (
-                                <HeaderControls
-                                    searchable
-                                    searchProps={{
-                                        value: searchProps.value,
-                                        onChange: searchProps.onChange,
-                                        placeholder: searchProps.placeholder,
-                                    }}
-                                    responsive
+    // ============================================================================
+    // LEFT HEADER (uses layout context for collapse)
+    // ============================================================================
+    function SidebarHeader() {
+        const layout = useThreeColumnLayoutSafe()
+
+        return (
+            <div className="flex-shrink-0 border-b bg-muted/30">
+                {hasTopRow && (
+                    <div className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {sidebarTitle && <span className="font-medium text-foreground">{sidebarTitle}</span>}
+                            {sidebarStats && <span>{sidebarStats}</span>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            {sidebarActions}
+                            {layout && (
+                                <CollapseButton
+                                    side="left"
+                                    collapsed={layout.leftCollapsed}
+                                    onClick={layout.toggleLeft}
+                                    label={effectiveLeftLabel}
                                 />
                             )}
-
-                            {sortOptions && (
-                                <UniversalToolbar
-                                    tools={[
-                                        {
-                                            id: "sort-tool" as any,
-                                            type: toolType.sort,
-                                            params: sortOptions,
-                                        },
-                                    ]}
-                                    spacing="compact"
-                                    background="transparent"
-                                />
-                            )}
-
-                            {filterOptions}
-
-                            {breadcrumbs && (
-                                <div className="pt-1">
-                                    {breadcrumbs}
-                                </div>
-                            )}
                         </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                )}
 
-            {/* List Content */}
-            <ScrollArea className="flex-1 min-h-0">
-                <div className="p-2">
-                    {sidebarContent}
-                </div>
-            </ScrollArea>
-        </div>
-    ), [sidebarTitle, sidebarStats, sidebarActions, sidebarContent, searchProps, sortOptions, filterOptions, breadcrumbs, hasHeaderContent, hasTopRow, hasBottomRow]);
+                {hasBottomRow && (
+                    <div className="px-3 pb-2 space-y-2">
+                        {searchProps && (
+                            <HeaderControls
+                                searchable
+                                searchProps={{
+                                    value: searchProps.value,
+                                    onChange: searchProps.onChange,
+                                    placeholder: searchProps.placeholder,
+                                }}
+                                responsive
+                            />
+                        )}
+
+                        {sortOptions && (
+                            <UniversalToolbar
+                                tools={[
+                                    {
+                                        id: "sort-tool" as any,
+                                        type: toolType.sort,
+                                        params: sortOptions,
+                                    },
+                                ]}
+                                spacing="compact"
+                                background="transparent"
+                            />
+                        )}
+
+                        {filterOptions}
+
+                        {breadcrumbs && (
+                            <div className="pt-1">
+                                {breadcrumbs}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        )
+    }
+
+    // LEFT PANEL BODY (scrollable)
+    const leftPanelBody = React.useMemo(() => (
+        <ScrollArea className="h-full">
+            <div className="p-2">
+                {sidebarContent}
+            </div>
+        </ScrollArea>
+    ), [sidebarContent])
 
     // ============================================================================
     // CENTER PANEL
@@ -158,7 +176,13 @@ export function FeatureThreeColumnLayout({
     return (
         <ThreeColumnLayoutAdvanced
             className={className}
-            left={leftPanel}
+            preset={effectivePreset}
+            leftHeader={hasHeaderContent ? <SidebarHeader /> : leftHeaderProp}
+            showLeftCollapseButton={hasHeaderContent ? (showLeftCollapseButtonProp ?? false) : showLeftCollapseButtonProp}
+            leftLabel={effectiveLeftLabel}
+            centerLabel={effectiveCenterLabel}
+            rightLabel={effectiveRightLabel}
+            left={leftPanelBody}
             center={centerPanel}
             right={inspector}
             {...layoutProps}

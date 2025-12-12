@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * AI Feature Settings
+ * AI Feature Settings with API Key Validation
  * All settings with persistence using useAISettingsStorage
  */
 
@@ -10,26 +10,27 @@ import { SettingsSection } from "@/frontend/shared/settings/primitives/SettingsS
 import { SettingsToggle } from "@/frontend/shared/settings/primitives/SettingsToggle"
 import { SettingsSelect } from "@/frontend/shared/settings/primitives/SettingsSelect"
 import { SettingsSlider } from "@/frontend/shared/settings/primitives/SettingsSlider"
-import { 
-  useAISettingsStorage, 
-  AI_PROVIDERS, 
-  getAIProvider, 
+import {
+  useAISettingsStorage,
+  AI_PROVIDERS,
+  getAIProvider,
   getProviderModels,
-  type AIApiKeyConfig 
+  type AIApiKeyConfig
 } from "./useAISettings"
+import { validateApiKeyFormat, getApiKeyExample, type ValidationResult } from "../utils/api-key-validation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Eye, 
-  EyeOff, 
-  Check, 
-  X, 
-  ExternalLink, 
-  Key, 
+import {
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  ExternalLink,
+  Key,
   Trash2,
   Plus,
   Crown,
@@ -37,7 +38,9 @@ import {
   Building2,
   Server,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  Shield
 } from "lucide-react"
 import {
   Accordion,
@@ -63,9 +66,9 @@ function ProviderTierBadge({ tier }: { tier: "premium" | "opensource" | "enterpr
     enterprise: { label: "Enterprise", icon: Building2, variant: "secondary" as const, className: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
     opensource: { label: "Open Source", icon: Sparkles, variant: "outline" as const, className: "bg-green-500/10 text-green-600 border-green-500/20" },
   }
-  
+
   const { label, icon: Icon, className } = config[tier]
-  
+
   return (
     <Badge variant="outline" className={className}>
       <Icon className="h-3 w-3 mr-1" />
@@ -75,47 +78,89 @@ function ProviderTierBadge({ tier }: { tier: "premium" | "opensource" | "enterpr
 }
 
 /**
- * API Key Input Component with show/hide toggle
+ * API Key Input Component with show/hide toggle and validation
  */
 function ApiKeyInput({
   value,
   onChange,
   placeholder,
   disabled,
+  onValidate,
+  validationResult,
 }: {
   value: string
   onChange: (value: string) => void
   placeholder?: string
   disabled?: boolean
+  onValidate?: () => void
+  validationResult?: ValidationResult | null
 }) {
   const [showKey, setShowKey] = useState(false)
 
   return (
-    <div className="relative">
-      <Input
-        type={showKey ? "text" : "password"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || "sk-..."}
-        disabled={disabled}
-        className="pr-10 font-mono text-sm"
-      />
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-        onClick={() => setShowKey(!showKey)}
-        disabled={disabled}
-      >
-        {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-      </Button>
+    <div className="space-y-2">
+      <div className="relative">
+        <Input
+          type={showKey ? "text" : "password"}
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value)
+            // Clear validation when typing
+            if (validationResult) {
+              onValidate?.()
+            }
+          }}
+          placeholder={placeholder || "sk-..."}
+          disabled={disabled}
+          className={`pr-20 font-mono text-sm ${
+            validationResult?.isValid === false
+              ? "border-red-500 focus:border-red-500"
+              : validationResult?.isValid === true
+              ? "border-green-500 focus:border-green-500"
+              : ""
+          }`}
+        />
+        <div className="absolute right-0 top-0 h-full flex items-center">
+          {validationResult && (
+            <div className="mr-2">
+              {validationResult.isValid ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <X className="h-4 w-4 text-red-500" />
+              )}
+            </div>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-full px-2 hover:bg-transparent"
+            onClick={() => setShowKey(!showKey)}
+            disabled={disabled}
+          >
+            {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+      {validationResult?.isValid === false && (
+        <p className="text-xs text-red-600 flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" />
+          {validationResult.error}
+        </p>
+      )}
+      {validationResult?.isValid === true && (
+        <p className="text-xs text-green-600 flex items-center gap-1">
+          <CheckCircle2 className="h-3 w-3" />
+          API key is valid
+          {validationResult.model && ` (${validationResult.model})`}
+        </p>
+      )}
     </div>
   )
 }
 
 /**
- * AI API Keys Settings
+ * AI API Keys Settings with Validation
  * Configure API keys for different AI providers
  */
 export function AIApiKeysSettings() {
@@ -124,6 +169,10 @@ export function AIApiKeysSettings() {
   const [selectedProvider, setSelectedProvider] = useState<string>("")
   const [newApiKey, setNewApiKey] = useState("")
   const [newBaseUrl, setNewBaseUrl] = useState("")
+  const [isValidatingKey, setIsValidatingKey] = useState(false)
+  const [keyValidationResult, setKeyValidationResult] = useState<ValidationResult | null>(null)
+  const [validatingProviderId, setValidatingProviderId] = useState<string | null>(null)
+  const [validationResults, setValidationResults] = useState<Record<string, ValidationResult>>({})
 
   if (isLoading) {
     return <div className="animate-pulse h-48 bg-muted rounded-lg" />
@@ -131,9 +180,91 @@ export function AIApiKeysSettings() {
 
   const configuredProviders = settings.apiKeys || []
 
-  const handleAddApiKey = () => {
-    if (!selectedProvider || !newApiKey.trim()) {
-      toast.error("Please select a provider and enter an API key")
+  /**
+   * Validate API key against provider
+   */
+  const validateApiKey = async (providerId: string, apiKey: string, baseUrl?: string): Promise<ValidationResult> => {
+    // Skip validation for Ollama
+    if (providerId === "ollama") {
+      const result: ValidationResult = { isValid: true }
+      setKeyValidationResult(result)
+      return result
+    }
+
+    // First do client-side format validation
+    const formatValidation = validateApiKeyFormat(providerId, apiKey)
+    if (!formatValidation.isValid) {
+      setKeyValidationResult(formatValidation)
+      return formatValidation
+    }
+
+    setIsValidatingKey(true)
+    setValidatingProviderId(providerId)
+
+    try {
+      const response = await fetch("/api/ai/test-api-key", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerId,
+          apiKey: apiKey.trim(),
+          baseUrl: baseUrl?.trim() || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        const result = {
+          isValid: true,
+          provider: data.provider,
+          model: data.model
+        }
+        setKeyValidationResult(result)
+        setValidationResults(prev => ({ ...prev, [providerId]: result }))
+        return result
+      } else {
+        const result = {
+          isValid: false,
+          error: data.error || "Validation failed"
+        }
+        setKeyValidationResult(result)
+        setValidationResults(prev => ({ ...prev, [providerId]: result }))
+        return result
+      }
+    } catch (error) {
+      const result = {
+        isValid: false,
+        error: "Network error. Please try again."
+      }
+      setKeyValidationResult(result)
+      setValidationResults(prev => ({ ...prev, [providerId]: result }))
+      return result
+    } finally {
+      setIsValidatingKey(false)
+      setValidatingProviderId(null)
+    }
+  }
+
+  const handleAddApiKey = async () => {
+    if (!selectedProvider) {
+      toast.error("Please select a provider")
+      return
+    }
+
+    // Ollama doesn't require API key
+    if (selectedProvider !== "ollama" && !newApiKey.trim()) {
+      toast.error("Please enter an API key")
+      return
+    }
+
+    // Validate the API key before saving
+    const validation = await validateApiKey(selectedProvider, newApiKey, newBaseUrl)
+
+    if (!validation.isValid) {
+      toast.error("Invalid API key: " + (validation.error || "Unknown error"))
       return
     }
 
@@ -142,6 +273,7 @@ export function AIApiKeysSettings() {
       apiKey: newApiKey.trim(),
       baseUrl: newBaseUrl.trim() || undefined,
       isEnabled: true,
+      lastValidated: new Date().toISOString(),
     }
 
     // Remove existing config for this provider if exists
@@ -153,30 +285,44 @@ export function AIApiKeysSettings() {
     setSelectedProvider("")
     setNewApiKey("")
     setNewBaseUrl("")
+    setKeyValidationResult(null)
   }
 
   const handleRemoveApiKey = (providerId: string) => {
     const filtered = configuredProviders.filter(k => k.providerId !== providerId)
     updateSetting("apiKeys", filtered)
+    // Clear validation result for this provider
+    setValidationResults(prev => {
+      const { [providerId]: _, ...rest } = prev
+      return rest
+    })
     toast.success("API key removed")
   }
 
   const handleToggleApiKey = (providerId: string, enabled: boolean) => {
-    const updated = configuredProviders.map(k => 
+    const updated = configuredProviders.map(k =>
       k.providerId === providerId ? { ...k, isEnabled: enabled } : k
     )
     updateSetting("apiKeys", updated)
   }
 
-  const handleUpdateApiKey = (providerId: string, apiKey: string) => {
-    const updated = configuredProviders.map(k => 
+  const handleUpdateApiKey = async (providerId: string, apiKey: string) => {
+    const updated = configuredProviders.map(k =>
       k.providerId === providerId ? { ...k, apiKey } : k
     )
     updateSetting("apiKeys", updated)
+
+    // Clear validation if key was changed
+    if (validationResults[providerId]) {
+      setValidationResults(prev => {
+        const { [providerId]: _, ...rest } = prev
+        return rest
+      })
+    }
   }
 
   const handleUpdateBaseUrl = (providerId: string, baseUrl: string) => {
-    const updated = configuredProviders.map(k => 
+    const updated = configuredProviders.map(k =>
       k.providerId === providerId ? { ...k, baseUrl: baseUrl || undefined } : k
     )
     updateSetting("apiKeys", updated)
@@ -214,9 +360,12 @@ export function AIApiKeysSettings() {
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Add AI Provider</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Add AI Provider
+                </DialogTitle>
                 <DialogDescription>
-                  Configure an API key to use models from this provider
+                  Configure and validate an API key to use models from this provider
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -224,7 +373,12 @@ export function AIApiKeysSettings() {
                   <Label>Provider</Label>
                   <select
                     value={selectedProvider}
-                    onChange={(e) => setSelectedProvider(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedProvider(e.target.value)
+                      setKeyValidationResult(null)
+                      setNewApiKey("")
+                      setNewBaseUrl("")
+                    }}
                     className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     <option value="">Select a provider...</option>
@@ -262,9 +416,9 @@ export function AIApiKeysSettings() {
                         <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
                           {getAIProvider(selectedProvider)?.sdkPackage}
                         </code>
-                        <a 
-                          href={getAIProvider(selectedProvider)?.docsUrl} 
-                          target="_blank" 
+                        <a
+                          href={getAIProvider(selectedProvider)?.docsUrl}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-primary hover:underline flex items-center gap-1"
                         >
@@ -274,12 +428,24 @@ export function AIApiKeysSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>API Key</Label>
+                      <Label>
+                        API Key
+                        {selectedProvider !== "ollama" && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </Label>
                       <ApiKeyInput
                         value={newApiKey}
                         onChange={setNewApiKey}
-                        placeholder={selectedProvider === "openai" ? "sk-..." : "Enter API key"}
+                        placeholder={getApiKeyExample(selectedProvider)}
+                        validationResult={keyValidationResult}
+                        onValidate={() => setKeyValidationResult(null)}
                       />
+                      {selectedProvider !== "ollama" && (
+                        <p className="text-xs text-muted-foreground">
+                          Enter your API key. It will be validated before saving.
+                        </p>
+                      )}
                     </div>
 
                     {(selectedProvider === "ollama" || selectedProvider === "fireworks") && (
@@ -295,15 +461,55 @@ export function AIApiKeysSettings() {
                         </p>
                       </div>
                     )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => validateApiKey(selectedProvider, newApiKey, newBaseUrl)}
+                        disabled={!newApiKey.trim() || isValidatingKey || selectedProvider === "ollama"}
+                        className="flex-1"
+                      >
+                        {isValidatingKey && validatingProviderId === selectedProvider ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Validating...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Test Key
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                <Button variant="outline" onClick={() => {
+                  setAddDialogOpen(false)
+                  setKeyValidationResult(null)
+                }}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddApiKey} disabled={!selectedProvider || !newApiKey}>
-                  Add API Key
+                <Button
+                  onClick={handleAddApiKey}
+                  disabled={
+                    !selectedProvider ||
+                    (selectedProvider !== "ollama" && !newApiKey) ||
+                    isValidatingKey ||
+                    (keyValidationResult?.isValid === false)
+                  }
+                >
+                  {isValidatingKey ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    "Add API Key"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -320,10 +526,11 @@ export function AIApiKeysSettings() {
             <div className="space-y-4">
               {configuredProviders.map((config) => {
                 const provider = getAIProvider(config.providerId)
+                const validation = validationResults[config.providerId]
                 if (!provider) return null
 
                 return (
-                  <div 
+                  <div
                     key={config.providerId}
                     className="rounded-lg border p-4 space-y-3"
                   >
@@ -342,6 +549,12 @@ export function AIApiKeysSettings() {
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{provider.name}</span>
                             <ProviderTierBadge tier={provider.tier} />
+                            {validation?.isValid && (
+                              <Badge variant="outline" className="text-green-600 border-green-600">
+                                <Check className="h-3 w-3 mr-1" />
+                                Validated
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {provider.models.length} models available
@@ -354,8 +567,8 @@ export function AIApiKeysSettings() {
                           checked={config.isEnabled}
                           onCheckedChange={(checked) => handleToggleApiKey(config.providerId, checked)}
                         />
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive"
                           onClick={() => handleRemoveApiKey(config.providerId)}
@@ -365,14 +578,23 @@ export function AIApiKeysSettings() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-xs">API Key</Label>
-                      <ApiKeyInput
-                        value={config.apiKey}
-                        onChange={(value) => handleUpdateApiKey(config.providerId, value)}
-                        disabled={!config.isEnabled}
-                      />
-                    </div>
+                    {config.providerId !== "ollama" && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">API Key</Label>
+                        <ApiKeyInput
+                          value={config.apiKey}
+                          onChange={(value) => handleUpdateApiKey(config.providerId, value)}
+                          disabled={!config.isEnabled}
+                          validationResult={validation}
+                          onValidate={() => {
+                            setValidationResults(prev => {
+                              const { [config.providerId]: _, ...rest } = prev
+                              return rest
+                            })
+                          }}
+                        />
+                      </div>
+                    )}
 
                     {(config.providerId === "ollama" || config.baseUrl) && (
                       <div className="space-y-2">
@@ -388,18 +610,18 @@ export function AIApiKeysSettings() {
                     )}
 
                     <div className="flex items-center gap-2 pt-2">
-                      <a 
-                        href={provider.website} 
-                        target="_blank" 
+                      <a
+                        href={provider.website}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                       >
                         Website <ExternalLink className="h-3 w-3" />
                       </a>
                       <span className="text-muted-foreground">•</span>
-                      <a 
-                        href={provider.docsUrl} 
-                        target="_blank" 
+                      <a
+                        href={provider.docsUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                       >
@@ -427,8 +649,8 @@ export function AIApiKeysSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Accordion 
-            type="single" 
+          <Accordion
+            type="single"
             className="w-full"
             items={[
               {
@@ -455,7 +677,7 @@ export function AIApiKeysSettings() {
                             </span>
                           </div>
                         </div>
-                        <a 
+                        <a
                           href={provider.docsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -492,7 +714,7 @@ export function AIApiKeysSettings() {
                             </span>
                           </div>
                         </div>
-                        <a 
+                        <a
                           href={provider.docsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -529,7 +751,7 @@ export function AIApiKeysSettings() {
                             </span>
                           </div>
                         </div>
-                        <a 
+                        <a
                           href={provider.docsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -550,10 +772,7 @@ export function AIApiKeysSettings() {
   )
 }
 
-/**
- * AI General Settings
- * Core AI assistant configuration
- */
+// Export other settings components unchanged
 export function AIGeneralSettings() {
   const { settings, updateSetting, isLoading } = useAISettingsStorage()
 
@@ -673,10 +892,6 @@ export function AIGeneralSettings() {
   )
 }
 
-/**
- * AI Behavior Settings
- * Fine-tune AI response generation
- */
 export function AIBehaviorSettings() {
   const { settings, updateSetting, isLoading } = useAISettingsStorage()
 
@@ -741,10 +956,6 @@ export function AIBehaviorSettings() {
   )
 }
 
-/**
- * AI Privacy Settings
- * Control data sharing and privacy
- */
 export function AIPrivacySettings() {
   const { settings, updateSetting, isLoading } = useAISettingsStorage()
 
@@ -783,10 +994,6 @@ export function AIPrivacySettings() {
   )
 }
 
-/**
- * AI Personalization Settings
- * Customize AI personality and suggestions
- */
 export function AIPersonalizationSettings() {
   const { settings, updateSetting, isLoading } = useAISettingsStorage()
 

@@ -7,10 +7,12 @@
 
 // Import agent init modules to register them
 import "@/frontend/features/documents/agent/init";
+import "@/frontend/features/tasks/agent/init";
+import "@/frontend/features/calendar/agent/init";
 // Future agents:
-// import "@/frontend/features/tasks/agent/init";
 // import "@/frontend/features/crm/agent/init";
 // import "@/frontend/features/knowledge/agent/init";
+
 
 import { subAgentRegistry } from "./agents";
 

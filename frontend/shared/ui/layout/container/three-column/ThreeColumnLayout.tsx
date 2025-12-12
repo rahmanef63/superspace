@@ -15,21 +15,14 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { 
-  PanelLeftOpen, 
-  PanelLeftClose, 
-  PanelRightOpen, 
-  PanelRightClose,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ResizeHandle } from "../ResizeHandle"
 import { ThreeColumnContext } from "./context"
 import { usePersistedState, useResponsiveCollapse, useStackedLayout } from "./hooks"
-import { CollapseButton } from "./CollapseButton"
 import { PanelHeader } from "./PanelHeader"
 import { CollapsedPanel } from "./CollapsedPanel"
 import type { ThreeColumnLayoutAdvancedProps } from "./types"
+import { resolveThreeColumnPreset } from "./presets"
 
 // Default responsive breakpoints
 // Priority: Right panel collapses first, then left panel on very small screens
@@ -37,41 +30,66 @@ const DEFAULT_COLLAPSE_RIGHT_AT = 1024 // Collapse right panel first on smaller 
 const DEFAULT_COLLAPSE_LEFT_AT = 640   // Collapse left panel only on mobile
 const DEFAULT_STACK_AT = 480           // Stack on very small mobile
 
-export function ThreeColumnLayoutAdvanced({
-  left,
-  center,
-  right,
-  className,
+export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedProps) {
+  const presetConfig = resolveThreeColumnPreset(rawProps.preset)
+
+  const left = rawProps.left
+  const center = rawProps.center
+  const right = rawProps.right
+  const className = rawProps.className
+
+  // Optional custom panels headers
+  const leftHeader = rawProps.leftHeader
+  const centerHeader = rawProps.centerHeader
+  const rightHeader = rawProps.rightHeader
+
   // Panel widths
-  leftWidth: defaultLeftWidth = 280,
-  rightWidth: defaultRightWidth = 400,
-  centerMinWidth = 280,
-  minSideWidth = 200,
-  maxSideWidth = 600,
-  collapsedWidth = 40,
+  const defaultLeftWidth = rawProps.leftWidth ?? presetConfig.leftWidth ?? 280
+  const defaultRightWidth = rawProps.rightWidth ?? presetConfig.rightWidth ?? 400
+  const centerMinWidth = rawProps.centerMinWidth ?? presetConfig.centerMinWidth ?? 280
+  const minSideWidth = rawProps.minSideWidth ?? presetConfig.minSideWidth ?? 200
+  const maxSideWidth = rawProps.maxSideWidth ?? presetConfig.maxSideWidth ?? 600
+  const collapsedWidth = rawProps.collapsedWidth ?? presetConfig.collapsedWidth ?? 40
+
   // Space distribution
-  spaceDistribution = "right-priority",
+  const spaceDistribution =
+    rawProps.spaceDistribution ?? presetConfig.spaceDistribution ?? "right-priority"
+
   // Collapse state
-  leftCollapsed: controlledLeftCollapsed,
-  rightCollapsed: controlledRightCollapsed,
-  onLeftCollapsedChange,
-  onRightCollapsedChange,
-  defaultLeftCollapsed = false,
-  defaultRightCollapsed = false,
+  const controlledLeftCollapsed = rawProps.leftCollapsed
+  const controlledRightCollapsed = rawProps.rightCollapsed
+  const onLeftCollapsedChange = rawProps.onLeftCollapsedChange
+  const onRightCollapsedChange = rawProps.onRightCollapsedChange
+  const defaultLeftCollapsed =
+    rawProps.defaultLeftCollapsed ?? presetConfig.defaultLeftCollapsed ?? false
+  const defaultRightCollapsed =
+    rawProps.defaultRightCollapsed ?? presetConfig.defaultRightCollapsed ?? false
+
   // Features
-  resizable = true,
-  showCollapseButtons = true,
-  persistState = false,
-  storageKey = "three-column-layout",
+  const resizable = rawProps.resizable ?? presetConfig.resizable ?? true
+  const showCollapseButtons =
+    rawProps.showCollapseButtons ?? presetConfig.showCollapseButtons ?? true
+  const showLeftCollapseButton = rawProps.showLeftCollapseButton
+  const showRightCollapseButton = rawProps.showRightCollapseButton
+  const persistState = rawProps.persistState ?? presetConfig.persistState ?? false
+  const storageKey = rawProps.storageKey ?? presetConfig.storageKey ?? "three-column-layout"
+
   // Labels
-  leftLabel = "Left Panel",
-  centerLabel = "Main Content",
-  rightLabel = "Right Panel",
+  const leftLabel = rawProps.leftLabel ?? presetConfig.leftLabel ?? "Left Panel"
+  const centerLabel = rawProps.centerLabel ?? presetConfig.centerLabel ?? "Main Content"
+  const rightLabel = rawProps.rightLabel ?? presetConfig.rightLabel ?? "Right Panel"
+
   // Responsive - use defaults if not provided
-  collapseLeftAt = DEFAULT_COLLAPSE_LEFT_AT,
-  collapseRightAt = DEFAULT_COLLAPSE_RIGHT_AT,
-  stackAt = DEFAULT_STACK_AT,
-}: ThreeColumnLayoutAdvancedProps) {
+  const collapseLeftAt =
+    rawProps.collapseLeftAt ?? presetConfig.collapseLeftAt ?? DEFAULT_COLLAPSE_LEFT_AT
+  const collapseRightAt =
+    rawProps.collapseRightAt ?? presetConfig.collapseRightAt ?? DEFAULT_COLLAPSE_RIGHT_AT
+  const stackAt = rawProps.stackAt ?? presetConfig.stackAt ?? DEFAULT_STACK_AT
+
+  // Hidden panels (null content hides by default)
+  const hideLeft = rawProps.leftHidden ?? left == null
+  const hideRight = rawProps.rightHidden ?? right == null
+
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   // Stack layout for mobile - check this FIRST
@@ -79,7 +97,15 @@ export function ThreeColumnLayoutAdvanced({
 
   // Mobile navigation state (separate from desktop collapse state)
   // On mobile: 'left' = show list, 'center' = show main content, 'right' = show detail
-  const [mobileView, setMobileView] = React.useState<'left' | 'center' | 'right'>('left')
+  const [mobileView, setMobileView] = React.useState<'left' | 'center' | 'right'>(() =>
+    hideLeft ? "center" : "left"
+  )
+
+  // Keep mobile view valid if panels become hidden
+  React.useEffect(() => {
+    if (hideLeft && mobileView === "left") setMobileView("center")
+    if (hideRight && mobileView === "right") setMobileView("center")
+  }, [hideLeft, hideRight, mobileView])
 
   // Persisted state
   const [persistedState, setPersistedState] = usePersistedState(
@@ -104,13 +130,16 @@ export function ThreeColumnLayoutAdvanced({
   const isLeftControlled = controlledLeftCollapsed !== undefined
   const isRightControlled = controlledRightCollapsed !== undefined
 
-  const leftCollapsed = isLeftControlled 
+  const computedLeftCollapsed = isLeftControlled 
     ? controlledLeftCollapsed 
     : (autoLeftCollapsed || internalLeftCollapsed)
   
-  const rightCollapsed = isRightControlled 
+  const computedRightCollapsed = isRightControlled 
     ? controlledRightCollapsed 
     : (autoRightCollapsed || internalRightCollapsed)
+
+  const leftCollapsed = hideLeft ? true : computedLeftCollapsed
+  const rightCollapsed = hideRight ? true : computedRightCollapsed
 
   // Panel widths (for resizing)
   const [leftWidth, setLeftWidth] = React.useState(defaultLeftWidth)
@@ -118,6 +147,7 @@ export function ThreeColumnLayoutAdvanced({
 
   // Toggle handlers
   const toggleLeft = React.useCallback(() => {
+    if (hideLeft) return
     const newValue = !leftCollapsed
     if (!isLeftControlled) {
       setInternalLeftCollapsed(newValue)
@@ -126,9 +156,10 @@ export function ThreeColumnLayoutAdvanced({
       }
     }
     onLeftCollapsedChange?.(newValue)
-  }, [leftCollapsed, isLeftControlled, onLeftCollapsedChange, persistState, setPersistedState])
+  }, [hideLeft, leftCollapsed, isLeftControlled, onLeftCollapsedChange, persistState, setPersistedState])
 
   const toggleRight = React.useCallback(() => {
+    if (hideRight) return
     const newValue = !rightCollapsed
     if (!isRightControlled) {
       setInternalRightCollapsed(newValue)
@@ -137,7 +168,7 @@ export function ThreeColumnLayoutAdvanced({
       }
     }
     onRightCollapsedChange?.(newValue)
-  }, [rightCollapsed, isRightControlled, onRightCollapsedChange, persistState, setPersistedState])
+  }, [hideRight, rightCollapsed, isRightControlled, onRightCollapsedChange, persistState, setPersistedState])
 
   // Resize handlers
   const leftResizeRef = React.useRef({ startWidth: leftWidth, startPos: 0 })
@@ -192,54 +223,59 @@ export function ThreeColumnLayoutAdvanced({
 
   // Mobile stacked layout - full screen navigation with back/forward
   if (isStacked) {
+    const canShowLeft = !hideLeft
+    const canShowRight = !hideRight
+
     // Mobile navigation handlers
-    const goToCenter = () => setMobileView('center')
-    const goToLeft = () => setMobileView('left')
-    const goToRight = () => setMobileView('right')
+    const goToCenter = () => setMobileView("center")
+    const goToLeft = () => {
+      if (canShowLeft) setMobileView("left")
+    }
+    const goToRight = () => {
+      if (canShowRight) setMobileView("right")
+    }
 
     // Also update context for external components that might use toggleLeft/toggleRight
     const mobileContextValue = {
-      leftCollapsed: mobileView !== 'left',
-      rightCollapsed: mobileView !== 'right',
-      toggleLeft: mobileView === 'left' ? goToCenter : goToLeft,
-      toggleRight: mobileView === 'right' ? goToCenter : goToRight,
+      leftCollapsed: !canShowLeft || mobileView !== "left",
+      rightCollapsed: !canShowRight || mobileView !== "right",
+      toggleLeft: !canShowLeft ? () => {} : (mobileView === "left" ? goToCenter : goToLeft),
+      toggleRight: !canShowRight ? () => {} : (mobileView === "right" ? goToCenter : goToRight),
     }
 
     return (
       <ThreeColumnContext.Provider value={mobileContextValue}>
-        <div 
+        <div
           ref={containerRef}
           className={cn("relative flex flex-col w-full h-full overflow-hidden", className)}
         >
           {/* LEFT PANEL - Full screen list view */}
-          {mobileView === 'left' && (
+          {canShowLeft && mobileView === "left" && (
             <div className="absolute inset-0 flex flex-col bg-background z-10">
-              {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30 flex-shrink-0">
                 <span className="text-base font-semibold">{leftLabel}</span>
               </div>
-              {/* Content - clicking items should call goToCenter via toggleLeft from context */}
-              <div className="flex-1 overflow-auto">
-                {left}
-              </div>
+              {leftHeader && <div className="flex-shrink-0">{leftHeader}</div>}
+              <div className="flex-1 overflow-auto">{left}</div>
             </div>
           )}
 
-          {/* CENTER PANEL - Full screen main content with back button */}
-          {mobileView === 'center' && (
+          {/* CENTER PANEL - Full screen main content with back/forward */}
+          {mobileView === "center" && (
             <div className="absolute inset-0 flex flex-col bg-background z-20">
-              {/* Header with back button */}
               <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToLeft}
-                  className="h-9 w-9"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
+                {canShowLeft && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={goToLeft}
+                    className="h-9 w-9"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                )}
                 <span className="text-base font-semibold flex-1">{centerLabel}</span>
-                {right && (
+                {canShowRight && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -250,17 +286,14 @@ export function ThreeColumnLayoutAdvanced({
                   </Button>
                 )}
               </div>
-              {/* Content */}
-              <div className="flex-1 overflow-auto">
-                {center}
-              </div>
+              {centerHeader && <div className="flex-shrink-0">{centerHeader}</div>}
+              <div className="flex-1 overflow-auto">{center}</div>
             </div>
           )}
 
           {/* RIGHT PANEL - Full screen detail view with back button */}
-          {mobileView === 'right' && right && (
+          {canShowRight && mobileView === "right" && (
             <div className="absolute inset-0 flex flex-col bg-background z-30">
-              {/* Header with back button */}
               <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
                 <Button
                   variant="ghost"
@@ -272,16 +305,22 @@ export function ThreeColumnLayoutAdvanced({
                 </Button>
                 <span className="text-base font-semibold flex-1">{rightLabel}</span>
               </div>
-              {/* Content */}
-              <div className="flex-1 overflow-auto">
-                {right}
-              </div>
+              {rightHeader && <div className="flex-shrink-0">{rightHeader}</div>}
+              <div className="flex-1 overflow-auto">{right}</div>
             </div>
           )}
         </div>
       </ThreeColumnContext.Provider>
     )
   }
+
+  const effectiveShowLeftCollapseButton = showLeftCollapseButton ?? showCollapseButtons
+  const effectiveShowRightCollapseButton = showRightCollapseButton ?? showCollapseButtons
+
+  // Flex-shrink priorities when viewport is constrained
+  const centerFlexShrink = spaceDistribution === "center-priority" ? 0 : 1
+  const rightFlexShrink = spaceDistribution === "right-priority" ? 0 : 1
+  const leftFlexShrink = 1
 
   // Normal three-column layout
   return (
@@ -290,56 +329,65 @@ export function ThreeColumnLayoutAdvanced({
         ref={containerRef}
         className={cn("relative flex flex-row w-full h-full overflow-hidden", className)}
       >
-        {/* Left Panel */}
-        <div
-          className={cn(
-            "flex flex-col h-full border-r transition-all duration-200 ease-in-out flex-shrink-0",
-            leftCollapsed && "border-r-0"
-          )}
-          style={{ 
-            width: leftCollapsed ? collapsedWidth : leftWidth,
-            minWidth: leftCollapsed ? collapsedWidth : minSideWidth,
-            maxWidth: leftCollapsed ? collapsedWidth : maxSideWidth,
-          }}
-          data-collapsed={leftCollapsed}
-          aria-label={leftLabel}
-        >
-          {leftCollapsed ? (
-            <CollapsedPanel
-              side="left"
-              label={leftLabel}
-              onClick={toggleLeft}
-              width={collapsedWidth}
-            />
-          ) : (
-            <>
-              {showCollapseButtons && (
-                <PanelHeader
-                  side="left"
-                  collapsed={leftCollapsed}
-                  onToggle={toggleLeft}
-                  label={leftLabel}
-                  showButton={showCollapseButtons}
-                >
-                  {leftLabel}
-                </PanelHeader>
+        {!hideLeft && (
+          <>
+            {/* Left Panel */}
+            <div
+              className={cn(
+                "flex flex-col h-full border-r transition-all duration-200 ease-in-out flex-shrink-0",
+                leftCollapsed && "border-r-0"
               )}
-              <div className="flex-1 overflow-auto">
-                {left}
-              </div>
-            </>
-          )}
-        </div>
+              style={{ 
+                width: leftCollapsed ? collapsedWidth : leftWidth,
+                minWidth: leftCollapsed ? collapsedWidth : minSideWidth,
+                maxWidth: leftCollapsed ? collapsedWidth : maxSideWidth,
+                flexShrink: leftCollapsed ? 0 : leftFlexShrink,
+              }}
+              data-collapsed={leftCollapsed}
+              aria-label={leftLabel}
+            >
+              {leftCollapsed ? (
+                <CollapsedPanel
+                  side="left"
+                  label={leftLabel}
+                  onClick={toggleLeft}
+                  width={collapsedWidth}
+                />
+              ) : (
+                <>
+                  {leftHeader ? (
+                    <div className="flex-shrink-0">{leftHeader}</div>
+                  ) : (
+                    effectiveShowLeftCollapseButton && (
+                      <PanelHeader
+                        side="left"
+                        collapsed={leftCollapsed}
+                        onToggle={toggleLeft}
+                        label={leftLabel}
+                        showButton={effectiveShowLeftCollapseButton}
+                      >
+                        {leftLabel}
+                      </PanelHeader>
+                    )
+                  )}
+                  <div className="flex-1 overflow-auto">
+                    {left}
+                  </div>
+                </>
+              )}
+            </div>
 
-        {/* Left Resize Handle */}
-        {resizable && !leftCollapsed && (
-          <ResizeHandle
-            direction="vertical"
-            index={0}
-            onResizeStart={handleLeftResizeStart}
-            onResize={handleLeftResize}
-            onResizeEnd={handleResizeEnd}
-          />
+            {/* Left Resize Handle */}
+            {resizable && !leftCollapsed && (
+              <ResizeHandle
+                direction="vertical"
+                index={0}
+                onResizeStart={handleLeftResizeStart}
+                onResize={handleLeftResize}
+                onResizeEnd={handleResizeEnd}
+              />
+            )}
+          </>
         )}
 
         {/* Center Panel */}
@@ -347,69 +395,79 @@ export function ThreeColumnLayoutAdvanced({
           className="flex flex-col h-full overflow-hidden transition-all duration-200 flex-1"
           style={{ 
             minWidth: centerMinWidth,
-            marginRight: rightCollapsed ? collapsedWidth : 0,
+            marginRight: rightCollapsed && !hideRight ? collapsedWidth : 0,
+            flexShrink: centerFlexShrink,
           }}
           aria-label={centerLabel}
         >
+          {centerHeader && <div className="flex-shrink-0">{centerHeader}</div>}
           <div className="flex-1 overflow-auto">
             {center}
           </div>
         </div>
 
-        {/* Right Resize Handle */}
-        {resizable && !rightCollapsed && (
-          <ResizeHandle
-            direction="vertical"
-            index={1}
-            onResizeStart={handleRightResizeStart}
-            onResize={handleRightResize}
-            onResizeEnd={handleResizeEnd}
-          />
-        )}
+        {!hideRight && (
+          <>
+            {/* Right Resize Handle */}
+            {resizable && !rightCollapsed && (
+              <ResizeHandle
+                direction="vertical"
+                index={1}
+                onResizeStart={handleRightResizeStart}
+                onResize={handleRightResize}
+                onResizeEnd={handleResizeEnd}
+              />
+            )}
 
-        {/* Right Panel */}
-        <div
-          className={cn(
-            "flex flex-col h-full border-l transition-all duration-200 ease-in-out",
-            rightCollapsed && "border-l-0 absolute right-0 top-0 bottom-0"
-          )}
-          style={rightCollapsed ? {
-            width: collapsedWidth,
-          } : {
-            width: rightWidth,
-            minWidth: minSideWidth,
-            maxWidth: maxSideWidth,
-            flexShrink: 0,
-          }}
-          data-collapsed={rightCollapsed}
-          aria-label={rightLabel}
-        >
-          {rightCollapsed ? (
-            <CollapsedPanel
-              side="right"
-              label={rightLabel}
-              onClick={toggleRight}
-              width={collapsedWidth}
-            />
-          ) : (
-            <>
-              {showCollapseButtons && (
-                <PanelHeader
-                  side="right"
-                  collapsed={rightCollapsed}
-                  onToggle={toggleRight}
-                  label={rightLabel}
-                  showButton={showCollapseButtons}
-                >
-                  {rightLabel}
-                </PanelHeader>
+            {/* Right Panel */}
+            <div
+              className={cn(
+                "flex flex-col h-full border-l transition-all duration-200 ease-in-out",
+                rightCollapsed && "border-l-0 absolute right-0 top-0 bottom-0"
               )}
-              <div className="flex-1 overflow-auto">
-                {right}
-              </div>
-            </>
-          )}
-        </div>
+              style={rightCollapsed ? {
+                width: collapsedWidth,
+              } : {
+                width: rightWidth,
+                minWidth: minSideWidth,
+                maxWidth: maxSideWidth,
+                flexShrink: rightFlexShrink,
+              }}
+              data-collapsed={rightCollapsed}
+              aria-label={rightLabel}
+            >
+              {rightCollapsed ? (
+                <CollapsedPanel
+                  side="right"
+                  label={rightLabel}
+                  onClick={toggleRight}
+                  width={collapsedWidth}
+                />
+              ) : (
+                <>
+                  {rightHeader ? (
+                    <div className="flex-shrink-0">{rightHeader}</div>
+                  ) : (
+                    effectiveShowRightCollapseButton && (
+                      <PanelHeader
+                        side="right"
+                        collapsed={rightCollapsed}
+                        onToggle={toggleRight}
+                        label={rightLabel}
+                        showButton={effectiveShowRightCollapseButton}
+                      >
+                        {rightLabel}
+                      </PanelHeader>
+                    )
+                  )}
+                  <div className="flex-1 overflow-auto">
+                    {right}
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </ThreeColumnContext.Provider>
   )

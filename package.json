@@ -4,7 +4,9 @@
     "private": true,
     "scripts": {
         "build": "next build",
+        "clean:next": "node scripts/clean-next.mjs",
         "dev": "next dev --hostname 0.0.0.0 --port 3000",
+        "dev:fresh": "pnpm run clean:next && pnpm run dev",
         "lint": "next lint",
         "start": "next start",
         "test": "vitest",

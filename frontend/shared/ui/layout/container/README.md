@@ -353,14 +353,18 @@ const [rightCollapsed, setRightCollapsed] = useState(false)
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `left` | ReactNode | required | Left panel content |
+| `preset` | `"feature" \| "store" \| "admin" \| "ide"` atau config | - | Preset width + responsive default (boleh di-override). |
+| `left` | ReactNode | optional | Left panel content (auto hidden jika `null/undefined`) |
 | `center` | ReactNode | required | Center panel content |
-| `right` | ReactNode | required | Right panel content |
+| `right` | ReactNode | optional | Right panel content (auto hidden jika `null/undefined`) |
 | `leftWidth` | number | 280 | Left panel width (px) |
-| `rightWidth` | number | 320 | Right panel width (px) |
+| `rightWidth` | number | 400 | Right panel width (px) |
+| `centerMinWidth` | number | 280 | Minimum center width (px) |
 | `minSideWidth` | number | 200 | Minimum side panel width |
-| `maxSideWidth` | number | 480 | Maximum side panel width |
+| `maxSideWidth` | number | 600 | Maximum side panel width |
 | `collapsedWidth` | number | 40 | Width when collapsed |
+| `leftHidden` / `rightHidden` | boolean | false | Force hide left/right panel |
+| `leftHeader` / `centerHeader` / `rightHeader` | ReactNode | - | Custom header per panel |
 | `leftCollapsed` | boolean | - | Controlled left collapse |
 | `rightCollapsed` | boolean | - | Controlled right collapse |
 | `onLeftCollapsedChange` | function | - | Left collapse callback |
@@ -368,7 +372,8 @@ const [rightCollapsed, setRightCollapsed] = useState(false)
 | `defaultLeftCollapsed` | boolean | false | Initial left state |
 | `defaultRightCollapsed` | boolean | false | Initial right state |
 | `resizable` | boolean | true | Enable resize handles |
-| `showCollapseButtons` | boolean | true | Show collapse buttons |
+| `showCollapseButtons` | boolean | true | Show collapse buttons (global) |
+| `showLeftCollapseButton` / `showRightCollapseButton` | boolean | - | Override per-panel collapse button |
 | `persistState` | boolean | false | Persist to localStorage |
 | `storageKey` | string | "three-column-layout" | Storage key |
 | `leftLabel` | string | "Left Panel" | Left panel label |

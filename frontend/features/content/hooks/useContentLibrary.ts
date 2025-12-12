@@ -127,6 +127,7 @@ export function useContentLibrary(workspaceId: Id<"workspaces"> | null | undefin
   const bulkDeleteMutation = useMutation(api.shared.content.mutations.bulkRemove)
   const createAiJobMutation = useMutation(api.shared.content.mutations.createAiJob)
   const generateUploadUrlMutation = useMutation(api.shared.content.mutations.generateUploadUrl)
+  const replaceFileMutation = useMutation(api.shared.content.mutations.replaceFile)
 
   // Filter items by search if needed
   const items = useMemo(() => {
@@ -200,6 +201,23 @@ export function useContentLibrary(workspaceId: Id<"workspaces"> | null | undefin
       ...data,
     })
   }, [workspaceId, updateMutation])
+
+  const replaceContentFile = useCallback(async (contentId: Id<"content">, data: {
+    storageId: string
+    mimeType?: string
+    fileSize?: number
+    dimensions?: { width: number; height: number }
+  }) => {
+    if (!workspaceId) throw new Error("No workspace selected")
+    return replaceFileMutation({
+      workspaceId,
+      contentId,
+      storageId: data.storageId as any,
+      mimeType: data.mimeType,
+      fileSize: data.fileSize,
+      dimensions: data.dimensions as any,
+    })
+  }, [workspaceId, replaceFileMutation])
 
   const deleteContent = useCallback(async (contentId: Id<"content">) => {
     if (!workspaceId) throw new Error("No workspace selected")
@@ -325,6 +343,7 @@ export function useContentLibrary(workspaceId: Id<"workspaces"> | null | undefin
     setSelectionMode,
     createContent,
     updateContent,
+    replaceContentFile,
     deleteContent,
     bulkDelete,
     createAiJob,

@@ -11,7 +11,7 @@ import { ChevronDown, ChevronRight, Box, Layers } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation'
-import { useSharedCanvas } from '@/frontend/shared/builder'
+import { useSharedCanvas } from '../canvas/core'
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl'
 import { useInspectorControls, setNestedValue, getNestedValue } from './hooks/useInspectorControls'
 

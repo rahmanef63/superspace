@@ -480,7 +480,9 @@ export function GrokInput({
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if ((e.key === 'Enter' || e.key === 'NumpadEnter') && !e.shiftKey) {
+      // Don't submit while IME composition is active
+      if (e.nativeEvent.isComposing) return
       e.preventDefault()
       if ((value.trim() || attachments.length > 0) && !disabled) {
         onSubmit()

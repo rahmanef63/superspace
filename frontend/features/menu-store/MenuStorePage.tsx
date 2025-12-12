@@ -27,7 +27,7 @@ import {
   HeaderControls,
   type FilterChip,
 } from "@/frontend/shared/ui/layout/header"
-import { FeatureListPanel, PreviewPanel, getAllFeaturePreviews, hasFeaturePreview } from "@/frontend/shared/preview"
+import { FeatureListPanel, PreviewPanel, hasFeaturePreview, loadAllFeaturePreviews } from "@/frontend/shared/preview"
 import { DragDropMenuTree } from "@/frontend/shared/ui"
 import {
   Menu, Plus, RefreshCw, TreeDeciduous, LayoutGrid, Eye, X, Info, Layers,
@@ -314,6 +314,34 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
   const [selectedFeatureId, setSelectedFeatureId] = React.useState<string | null>(null)
   const [previewVisible, setPreviewVisible] = React.useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = React.useState(true)
+  const [previewsLoaded, setPreviewsLoaded] = React.useState(false)
+  const [previewsLoading, setPreviewsLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    if (previewsLoaded || previewsLoading) return
+
+    let cancelled = false
+    setPreviewsLoading(true)
+
+    loadAllFeaturePreviews()
+      .then(() => {
+        if (!cancelled) {
+          setPreviewsLoaded(true)
+        }
+      })
+      .catch((err) => {
+        console.error("[MenuStore] Failed to load feature previews", err)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setPreviewsLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [previewsLoaded, previewsLoading])
 
   // Feature settings state (for right panel - settings mode)
   const [selectedSettingsFeatureSlug, setSelectedSettingsFeatureSlug] = React.useState<string | null>(null)
@@ -359,11 +387,18 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
       setPreviewVisible(false)
       setRightPanelCollapsed(true)
     } else {
-      setSelectedFeatureId(featureId)
-      setPreviewVisible(true)
-      setSettingsVisible(false) // Close settings if open
-      setRightPanelMode("preview")
-      setRightPanelCollapsed(false)
+      void loadAllFeaturePreviews()
+        .then(() => {
+          setPreviewsLoaded(true)
+          setSelectedFeatureId(featureId)
+          setPreviewVisible(true)
+          setSettingsVisible(false) // Close settings if open
+          setRightPanelMode("preview")
+          setRightPanelCollapsed(false)
+        })
+        .catch((err) => {
+          console.error("[MenuStore] Failed to load feature previews", err)
+        })
     }
   }, [selectedFeatureId, previewVisible])
 
@@ -733,12 +768,20 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             onShowFeatures={selectedMenuItem ? (item) => {
               // Open preview with this menu's feature
               const featureSlug = item.slug
-              if (featureSlug && hasFeaturePreview(featureSlug)) {
-                handleTogglePreview(featureSlug)
-              } else {
-                // Switch to Available tab to show features
-                setCenterPanelMode("available")
-              }
+              if (!featureSlug) return
+
+              void loadAllFeaturePreviews()
+                .then(() => {
+                  setPreviewsLoaded(true)
+                  if (hasFeaturePreview(featureSlug)) {
+                    handleTogglePreview(featureSlug)
+                  } else {
+                    setCenterPanelMode("available")
+                  }
+                })
+                .catch(() => {
+                  setCenterPanelMode("available")
+                })
             } : undefined}
             isPreviewOpen={previewVisible && selectedMenuItem?.slug === selectedFeatureId}
           />
@@ -886,6 +929,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
         <SettingsRegistryProvider>
           <FeatureSettingsSync workspaceId={workspaceId} />
           <ThreeColumnLayoutAdvanced
+            preset="store"
             left={leftPanelContent}
             center={centerPanelContent}
             right={rightPanelContent}
@@ -893,26 +937,8 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
             leftLabel="Menu Tree"
             centerLabel="Details"
             rightLabel="Preview"
-            // Widths - flexible for desktop preview (like workspace-store)
-            leftWidth={280}
-            rightWidth={500}
-            centerMinWidth={200}
-            minSideWidth={180}
-            maxSideWidth={1200}
-            collapsedWidth={44}
-            // Space distribution - prioritize right panel for preview
-            spaceDistribution="right-priority"
-            // Features
-            resizable={true}
-            showCollapseButtons={true}
             persistState={true}
             storageKey="menu-store-layout"
-            // Responsive - right panel collapses first, left panel stays visible longer
-            collapseRightAt={1024}
-            collapseLeftAt={640}
-            stackAt={480}
-            // Default states
-            defaultLeftCollapsed={false}
             rightCollapsed={rightPanelCollapsed}
             onRightCollapsedChange={setRightPanelCollapsed}
           />

@@ -5,6 +5,7 @@ export { OnboardingFlow } from './components/OnboardingFlow';
 export { RobustOnboardingFlow } from './components/RobustOnboardingFlow';
 export { BundleSelector } from './components/BundleSelector';
 export { FeatureCustomizer } from './components/FeatureCustomizer';
+export { OnboardingChecklistPanel } from './components/OnboardingChecklistPanel';
 
 // Bundle templates - All bundle-related exports
 export {

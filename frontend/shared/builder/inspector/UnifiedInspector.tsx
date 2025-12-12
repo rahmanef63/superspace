@@ -2,7 +2,6 @@ import React from 'react';
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { useSharedCanvas } from '../canvas/core/SharedCanvasProvider';
 import { Input, Label, Select, Switch, Button } from '@/components/ui';
-import { ChildrenManager } from './ChildrenManager';
 import { DynamicInspector } from './DynamicInspector';
 
 interface UnifiedInspectorProps {
@@ -18,10 +17,10 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
 }) => {
   const { selectedNode: contextSelectedNode, setNodeProps } = useSharedCanvas();
   const { getComponent, getWidget } = useCrossFeatureRegistry();
-  
+
   // Use prop selectedNode if provided, otherwise use context
   const selectedNode = propSelectedNode || contextSelectedNode;
-  
+
   if (!selectedNode) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
@@ -43,20 +42,12 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
   if (CustomRenderer) {
     return (
       <div className="h-full overflow-y-auto p-4">
-        <div className="mb-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Component</div>
-          <div className="text-sm font-semibold flex items-center gap-2">
-            {getFeatureIcon(selectedNode.data.feature || feature)}
-            {config?.label || nodeType}
-          </div>
-        </div>
         <CustomRenderer
           selectedNode={selectedNode}
           props={props}
           updateProp={updateProp}
           config={config}
         />
-        <ChildrenManager />
       </div>
     );
   }

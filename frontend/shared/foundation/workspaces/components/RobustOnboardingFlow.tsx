@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { useUser } from "@clerk/nextjs"
@@ -78,6 +79,8 @@ export function RobustOnboardingFlow({
   const isSignedIn = Boolean(clerkAuth?.isSignedIn)
 
   const createWorkspace = useMutation(api.workspace.workspaces.createWorkspace)
+  const trackEvent = useMutation(api.features.analytics.mutations.trackEvent as any)
+  const pathname = usePathname()
   
   // Get the selected bundle with features from database/static
   const { bundle: selectedBundle } = useBundleWithFeatures(data.selectedBundleId)
@@ -185,11 +188,11 @@ export function RobustOnboardingFlow({
 
     let attempt = 0
     while (attempt < 10) {
-      const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`
-      try {
-        const workspaceId = await createWorkspace({
-          name: data.name,
-          slug: candidate,
+        const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`
+       try {
+          const workspaceId = await createWorkspace({
+            name: data.name,
+            slug: candidate,
           type: data.type,
           description: data.description,
           isPublic: false,
@@ -197,14 +200,35 @@ export function RobustOnboardingFlow({
           bundleId: data.selectedBundleId || undefined,
           enabledFeatures: data.enabledFeatures,
           // Use enabled features as selected menu slugs for menu system
-          selectedMenuSlugs: data.enabledFeatures,
-        })
+            selectedMenuSlugs: data.enabledFeatures,
+          })
 
-        // Bundle and features are saved with the workspace creation
-        onComplete(workspaceId, data.enabledFeatures)
-        setIsSubmitting(false)
-        return
-      } catch (error: any) {
+          void trackEvent({
+            workspaceId,
+            eventType: "onboarding",
+            eventName: "onboarding.workspace_created",
+            properties: {
+              workspaceType: data.type,
+              bundleId: data.selectedBundleId ?? undefined,
+              enabledFeaturesCount: data.enabledFeatures.length,
+              enabledFeatures: data.enabledFeatures,
+            },
+            metadata: {
+              userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+              referrer: typeof document !== "undefined" ? document.referrer : undefined,
+              path: pathname ?? undefined,
+            },
+          }).catch((err: any) => {
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("[Onboarding] analytics trackEvent failed", err)
+            }
+          })
+
+          // Bundle and features are saved with the workspace creation
+          onComplete(workspaceId, data.enabledFeatures)
+          setIsSubmitting(false)
+          return
+        } catch (error: any) {
         const msg = String(error?.message || error)
         const duplicate = msg.includes("slug already exists") || (msg.includes("slug") && msg.includes("exists"))
         const unauthenticated = msg.toLowerCase().includes("not authenticated")

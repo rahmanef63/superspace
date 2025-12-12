@@ -24,7 +24,7 @@ describe('Shared Import Validation - Baseline', () => {
       )
       expect(SharedCanvasProvider).toBeDefined()
       expect(typeof SharedCanvasProvider).toBe('function')
-    }, 15000) // Increased timeout - canvas module is large
+    }, 30000) // Increased timeout - builder facade import is large (can be slower in full suite)
 
     it('should import canvas hooks', async () => {
       const { useSharedCanvas } = await import('@/frontend/shared/builder')

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { CropIcon, RotateCcwIcon } from 'lucide-react';
-import { Slot } from 'radix-ui';
+import { Slot } from '@radix-ui/react-slot';
 import {
   type ComponentProps,
   type CSSProperties,
@@ -49,52 +49,133 @@ const centerAspectCrop = (
     mediaHeight
   );
 
-const getCroppedPngImage = async (
+export const getCroppedPngImage = async (
   imageSrc: HTMLImageElement,
   scaleFactor: number,
   pixelCrop: PixelCrop,
   maxImageSize: number
 ): Promise<string> => {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, value));
 
-  if (!ctx) {
+  const canvasToBlob = (
+    canvas: HTMLCanvasElement,
+    type: string
+  ): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('Failed to create blob from canvas.'));
+          return;
+        }
+        resolve(blob);
+      }, type);
+    });
+
+  const cropWidth = Number(pixelCrop.width);
+  const cropHeight = Number(pixelCrop.height);
+
+  if (!(Number.isFinite(cropWidth) && Number.isFinite(cropHeight))) {
+    throw new Error('Invalid crop dimensions.');
+  }
+  if (cropWidth <= 0 || cropHeight <= 0) {
+    throw new Error('Crop width/height must be > 0.');
+  }
+
+  const displayedWidth = imageSrc.width || imageSrc.naturalWidth || 1;
+  const displayedHeight = imageSrc.height || imageSrc.naturalHeight || 1;
+
+  const scaleX = imageSrc.naturalWidth / displayedWidth;
+  const scaleY = imageSrc.naturalHeight / displayedHeight;
+
+  const sourceX = pixelCrop.x * scaleX;
+  const sourceY = pixelCrop.y * scaleY;
+  const sourceWidth = cropWidth * scaleX;
+  const sourceHeight = cropHeight * scaleY;
+
+  const MAX_ITERATIONS = 12;
+  const SAFETY_MARGIN = 0.95;
+
+  let currentScale = Number.isFinite(scaleFactor) ? scaleFactor : 1;
+  currentScale = clamp(currentScale, 0.01, 1);
+
+  for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Context is null, this should never happen.');
+    }
+
+    const targetWidth = Math.max(1, Math.round(cropWidth * currentScale));
+    const targetHeight = Math.max(1, Math.round(cropHeight * currentScale));
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    ctx.drawImage(
+      imageSrc,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      targetWidth,
+      targetHeight
+    );
+
+    const blob = await canvasToBlob(canvas, 'image/png');
+
+    if (blob.size <= maxImageSize) {
+      return canvas.toDataURL('image/png');
+    }
+
+    if (targetWidth === 1 && targetHeight === 1) {
+      break;
+    }
+
+    const ratio = maxImageSize / blob.size;
+    const recommendedScale = currentScale * Math.sqrt(ratio) * SAFETY_MARGIN;
+    currentScale = clamp(recommendedScale, 1 / Math.max(cropWidth, cropHeight), currentScale * 0.9);
+  }
+
+  // Final attempt: force a minimal 1x1 output as a last resort.
+  const finalScale = 1 / Math.max(cropWidth, cropHeight);
+  const finalCanvas = document.createElement('canvas');
+  const finalCtx = finalCanvas.getContext('2d');
+
+  if (!finalCtx) {
     throw new Error('Context is null, this should never happen.');
   }
 
-  const scaleX = imageSrc.naturalWidth / imageSrc.width;
-  const scaleY = imageSrc.naturalHeight / imageSrc.height;
+  finalCtx.imageSmoothingEnabled = true;
+  finalCtx.imageSmoothingQuality = 'high';
+  finalCanvas.width = Math.max(1, Math.round(cropWidth * finalScale));
+  finalCanvas.height = Math.max(1, Math.round(cropHeight * finalScale));
 
-  ctx.imageSmoothingEnabled = false;
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
-
-  ctx.drawImage(
+  finalCtx.drawImage(
     imageSrc,
-    pixelCrop.x * scaleX,
-    pixelCrop.y * scaleY,
-    pixelCrop.width * scaleX,
-    pixelCrop.height * scaleY,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
     0,
     0,
-    canvas.width,
-    canvas.height
+    finalCanvas.width,
+    finalCanvas.height
   );
 
-  const croppedImageUrl = canvas.toDataURL('image/png');
-  const response = await fetch(croppedImageUrl);
-  const blob = await response.blob();
-
-  if (blob.size > maxImageSize) {
-    return await getCroppedPngImage(
-      imageSrc,
-      scaleFactor * 0.9,
-      pixelCrop,
-      maxImageSize
+  const finalBlob = await canvasToBlob(finalCanvas, 'image/png');
+  if (finalBlob.size > maxImageSize) {
+    throw new Error(
+      `Unable to generate a cropped image under ${maxImageSize} bytes (best: ${finalBlob.size} bytes).`
     );
   }
 
-  return croppedImageUrl;
+  return finalCanvas.toDataURL('image/png');
 };
 
 type ImageCropContextType = {
@@ -265,7 +346,7 @@ export const ImageCropContent = ({
           alt="crop"
           className="size-full"
           onLoad={onImageLoad}
-          ref={imgRef as React.RefObject<HTMLImageElement>}
+          ref={imgRef}
           src={imgSrc}
         />
       )}
@@ -273,65 +354,69 @@ export const ImageCropContent = ({
   );
 };
 
-export type ImageCropApplyProps = ComponentProps<'button'> & {
-  asChild?: boolean;
-};
+export type ImageCropApplyProps =
+  | ({ asChild: true } & ComponentProps<typeof Slot>)
+  | ({ asChild?: false } & ComponentProps<typeof Button>);
 
-export const ImageCropApply = ({
-  asChild = false,
-  children,
-  onClick,
-  ...props
-}: ImageCropApplyProps) => {
+export const ImageCropApply = (props: ImageCropApplyProps) => {
   const { applyCrop } = useImageCrop();
+
+  if (props.asChild) {
+    const { asChild, onClick, ...slotProps } = props;
+
+    const handleClick = async (e: MouseEvent<HTMLElement>) => {
+      await applyCrop();
+      onClick?.(e);
+    };
+
+    return (
+      <Slot onClick={handleClick} {...slotProps} />
+    );
+  }
+
+  const { asChild, children, onClick, ...buttonProps } = props;
 
   const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
     await applyCrop();
     onClick?.(e);
   };
 
-  if (asChild) {
-    return (
-      <Slot.Root onClick={handleClick} {...(props as any)}>
-        {children}
-      </Slot.Root>
-    );
-  }
-
   return (
-    <Button onClick={handleClick} size="icon" variant="ghost" {...(props as any)}>
+    <Button onClick={handleClick} size="icon" variant="ghost" {...buttonProps}>
       {children ?? <CropIcon className="size-4" />}
     </Button>
   );
 };
 
-export type ImageCropResetProps = ComponentProps<'button'> & {
-  asChild?: boolean;
-};
+export type ImageCropResetProps =
+  | ({ asChild: true } & ComponentProps<typeof Slot>)
+  | ({ asChild?: false } & ComponentProps<typeof Button>);
 
-export const ImageCropReset = ({
-  asChild = false,
-  children,
-  onClick,
-  ...props
-}: ImageCropResetProps) => {
+export const ImageCropReset = (props: ImageCropResetProps) => {
   const { resetCrop } = useImageCrop();
+
+  if (props.asChild) {
+    const { asChild, onClick, ...slotProps } = props;
+
+    const handleClick = (e: MouseEvent<HTMLElement>) => {
+      resetCrop();
+      onClick?.(e);
+    };
+
+    return (
+      <Slot onClick={handleClick} {...slotProps} />
+    );
+  }
+
+  const { asChild, children, onClick, ...buttonProps } = props;
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     resetCrop();
     onClick?.(e);
   };
 
-  if (asChild) {
-    return (
-      <Slot.Root onClick={handleClick} {...(props as any)}>
-        {children}
-      </Slot.Root>
-    );
-  }
-
   return (
-    <Button onClick={handleClick} size="icon" variant="ghost" {...(props as any)}>
+    <Button onClick={handleClick} size="icon" variant="ghost" {...buttonProps}>
       {children ?? <RotateCcwIcon className="size-4" />}
     </Button>
   );
@@ -361,7 +446,7 @@ export const Cropper = ({
     onChange={onChange}
     onComplete={onComplete}
     onCrop={onCrop}
-    {...(props as any)}
+    {...props}
   >
     <ImageCropContent className={className} style={style} />
   </ImageCrop>

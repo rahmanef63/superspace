@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
 import {
   DatabaseShell,
@@ -9,6 +9,7 @@ import {
   DatabaseContentSkeleton,
 } from "../components";
 import { CreateDatabaseDialog } from "../dialog";
+import { Button } from "@/components/ui/button";
 import {
   useDatabasePageHandlers,
 } from "../hooks";
@@ -16,6 +17,10 @@ import {
   DatabaseSidebarContainer,
   DatabaseContentContainer,
 } from "../containers";
+import {
+  DATABASE_STARTER_TEMPLATES,
+  type DatabaseStarterTemplateId,
+} from "../constants/templates";
 
 export interface DatabasePageProps {
   workspaceId: Id<"workspaces">;
@@ -24,6 +29,7 @@ export interface DatabasePageProps {
 export function DatabasePage({ workspaceId }: DatabasePageProps) {
   const [selectedTableId, setSelectedTableId] = useState<Id<"dbTables"> | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createTemplateId, setCreateTemplateId] = useState<DatabaseStarterTemplateId>("blank");
 
   // Handlers - pass null values for now, will be updated by content container
   const handlers = useDatabasePageHandlers({
@@ -67,13 +73,32 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
   let content: React.ReactNode = null;
 
   if (!selectedTableId) {
+    const quickTemplates = DATABASE_STARTER_TEMPLATES.filter((t) => t.id !== "blank");
     content = (
       <EmptyState
         title="No databases yet"
-        description="Create a database to begin organising your roadmap."
+        description="Create a database to start capturing and organizing your work."
         actionLabel="Create database"
-        onAction={() => setIsCreateOpen(true)}
-      />
+        onAction={() => {
+          setCreateTemplateId("blank");
+          setIsCreateOpen(true);
+        }}
+      >
+        {quickTemplates.map((template) => (
+          <Button
+            key={template.id}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCreateTemplateId(template.id);
+              setIsCreateOpen(true);
+            }}
+          >
+            Start with {template.name}
+          </Button>
+        ))}
+      </EmptyState>
     );
   } else {
     content = (
@@ -106,10 +131,17 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
       <CreateDatabaseDialog
         workspaceId={workspaceId}
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        initialTemplateId={createTemplateId}
+        onOpenChange={(next) => {
+          setIsCreateOpen(next);
+          if (!next) {
+            setCreateTemplateId("blank");
+          }
+        }}
         onCreated={(tableId) => {
           setSelectedTableId(tableId);
           setIsCreateOpen(false);
+          setCreateTemplateId("blank");
         }}
       />
     </>

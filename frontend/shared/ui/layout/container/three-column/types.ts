@@ -4,16 +4,36 @@
 
 import type { ReactNode } from "react"
 
+// ---------------------------------------------------------------------------
+// Presets
+// ---------------------------------------------------------------------------
+
+export type ThreeColumnPresetName = "feature" | "store" | "admin" | "ide"
+
+export type ThreeColumnPresetConfig = Partial<
+  Omit<
+    ThreeColumnLayoutAdvancedProps,
+    "left" | "center" | "right" | "className" | "preset" | "leftHeader" | "centerHeader" | "rightHeader"
+  >
+>
+
+// ---------------------------------------------------------------------------
+// Main Props
+// ---------------------------------------------------------------------------
+
 export interface ThreeColumnLayoutAdvancedProps {
-  /** Left panel content */
-  left: ReactNode
+  /** Left panel content (optional). If null/undefined, left panel is hidden. */
+  left?: ReactNode
   /** Center panel content (main content area) */
   center: ReactNode
-  /** Right panel content */
-  right: ReactNode
+  /** Right panel content (optional). If null/undefined, right panel is hidden. */
+  right?: ReactNode
   /** Additional class names for the container */
   className?: string
-  
+
+  /** Optional preset name or config to reduce duplication */
+  preset?: ThreeColumnPresetName | ThreeColumnPresetConfig
+
   // Panel Configuration
   /** Left panel default width */
   leftWidth?: number
@@ -25,14 +45,23 @@ export interface ThreeColumnLayoutAdvancedProps {
   minSideWidth?: number
   /** Maximum width for side panels */
   maxSideWidth?: number
-  /** Width when collapsed */
+  /** Width when collapsed (applies to both sides unless hidden) */
   collapsedWidth?: number
-  
-  // Size Distribution (when panels collapse)
-  /** How to distribute space: 'center-priority' gives most to center, 'right-priority' to right */
+
+  // Size Distribution (when viewport is constrained)
+  /** How to distribute/allow shrinking: 'center-priority' protects center, 'right-priority' protects right */
   spaceDistribution?: "center-priority" | "right-priority" | "equal"
-  
-  // Collapse State
+
+  // Optional custom headers per panel (rendered when expanded)
+  leftHeader?: ReactNode
+  centerHeader?: ReactNode
+  rightHeader?: ReactNode
+
+  // Collapse / Visibility State
+  /** Force-hide left panel entirely (overrides left content) */
+  leftHidden?: boolean
+  /** Force-hide right panel entirely (overrides right content) */
+  rightHidden?: boolean
   /** Whether left panel is collapsed (controlled) */
   leftCollapsed?: boolean
   /** Whether right panel is collapsed (controlled) */
@@ -45,25 +74,29 @@ export interface ThreeColumnLayoutAdvancedProps {
   defaultLeftCollapsed?: boolean
   /** Default right collapsed state */
   defaultRightCollapsed?: boolean
-  
+
   // Features
   /** Enable resizable panels */
   resizable?: boolean
-  /** Show collapse buttons */
+  /** Show collapse buttons (global default) */
   showCollapseButtons?: boolean
+  /** Override collapse button visibility for left panel */
+  showLeftCollapseButton?: boolean
+  /** Override collapse button visibility for right panel */
+  showRightCollapseButton?: boolean
   /** Persist collapse state to localStorage */
   persistState?: boolean
   /** Storage key for persisting state */
   storageKey?: string
-  
+
   // Labels
-  /** Left panel label (for accessibility) */
+  /** Left panel label (for accessibility & collapsed indicator) */
   leftLabel?: string
   /** Center panel label */
   centerLabel?: string
   /** Right panel label */
   rightLabel?: string
-  
+
   // Responsive
   /** Breakpoint to collapse left panel automatically (px). Default: 640 (mobile only) */
   collapseLeftAt?: number

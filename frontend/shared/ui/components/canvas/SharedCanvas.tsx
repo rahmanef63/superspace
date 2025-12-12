@@ -1,7 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
-  Controls,
   MiniMap,
   useReactFlow,
   ReactFlowProvider,
@@ -29,18 +28,18 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
   onExternalDrop,
 }) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { 
-    nodes, 
-    edges, 
+  const {
+    nodes,
+    edges,
     onNodesChange,
     onEdgesChange,
-    setNodes, 
-    setEdges, 
+    setNodes,
+    setEdges,
     onConnect,
     setSelectedNodeId,
     addNode
   } = useSharedCanvas();
-  
+
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
 
@@ -119,11 +118,10 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-gray-50"
+        className="bg-muted/30"
       >
         <Background />
-        <Controls />
-        <MiniMap />
+        <MiniMap className="!bg-background/80 !border-border" />
         <CanvasToolbar onLayout={onLayout} showLayoutControls={showLayoutControls} />
       </ReactFlow>
     </div>

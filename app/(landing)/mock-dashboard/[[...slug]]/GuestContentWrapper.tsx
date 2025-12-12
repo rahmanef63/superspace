@@ -1,15 +1,11 @@
 "use client";
 
-import { SignUpButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, ArrowRight, BarChart3 } from "lucide-react";
-import { getFeaturePreview, getAllFeaturePreviews } from "@/frontend/shared/preview/all-previews";
+import { Sparkles, BarChart3 } from "lucide-react";
+import { getFeaturePreview, loadAllFeaturePreviews } from "@/frontend/shared/preview";
 import type { FeaturePreviewConfig } from "@/frontend/shared/preview/types";
-
-// Import all previews to ensure they're registered
-import "@/frontend/shared/preview/all-previews";
 
 interface GuestContentWrapperProps {
   workspaceId?: string;
@@ -105,6 +101,25 @@ function DefaultPreview({ featureName }: { featureName: string }) {
   );
 }
 
+function LoadingPreview({ featureName }: { featureName: string }) {
+  const formattedName = featureName
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  return (
+    <FeaturePreviewWrapper title={formattedName} description="Loading demo preview…">
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          <p className="mt-4 text-lg font-medium">Loading preview</p>
+          <p className="text-sm text-muted-foreground">Preparing demo content…</p>
+        </CardContent>
+      </Card>
+    </FeaturePreviewWrapper>
+  );
+}
+
 /**
  * Map of feature aliases to their canonical feature IDs
  * This handles cases where URL slugs differ from feature registry IDs
@@ -176,6 +191,29 @@ const FEATURE_ALIASES: Record<string, string> = {
  */
 export function GuestContentWrapper({ activeView }: GuestContentWrapperProps) {
   const featureSlug = (activeView ?? "overview").toLowerCase();
+  const [previewsReady, setPreviewsReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadAllFeaturePreviews()
+      .catch((error) => {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[GuestContentWrapper] Failed to load previews:", error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewsReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!previewsReady) {
+    return <LoadingPreview featureName={featureSlug} />;
+  }
 
   // Resolve the feature ID from alias or use directly
   const featureId = FEATURE_ALIASES[featureSlug] || featureSlug;

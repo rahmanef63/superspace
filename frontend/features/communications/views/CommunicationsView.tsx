@@ -114,6 +114,7 @@ export function CommunicationsView({
   // Unified layout for both channels and DMs (DRY)
   return (
     <ThreeColumnLayout
+      preset="feature"
       className={className}
       left={
         <CommunicationSidebar
@@ -140,8 +141,7 @@ export function CommunicationsView({
           <InspectorPanel />
         ) : null
       }
-      leftWidth={280}
-      rightWidth={rightPanelOpen ? 280 : 0}
+      rightWidth={280}
     />
   )
 }

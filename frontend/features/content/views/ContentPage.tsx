@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback } from "react"
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import {
   Library,
   Upload,
@@ -16,7 +16,6 @@ import {
   Info,
   Bot,
   ChevronLeft,
-  Edit,
 } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
@@ -31,7 +30,45 @@ import { ContentInspector } from "../components/ContentInspector"
 import { ContentAIChat } from "../components/ContentAIChat"
 import { FolderManager } from "../components/FolderManager"
 import { UploadDialog } from "@/frontend/shared/ui/components/upload"
-import { ImageEditorDialog } from "@/frontend/shared/ui/components/upload"
+import { ImageCrop, ImageCropContent } from "@/components/ui/shadcn-io/image-crop"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+
+type EditorMode = "transform" | "adjust" | "crop" | "preview"
+
+type ImageEditChanges = {
+  rotation: number
+  flipH: boolean
+  flipV: boolean
+  brightness: number
+  contrast: number
+  saturation: number
+  crop?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  zoom: number
+}
+
+const defaultChanges: ImageEditChanges = {
+  rotation: 0,
+  flipH: false,
+  flipV: false,
+  brightness: 100,
+  contrast: 100,
+  saturation: 100,
+  zoom: 1,
+}
+
+const defaultAspectRatios = [
+  { label: "Free", value: undefined },
+  { label: "1:1", value: 1 },
+  { label: "4:3", value: 4 / 3 },
+  { label: "16:9", value: 16 / 9 },
+  { label: "3:2", value: 3 / 2 },
+  { label: "2:3", value: 2 / 3 },
+]
 
 interface ContentPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -65,8 +102,38 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
 
   // Dialog states
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
-  const [imageEditorOpen, setImageEditorOpen] = useState(false)
-  const [editingImageSrc, setEditingImageSrc] = useState<string | null>(null)
+
+  // Inline image editor state (desktop)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const [changes, setChanges] = useState<ImageEditChanges>(defaultChanges)
+  const [history, setHistory] = useState<ImageEditChanges[]>([defaultChanges])
+  const [historyIndex, setHistoryIndex] = useState(0)
+  const [isSavingImage, setIsSavingImage] = useState(false)
+  const [activeMode, setActiveMode] = useState<EditorMode>("transform")
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | undefined>(undefined)
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [croppedImageSrc, setCroppedImageSrc] = useState<string | null>(null)
+
+  // Keep latest edit changes available to stable callbacks (avoid effect churn)
+  const changesRef = useRef<ImageEditChanges>(changes)
+
+  // Keep history state in refs so rapid updates don't use stale closures
+  const historyRef = useRef<ImageEditChanges[]>(history)
+  const historyIndexRef = useRef<number>(historyIndex)
+
+  useEffect(() => {
+    changesRef.current = changes
+  }, [changes])
+
+  useEffect(() => {
+    historyRef.current = history
+  }, [history])
+
+  useEffect(() => {
+    historyIndexRef.current = historyIndex
+  }, [historyIndex])
 
   const {
     items,
@@ -93,7 +160,280 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
     uploadFile,
     uploadUrl,
     updateContent,
+    replaceContentFile,
   } = useContentLibrary(workspaceId)
+
+  const renderCanvas = useCallback((overrideChanges?: ImageEditChanges) => {
+    const canvas = canvasRef.current
+    const img = imageRef.current
+    if (!canvas || !img) return
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    const imgWidth = img.naturalWidth || img.width
+    const imgHeight = img.naturalHeight || img.height
+
+    const effectiveChanges = overrideChanges ?? changesRef.current
+
+    const isRotated = effectiveChanges.rotation === 90 || effectiveChanges.rotation === 270
+    const sourceWidth = isRotated ? imgHeight : imgWidth
+    const sourceHeight = isRotated ? imgWidth : imgHeight
+
+    const zoom = effectiveChanges.zoom
+    canvas.width = Math.max(1, Math.round(sourceWidth * zoom))
+    canvas.height = Math.max(1, Math.round(sourceHeight * zoom))
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    ctx.save()
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    ctx.rotate((effectiveChanges.rotation * Math.PI) / 180)
+    ctx.scale(effectiveChanges.flipH ? -1 : 1, effectiveChanges.flipV ? -1 : 1)
+
+    ctx.filter = `brightness(${effectiveChanges.brightness}%) contrast(${effectiveChanges.contrast}%) saturate(${effectiveChanges.saturation}%)`
+
+    const drawWidth = imgWidth * zoom
+    const drawHeight = imgHeight * zoom
+    ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight)
+    ctx.restore()
+  }, [])
+
+  const updateChanges = useCallback((newChanges: Partial<ImageEditChanges>) => {
+    setChanges((prev) => {
+      const updated = { ...prev, ...newChanges }
+
+      const baseIndex = historyIndexRef.current
+      const baseHistory = historyRef.current
+      const trimmed = baseHistory.slice(0, baseIndex + 1)
+      const nextHistory = [...trimmed, updated]
+      const nextIndex = nextHistory.length - 1
+
+      historyRef.current = nextHistory
+      historyIndexRef.current = nextIndex
+      changesRef.current = updated
+
+      setHistory(nextHistory)
+      setHistoryIndex(nextIndex)
+
+      return updated
+    })
+  }, [])
+
+  const undo = useCallback(() => {
+    const idx = historyIndexRef.current
+    if (idx <= 0) return
+
+    const nextIndex = idx - 1
+    const next = historyRef.current[nextIndex]
+    if (!next) return
+
+    historyIndexRef.current = nextIndex
+    changesRef.current = next
+    setHistoryIndex(nextIndex)
+    setChanges(next)
+  }, [])
+
+  const redo = useCallback(() => {
+    const idx = historyIndexRef.current
+    const baseHistory = historyRef.current
+    if (idx >= baseHistory.length - 1) return
+
+    const nextIndex = idx + 1
+    const next = baseHistory[nextIndex]
+    if (!next) return
+
+    historyIndexRef.current = nextIndex
+    changesRef.current = next
+    setHistoryIndex(nextIndex)
+    setChanges(next)
+  }, [])
+
+  const resetImageEdits = useCallback(() => {
+    setChanges(defaultChanges)
+    setHistory([defaultChanges])
+    setHistoryIndex(0)
+    setCroppedImageSrc(null)
+    changesRef.current = defaultChanges
+    historyRef.current = [defaultChanges]
+    historyIndexRef.current = 0
+
+    const src = selectedContent?.type === "image" ? selectedContent.fileUrl : null
+    if (src) {
+      const img = new Image()
+      img.crossOrigin = "anonymous"
+      img.onload = () => {
+        imageRef.current = img
+        setImageLoaded(true)
+        renderCanvas(defaultChanges)
+      }
+      img.src = src
+
+      fetch(src)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], "image.png", { type: blob.type || "image/png" })
+          setImageFile(file)
+        })
+        .catch(() => {})
+    }
+  }, [renderCanvas, selectedContent])
+
+  const rotate = useCallback((direction: "cw" | "ccw") => {
+    const delta = direction === "cw" ? 90 : -90
+    updateChanges({
+      rotation: ((changes.rotation + delta) % 360 + 360) % 360,
+    })
+  }, [changes.rotation, updateChanges])
+
+  const flip = useCallback((axis: "h" | "v") => {
+    if (axis === "h") {
+      updateChanges({ flipH: !changes.flipH })
+    } else {
+      updateChanges({ flipV: !changes.flipV })
+    }
+  }, [changes.flipH, changes.flipV, updateChanges])
+
+  const handleCropComplete = useCallback((croppedDataUrl: string) => {
+    setCroppedImageSrc(croppedDataUrl)
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    img.onload = () => {
+      imageRef.current = img
+      setImageLoaded(true)
+      setChanges(defaultChanges)
+      setHistory([defaultChanges])
+      setHistoryIndex(0)
+      renderCanvas()
+    }
+    img.src = croppedDataUrl
+
+    fetch(croppedDataUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const file = new File([blob], "cropped-image.png", { type: "image/png" })
+        setImageFile(file)
+      })
+      .catch(() => {})
+
+    setActiveMode("transform")
+  }, [renderCanvas])
+
+  const getCurrentPreviewUrl = useCallback(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      try {
+        return canvas.toDataURL("image/png")
+      } catch {
+        // ignore
+      }
+    }
+    return croppedImageSrc || selectedContent?.fileUrl || ""
+  }, [croppedImageSrc, selectedContent?.fileUrl])
+
+  // Load selected image into editor (desktop)
+  useEffect(() => {
+    if (!selectedContent || selectedContent.type !== "image" || !selectedContent.fileUrl) {
+      imageRef.current = null
+      setImageLoaded(false)
+      setImageFile(null)
+      setCroppedImageSrc(null)
+      setChanges(defaultChanges)
+      setHistory([defaultChanges])
+      setHistoryIndex(0)
+      setActiveMode("transform")
+      setSelectedAspectRatio(undefined)
+      return
+    }
+
+    const imageSrc = selectedContent.fileUrl
+
+    setImageLoaded(false)
+    setImageFile(null)
+    setCroppedImageSrc(null)
+    setChanges(defaultChanges)
+    setHistory([defaultChanges])
+    setHistoryIndex(0)
+    setActiveMode("transform")
+    setSelectedAspectRatio(undefined)
+
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+
+    const fetchImageAsFile = () => {
+      fetch(imageSrc, { mode: "cors" })
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], "image.png", { type: blob.type || "image/png" })
+          setImageFile(file)
+        })
+        .catch(() => {
+          fetch(imageSrc)
+            .then((res) => res.blob())
+            .then((blob) => {
+              const file = new File([blob], "image.png", { type: blob.type || "image/png" })
+              setImageFile(file)
+            })
+            .catch(() => {})
+        })
+    }
+
+    const createFileFromImage = (sourceImg: HTMLImageElement) => {
+      try {
+        const canvas = document.createElement("canvas")
+        canvas.width = sourceImg.naturalWidth || sourceImg.width
+        canvas.height = sourceImg.naturalHeight || sourceImg.height
+        const ctx = canvas.getContext("2d")
+        if (!ctx) {
+          fetchImageAsFile()
+          return
+        }
+        ctx.drawImage(sourceImg, 0, 0)
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], "image.png", { type: "image/png" })
+            setImageFile(file)
+          } else {
+            fetchImageAsFile()
+          }
+        }, "image/png")
+      } catch {
+        fetchImageAsFile()
+      }
+    }
+
+    img.onload = () => {
+      imageRef.current = img
+      setImageLoaded(true)
+      renderCanvas()
+      createFileFromImage(img)
+    }
+    img.onerror = () => {
+      fetchImageAsFile()
+
+      const fallbackImg = new Image()
+      fallbackImg.onload = () => {
+        imageRef.current = fallbackImg
+        setImageLoaded(true)
+        renderCanvas()
+      }
+      fallbackImg.src = imageSrc
+    }
+    img.src = imageSrc
+
+    return () => {
+      imageRef.current = null
+      setImageLoaded(false)
+      setImageFile(null)
+    }
+  }, [selectedContent?._id, selectedContent?.fileUrl, renderCanvas])
+
+  // Re-render canvas when edits change
+  useEffect(() => {
+    if (imageLoaded && activeMode !== "crop") {
+      renderCanvas(changes)
+    }
+  }, [changes, imageLoaded, activeMode, renderCanvas])
 
   // Handle search
   const handleSearch = useCallback((value: string) => {
@@ -189,20 +529,23 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
     }
   }, [uploadUrl])
 
-  // Handle image edit
-  const handleEditImage = useCallback(() => {
-    if (selectedContent?.type === "image" && selectedContent.fileUrl) {
-      setEditingImageSrc(selectedContent.fileUrl)
-      setImageEditorOpen(true)
-    }
-  }, [selectedContent])
+  const handleSaveEditedImage = useCallback(async () => {
+    if (!selectedContent || selectedContent.type !== "image") return
+    if (activeMode === "crop") return
 
-  // Handle save edited image
-  const handleSaveEditedImage = useCallback(async (blob: Blob) => {
-    if (!selectedContent) return
+    const canvas = canvasRef.current
+    if (!canvas) return
 
+    setIsSavingImage(true)
     try {
-      // Upload edited image
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("Failed to create image blob"))),
+          "image/png",
+          0.95
+        )
+      })
+
       const uploadUrlStr = await generateUploadUrl()
       const response = await fetch(uploadUrlStr, {
         method: "POST",
@@ -216,16 +559,18 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
 
       const { storageId } = await response.json()
 
-      // Update content with new storage ID
-      await updateContent(selectedContent._id, {
-        // The update will replace the storageId
+      await replaceContentFile(selectedContent._id, {
+        storageId,
+        mimeType: "image/png",
+        fileSize: blob.size,
+        dimensions: { width: canvas.width, height: canvas.height },
       })
-
-      console.log("Image saved with new storageId:", storageId)
     } catch (error) {
       console.error("Failed to save edited image:", error)
+    } finally {
+      setIsSavingImage(false)
     }
-  }, [selectedContent, generateUploadUrl, updateContent])
+  }, [activeMode, generateUploadUrl, replaceContentFile, selectedContent])
 
   // No workspace
   if (!workspaceId) {
@@ -429,21 +774,30 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
     return (
       <div className="h-full flex items-center justify-center p-6 bg-muted/30">
         {selectedContent.type === "image" && selectedContent.fileUrl ? (
-          <div className="relative group">
-            <img
-              src={selectedContent.fileUrl}
-              alt={selectedContent.name}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-            />
-            <Button
-              variant="secondary"
-              size="sm"
-              className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={handleEditImage}
-            >
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
+          <div className="w-full h-full flex items-center justify-center">
+            {activeMode === "crop" ? (
+              imageFile ? (
+                <div className="w-full h-full flex items-center justify-center overflow-hidden">
+                  <ImageCropContent className="max-h-full w-auto object-contain" />
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">Loading image for cropping…</div>
+              )
+            ) : activeMode === "preview" ? (
+              <ImageZoom>
+                <img
+                  src={getCurrentPreviewUrl()}
+                  alt={selectedContent.name}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                />
+              </ImageZoom>
+            ) : (
+              <canvas
+                ref={canvasRef}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                style={{ imageRendering: "auto" }}
+              />
+            )}
           </div>
         ) : selectedContent.type === "video" && selectedContent.fileUrl ? (
           <video
@@ -481,7 +835,7 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
         )}
       </div>
     )
-  }, [selectedContent, handleEditImage])
+  }, [activeMode, getCurrentPreviewUrl, imageFile, selectedContent])
 
   // Main header (shows selected item name and panel toggles)
   const mainHeader = selectedContent ? (
@@ -533,7 +887,6 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
       return (
         <ContentInspector
           content={selectedContent}
-          onEdit={handleEditImage}
           onDelete={() => handleDelete(selectedContent._id)}
           onDownload={() => {
             if (selectedContent.fileUrl) {
@@ -543,6 +896,26 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
           onUpdate={async (id, updates) => {
             await updateContent(id, updates)
           }}
+          imageEditor={selectedContent.type === "image" && selectedContent.fileUrl ? {
+            activeMode,
+            setActiveMode,
+            changes,
+            updateChanges,
+            rotate,
+            flip,
+            undo,
+            redo,
+            resetAll: resetImageEdits,
+            historyIndex,
+            historyLength: history.length,
+            isSaving: isSavingImage,
+            onSave: handleSaveEditedImage,
+            aspectRatios: defaultAspectRatios,
+            selectedAspectRatio,
+            setSelectedAspectRatio,
+            cropReady: Boolean(imageFile),
+            previewUrlForCrop: croppedImageSrc || selectedContent.fileUrl,
+          } : undefined}
         />
       )
     }
@@ -555,7 +928,7 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
         </div>
       </div>
     )
-  }, [rightPanelMode, selectedContent, handleDelete, handleAIGenerate, handleEditImage, updateContent])
+  }, [rightPanelMode, selectedContent, handleDelete, handleAIGenerate, updateContent, activeMode, changes, updateChanges, rotate, flip, undo, redo, resetImageEdits, historyIndex, history.length, isSavingImage, handleSaveEditedImage, selectedAspectRatio, imageFile, croppedImageSrc])
 
   // ============================================================================
   // Mobile View
@@ -667,6 +1040,45 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
   // ============================================================================
   // Desktop View
   // ============================================================================
+  const threeColumnLayout = (
+    <FeatureThreeColumnLayout
+      // Sidebar config
+      sidebarTitle=""
+      sidebarStats=""
+      sidebarActions={sidebarHeaderActions}
+      sidebarContent={sidebarContent}
+
+      // Filter tabs in sidebar header
+      filterOptions={filterTabs}
+
+      // Center
+      mainContent={mainContent}
+      mainHeader={mainHeader}
+
+      // Right
+      inspector={rightPanel}
+
+      // Layout Props
+      storageKey="content-library-layout"
+      rightCollapsed={rightPanelCollapsed}
+      onRightCollapsedChange={setRightPanelCollapsed}
+      rightWidth={420}
+    />
+  )
+
+  const desktopLayout = selectedContent?.type === "image" && imageFile ? (
+    <ImageCrop
+      file={imageFile}
+      aspect={selectedAspectRatio}
+      onCrop={handleCropComplete}
+      maxImageSize={1024 * 1024 * 10}
+    >
+      {threeColumnLayout}
+    </ImageCrop>
+  ) : (
+    threeColumnLayout
+  )
+
   return (
     <div className="flex flex-col h-full">
       {/* Feature Header - Main page header */}
@@ -697,28 +1109,7 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
 
       {/* Three Column Layout */}
       <div className="flex-1 min-h-0">
-        <FeatureThreeColumnLayout
-          // Sidebar config
-          sidebarTitle=""
-          sidebarStats=""
-          sidebarActions={sidebarHeaderActions}
-          sidebarContent={sidebarContent}
-
-          // Filter tabs in sidebar header
-          filterOptions={filterTabs}
-
-          // Center
-          mainContent={mainContent}
-          mainHeader={mainHeader}
-
-          // Right
-          inspector={rightPanel}
-
-          // Layout Props
-          storageKey="content-library-layout"
-          rightCollapsed={rightPanelCollapsed}
-          onRightCollapsedChange={setRightPanelCollapsed}
-        />
+        {desktopLayout}
       </div>
 
       {/* Upload Dialog */}
@@ -732,15 +1123,6 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
         availableTags={availableTags ?? []}
       />
 
-      {/* Image Editor Dialog */}
-      {editingImageSrc && (
-        <ImageEditorDialog
-          open={imageEditorOpen}
-          onOpenChange={setImageEditorOpen}
-          imageSrc={editingImageSrc}
-          onSave={handleSaveEditedImage}
-        />
-      )}
     </div>
   )
 }

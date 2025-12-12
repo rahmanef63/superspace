@@ -1,17 +1,17 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useMutation, useConvex } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
-import { useUser } from "@clerk/nextjs"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 import type { AIConversation, AIMessageData, AISettings } from "../types"
 import { generateId, generateConversationTitle, extractTopicFromMessage } from "../utils"
 import { parseAIError, PROVIDER_NAMES } from "../utils/error-handler"
 import { DEFAULT_AI_SETTINGS } from "../constants"
 import { useAIStore, type AISession, type AIMessage } from "../stores"
-import { useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings"
+import { getProviderModels, useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings"
 import { toast } from "sonner"
 
 // Re-export sub-agent router hook
@@ -23,14 +23,16 @@ export { useSubAgentRouter } from "./useSubAgentRouter"
 
 export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) => {
   const { workspaceId: contextWorkspaceId } = useWorkspaceContext();
-  const { user } = useUser();
+  const currentUser = useCurrentUser();
   const init = useAIStore((s) => s.init);
   const setSessions = useAIStore((s) => s.setSessions);
   const setLoading = useAIStore((s) => s.setLoading);
   const globalMode = useAIStore((s) => s.globalMode);
 
   const effectiveWorkspaceId = (providedWorkspaceId ?? (contextWorkspaceId as Id<"workspaces"> | null)) || null;
-  const userId = user?.id || null;
+  // IMPORTANT: Use Convex users document id, not Clerk user id.
+  // Backend uses ensureUser() which returns Id<"users">.
+  const userId = currentUser?._id ?? null;
 
   const initializedRef = useRef<string | null>(null);
 
@@ -40,7 +42,7 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
     userId
       ? {
         workspaceId: globalMode ? undefined : effectiveWorkspaceId ?? undefined,
-        userId,
+        userId: String(userId),
         status: "active",
         global: globalMode,
       }
@@ -48,14 +50,16 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
   );
 
   useEffect(() => {
-    if (!effectiveWorkspaceId || !userId) return;
+    if (!userId) return;
+    // In workspace mode we need a workspaceId; in global mode we don't.
+    if (!globalMode && !effectiveWorkspaceId) return;
 
-    const key = `${effectiveWorkspaceId}-${userId}`;
+    const key = `${globalMode ? "global" : effectiveWorkspaceId}-${userId}`;
     if (initializedRef.current === key) return;
 
-    init(effectiveWorkspaceId, userId);
+    init(effectiveWorkspaceId, String(userId));
     initializedRef.current = key;
-  }, [effectiveWorkspaceId, userId, init]);
+  }, [effectiveWorkspaceId, userId, globalMode, init]);
 
   // Sync sessions from Convex to store
   useEffect(() => {
@@ -96,6 +100,7 @@ export const useInitializeAI = (providedWorkspaceId?: Id<"workspaces"> | null) =
 // ============================================================================
 
 export const useAIActions = () => {
+  const convex = useConvex();
   const workspaceId = useAIStore((s) => s.workspaceId);
   const userId = useAIStore((s) => s.userId);
   const globalMode = useAIStore((s) => s.globalMode);
@@ -116,6 +121,7 @@ export const useAIActions = () => {
   const createSessionMutation = useMutation(api.features.ai.mutations.createChatSession);
   const appendMessageMutation = useMutation(api.features.ai.mutations.appendChatMessage);
   const updateSessionMutation = useMutation(api.features.ai.mutations.updateChatSession);
+  const deleteSessionMutation = useMutation(api.features.ai.mutations.deleteChatSession);
   const addMessageBranchMutation = useMutation(api.features.ai.mutations.addMessageBranch);
   const setMessageFeedbackMutation = useMutation(api.features.ai.mutations.setMessageFeedback);
 
@@ -233,11 +239,22 @@ export const useAIActions = () => {
       : selectedSession;
 
     // Get the API key for the configured provider
-    const provider = settings.defaultProvider || "groq";
-    const model = settings.defaultModel || "llama-3.3-70b-versatile";
-    const apiKeyConfig = settings.apiKeys?.find(
-      (k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled
-    );
+    // settings can be temporarily undefined while loading.
+    const providerRaw = settings?.defaultProvider || "groq";
+    const provider = providerRaw === "z-ai" ? "glm" : providerRaw;
+
+    const configuredModel = settings?.defaultModel || "llama-3.3-70b-versatile";
+    const availableModels = getProviderModels(provider);
+    const model =
+      availableModels.length > 0 && !availableModels.some((m) => m.id === configuredModel)
+        ? availableModels[0].id
+        : configuredModel;
+
+    const apiKeyConfig =
+      settings?.apiKeys?.find((k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled) ||
+      settings?.apiKeys?.find(
+        (k: AIApiKeyConfig) => k.providerId === (provider === "glm" ? "z-ai" : provider) && k.isEnabled
+      );
 
     if (!apiKeyConfig?.apiKey && provider !== "ollama") {
       const providerName = PROVIDER_NAMES[provider] || provider;
@@ -311,8 +328,8 @@ export const useAIActions = () => {
           model,
           apiKey: apiKeyConfig?.apiKey || "",
           baseUrl: apiKeyConfig?.baseUrl,
-          temperature: settings.temperature || 0.7,
-          maxTokens: parseInt(settings.maxTokens || "2048"),
+          temperature: settings?.temperature ?? 0.7,
+          maxTokens: parseInt(settings?.maxTokens || "2048"),
           tools: tools, // Pass tools to API
           tool_choice: "auto",
         }),
@@ -343,7 +360,7 @@ export const useAIActions = () => {
             const context = {
               workspaceId: workspaceId as any,
               userId: userId,
-              convex: null as any, // Hydrated inside executeTool route logic/wrapper if needed, but here we depend on the registry actions
+              convex: convex, // Pass the real convex client
             };
 
             // We need to use executeToolCall from router
@@ -377,7 +394,7 @@ export const useAIActions = () => {
               const context = {
                 workspaceId: workspaceId as any,
                 userId: userId,
-                convex: null,
+                convex: convex, // Pass the real convex client
               };
 
               // Execute via router
@@ -470,6 +487,20 @@ export const useAIActions = () => {
     }
   }, [selectedSessionId, selectedSession, sessions, settings, appendMessageMutation, addMessage, setSending, setError, generateTitle, updateSessionMutation, updateSession, globalMode]);
 
+  const deleteSession = useCallback(async (sessionId: Id<"aiChatSessions">) => {
+    try {
+      await deleteSessionMutation({ sessionId });
+      // Local cleanup
+      useAIStore.getState().removeSession(sessionId);
+      toast.success("Session deleted");
+      return true;
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+      toast.error("Failed to delete session");
+      return false;
+    }
+  }, [deleteSessionMutation]);
+
   const regenerateMessage = useCallback(async (
     sessionId: Id<"aiChatSessions">,
     messageId: string,
@@ -530,6 +561,7 @@ export const useAIActions = () => {
     submitFeedback,
     updateSessionMetadata,
     selectSession: setSelectedSession,
+    deleteSession,
   };
 };
 

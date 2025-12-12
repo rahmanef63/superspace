@@ -8,9 +8,6 @@ import {
 } from "@/components/ui/sidebar"
 import { GuestWorkspaceProvider } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
 
-// Initialize all feature settings (registers settings with global registry)
-import "@/frontend/features/initFeatureSettings"
-
 /**
  * Mock Dashboard Layout
  * 

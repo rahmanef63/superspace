@@ -10,9 +10,6 @@ import {
 } from "@/components/ui/sidebar"
 import { WorkspaceProvider } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
-// Initialize all feature settings (registers settings with global registry)
-import "@/frontend/features/initFeatureSettings"
-
 export default function DashboardLayout({
   children,
 }: {

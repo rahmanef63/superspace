@@ -8,9 +8,7 @@ import { Toaster } from "sonner"
 
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { SafeClerkProvider } from "@/components/SafeClerkProvider"
-
-// Initialize feature settings and registries
-import "@/frontend/features/initFeatureSettings"
+import { InitFeatureSettingsClient } from "@/frontend/features/InitFeatureSettingsClient"
 
 export const metadata: Metadata = {
   title: "SuperSpace App",
@@ -35,6 +33,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SafeClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
             <ConvexClientProvider>
+              <InitFeatureSettingsClient />
               {children}
               <Toaster position="top-right" richColors />
             </ConvexClientProvider>

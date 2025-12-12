@@ -26,7 +26,7 @@ import {
     type ToolCall,
     type ToolResult,
 } from "../agents";
-import { useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings";
+import { getProviderModels, useAISettingsStorage, type AIApiKeyConfig } from "../settings/useAISettings";
 import { PROVIDER_NAMES } from "../utils/error-handler";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -354,11 +354,20 @@ export function useSubAgentRouter(): SubAgentRouterState & SubAgentRouterActions
         setIsProcessing(true);
         setError(null);
 
-        const provider = settings.defaultProvider || "groq";
-        const model = settings.defaultModel || "llama-3.3-70b-versatile";
-        const apiKeyConfig = settings.apiKeys?.find(
-            (k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled
-        );
+        const providerRaw = settings.defaultProvider || "groq";
+        const provider = providerRaw === "z-ai" ? "glm" : providerRaw;
+        const configuredModel = settings.defaultModel || "llama-3.3-70b-versatile";
+        const availableModels = getProviderModels(provider);
+        const model =
+            availableModels.length > 0 && !availableModels.some((m) => m.id === configuredModel)
+                ? availableModels[0].id
+                : configuredModel;
+
+        const apiKeyConfig =
+            settings.apiKeys?.find((k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled) ||
+            settings.apiKeys?.find(
+                (k: AIApiKeyConfig) => k.providerId === (provider === "glm" ? "z-ai" : provider) && k.isEnabled
+            );
 
         if (!apiKeyConfig?.apiKey && provider !== "ollama") {
             const providerName = PROVIDER_NAMES[provider] || provider;
@@ -409,11 +418,20 @@ export function useSubAgentRouter(): SubAgentRouterState & SubAgentRouterActions
         setIsProcessing(true);
         setError(null);
 
-        const provider = settings.defaultProvider || "groq";
-        const model = settings.defaultModel || "llama-3.3-70b-versatile";
-        const apiKeyConfig = settings.apiKeys?.find(
-            (k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled
-        );
+        const providerRaw = settings.defaultProvider || "groq";
+        const provider = providerRaw === "z-ai" ? "glm" : providerRaw;
+        const configuredModel = settings.defaultModel || "llama-3.3-70b-versatile";
+        const availableModels = getProviderModels(provider);
+        const model =
+            availableModels.length > 0 && !availableModels.some((m) => m.id === configuredModel)
+                ? availableModels[0].id
+                : configuredModel;
+
+        const apiKeyConfig =
+            settings.apiKeys?.find((k: AIApiKeyConfig) => k.providerId === provider && k.isEnabled) ||
+            settings.apiKeys?.find(
+                (k: AIApiKeyConfig) => k.providerId === (provider === "glm" ? "z-ai" : provider) && k.isEnabled
+            );
 
         if (!apiKeyConfig?.apiKey && provider !== "ollama") {
             const providerName = PROVIDER_NAMES[provider] || provider;

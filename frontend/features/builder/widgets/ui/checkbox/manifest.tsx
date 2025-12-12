@@ -24,7 +24,7 @@ const checkboxInspectorConfig: InspectorField[] = [
 
 export const checkboxManifest: WidgetConfig = {
   label: 'Checkbox',
-  category: 'UI',
+  category: 'Form',
   description: 'A control that allows the user to select a binary "checked" state.',
   icon: CheckSquare,
   tags: ['ui', 'form', 'input'],

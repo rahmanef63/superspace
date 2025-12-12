@@ -11,9 +11,7 @@
 import React, { useState, useMemo } from "react"
 import {
   Plus,
-  Edit2,
   Trash2,
-  Save,
   X,
   Loader2,
   Search,
@@ -21,12 +19,6 @@ import {
   Download,
   MoreHorizontal,
   Package,
-  Palette,
-  Tags,
-  Eye,
-  EyeOff,
-  GripVertical,
-  ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -62,18 +54,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
@@ -155,11 +138,15 @@ const defaultFormState: BundleFormState = {
   isPublic: true,
 }
 
-export function BundleCategoriesTable() {
+export interface BundleCategoriesTableProps {
+  onItemSelect?: (bundle: BundleCategoryData) => void
+  selectedItemId?: Id<"bundleCategories"> | string | null
+}
+
+export function BundleCategoriesTable({ onItemSelect, selectedItemId }: BundleCategoriesTableProps) {
   const { bundles, isLoading } = useBundleCategories()
   const {
     createBundle,
-    updateBundle,
     removeBundle,
     seedBundles
   } = useBundleCategoryMutations()
@@ -211,62 +198,14 @@ export function BundleCategoriesTable() {
 
   // State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [editingBundle, setEditingBundle] = useState<BundleCategoryData | null>(null)
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isSeeding, setIsSeeding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   // Form state
-  const [editForm, setEditForm] = useState<BundleFormState>(defaultFormState)
   const [newBundle, setNewBundle] = useState<BundleFormState>(defaultFormState)
 
   // Handlers
-  const handleOpenEdit = (bundle: BundleCategoryData) => {
-    setEditingBundle(bundle)
-    setEditForm({
-      bundleId: bundle.bundleId,
-      name: bundle.name,
-      description: bundle.description,
-      icon: bundle.icon,
-      category: bundle.category,
-      primaryColor: bundle.primaryColor || "#6366f1",
-      accentColor: bundle.accentColor || "",
-      recommendedFor: bundle.recommendedFor,
-      tags: bundle.tags,
-      isEnabled: bundle.isEnabled,
-      isPublic: bundle.isPublic,
-    })
-    setIsEditSheetOpen(true)
-  }
-
-  const handleSaveEdit = async () => {
-    if (!editingBundle) return
-    setIsSaving(true)
-    try {
-      await updateBundle(editingBundle._id, {
-        name: editForm.name,
-        description: editForm.description,
-        icon: editForm.icon,
-        category: editForm.category,
-        primaryColor: editForm.primaryColor || undefined,
-        accentColor: editForm.accentColor || undefined,
-        recommendedFor: editForm.recommendedFor,
-        tags: editForm.tags,
-        isEnabled: editForm.isEnabled,
-        isPublic: editForm.isPublic,
-      })
-      toast.success("Bundle category updated successfully")
-      setIsEditSheetOpen(false)
-      setEditingBundle(null)
-    } catch (error) {
-      toast.error("Failed to update bundle category")
-      console.error(error)
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   const handleCreateBundle = async () => {
     if (!newBundle.bundleId || !newBundle.name) {
       toast.error("Bundle ID and Name are required")
@@ -450,7 +389,7 @@ export function BundleCategoriesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px]">
+              <TableHead className="hidden sm:table-cell w-[40px]">
                 <Checkbox
                   checked={
                     selectedIds.size === filteredBundles.length &&
@@ -472,14 +411,14 @@ export function BundleCategoriesTable() {
                 sortDirection={sortConfig.key === "category" ? sortConfig.direction : null}
                 isActive={sortConfig.key === "category"}
                 onSort={() => handleSort("category")}
-                className="w-[120px]"
+                className="hidden md:table-cell w-[120px]"
               >
                 Category
               </EnhancedTableHeader>
-              <TableHead className="w-[80px]">Color</TableHead>
-              <TableHead className="w-[100px]">Workspace Types</TableHead>
-              <TableHead className="w-[70px] text-center">Public</TableHead>
-              <TableHead className="w-[70px] text-center">Enabled</TableHead>
+              <TableHead className="hidden lg:table-cell w-[80px]">Color</TableHead>
+              <TableHead className="hidden lg:table-cell w-[100px]">Workspace Types</TableHead>
+              <TableHead className="hidden lg:table-cell w-[70px] text-center">Public</TableHead>
+              <TableHead className="hidden lg:table-cell w-[70px] text-center">Enabled</TableHead>
               <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -489,19 +428,23 @@ export function BundleCategoriesTable() {
                 key={bundle._id}
                 className={cn(
                   !bundle.isEnabled && "opacity-50",
-                  selectedIds.has(bundle._id) && "bg-muted/50"
+                  selectedIds.has(bundle._id) && "bg-muted/50",
+                  selectedItemId && String(bundle._id) === String(selectedItemId) && "bg-muted/40"
                 )}
+                onClick={() => onItemSelect?.(bundle)}
               >
-                <TableCell>
-                  <Checkbox
-                    checked={selectedIds.has(bundle._id)}
-                    onCheckedChange={() => toggleSelect(bundle._id)}
-                  />
+                <TableCell className="hidden sm:table-cell">
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds.has(bundle._id)}
+                      onCheckedChange={() => toggleSelect(bundle._id)}
+                    />
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{bundle.name}</span>
+                      <span className="font-medium truncate">{bundle.name}</span>
                       {bundle.isSystem && (
                         <Badge
                           variant="outline"
@@ -511,7 +454,7 @@ export function BundleCategoriesTable() {
                         </Badge>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono truncate">
                       {bundle.bundleId}
                     </span>
                     {bundle.description && (
@@ -519,14 +462,27 @@ export function BundleCategoriesTable() {
                         {bundle.description}
                       </span>
                     )}
+
+                    {/* Mobile/compact metadata to avoid horizontal scrolling */}
+                    <div className="mt-1 flex flex-wrap gap-1 md:hidden">
+                      <Badge variant="secondary" className="capitalize text-xs">
+                        {bundle.category}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {bundle.isPublic ? "Public" : "Private"}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {bundle.isEnabled ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <Badge variant="secondary" className="capitalize">
                     {bundle.category}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell">
                   {bundle.primaryColor && (
                     <div
                       className="w-6 h-6 rounded-full border"
@@ -535,7 +491,7 @@ export function BundleCategoriesTable() {
                     />
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell">
                   <div className="flex flex-wrap gap-1">
                     {bundle.recommendedFor.slice(0, 2).map((type) => (
                       <Badge key={type} variant="outline" className="text-xs">
@@ -549,27 +505,30 @@ export function BundleCategoriesTable() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="hidden lg:table-cell text-center">
                   <Switch checked={bundle.isPublic} disabled />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="hidden lg:table-cell text-center">
                   <Switch checked={bundle.isEnabled} disabled />
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleOpenEdit(bundle)}>
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit Bundle
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => handleDelete(bundle)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(bundle)
+                        }}
                         className="text-red-500"
                         disabled={bundle.isSystem}
                       >
@@ -584,275 +543,6 @@ export function BundleCategoriesTable() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Edit Bundle Sheet */}
-      <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="w-full sm:max-w-[520px] p-0 gap-0 [&>button]:top-5 [&>button]:right-5">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
-            <SheetTitle className="text-xl">Edit Bundle Category</SheetTitle>
-            <SheetDescription>
-              Configure bundle category metadata and styling
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-6">
-            {/* Bundle ID - Read Only */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Bundle ID</Label>
-              <Input
-                value={editForm.bundleId}
-                disabled
-                className="font-mono bg-muted/50 h-10"
-              />
-            </div>
-
-            {/* Basic Info Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Basic Information
-              </h4>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-name" className="text-sm font-medium">
-                  Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="edit-name"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  placeholder="Bundle name"
-                  className="h-10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <Textarea
-                  id="edit-description"
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  placeholder="Brief description of the bundle"
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Appearance Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Appearance
-              </h4>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Icon
-                  </Label>
-                  <IconPicker
-                    icon={editForm.icon}
-                    color={editForm.primaryColor}
-                    onIconChange={(icon) => setEditForm({ ...editForm, icon })}
-                    onColorChange={(color) => setEditForm({ ...editForm, primaryColor: color })}
-                    showColor={false}
-                    className="w-full"
-                    trigger={
-                      <Button variant="outline" className="w-full h-10 justify-start gap-2">
-                        {(() => {
-                          const IconComp = getIconComponent(editForm.icon)
-                          return <IconComp className="h-4 w-4" style={{ color: editForm.primaryColor }} />
-                        })()}
-                        <span>{editForm.icon}</span>
-                      </Button>
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-category" className="text-sm font-medium">
-                    Category
-                  </Label>
-                  <Select
-                    value={editForm.category}
-                    onValueChange={(v) =>
-                      setEditForm({ ...editForm, category: v as BundleCategory })
-                    }
-                  >
-                    <SelectTrigger id="edit-category" className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BUNDLE_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Primary Color
-                  </Label>
-                  <ColorPickerSimple
-                    value={editForm.primaryColor}
-                    onChange={(color) => setEditForm({ ...editForm, primaryColor: color })}
-                    placeholder="#6366f1"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Accent Color
-                  </Label>
-                  <ColorPickerSimple
-                    value={editForm.accentColor || ""}
-                    onChange={(color) => setEditForm({ ...editForm, accentColor: color })}
-                    placeholder="Optional"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Recommended For Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Recommended For
-              </h4>
-
-              <div className="flex flex-wrap gap-2">
-                {WORKSPACE_TYPES.map((type) => (
-                  <Badge
-                    key={type.value}
-                    variant={
-                      editForm.recommendedFor.includes(type.value)
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => {
-                      const isSelected = editForm.recommendedFor.includes(type.value)
-                      setEditForm({
-                        ...editForm,
-                        recommendedFor: isSelected
-                          ? editForm.recommendedFor.filter((t) => t !== type.value)
-                          : [...editForm.recommendedFor, type.value],
-                      })
-                    }}
-                  >
-                    {type.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Tags Section */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-tags" className="text-sm font-medium">
-                Tags
-              </Label>
-              <Input
-                id="edit-tags"
-                value={editForm.tags.join(", ")}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    tags: e.target.value
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean),
-                  })
-                }
-                placeholder="tag1, tag2, tag3"
-                className="h-10"
-              />
-              <p className="text-xs text-muted-foreground">
-                Separate tags with commas
-              </p>
-            </div>
-
-            {/* Visibility Settings */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Visibility
-              </h4>
-
-              <div className="space-y-1 rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Public</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Show in workspace template selection
-                    </p>
-                  </div>
-                  <Switch
-                    checked={editForm.isPublic}
-                    onCheckedChange={(v) =>
-                      setEditForm({ ...editForm, isPublic: v })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1 rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Enabled</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Bundle can be used for workspaces
-                    </p>
-                  </div>
-                  <Switch
-                    checked={editForm.isEnabled}
-                    onCheckedChange={(v) =>
-                      setEditForm({ ...editForm, isEnabled: v })
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <SheetFooter className="px-6 py-4 border-t flex-shrink-0">
-            <div className="flex w-full gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setIsEditSheetOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveEdit}
-                disabled={isSaving}
-                className="flex-1"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
       {/* Create Bundle Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 gap-0">

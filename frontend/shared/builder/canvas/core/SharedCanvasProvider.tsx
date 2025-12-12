@@ -56,6 +56,17 @@ import React, {
 import { addEdge, useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge, OnConnect, ReactFlowInstance } from 'reactflow';
 
+// Builder foundation hooks
+import {
+  useBuilderHistory,
+  useBuilderKeyboardShortcuts,
+  type HistorySnapshot,
+} from '@/frontend/features/builder/shared/hooks/useBuilderHistory';
+import {
+  useBuilderClipboard,
+  useBuilderClipboardShortcuts,
+} from '@/frontend/features/builder/shared/hooks/useBuilderClipboard';
+
 // Import from builder feature (restored from archived CMS)
 import { uid, clamp } from '@/lib/utils';
 import type { CMSNode, CMSEdge, Schema, Workspace } from '@/frontend/features/builder/shared/types';
@@ -82,22 +93,22 @@ const fromSchema = (schema: Schema): { nodes: CMSNode[], edges: CMSEdge[] } => {
       console.warn(`Skipping node with unknown type: ${v?.type}`);
       return null;
     }
-    
+
     const config = getWidgetConfig(v.type);
-    
+
     return {
       id,
       type: "shadcnNode",
-      position: { 
-        x: 120 + (i % 6) * 240, 
-        y: 120 + Math.floor(i / 6) * 160 
+      position: {
+        x: 120 + (i % 6) * 240,
+        y: 120 + Math.floor(i / 6) * 160
       },
-      data: { 
-        comp: v.type, 
-        props: { 
-          ...config?.defaults, 
-          ...(v.props || {}) 
-        } 
+      data: {
+        comp: v.type,
+        props: {
+          ...config?.defaults,
+          ...(v.props || {})
+        }
       },
     };
   }).filter(Boolean) as CMSNode[];
@@ -105,15 +116,15 @@ const fromSchema = (schema: Schema): { nodes: CMSNode[], edges: CMSEdge[] } => {
   const edges: CMSEdge[] = [];
   Object.entries(schema.nodes).forEach(([id, v]) => {
     if (!v || !Array.isArray(v.children)) return;
-    
+
     v.children.forEach((childId, idx) => {
       if (typeof childId === 'string' && nodes.some(n => n.id === childId)) {
-        edges.push({ 
-          id: uid(), 
-          source: id, 
-          target: childId, 
-          data: { order: idx }, 
-          animated: false 
+        edges.push({
+          id: uid(),
+          source: id,
+          target: childId,
+          data: { order: idx },
+          animated: false
         });
       }
     });
@@ -163,6 +174,18 @@ interface SharedCanvasContextType {
   unpin: (id: string) => void;
   isPinned: (id: string) => boolean;
   pinnedIds: string[];
+
+  // History (undo/redo)
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+
+  // Clipboard (copy/paste)
+  copy: () => void;
+  cut: () => void;
+  paste: () => void;
+  canPaste: boolean;
 }
 
 export const SharedCanvasContext = createContext<SharedCanvasContextType | undefined>(
@@ -175,9 +198,9 @@ const newNode = (comp: string, pos = { x: 0, y: 0 }): CMSNode => {
     id: uid(),
     type: "shadcnNode",
     position: pos,
-    data: { 
-      comp, 
-      props: { ...config?.defaults } 
+    data: {
+      comp,
+      props: { ...config?.defaults }
     }
   };
 };
@@ -187,8 +210,9 @@ export const SharedCanvasProvider: React.FC<{
   initialMode?: 'cms' | 'automation' | 'database';
 }> = ({ children, initialMode = 'cms' }) => {
   const [canvasMode, setCanvasMode] = useState(initialMode);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<any>>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
+  // Use proper generic types for React Flow state
+  const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<{ order?: number }>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [activeWs, setActiveWs] = useState<Workspace>({ category: "personal", key: "" });
   const [activeRoute, setActiveRoute] = useState("/");
@@ -202,7 +226,7 @@ export const SharedCanvasProvider: React.FC<{
 
     const maxOrder = Math.max(-1, ...edges.filter((e) => e.source === params.source).map((e: any) => e.data?.order ?? 0));
     const newEdge = { ...params, data: { order: maxOrder + 1 } };
-    
+
     setEdges((eds) => addEdge(newEdge, eds));
   }, [edges, setEdges, canvasMode]);
 
@@ -214,7 +238,7 @@ export const SharedCanvasProvider: React.FC<{
   const createNode = useCallback((compKey: string) => {
     const pos = reactFlowInstance.current?.project({ x: 140, y: 120 }) || { x: 140, y: 120 };
     const node = newNode(compKey, pos);
-    setNodes((ns) => [...ns, node]);
+    setNodes((ns) => [...ns, node as Node<any>]);
     return node;
   }, [setNodes]);
 
@@ -222,7 +246,7 @@ export const SharedCanvasProvider: React.FC<{
     const compKey = (nodeConfig.data as any)?.comp || (nodeConfig.data as any)?.type;
     const config = compKey ? getWidgetConfig(String(compKey)) : undefined;
     const defaultProps = config?.defaults || {};
-    
+
     const newNodeData = {
       comp: compKey,
       ...nodeConfig.data,
@@ -235,7 +259,7 @@ export const SharedCanvasProvider: React.FC<{
       ...nodeConfig,
       data: newNodeData,
     };
-    
+
     setNodes((nds) => [...nds, newN]);
   }, [setNodes]);
 
@@ -268,14 +292,14 @@ export const SharedCanvasProvider: React.FC<{
     const list: any[] = edges
       .filter((e) => e.source === selectedNode.id)
       .sort((a, b) => (a.data?.order ?? 0) - (b.data?.order ?? 0));
-    
+
     const nextTo = clamp(to, 0, list.length - 1);
     if (nextTo === from) return;
-    
+
     const item = list.splice(from, 1)[0];
     list.splice(nextTo, 0, item);
     list.forEach((e, i) => { e.data = { ...e.data, order: i }; });
-    
+
     setEdges((eds) => eds.map((e) => list.find((x) => x.id === e.id) || e));
   };
 
@@ -318,8 +342,8 @@ export const SharedCanvasProvider: React.FC<{
         }
         if (parsed && parsed.nodes && typeof parsed.nodes === 'object' && !Array.isArray(parsed.nodes)) {
           const { nodes: ns, edges: es } = fromSchema(parsed);
-          setNodes(ns);
-          setEdges(es);
+          setNodes(ns as Node<any>[]);
+          setEdges(es as Edge<{ order?: number }>[]);
           return;
         }
       } catch (error) {
@@ -328,8 +352,8 @@ export const SharedCanvasProvider: React.FC<{
       }
     }
     const { nodes: ns, edges: es } = fromSchema(INITIAL_CMS_SCHEMA);
-    setNodes(ns);
-    setEdges(es);
+    setNodes(ns as Node<any>[]);
+    setEdges(es as Edge<{ order?: number }>[]);
   }, [setNodes, setEdges, clearAll]);
 
   const commands = useMemo(() => ({
@@ -339,7 +363,7 @@ export const SharedCanvasProvider: React.FC<{
     },
     newMenu: () => {
       const menu = createNode("navNode");
-      setNodeProps(menu.id, { ...menu.data.props, kind: "menu", title: "Menu " + Math.random().toString(36).slice(2,5) });
+      setNodeProps(menu.id, { ...menu.data.props, kind: "menu", title: "Menu " + Math.random().toString(36).slice(2, 5) });
     },
     newPage: () => {
       const path = "/page-" + Math.random().toString(36).slice(2, 6);
@@ -348,7 +372,7 @@ export const SharedCanvasProvider: React.FC<{
       setNodeProps(section.id, { ...section.data.props, path });
       const hero = createNode("hero");
       onConnect({ source: section.id, target: hero.id, sourceHandle: null, targetHandle: null });
-      
+
       const firstMenu = nodes.find(n => (n as any).data.comp === 'navNode' && (n as any).data.props.kind === 'menu');
       if (firstMenu) {
         onConnect({ source: (firstMenu as any).id, target: section.id, sourceHandle: null, targetHandle: null });
@@ -360,6 +384,91 @@ export const SharedCanvasProvider: React.FC<{
   const pin = (id: string) => setPinnedIds((ids) => (ids.includes(id) ? ids : [...ids, id]));
   const unpin = (id: string) => setPinnedIds((ids) => ids.filter((x) => x !== id));
   const isPinned = (id: string) => pinnedIds.includes(id);
+
+  // History hook for undo/redo
+  const { pushSnapshot, undo: undoHistory, redo: redoHistory, canUndo, canRedo } = useBuilderHistory();
+
+  // Track state changes for history
+  const prevStateRef = useRef<{ nodes: Node<any>[]; edges: Edge[] }>({ nodes: [], edges: [] });
+
+  useEffect(() => {
+    // Only push snapshot if state has actually changed
+    const nodesChanged = JSON.stringify(nodes) !== JSON.stringify(prevStateRef.current.nodes);
+    const edgesChanged = JSON.stringify(edges) !== JSON.stringify(prevStateRef.current.edges);
+
+    if (nodesChanged || edgesChanged) {
+      pushSnapshot({ nodes: prevStateRef.current.nodes, edges: prevStateRef.current.edges });
+      prevStateRef.current = { nodes, edges };
+    }
+  }, [nodes, edges, pushSnapshot]);
+
+  // Undo: restore previous state
+  const undo = useCallback(() => {
+    const snapshot = undoHistory();
+    if (snapshot) {
+      setNodes(snapshot.nodes);
+      setEdges(snapshot.edges);
+      prevStateRef.current = { nodes: snapshot.nodes, edges: snapshot.edges };
+    }
+  }, [undoHistory, setNodes, setEdges]);
+
+  // Redo: restore next state
+  const redo = useCallback(() => {
+    const snapshot = redoHistory();
+    if (snapshot) {
+      setNodes(snapshot.nodes);
+      setEdges(snapshot.edges);
+      prevStateRef.current = { nodes: snapshot.nodes, edges: snapshot.edges };
+    }
+  }, [redoHistory, setNodes, setEdges]);
+
+  // Clipboard hook
+  const {
+    copy: clipboardCopy,
+    cut: clipboardCut,
+    paste: clipboardPaste,
+    canPaste,
+  } = useBuilderClipboard(nodes, edges);
+
+  // Get currently selected node IDs
+  const getSelectedNodeIds = useCallback(() => {
+    const selected = nodes.filter(n => n.selected).map(n => n.id);
+    if (selected.length === 0 && selectedNodeId) {
+      return [selectedNodeId];
+    }
+    return selected;
+  }, [nodes, selectedNodeId]);
+
+  // Clipboard operations
+  const copy = useCallback(() => {
+    clipboardCopy(getSelectedNodeIds());
+  }, [clipboardCopy, getSelectedNodeIds]);
+
+  const cut = useCallback(() => {
+    const { nodes: nodesToRemove, edges: edgesToRemove } = clipboardCut(getSelectedNodeIds());
+    if (nodesToRemove.length > 0) {
+      const nodeIds = new Set(nodesToRemove.map(n => n.id));
+      setNodes(ns => ns.filter(n => !nodeIds.has(n.id)));
+      setEdges(es => es.filter(e => !nodeIds.has(e.source) && !nodeIds.has(e.target)));
+      setSelectedNodeId(null);
+    }
+  }, [clipboardCut, getSelectedNodeIds, setNodes, setEdges, setSelectedNodeId]);
+
+  const paste = useCallback(() => {
+    const result = clipboardPaste();
+    if (result) {
+      setNodes(ns => [...ns.map(n => ({ ...n, selected: false })), ...result.nodes]);
+      setEdges(es => [...es, ...result.edges]);
+      // Select the first pasted node
+      if (result.nodes.length > 0) {
+        setSelectedNodeId(result.nodes[0].id);
+      }
+    }
+  }, [clipboardPaste, setNodes, setEdges, setSelectedNodeId]);
+
+  // Keyboard shortcuts
+  useBuilderKeyboardShortcuts(undo, redo, true);
+  useBuilderClipboardShortcuts(copy, cut, paste, true);
 
   const value = {
     canvasMode,
@@ -396,6 +505,16 @@ export const SharedCanvasProvider: React.FC<{
     unpin,
     isPinned,
     pinnedIds,
+    // History
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    // Clipboard
+    copy,
+    cut,
+    paste,
+    canPaste,
   };
 
   return (

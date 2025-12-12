@@ -189,6 +189,53 @@ export const update = mutation({
 });
 
 /**
+ * Replace the stored file for a content item.
+ * Used by in-app editors (e.g. image editor) to upload a new blob and swap storageId.
+ */
+export const replaceFile = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    contentId: v.id("content"),
+    storageId: v.id("_storage"),
+    mimeType: v.optional(v.string()),
+    fileSize: v.optional(v.number()),
+    dimensions: v.optional(v.object({
+      width: v.number(),
+      height: v.number(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_FILES);
+
+    const content = await ctx.db.get(args.contentId);
+    if (!content || content.workspaceId !== args.workspaceId) {
+      throw new Error("Content not found");
+    }
+
+    const previousStorageId = content.storageId;
+
+    await ctx.db.patch(args.contentId, {
+      storageId: args.storageId,
+      mimeType: args.mimeType ?? content.mimeType,
+      fileSize: args.fileSize ?? content.fileSize,
+      dimensions: args.dimensions ?? content.dimensions,
+      status: "ready",
+      updatedAt: Date.now(),
+    });
+
+    if (previousStorageId && previousStorageId !== args.storageId) {
+      try {
+        await ctx.storage.delete(previousStorageId);
+      } catch {
+        // Ignore storage delete failures (file may already be gone)
+      }
+    }
+
+    return args.contentId;
+  },
+});
+
+/**
  * Delete content item
  */
 export const remove = mutation({

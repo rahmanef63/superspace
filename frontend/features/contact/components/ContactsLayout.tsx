@@ -107,31 +107,14 @@ export function ContactsLayout({
     return (
         <div className="h-full flex flex-col">
             <ThreeColumnLayoutAdvanced
-                left={null}
+                preset="feature"
+                leftHidden
                 center={children}
                 right={rightPanelContent}
 
                 // Labels
-                leftLabel="Hidden"
                 centerLabel="Contacts"
                 rightLabel="Contact Info"
-
-                // Widths
-                leftWidth={0} // Try 0
-                minSideWidth={0} // Allow 0
-                maxSideWidth={0} // Enforce 0
-                collapsedWidth={0} // Allow 0
-
-                rightWidth={380}
-                centerMinWidth={400}
-
-                // Features
-                resizable={true}
-                showCollapseButtons={false} // Hide global collapse buttons for left
-                persistState={false} // Don't persist this hacked state
-
-                // Control
-                leftCollapsed={true} // Always collapsed
                 rightCollapsed={rightCollapsed}
                 onRightCollapsedChange={(collapsed) => {
                     if (collapsed) onCloseInspector();

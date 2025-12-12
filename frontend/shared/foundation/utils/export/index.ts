@@ -17,5 +17,13 @@ export {
 
 // New data export/import system
 export * from "./data-export-types"
-export * from "./data-export-engine"
+
+// Avoid name collisions with the legacy node exporter (`exportToJSON`)
+export {
+  exportToJSON as exportDataToJSON,
+  exportToCSV as exportDataToCSV,
+  generateTemplate,
+  parseImportFile,
+} from "./data-export-engine"
+
 export * from "./data-import-engine"

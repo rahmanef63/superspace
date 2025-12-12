@@ -16,6 +16,7 @@
 7. [Convex Functions Not Updating](#7-convex-functions-not-updating)
 8. [Menu Items Not Updating](#8-menu-items-not-updating)
 9. [Debug Queries Reference](#debug-queries-reference)
+10. [Next dev Missing vendor-chunks](#10-next-dev-missing-vendor-chunks)
 
 ---
 
@@ -635,6 +636,36 @@ Type 'undefined' is not assignable to type 'XyzType'
    - Inspect Convex logs for schema or permission errors.
 
 ---
+
+## 10. Next dev Missing vendor-chunks
+
+### Symptoms
+
+- Dev server returns `500` after a compile.
+- Terminal shows errors like:
+  - `Error: Cannot find module './vendor-chunks/clsx@2.1.1.js'`
+  - `Error: Cannot find module './vendor-chunks/cmdk@...js'`
+
+### Root Cause
+
+- A stale or corrupted `.next` output/cache state (often after large refactors or interrupted builds).
+
+### Recovery Steps
+
+1. Stop the dev server.
+2. Run:
+   ```bash
+   pnpm run dev:fresh
+   ```
+   Or manually:
+   ```bash
+   pnpm run clean:next
+   pnpm run dev
+   ```
+
+### If It Keeps Happening
+
+- Prefer a supported Node LTS for Next 14.2.x (Node 20 recommended).
 
 ## Debug Queries Reference
 

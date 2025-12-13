@@ -13,6 +13,8 @@ import {
 } from "./settings"
 
 import { registerDocumentsAgent } from "./agents"
+import { Copy, Trash, ExternalLink } from "lucide-react"
+import { toast } from "sonner"
 
 registerFeatureSettings("documents", () => [
   {
@@ -71,6 +73,33 @@ registerCommands("documents", [
     group: "actions",
     keywords: ["new", "doc", "page"],
     action: () => window.dispatchEvent(new Event("open-create-document-dialog"))
+  },
+  {
+    id: "copy-link",
+    label: "Copy Link",
+    icon: Copy,
+    group: "actions",
+    action: () => {
+      navigator.clipboard.writeText(window.location.href)
+      toast.success("Link copied to clipboard")
+    }
+  },
+  {
+    id: "open-new-tab",
+    label: "Open in new tab",
+    icon: ExternalLink,
+    group: "actions",
+    action: () => window.open(window.location.href, "_blank")
+  },
+  {
+    id: "delete-document",
+    label: "Delete",
+    icon: Trash,
+    variant: "destructive",
+    group: "danger",
+    action: () => {
+       toast.error("Delete not implemented yet")
+    }
   }
 ])
 

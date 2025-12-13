@@ -6,7 +6,7 @@
 
 import { LucideIcon } from "lucide-react"
 
-export type CommandGroup = "navigation" | "actions" | "settings" | "theme" | "other"
+export type CommandGroup = "navigation" | "actions" | "settings" | "theme" | "other" | "danger"
 
 export interface CommandDefinition {
     id: string
@@ -17,6 +17,7 @@ export interface CommandDefinition {
     keywords?: string[]
     description?: string
     priority?: number
+    variant?: "default" | "destructive"
     action: () => void
 }
 
@@ -26,7 +27,8 @@ const commands = new Map<string, CommandDefinition[]>()
  * Register commands for a feature
  */
 export function registerCommands(featureSlug: string, newCommands: CommandDefinition[]) {
-    commands.set(featureSlug, newCommands)
+    const existing = commands.get(featureSlug) || []
+    commands.set(featureSlug, [...existing, ...newCommands])
 }
 
 /**
@@ -42,6 +44,13 @@ export function unregisterCommands(featureSlug: string) {
 export function getAllCommands(): CommandDefinition[] {
     const allCommands = Array.from(commands.values()).flat()
     return allCommands.sort((a, b) => (b.priority || 0) - (a.priority || 0))
+}
+
+/**
+ * Get commands for a specific feature
+ */
+export function getCommandsForFeature(featureSlug: string): CommandDefinition[] {
+    return commands.get(featureSlug) || []
 }
 
 export function clearCommandRegistry() {

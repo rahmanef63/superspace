@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/tooltip"
 
 import { hasFeatureSettings, getFeatureSettingsBuilder } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
-import { FeatureSettingsSheet } from "./FeatureSettingsSheet"
+import { FeatureSettingsDialog } from "./FeatureSettingsDialog"
 import { SettingsRegistryProvider } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 
@@ -151,7 +151,7 @@ export function FeatureSettingsButton({
 
       {/* Wrap sheet in its own provider with pre-loaded settings */}
       <SettingsRegistryProvider coreSettings={categories}>
-        <FeatureSettingsSheet
+        <FeatureSettingsDialog
           open={open}
           onOpenChange={setOpen}
           featureSlug={featureSlug}

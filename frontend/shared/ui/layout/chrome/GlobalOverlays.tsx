@@ -12,6 +12,13 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet"
 import {
+    Drawer,
+    DrawerContent,
+    DrawerDescription,
+    DrawerHeader,
+    DrawerTitle,
+} from "@/components/ui/drawer"
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -23,6 +30,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ComprehensiveSettingsPage } from "@/frontend/shared/settings/comprehensive"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 
 
@@ -30,6 +38,7 @@ export function GlobalOverlays() {
     const [showSettings, setShowSettings] = React.useState(false)
     const [showNotifications, setShowNotifications] = React.useState(false)
     const [showHelp, setShowHelp] = React.useState(false)
+    const isMobile = useIsMobile()
 
     const { theme, setTheme } = useTheme()
 
@@ -59,28 +68,52 @@ export function GlobalOverlays() {
                 </DialogContent>
             </Dialog>
 
-            {/* Notifications Sheet (Side Panel) */}
-            <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
-                <SheetContent side="right" className="w-[380px]">
-                    <SheetHeader>
-                        <SheetTitle>Notifications</SheetTitle>
-                        <SheetDescription>
-                            Stay updated with the latest activity.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-6">
-                        <div className="flex flex-col items-center justify-center h-[300px] text-center space-y-4">
-                            <div className="p-3 rounded-full bg-muted">
-                                <Bell className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                            <div className="space-y-1">
-                                <p className="font-medium">No new notifications</p>
-                                <p className="text-sm text-muted-foreground">You're all caught up!</p>
+            {/* Notifications - Drawer on mobile, Sheet on desktop */}
+            {isMobile ? (
+                <Drawer open={showNotifications} onOpenChange={setShowNotifications}>
+                    <DrawerContent className="h-[70vh]">
+                        <DrawerHeader>
+                            <DrawerTitle>Notifications</DrawerTitle>
+                            <DrawerDescription>
+                                Stay updated with the latest activity.
+                            </DrawerDescription>
+                        </DrawerHeader>
+                        <div className="py-6 px-4">
+                            <div className="flex flex-col items-center justify-center h-[200px] text-center space-y-4">
+                                <div className="p-3 rounded-full bg-muted">
+                                    <Bell className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-medium">No new notifications</p>
+                                    <p className="text-sm text-muted-foreground">You're all caught up!</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </SheetContent>
-            </Sheet>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
+                    <SheetContent side="right" className="w-[380px]">
+                        <SheetHeader>
+                            <SheetTitle>Notifications</SheetTitle>
+                            <SheetDescription>
+                                Stay updated with the latest activity.
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="py-6">
+                            <div className="flex flex-col items-center justify-center h-[300px] text-center space-y-4">
+                                <div className="p-3 rounded-full bg-muted">
+                                    <Bell className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-medium">No new notifications</p>
+                                    <p className="text-sm text-muted-foreground">You're all caught up!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            )}
 
             {/* Help Dialog (Modal) */}
             <Dialog open={showHelp} onOpenChange={setShowHelp}>

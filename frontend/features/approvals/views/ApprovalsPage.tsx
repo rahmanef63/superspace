@@ -19,7 +19,7 @@ interface ApprovalsPageProps {
  * Uses ApprovalsDashboard for presentation
  */
 export default function ApprovalsPage({ workspaceId }: ApprovalsPageProps) {
-  const { isLoading, data } = useApprovals(workspaceId)
+  const { isLoading, data, approveRequest, rejectRequest } = useApprovals(workspaceId)
 
   if (!workspaceId) {
     return (
@@ -56,8 +56,14 @@ export default function ApprovalsPage({ workspaceId }: ApprovalsPageProps) {
       />
 
       <div className="flex-1 overflow-auto p-6">
-        <ApprovalsDashboard data={data} isLoading={isLoading} />
+        <ApprovalsDashboard
+          data={data}
+          isLoading={isLoading}
+          onApprove={approveRequest}
+          onReject={rejectRequest}
+        />
       </div>
     </div>
   )
 }
+

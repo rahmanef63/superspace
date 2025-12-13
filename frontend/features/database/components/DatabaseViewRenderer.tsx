@@ -16,6 +16,8 @@ import type {
 } from "../types";
 import { DatabaseTableView } from "./views/table";
 import { computeYearRange } from "../utils/date-helpers";
+import { UniversalCalendarView } from "../views/UniversalCalendarView";
+import { convertFieldsToProperties } from "../lib/field-converter";
 
 interface DatabaseViewRendererProps {
   activeView: DatabaseViewType;
@@ -26,7 +28,7 @@ interface DatabaseViewRendererProps {
   tableId: Id<"dbTables">;
   filterQuery?: any | null; // ConvexQueryFilter from filters
   // Row operations
-  onAddRow: () => Promise<void>;
+  onAddRow: (initialData?: Record<string, unknown>) => Promise<void>; // Updated signature
   onUpdateCell: (rowId: DatabaseFeature["id"], updates: Record<string, unknown>) => Promise<void>;
   onDeleteRow: (rowId: DatabaseFeature["id"]) => Promise<void>;
   onReorderRows: (orderedIds: string[]) => Promise<void>;
@@ -82,11 +84,44 @@ export function DatabaseViewRenderer({
       );
 
     case "calendar":
-      // TODO: Implement UniversalCalendarView when ready
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-muted-foreground">Calendar view coming soon...</p>
-        </div>
+        <UniversalCalendarView
+          records={viewModel.features.map(f => {
+            // Map metadata to properties, and inject Name/Title
+            const properties = { ...f.metadata };
+
+            // Find primary field (Name) and inject if missing from metadata
+            // Usually name is stored in f.name, not metadata.
+            const primaryField = record.fields.find(field => field.isPrimary);
+            if (primaryField && !properties[primaryField._id]) {
+              properties[primaryField._id] = f.name;
+            }
+
+            return {
+              id: String(f.id),
+              properties
+            };
+          })}
+          properties={convertFieldsToProperties(record.fields)}
+          dateProperty={(activeDbView?.settings as any)?.calendarDateProperty}
+          onDateChange={async (recordId, newDate, propertyKey) => {
+            if (propertyKey) {
+              // Cast recordId to DatabaseFeature["id"] (Id<"dbRows">)
+              // Assuming recordId comes from f.id which is Id<"dbRows">
+              await onUpdateCell(recordId as DatabaseFeature["id"], { [propertyKey]: newDate.getTime() });
+            }
+          }}
+          onRecordClick={(row) => {
+            console.log("Record clicked", row);
+          }}
+          onAddRecord={(date, propertyKey) => {
+            if (propertyKey) {
+              onAddRow({ [propertyKey]: date.getTime() });
+            } else {
+              onAddRow();
+            }
+          }}
+        />
       );
 
     case "list":
@@ -114,9 +149,9 @@ export function DatabaseViewRenderer({
           fields={record.fields}
           mapping={mapping}
           activeView={activeDbView}
-          filterQuery={filterQuery}
+          // filterQuery removed as it's not in props
           onAddProperty={onAddProperty}
-          onAddRow={onAddRow}
+          onAddRow={() => onAddRow()} // Fix to void
           onUpdateCell={onUpdateCell}
           onDeleteRow={onDeleteRow}
           onRenameField={onRenameField}

@@ -104,6 +104,12 @@ import {
   Warehouse,
   ShoppingCart,
   HelpCircle,
+  // Database icons
+  Table2,
+  CheckSquare,
+  Kanban,
+  List,
+  LayoutList,
 } from "lucide-react";
 
 // Icon registry
@@ -169,6 +175,12 @@ const ICON_REGISTRY: Record<string, LucideIcon> = {
   Warehouse,
   ShoppingCart,
   HelpCircle,
+  // Database icons
+  Table2,
+  CheckSquare,
+  Kanban,
+  List,
+  LayoutList,
 };
 
 const ICON_NAMES = Object.keys(ICON_REGISTRY);
@@ -185,6 +197,7 @@ const ICON_CATEGORIES: Record<string, string[]> = {
   Tools: ["Settings", "Wrench", "Hammer", "Scissors", "Lightbulb"],
   Nature: ["Sun", "Moon", "Cloud", "Leaf", "Mountain"],
   Specials: ["Zap", "Rocket", "Trophy", "Crown", "Gem", "Sparkles"],
+  Database: ["Database", "Table2", "LayoutGrid", "List", "LayoutList", "CheckSquare", "Kanban"],
 };
 
 // ============================================================================

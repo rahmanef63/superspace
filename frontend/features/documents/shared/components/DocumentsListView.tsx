@@ -15,7 +15,6 @@ import {
   SecondarySidebarTools,
 } from "@/frontend/shared/ui";
 import { DocumentMenuWrapper } from "@/frontend/shared/ui";
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
 import { SelectionPopover } from "@/frontend/shared/ui/selection-tools";
 import {
   UniversalToolbar,
@@ -31,6 +30,7 @@ import { formatRelativeTime } from "../utils";
 import { DocumentsTree } from "./DocumentsTree";
 import { DocumentsBreadcrumbs } from "./DocumentsBreadcrumbs";
 import { DocumentInspector } from "./DocumentInspector";
+import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
 
 export interface DocumentsListViewProps {
   documents: DocumentRecord[];

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { useSettingsRegistry } from "../SettingsRegistry"
+import { useSettingsRegistry } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 
 interface DynamicSettingsSidebarProps {

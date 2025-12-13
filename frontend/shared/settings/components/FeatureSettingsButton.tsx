@@ -17,9 +17,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { hasFeatureSettings, getFeatureSettingsBuilder } from "../featureSettingsRegistry"
+import { hasFeatureSettings, getFeatureSettingsBuilder } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
 import { FeatureSettingsSheet } from "./FeatureSettingsSheet"
-import { SettingsRegistryProvider } from "../SettingsRegistry"
+import { SettingsRegistryProvider } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 
 export interface FeatureSettingsButtonProps {

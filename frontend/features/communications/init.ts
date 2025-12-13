@@ -7,8 +7,10 @@
  * @module features/communications/init
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Hash, Bell, Video, Shield, Bot } from "lucide-react"
+import { CommunicationsSettingsPlaceholder } from "./settings"
+import { registerCommunicationsAgent } from "./agents"
 // Settings components will be created in ./settings/ folder
 // import { ChannelSettings } from "./settings/ChannelSettings"
 // import { NotificationSettings } from "./settings/NotificationSettings"
@@ -31,7 +33,7 @@ export function initCommunicationsFeature() {
       order: 1,
       description: "Channel creation and management settings",
       // component: ChannelSettings,
-      component: () => null, // Placeholder until settings are built
+      component: CommunicationsSettingsPlaceholder,
     },
     {
       id: "communications-notifications",
@@ -40,7 +42,7 @@ export function initCommunicationsFeature() {
       order: 2,
       description: "Message and call notification preferences",
       // component: NotificationSettings,
-      component: () => null,
+      component: CommunicationsSettingsPlaceholder,
     },
     {
       id: "communications-calls",
@@ -49,7 +51,7 @@ export function initCommunicationsFeature() {
       order: 3,
       description: "Call settings including audio/video defaults",
       // component: CallSettings,
-      component: () => null,
+      component: CommunicationsSettingsPlaceholder,
     },
     {
       id: "communications-privacy",
@@ -58,7 +60,7 @@ export function initCommunicationsFeature() {
       order: 4,
       description: "Who can message you and see your status",
       // component: PrivacySettings,
-      component: () => null,
+      component: CommunicationsSettingsPlaceholder,
     },
     {
       id: "communications-ai-bots",
@@ -67,9 +69,11 @@ export function initCommunicationsFeature() {
       order: 5,
       description: "Configure AI assistants for channels",
       // component: AIBotSettings,
-      component: () => null,
+      component: CommunicationsSettingsPlaceholder,
     },
   ])
+
+  registerCommunicationsAgent()
 }
 
 // Auto-init when module is imported (if settings registry exists)

@@ -13,7 +13,9 @@
  * Usage: pnpm run validate:features
  */
 
-import { getAllFeatures, validateRegistry } from "../../lib/features/registry.server"
+import { existsSync } from "fs"
+import { join } from "path"
+import { getAllFeatures, getFeatureMeta, validateRegistry } from "../../lib/features/registry.server"
 
 const FEATURES_REGISTRY = getAllFeatures()
 
@@ -208,6 +210,103 @@ function validateDependencies() {
   console.log(`  ✓ Dependencies validated`)
 }
 
+function validateFeatureFolders() {
+  console.log("\n🔍 Validating mandatory feature folders (agents/settings)...")
+
+  const flattenFeatures = (features: any[], parent?: string): any[] => {
+    return features.flatMap((f) => {
+      const current = { ...f, parent }
+      const children = f.children ? flattenFeatures(f.children, f.id) : []
+      return [current, ...children]
+    })
+  }
+
+  const rootDir = process.cwd()
+  const allFeatures = flattenFeatures(FEATURES_REGISTRY)
+
+  const toConvexSlug = (slug: string) =>
+    slug.includes("-")
+      ? slug
+          .split("-")
+          .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+          .join("")
+      : slug
+
+  const toConvexSlugCandidates = (slug: string) => {
+    const candidates = [toConvexSlug(slug), slug, slug.replace(/-/g, "_")]
+    return [...new Set(candidates)].filter(Boolean)
+  }
+
+  for (const feature of allFeatures) {
+    const slug = feature.id as string
+    const isChildFeature = Boolean(feature.parent)
+    const hasUI = Boolean(feature?.technical?.hasUI)
+    const hasConvex = Boolean(feature?.technical?.hasConvex)
+
+    if (hasUI && !isChildFeature) {
+      const meta = getFeatureMeta(slug)
+      const base = meta?.featureDir ?? join(rootDir, "frontend", "features", slug)
+      const frontendDirName = meta?.slug ?? slug
+      const settingsDir = join(base, "settings")
+      const agentsDir = join(base, "agents")
+      const initFile = join(base, "init.ts")
+
+      if (!existsSync(settingsDir)) {
+        addError({
+          feature: slug,
+          field: "frontend/settings",
+          message: `Missing mandatory folder: frontend/features/${frontendDirName}/settings/`,
+          severity: "warning",
+        })
+      }
+      if (!existsSync(agentsDir)) {
+        addError({
+          feature: slug,
+          field: "frontend/agents",
+          message: `Missing mandatory folder: frontend/features/${frontendDirName}/agents/`,
+          severity: "warning",
+        })
+      }
+      if (!existsSync(initFile)) {
+        addError({
+          feature: slug,
+          field: "frontend/init",
+          message: `Missing recommended init file: frontend/features/${frontendDirName}/init.ts (used for settings/agent registration)`,
+          severity: "warning",
+        })
+      }
+    }
+
+    if (hasConvex && !isChildFeature) {
+      const convexSlug = toConvexSlug(slug)
+      const convexSlugs = toConvexSlugCandidates(slug)
+      const bases = convexSlugs.map((s) => join(rootDir, "convex", "features", s))
+      const agentsDirs = bases.map((b) => join(b, "agents"))
+
+      const legacyAgentFiles = bases.map((b) => join(b, "agent.ts"))
+      const definitionPath = feature?.agent?.definitionPath
+        ? join(rootDir, String(feature.agent.definitionPath))
+        : null
+
+      const hasAnyAgentSurface =
+        agentsDirs.some((d) => existsSync(d)) ||
+        legacyAgentFiles.some((f) => existsSync(f)) ||
+        (definitionPath ? existsSync(definitionPath) : false)
+
+      if (!hasAnyAgentSurface) {
+        addError({
+          feature: slug,
+          field: "convex/agents",
+          message: `Missing agent surface: convex/features/${convexSlug}/agents/ (or agent.ts or agent.definitionPath)`,
+          severity: "warning",
+        })
+      }
+    }
+  }
+
+  console.log("  ✓ Folder checks completed")
+}
+
 function validateCategories() {
   console.log("\n🔍 Validating categories...")
 
@@ -306,6 +405,7 @@ function main() {
     validatePaths()
     validateComponents()
     validateDependencies()
+    validateFeatureFolders()
     validateCategories()
 
     const isValid = generateReport()

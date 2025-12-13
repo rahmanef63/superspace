@@ -8,6 +8,14 @@ export const dbTables = defineTable({
   icon: v.optional(v.string()),
   coverUrl: v.optional(v.string()),
   isPublic: v.optional(v.boolean()),
+  // Feature type for feature-specific databases (calendar, crm, tasks, etc.)
+  featureType: v.optional(v.union(
+    v.literal("calendar"),
+    v.literal("crm"),
+    v.literal("tasks"),
+    v.literal("projects"),
+    v.literal("inventory"),
+  )),
   createdById: v.id("users"),
   updatedById: v.id("users"),
   isTemplate: v.boolean(),
@@ -18,7 +26,9 @@ export const dbTables = defineTable({
   }),
   createdAt: v.optional(v.number()),
   updatedAt: v.optional(v.number()),
-}).index("by_workspace", ["workspaceId"]);
+})
+  .index("by_workspace", ["workspaceId"])
+  .index("by_feature", ["workspaceId", "featureType"]);
 
 export const dbFields = defineTable({
   tableId: v.id("dbTables"),
@@ -113,7 +123,9 @@ export const dbRows = defineTable({
   position: v.number(),
   createdAt: v.optional(v.number()),
   updatedAt: v.optional(v.number()),
-}).index("by_table", ["tableId"]);
+})
+  .index("by_table", ["tableId"])
+  .index("by_doc", ["docId"]);
 
 /**
  * Universal Database Table (v2.0)

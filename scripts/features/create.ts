@@ -487,6 +487,164 @@ export interface ${typeName}Config {
 `
 }
 
+function generateFeatureSettingsComponent(slug: string, name: string): string {
+  const componentName = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("")
+
+  return `"use client"
+
+import { SettingsSection } from "@/frontend/shared/settings/primitives/SettingsSection"
+
+export function ${componentName}GeneralSettings() {
+  return (
+    <SettingsSection title="General" description="Basic settings for ${name}">
+      <div className="text-sm text-muted-foreground">No settings yet.</div>
+    </SettingsSection>
+  )
+}
+`
+}
+
+function generateFeatureSettingsIndex(slug: string): string {
+  const componentName = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("")
+
+  return `export { ${componentName}GeneralSettings } from "./${componentName}Settings"
+`
+}
+
+function generateFeatureAgentsIndex(slug: string, name: string): string {
+  const componentName = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("")
+
+  const agentId = `${slug}-agent`
+  const lowerName = name.toLowerCase()
+
+  return `import { subAgentRegistry } from "@/frontend/features/ai/agents"
+import type { SubAgent } from "@/frontend/features/ai/agents"
+
+export function register${componentName}Agent() {
+  const agent: SubAgent = {
+    id: "${agentId}",
+    name: "${name} Agent",
+    description: "Helps with ${lowerName} tasks using safe tools.",
+    featureId: "${slug}",
+    tools: [
+      {
+        name: "summarize",
+        description: "Summarize the current ${lowerName} feature state.",
+        parameters: {},
+        handler: async (_params, _ctx) => {
+          return {
+            success: true,
+            data: {
+              featureSlug: "${slug}",
+              featureName: "${name}",
+              note: "Scaffolded agent tool. Implement real tools in frontend/features/${slug}/agents and convex/features/.../agents.",
+            },
+            message: "OK",
+          }
+        },
+      },
+    ],
+    canHandle: (query) => {
+      const q = query.toLowerCase()
+      if (q.includes("${slug}") || q.includes("${lowerName}")) return 0.8
+      return 0
+    },
+  }
+
+  subAgentRegistry.register(agent, { priority: 10, enabled: true })
+}
+`
+}
+
+function generateFeatureInit(slug: string, name: string): string {
+  const componentName = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("")
+
+  return `/**
+ * ${name} Feature Initialization
+ * - Registers feature settings
+ * - Registers feature sub-agent(s)
+ */
+
+import { registerFeatureSettings } from "@/frontend/shared/settings"
+import { Settings } from "lucide-react"
+import { ${componentName}GeneralSettings } from "./settings"
+import { register${componentName}Agent } from "./agents"
+
+registerFeatureSettings("${slug}", () => [
+  {
+    id: "${slug}-general",
+    label: "General",
+    icon: Settings,
+    order: 100,
+    component: ${componentName}GeneralSettings,
+  },
+])
+
+register${componentName}Agent()
+`
+}
+
+function generateConvexAgentQueries(slug: string): string {
+  return `import { v } from "convex/values"
+import { query } from "../../../_generated/server"
+import { requireActiveMembership } from "../../../auth/helpers"
+
+/**
+ * Agent-facing queries for ${slug}
+ * Keep outputs small, deterministic JSON.
+ */
+
+export const summarize = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    return {
+      featureSlug: "${slug}",
+      message: "Scaffolded agent query. Add real read tools here.",
+    }
+  },
+})
+`
+}
+
+function generateConvexAgentMutations(slug: string): string {
+  return `import { v } from "convex/values"
+import { mutation } from "../../../_generated/server"
+import { requirePermission } from "../../../auth/helpers"
+import { PERMS } from "../../../workspace/permissions"
+
+/**
+ * Agent-facing mutations for ${slug}
+ * All mutations must be permission-gated.
+ */
+
+export const noop = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_WORKSPACE)
+    return { ok: true }
+  },
+})
+`
+}
+
 function generateConvexQueries(slug: string): string {
   return `import { v } from "convex/values"
 import { query } from "../../_generated/server"
@@ -648,10 +806,14 @@ async function main() {
     const viewsDir = join(featureDir, "views")
     const hooksDir = join(featureDir, "hooks")
     const typesDir = join(featureDir, "types")
+    const settingsDir = join(featureDir, "settings")
+    const agentsDir = join(featureDir, "agents")
 
     mkdirSync(viewsDir, { recursive: true })
     mkdirSync(hooksDir, { recursive: true })
     mkdirSync(typesDir, { recursive: true })
+    mkdirSync(settingsDir, { recursive: true })
+    mkdirSync(agentsDir, { recursive: true })
 
     const componentName = slug
       .split("-")
@@ -671,6 +833,16 @@ async function main() {
 export { default } from './views/${componentName}Page'
 `
     writeFileSync(join(featureDir, "page.tsx"), pageEntryContent)
+
+    // Create mandatory settings/ scaffold
+    writeFileSync(join(settingsDir, `${componentName}Settings.tsx`), generateFeatureSettingsComponent(slug, name!))
+    writeFileSync(join(settingsDir, "index.ts"), generateFeatureSettingsIndex(slug))
+
+    // Create mandatory agents/ scaffold
+    writeFileSync(join(agentsDir, "index.ts"), generateFeatureAgentsIndex(slug, name!))
+
+    // Create init.ts (register settings + agents)
+    writeFileSync(join(featureDir, "init.ts"), generateFeatureInit(slug, name!))
     
     writeFileSync(join(hooksDir, `use${componentName}.ts`), generateHook(slug, name!))
     writeFileSync(join(typesDir, "index.ts"), generateTypes(slug))
@@ -679,6 +851,9 @@ export { default } from './views/${componentName}Page'
     console.log(`   ✅ Created: frontend/features/${slug}/views/${componentName}Page.tsx`)
     console.log(`   ✅ Created: frontend/features/${slug}/hooks/use${componentName}.ts`)
     console.log(`   ✅ Created: frontend/features/${slug}/types/index.ts`)
+    console.log(`   ✅ Created: frontend/features/${slug}/settings/ (mandatory)`)
+    console.log(`   ✅ Created: frontend/features/${slug}/agents/ (mandatory)`)
+    console.log(`   ✅ Created: frontend/features/${slug}/init.ts (mandatory)`)
   }
 
   // 3. Generate Convex handlers (if enabled)
@@ -694,8 +869,15 @@ export { default } from './views/${componentName}Page'
     writeFileSync(join(convexDir, "queries.ts"), generateConvexQueries(slug))
     writeFileSync(join(convexDir, "mutations.ts"), generateConvexMutations(slug))
 
+    // Create mandatory agents/ scaffold (tool endpoints)
+    const convexAgentsDir = join(convexDir, "agents")
+    mkdirSync(convexAgentsDir, { recursive: true })
+    writeFileSync(join(convexAgentsDir, "queries.ts"), generateConvexAgentQueries(slug))
+    writeFileSync(join(convexAgentsDir, "mutations.ts"), generateConvexAgentMutations(slug))
+
     console.log(`   ✅ Created: convex/features/${convexSlug}/queries.ts`)
     console.log(`   ✅ Created: convex/features/${convexSlug}/mutations.ts`)
+    console.log(`   ✅ Created: convex/features/${convexSlug}/agents/ (mandatory)`)
     if (slug !== convexSlug) {
       console.log(`   ℹ️  Note: Convex folder uses camelCase (${convexSlug}) because dashes are not supported`)
     }

@@ -1,7 +1,7 @@
 # Golden Path Workflows: UX Polish Plan (Pareto Layer 2)
 
 **Date:** December 12, 2025  
-**Status:** In Progress  
+**Status:** ✅ Complete  
 **Prerequisite:** `PARETO_PRIORITY_FOUNDATION_HARDENING.md` (Complete)
 
 ## Why This Matters
@@ -130,15 +130,69 @@ A golden path is a **high‑frequency, high‑value workflow** that:
   - Signup → create workspace → create database → add row → create view → filter.
 - Keep unit tests for low‑level database/property functions.
 
+## Journey Maps (Before / After)
+
+### GP1: First Workspace → First Database
+
+**Before**
+- Onboarding and empty states were less guided (fewer “next step” affordances).
+
+**After**
+- Workspace dashboard shows an onboarding checklist panel.
+- Database empty state promotes templates + quick actions.
+
+```mermaid
+flowchart LR
+  A[Sign in] --> B[No workspace]
+  B --> C[Create workspace]
+  C --> D[Open Database]
+  D --> E[Create table]
+  E --> F[Add first row]
+```
+
+### GP2: Database Use → Views/Filters → Share
+
+**Before**
+- Filters/views discovery relied on user exploration.
+
+**After**
+- View switcher + filter onboarding hint makes discovery immediate.
+- Analytics events + Events tab confirm the journey is instrumented.
+
+```mermaid
+flowchart LR
+  A[Open table] --> B[Add data]
+  B --> C[Create view]
+  C --> D[Apply filter]
+  D --> E[Export/Share]
+```
+
+### GP3: Create Doc ↔ Relate to Database
+
+**Before**
+- No lightweight way to link a doc to a specific database row from the UI.
+- Docs didn’t show “Related items” backlinks.
+
+**After**
+- Database rows offer “Create page” / “Open page” actions.
+- Documents Inspector auto-renders a “Related items” section with link/unlink + deep-link back to the database.
+
+```mermaid
+flowchart LR
+  A[Database row] -->|Create page| B[Document created]
+  B --> C[Related items shown]
+  C -->|Open| D[Database table]
+```
+
 ## Deliverables Checklist
 
-- [ ] Golden path journey maps (before/after screenshots).
+- [x] Golden path journey maps (before/after flow + notes).
 - [x] Onboarding UI checklist panel.
 - [x] Database templates + empty state CTA.
-- [ ] View switcher + filter hints.
-- [ ] Doc ↔ database relation wizard + backlinks.
-- [ ] Analytics events + basic dashboard. (Events started: `onboarding.workspace_created`, `database.created`)
-- [ ] E2E golden path tests.
+- [x] View switcher + filter hints.
+- [x] Doc ↔ database relation wizard + backlinks.
+- [x] Analytics events + basic dashboard. (Events started: `onboarding.workspace_created`, `database.created`, `database.filter_applied`)
+- [x] E2E golden path tests.
 
 ## Out of Scope (v1)
 

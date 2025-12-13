@@ -18,9 +18,10 @@ import { useBreadcrumbs } from "./breadcrumbs-context"
 import { FeatureSettingsButton } from "@/frontend/shared/settings/components/FeatureSettingsButton"
 import { GlobalUtilityButtons } from "../../chrome/GlobalUtilityButtons"
 
-function getPageTitle(pathname: string): string {
+function getPageTitle(pathname: string | null): string {
+  const safePathname = pathname ?? ""
   // Handle exact matches first
-  switch (pathname) {
+  switch (safePathname) {
     case "/dashboard":
       return "Overview"
     case "/dashboard/payment-gated":
@@ -30,11 +31,8 @@ function getPageTitle(pathname: string): string {
   }
 }
 
-/**
- * Extract active feature slug from pathname
- * e.g. /dashboard/chat -> "chat", /dashboard/documents -> "documents"
- */
-function getActiveFeatureSlug(pathname: string): string | null {
+function getActiveFeatureSlug(pathname: string | null): string | null {
+  if (!pathname) return null
   const match = pathname.match(/^\/dashboard\/([^/]+)/)
   if (match && match[1]) {
     // Exclude non-feature pages
@@ -59,7 +57,7 @@ function slugToDisplayName(slug: string): string {
 }
 
 export function SiteHeader() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
   const pageTitle = getPageTitle(pathname)
   const { breadcrumbs } = useBreadcrumbs()
 

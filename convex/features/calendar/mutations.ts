@@ -151,3 +151,132 @@ export const remove = mutation({
     return args.id
   },
 })
+
+/**
+ * Initialize Calendar Database
+ * Creates a feature-specific database table for calendar with predefined fields.
+ * This enables calendar data to be viewed/edited through the Database feature.
+ */
+export const initializeDatabase = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const { membership } = await requireActiveMembership(ctx, args.workspaceId)
+    const actorId = membership?.userId ?? (await ensureUser(ctx))
+    const now = Date.now()
+
+    // Check if calendar database already exists
+    const existing = await ctx.db
+      .query("dbTables")
+      .withIndex("by_feature", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("featureType", "calendar")
+      )
+      .first()
+
+    if (existing) {
+      return existing._id
+    }
+
+    // Create calendar database table
+    const tableId = await ctx.db.insert("dbTables", {
+      workspaceId: args.workspaceId,
+      name: "Calendar Events",
+      description: "Calendar events database",
+      icon: "📅",
+      featureType: "calendar",
+      createdById: actorId,
+      updatedById: actorId,
+      isTemplate: false,
+      settings: {
+        showProperties: true,
+        wrapCells: false,
+        showCalculations: false,
+      },
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    // Create predefined fields for calendar
+    const fields = [
+      { name: "Title", type: "text" as const, isPrimary: true, position: 0 },
+      { name: "Start Date", type: "date" as const, isPrimary: false, position: 1 },
+      { name: "End Date", type: "date" as const, isPrimary: false, position: 2 },
+      { name: "Description", type: "text" as const, isPrimary: false, position: 3 },
+      { name: "Location", type: "text" as const, isPrimary: false, position: 4 },
+      { name: "Color", type: "select" as const, isPrimary: false, position: 5 },
+      { name: "All Day", type: "checkbox" as const, isPrimary: false, position: 6 },
+    ]
+
+    const fieldIds: string[] = []
+    for (const field of fields) {
+      const fieldId = await ctx.db.insert("dbFields", {
+        tableId,
+        name: field.name,
+        type: field.type,
+        isRequired: field.name === "Title",
+        isPrimary: field.isPrimary,
+        position: field.position,
+        options: field.type === "select" ? {
+          selectOptions: [
+            { id: "blue", name: "Blue", color: "#3b82f6" },
+            { id: "green", name: "Green", color: "#22c55e" },
+            { id: "red", name: "Red", color: "#ef4444" },
+            { id: "purple", name: "Purple", color: "#a855f7" },
+            { id: "orange", name: "Orange", color: "#f97316" },
+          ],
+        } : undefined,
+        createdAt: now,
+        updatedAt: now,
+      })
+      fieldIds.push(fieldId)
+    }
+
+    // Create default calendar view
+    await ctx.db.insert("dbViews", {
+      tableId,
+      name: "Calendar",
+      type: "calendar",
+      createdById: actorId,
+      isDefault: true,
+      position: 0,
+      settings: {
+        filters: [],
+        sorts: [],
+        visibleFields: fieldIds as any,
+        fieldWidths: {},
+      },
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    // Also create table view
+    await ctx.db.insert("dbViews", {
+      tableId,
+      name: "All Events",
+      type: "table",
+      createdById: actorId,
+      isDefault: false,
+      position: 1,
+      settings: {
+        filters: [],
+        sorts: [],
+        visibleFields: fieldIds as any,
+        fieldWidths: {},
+      },
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    await logAuditEvent(ctx, {
+      action: "calendar.database_initialized",
+      workspaceId: args.workspaceId,
+      actorUserId: actorId,
+      resourceType: "dbTable",
+      resourceId: tableId,
+    })
+
+    return tableId
+  },
+})
+

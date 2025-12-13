@@ -60,6 +60,30 @@ interface BundleFormState {
   isPublic: boolean
 }
 
+function areArraysEqual<T>(a: T[], b: T[]) {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false
+  }
+  return true
+}
+
+function areFormsEqual(a: BundleFormState, b: BundleFormState) {
+  return (
+    a.bundleId === b.bundleId &&
+    a.name === b.name &&
+    a.description === b.description &&
+    a.icon === b.icon &&
+    a.category === b.category &&
+    a.primaryColor === b.primaryColor &&
+    a.accentColor === b.accentColor &&
+    areArraysEqual(a.recommendedFor, b.recommendedFor) &&
+    areArraysEqual(a.tags, b.tags) &&
+    a.isEnabled === b.isEnabled &&
+    a.isPublic === b.isPublic
+  )
+}
+
 const defaultFormState: BundleFormState = {
   bundleId: "",
   name: "",
@@ -77,13 +101,15 @@ const defaultFormState: BundleFormState = {
 export interface BundleEditInspectorPanelProps {
   bundle: BundleCategoryDataForEdit
   onClose: () => void
-  onSaved?: () => void
+  onSaved?: (nextBundle: BundleCategoryDataForEdit) => void
 }
 
 export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEditInspectorPanelProps) {
   const { updateBundle } = useBundleCategoryMutations()
   const [isSaving, setIsSaving] = useState(false)
   const [form, setForm] = useState<BundleFormState>(defaultFormState)
+
+  const allowedWorkspaceTypes = useMemo(() => new Set<WorkspaceType>(WORKSPACE_TYPES.map((t) => t.value)), [])
 
   const categoryValue = useMemo(() => {
     const raw = (bundle.category as string | undefined) ?? "productivity"
@@ -92,8 +118,14 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
     return allowed.has(candidate) ? candidate : "productivity"
   }, [bundle.category])
 
-  useEffect(() => {
-    setForm({
+  const initialFormState = useMemo<BundleFormState>(() => {
+    const rawRecommended = (bundle.recommendedFor as WorkspaceType[] | undefined) ?? ["personal"]
+    const recommendedFor = Array.from(new Set(rawRecommended)).filter((t) => allowedWorkspaceTypes.has(t))
+
+    const rawTags = bundle.tags ?? []
+    const tags = Array.from(new Set(rawTags.map((t) => t.trim()).filter(Boolean)))
+
+    return {
       bundleId: bundle.bundleId ?? "",
       name: bundle.name ?? "",
       description: bundle.description ?? "",
@@ -101,30 +133,70 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
       category: categoryValue,
       primaryColor: bundle.primaryColor ?? "#6366f1",
       accentColor: bundle.accentColor ?? "",
-      recommendedFor: (bundle.recommendedFor as WorkspaceType[] | undefined) ?? ["personal"],
-      tags: bundle.tags ?? [],
+      recommendedFor: recommendedFor.length > 0 ? recommendedFor : ["personal"],
+      tags,
       isEnabled: bundle.isEnabled ?? true,
       isPublic: bundle.isPublic ?? true,
-    })
-  }, [bundle, categoryValue])
+    }
+  }, [allowedWorkspaceTypes, bundle, categoryValue])
+
+  useEffect(() => {
+    setForm(initialFormState)
+  }, [initialFormState])
+
+  const isDirty = useMemo(() => !areFormsEqual(form, initialFormState), [form, initialFormState])
+  const canSave = !isSaving && isDirty && form.name.trim().length > 0 && form.recommendedFor.length > 0
+
+  const requestClose = () => {
+    if (isSaving) return
+    if (isDirty && !window.confirm("Discard unsaved changes?")) return
+    onClose()
+  }
 
   const handleSave = async () => {
+    const name = form.name.trim()
+    if (!name) {
+      toast.error("Name is required")
+      return
+    }
+
+    const recommendedFor = Array.from(new Set(form.recommendedFor)).filter((t) => allowedWorkspaceTypes.has(t))
+    if (recommendedFor.length === 0) {
+      toast.error("Select at least one workspace type")
+      return
+    }
+
+    const tags = Array.from(new Set(form.tags.map((t) => t.trim()).filter(Boolean)))
+
     setIsSaving(true)
     try {
       await updateBundle(bundle._id as Id<"bundleCategories">, {
-        name: form.name,
-        description: form.description,
-        icon: form.icon,
+        name,
+        description: form.description.trim(),
+        icon: form.icon || "Package",
         category: form.category,
-        primaryColor: form.primaryColor || undefined,
-        accentColor: form.accentColor || undefined,
-        recommendedFor: form.recommendedFor,
-        tags: form.tags,
+        primaryColor: form.primaryColor.trim() || undefined,
+        accentColor: form.accentColor.trim() || undefined,
+        recommendedFor,
+        tags,
         isEnabled: form.isEnabled,
         isPublic: form.isPublic,
       })
       toast.success("Bundle category updated successfully")
-      onSaved?.()
+      onSaved?.({
+        ...bundle,
+        bundleId: form.bundleId,
+        name,
+        description: form.description.trim() || undefined,
+        icon: form.icon || "Package",
+        category: form.category,
+        primaryColor: form.primaryColor.trim() || undefined,
+        accentColor: form.accentColor.trim() || undefined,
+        recommendedFor,
+        tags,
+        isEnabled: form.isEnabled,
+        isPublic: form.isPublic,
+      })
       onClose()
     } catch (err: any) {
       toast.error(err?.message || "Failed to update bundle category")
@@ -145,7 +217,7 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
             <h3 className="text-sm font-semibold truncate">Edit Bundle Category</h3>
             <p className="text-xs text-muted-foreground font-mono truncate">{form.bundleId}</p>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={requestClose} disabled={isSaving}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -233,20 +305,27 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
                     key={t.value}
                     variant={isSelected ? "default" : "outline"}
                     className="cursor-pointer"
-                    onClick={() =>
-                      setForm({
-                        ...form,
-                        recommendedFor: isSelected
-                          ? form.recommendedFor.filter((x) => x !== t.value)
-                          : [...form.recommendedFor, t.value],
-                      })
-                    }
+                    onClick={() => {
+                      if (isSelected) {
+                        const next = form.recommendedFor.filter((x) => x !== t.value)
+                        if (next.length === 0) {
+                          toast.error("Select at least one workspace type")
+                          return
+                        }
+                        setForm({ ...form, recommendedFor: next })
+                        return
+                      }
+                      setForm({ ...form, recommendedFor: [...form.recommendedFor, t.value] })
+                    }}
                   >
                     {t.label}
                   </Badge>
                 )
               })}
             </div>
+            {form.recommendedFor.length === 0 ? (
+              <p className="text-xs text-destructive">Select at least one workspace type.</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -256,10 +335,14 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
               onChange={(e) =>
                 setForm({
                   ...form,
-                  tags: e.target.value
-                    .split(",")
-                    .map((t) => t.trim())
-                    .filter(Boolean),
+                  tags: Array.from(
+                    new Set(
+                      e.target.value
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean)
+                    )
+                  ),
                 })
               }
               placeholder="tag1, tag2"
@@ -290,10 +373,10 @@ export function BundleEditInspectorPanel({ bundle, onClose, onSaved }: BundleEdi
 
       <div className="flex-shrink-0 p-4 border-t bg-background">
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isSaving}>
+          <Button variant="outline" className="flex-1" onClick={requestClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button className="flex-1" onClick={handleSave} disabled={isSaving || !form.name.trim()}>
+          <Button className="flex-1" onClick={handleSave} disabled={!canSave}>
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

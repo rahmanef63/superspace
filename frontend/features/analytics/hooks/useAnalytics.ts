@@ -29,6 +29,12 @@ export function useAnalytics(
     workspaceId ? { workspaceId, timeRange: timeRange === "today" ? "7d" : timeRange } : "skip"
   )
 
+  // Query recent tracked events
+  const recentEvents = useQuery(
+    api.features.analytics.queries.getRecentEvents,
+    workspaceId ? { workspaceId, timeRange } : "skip"
+  )
+
   // Query saved widgets
   const widgets = useQuery(
     api.features.analytics.queries.getWidgets,
@@ -60,6 +66,7 @@ export function useAnalytics(
     overview,
     timeline,
     memberStats,
+    recentEvents: recentEvents ?? [],
     widgets: widgets ?? [],
     reports: reports ?? [],
     

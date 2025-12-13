@@ -2,7 +2,7 @@
  * Automation Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Zap, Play, Bell, FileText } from "lucide-react"
 import {
     AutomationGeneralSettings,
@@ -10,6 +10,7 @@ import {
     AutomationNotificationSettings,
     AutomationLoggingSettings,
 } from "./settings"
+import { registerAutomationAgent } from "./agents"
 
 registerFeatureSettings("automation", () => [
     {
@@ -41,6 +42,8 @@ registerFeatureSettings("automation", () => [
         component: AutomationLoggingSettings,
     },
 ])
+
+registerAutomationAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Automation feature settings registered")

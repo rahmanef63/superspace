@@ -19,7 +19,9 @@ export default defineFeature({
   },
 
   technical: {
-    featureType: 'default',
+    // Deprecated wrapper: keep available for backward compatibility,
+    // but don't treat as a default bundle feature.
+    featureType: 'optional',
     hasUI: true,
     hasConvex: true,
     hasTests: true,
@@ -35,11 +37,11 @@ export default defineFeature({
     capabilities: ["create", "read", "update", "delete", "search"],
   },
 
-  // Bundle membership - empty as deprecated
+  // Bundle membership - keep out of standard templates; available in custom setups
   bundles: {
     core: [],
     recommended: [],
-    optional: [],
+    optional: ['custom'],
   },
 
   tags: ['collaboration', 'real-time', 'documents', 'editor', 'deprecated'],

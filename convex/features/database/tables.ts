@@ -50,12 +50,56 @@ export const get = query({
   },
 });
 
+/**
+ * Get database table by feature type
+ * Used by feature modules (Calendar, CRM, etc.) to find their associated database
+ */
+export const getByFeature = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    featureType: v.union(
+      v.literal("calendar"),
+      v.literal("crm"),
+      v.literal("tasks"),
+      v.literal("projects"),
+      v.literal("inventory"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const allowed = await hasWorkspaceAccess(ctx, args.workspaceId, userId);
+    if (!allowed) {
+      return null;
+    }
+
+    const table = await ctx.db
+      .query("dbTables")
+      .withIndex("by_feature", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("featureType", args.featureType)
+      )
+      .first();
+
+    return table;
+  },
+});
+
 export const create = mutation({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
     workspaceId: v.id("workspaces"),
     icon: v.optional(v.string()),
+    featureType: v.optional(v.union(
+      v.literal("calendar"),
+      v.literal("crm"),
+      v.literal("tasks"),
+      v.literal("projects"),
+      v.literal("inventory"),
+    )),
   },
   handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
@@ -70,6 +114,7 @@ export const create = mutation({
       description: args.description,
       icon: args.icon,
       workspaceId: args.workspaceId,
+      featureType: args.featureType,
       createdById: userId,
       updatedById: userId,
       isTemplate: false,

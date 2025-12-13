@@ -21,7 +21,7 @@
 export { SettingsView } from './SettingsView'
 export { SettingsPopup } from './SettingsPopup'
 export { SettingsPageWithTabs } from './SettingsPageWithTabs'
-export { SettingsRegistryProvider, useSettingsRegistry, useRegisterFeatureSettings } from './SettingsRegistry'
+export { SettingsRegistryProvider, useSettingsRegistry, useRegisterFeatureSettings } from './SettingsProvider'
 export { default as SettingsPage } from './page'
 
 // ============================================================
@@ -34,7 +34,7 @@ export {
   getAllRegisteredFeatures,
   hasFeatureSettings,
   clearFeatureSettingsRegistry
-} from './featureSettingsRegistry'
+} from '../foundation/utils/registry/feature-settings-registry'
 
 // ============================================================
 // Workspace Settings

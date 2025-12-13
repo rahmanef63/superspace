@@ -25,6 +25,8 @@ export {
   update as updateRow,
   deleteRow,
   reorder as reorderRow,
+  linkDocToRow,
+  unlinkDocFromRow,
 } from "./rows";
 
 export { changeFieldType } from "./changeType";

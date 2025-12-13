@@ -282,57 +282,88 @@ Bundle workspace siap pakai untuk berbagai industri:
 
 ## 📁 Project Structure
 
+> Catatan penting: daftar folder di bawah menunjukkan struktur repo saat ini.
+> Untuk **standar wajib setiap feature**, lihat template per-feature setelah code block.
+
 ```
 convex/
 ├── features/
-│   ├── core/          # Core shared functionality
-│   ├── crm/           # CRM module
-│   ├── sales/         # Sales module (ERP)
-│   ├── inventory/     # Inventory module (ERP)
-│   ├── hr/            # HR module (ERP)
-│   ├── accounting/    # Accounting module (ERP)
-│   ├── projects/      # Project management
-│   ├── support/       # Helpdesk
-│   ├── docs/          # Document management
-│   ├── knowledge/     # Knowledge base
-│   ├── communications/# Communication
-│   ├── workflows/     # Workflow automation
-│   ├── cms/           # CMS
-│   ├── cms_lite/      # CMS Lite modules
+│   ├── menus/           # Dynamic Menu System (menu items, sets, manifests)
+│   ├── bundles/         # Workspace bundles
+│   ├── industryTemplates/# Industry templates
+│   ├── reports/         # Reporting (universal)
+│   ├── auditLog/
+│   ├── notifications/
+│   ├── search/
+│   ├── comments/
+│   ├── calendar/
+│   ├── tasks/
+│   ├── forms/
+│   ├── approvals/
+│   ├── tags/
+│   ├── importExport/
+│   ├── integrations/
+│   ├── userManagement/  # Users / Accounts
+│   ├── crm/             # System modules
+│   ├── projects/
+│   ├── support/
+│   ├── inventory/
+│   ├── accounting/
+│   ├── hr/
+│   ├── pos/
+│   ├── marketing/
+│   ├── cms/
+│   ├── cms_lite/
+│   ├── knowledge/
 │   └── ...
-├── shared/
-│   ├── comments/      # Shared comments (Dynamic Menu)
-│   ├── attachments/   # Shared files (Dynamic Menu)
-│   ├── automation/    # Shared automation (Dynamic Menu)
-│   ├── bulk/          # Bulk operations (Import/Export)
-│   ├── customFields/  # Custom fields
-│   ├── search/        # Global search (Dynamic Menu)
-│   ├── audit/         # Audit log (Dynamic Menu)
-│   ├── notifications/ # Notifications (Dynamic Menu)
-│   └── ...
+├── shared/              # Shared backend utilities (rbac, audit helpers, etc.)
 └── templates/
-    └── bundles/       # Bundle definitions
+    └── ...
 
 frontend/
 ├── features/
-│   ├── overview/      # Universal Overview
-│   ├── reports/       # Universal Reports
-│   ├── settings/      # Universal Settings
-│   ├── search/        # Universal Search
-│   ├── notifications/ # Universal Notifications
-│   ├── activities/    # Universal Tasks/Activities
-│   ├── calendar/      # Universal Calendar
-│   ├── files/         # Universal Files/Documents
-│   ├── comments/      # Universal Comments
-│   ├── forms/         # Universal Forms
-│   ├── crm/       # CRM-specific
-│   ├── sales/     # Sales-specific
-│   ├── inventory/ # Inventory-specific
-│   ├── hr/        # HR-specific
-│   ├── accounting/# Accounting-specific
+│   ├── menu-store/      # Manage menus + install feature menus
+│   ├── overview/        # Universal menus/features
+│   ├── reports/
+│   ├── audit-log/
+│   ├── calendar/
+│   ├── tasks/
+│   ├── documents/       # Files/Documents
+│   ├── forms/
+│   ├── import-export/
+│   ├── integrations/
+│   ├── user-management/ # Users / Accounts
+│   ├── crm/             # System modules
+│   ├── projects/
+│   ├── support/
+│   ├── inventory/
+│   ├── accounting/
+│   ├── hr/
+│   ├── pos/
+│   ├── marketing/
+│   ├── cms-lite/
+│   ├── knowledge/
 │   └── ...
 └── shared/
-    └── components/    # Shared UI components
+    ├── ui/layout/       # Sidebar, breadcrumbs, menu tree
+    ├── settings/        # Dynamic Feature Settings registry
+    └── foundation/      # Feature manifest + lazy-loaded registry
+```
+
+### Per-feature template (wajib)
+
+Template ini berlaku untuk semua feature slug `X`.
+
+```txt
+frontend/features/X/
+  agents/        # AI-facing tools + prompts (client-side wrappers)
+  settings/      # Feature settings UI
+  init.ts        # registerFeatureSettings('X', ...)
+
+convex/features/X/
+  agents/        # Server-side tool handlers (permission-gated)
+  queries.ts     # Domain queries (optional, recommended)
+  mutations.ts   # Domain mutations (optional, recommended)
 ```
 
 ---
@@ -348,20 +379,21 @@ frontend/
 | 2 | Settings | ✅ Stable | Workspace, users, permissions |
 | 3 | Search | ✅ Stable | Global search, filters |
 | 4 | Notifications | ✅ Stable | In-app, email preferences |
-| 5 | Audit Log | ✅ Stable | Activity tracking, compliance |
-| 6 | Comments | ✅ Stable | Threaded discussions |
-| 7 | Reports | ✅ Stable | Basic charts, export |
-| 8 | Activities/Tasks | ✅ Stable | Kanban, list view |
-| 9 | Files/Documents | ✅ Stable | Upload, versioning |
-| 10 | Calendar | ✅ Stable | Events, scheduling |
-| 11 | Analytics | ✅ Stable | Charts, metrics |
-| 12 | Automations | ✅ Stable | Visual workflow builder |
-| 13 | Forms | ✅ Stable | Form builder, submissions |
-| 14 | Approvals | ✅ Beta | Basic workflow |
-| 15 | Import/Export | ✅ Beta | CSV, JSON support |
-| 16 | Integrations | ✅ Beta | OAuth, webhooks |
-| 17 | Contacts/People | ✅ Stable | Contact management |
-| 18 | Tags/Categories | ✅ Stable | Tagging system |
+| 5 | Users / Accounts | ✅ Stable | Invitations, roles, memberships |
+| 6 | Audit Log | ✅ Stable | Activity tracking, compliance |
+| 7 | Comments | ✅ Stable | Threaded discussions |
+| 8 | Reports | ✅ Stable | Basic charts, export |
+| 9 | Activities/Tasks | ✅ Stable | Kanban, list view |
+| 10 | Files/Documents | ✅ Stable | Upload, versioning |
+| 11 | Calendar | ✅ Stable | Events, scheduling |
+| 12 | Analytics | ✅ Stable | Charts, metrics |
+| 13 | Automations | ✅ Stable | Visual workflow builder |
+| 14 | Forms | ✅ Stable | Form builder, submissions |
+| 15 | Approvals | ✅ Beta | Basic workflow |
+| 16 | Import/Export | ✅ Beta | CSV, JSON support |
+| 17 | Integrations | ✅ Beta | OAuth, webhooks |
+| 18 | Contacts/People | ✅ Stable | Contact management |
+| 19 | Tags/Categories | ✅ Stable | Tagging system |
 
 ### Phase 2 - Core Systems (Q2) ✅
 | System | Status | Notes |
@@ -394,7 +426,7 @@ frontend/
 
 > **Filosofi:** Setiap feature harus punya "WOW factor" yang membedakan dari kompetitor.
 
-### � A. Overview
+### 🟩 A. Overview
 
 **Current Gaps:**
 - [ ] No real-time data refresh
@@ -564,7 +596,7 @@ frontend/
 
 ---
 
-### � J. POS
+### 🟩 J. POS
 
 **Current Gaps:**
 - [ ] No offline mode
@@ -583,7 +615,7 @@ frontend/
 
 ---
 
-### � K. Marketing
+### 🟩 K. Marketing
 
 **Current Gaps:**
 - [ ] No email builder
@@ -602,7 +634,7 @@ frontend/
 
 ---
 
-### � L. Inventory
+### 🟩 L. Inventory
 
 **Current Gaps:**
 - [ ] No barcode/QR generation
@@ -622,6 +654,87 @@ frontend/
 ---
 
 ## 📝 Architecture Notes
+
+## 🧠 Feature Standard: `agents/` + `settings/` (Wajib)
+
+Mulai sekarang **setiap feature** wajib menyediakan 2 “surface” agar Superspace bisa:
+1) dipakai normal oleh user (UI + konfigurasi), dan
+2) dipakai oleh AI agent secara aman (tools terkontrol + permission checks).
+
+### 1) Folder wajib per feature
+
+Untuk feature slug `X` (contoh: `reports`, `crm`, `inventory`) struktur minimalnya:
+
+```txt
+frontend/features/X/
+  agents/        # AI-facing tools + prompts (client-side wrappers)
+  settings/      # UI settings + persistence
+  init.ts        # Register settings + (optional) register agent surface
+
+convex/features/X/
+  agents/        # Server-side tool handlers (queries/mutations/actions)
+  queries.ts     # Domain queries (optional, tapi disarankan)
+  mutations.ts   # Domain mutations (optional, tapi disarankan)
+```
+
+Catatan:
+- `settings/` wajib ada walaupun hanya berisi 1 kategori “General”.
+- `agents/` wajib ada walaupun awalnya hanya expose 1–2 tools read-only.
+
+### 2) Tools wajib di `agents/`
+
+Setiap feature minimal punya **tool set** berikut (boleh sederhana dulu):
+
+| Tool group | Minimal tools | Tujuan |
+|---|---|---|
+| Read | `list`, `get` | Agent bisa ambil data aman untuk reasoning |
+| Write | `create` atau `update` (pilih salah satu dulu) | Agent bisa eksekusi aksi kecil yang terukur |
+| Policy | `canUser` / `permissions` check | Semua tool harus gated oleh permission |
+| Explain | `summarize` / `describe` (read-only) | Agent bisa menjelaskan status feature ke user |
+
+Prinsip implementasi tools:
+- **Server-side source of truth**: tool handler ada di `convex/features/X/agents/*`.
+- **RBAC first**: tiap handler wajib panggil permission guard (`requirePermission` / equivalent).
+- **Small, composable tools**: hindari tool “doEverything”. Lebih baik 3 tools kecil.
+- **Deterministic output**: tools return JSON sederhana; jangan return HTML.
+
+### 3) Wajib: Dynamic Settings integration (`settings/`)
+
+Semua feature wajib daftar settings ke registry via `init.ts` supaya:
+- tombol Feature Settings di header bisa muncul saat feature aktif,
+- settings bisa di-render tanpa hardcoded imports.
+
+Pattern yang dipakai di repo ini:
+- `frontend/shared/settings/featureSettingsRegistry.ts` (registry API)
+- `frontend/features/<feature>/init.ts` (registerFeatureSettings)
+- `frontend/features/<feature>/settings/*` (komponen settings)
+
+Minimal isi `settings/`:
+- `settings/index.ts` export semua SettingsSection
+- `settings/<Feature>Settings.tsx` minimal 1 section (General)
+- `settings/use<Feature>Settings.ts` (opsional) untuk persistence per-workspace/user
+
+### 4) Checklist “Definition of Done” untuk feature baru
+
+Sebelum feature dianggap siap, pastikan:
+- `frontend/features/X/settings/` ada dan ter-register dari `frontend/features/X/init.ts`
+- `frontend/features/X/agents/` ada dan minimal punya tool read-only
+- `convex/features/X/agents/` ada dan semua handler sudah permission-gated
+- Feature masuk ke manifest/registry (lazy-loaded page) sesuai pola `frontend/shared/foundation/manifest/registry.tsx`
+
+### 5) Contoh nyata di repo (referensi)
+
+- Settings: feature `reports` sudah punya `frontend/features/reports/settings/` dan `frontend/features/reports/init.ts`.
+- Menu + install surface: `frontend/features/menu-store/` + backend `convex/features/menus/`.
+
+---
+
+### Repo anchors (implementation pointers)
+
+- Backend menu system: `convex/features/menus/`
+- Frontend menu UI (sidebar, tree, breadcrumbs): `frontend/shared/ui/layout/menus/`
+- Feature settings registry (dynamic): `frontend/shared/settings/`
+- Feature manifest/registry (lazy-loaded pages): `frontend/shared/foundation/manifest/registry.tsx`
 
 ### Dynamic Menu JSON Structure
 
@@ -668,4 +781,4 @@ AI dapat otomatis compose menu berdasarkan:
 
 ---
 
-*Last Updated: December 10, 2025*
+*Last Updated: December 13, 2025 (agents/settings standard + project structure template)*

@@ -1,9 +1,9 @@
-"use client"
 
 import React, { useState, useMemo } from "react"
 import { Id } from "@convex/_generated/dataModel"
 import { useCalendar } from "../hooks/useCalendar"
 import { EventFormDialog } from "../components/EventFormDialog"
+import { EventDetailsDialog } from "../components/EventDetailsDialog"
 import { EVENT_TYPES } from "../constants"
 import { CalendarSidebar } from "../components/CalendarSidebar"
 // Shared Layout
@@ -21,6 +21,7 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [eventFormOpen, setEventFormOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<string[]>(EVENT_TYPES.map(t => t.value))
@@ -51,12 +52,55 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
     setDate(newDate)
     if (newDate) setCurrentMonth(newDate)
   }
-  const handleEventClick = (event: any) => { setSelectedEvent(event); setEventFormOpen(true) }
+
+  const handleEventClick = (event: any) => {
+    setSelectedEvent(event)
+    setDetailsOpen(true)
+  }
+
   const handleCreateClick = (initialDate?: Date) => {
     setDate(initialDate || date);
     setSelectedEvent(null);
     setEventFormOpen(true)
   }
+
+  const handleEditClick = (event: any) => {
+    setSelectedEvent(event)
+    setDetailsOpen(false)
+    setEventFormOpen(true)
+  }
+
+  const handleDeleteClick = async (eventId: string) => {
+    if (!workspaceId) return
+    if (confirm("Are you sure you want to delete this event?")) {
+      await deleteEvent({ id: eventId as Id<"calendar"> })
+      // Hook handles optimism or refresh, just close dialog
+      setDetailsOpen(false)
+    }
+  }
+
+  const handleEventDrop = async (event: any, targetDate: Date) => {
+    if (!workspaceId) return
+
+    const oldStart = new Date(event.startsAt)
+    let newStart = new Date(targetDate)
+
+    // Preserve time from old start
+    newStart.setHours(oldStart.getHours(), oldStart.getMinutes(), 0, 0)
+
+    // If it ends on a different day, preserve duration
+    const duration = event.endsAt ? (event.endsAt - event.startsAt) : (60 * 60 * 1000) // Default 1h if missing
+    const newEnd = new Date(newStart.getTime() + duration)
+
+    await updateEvent({
+      id: event._id,
+      patch: {
+        startsAt: newStart.getTime(),
+        endsAt: newEnd.getTime()
+      }
+    })
+  }
+
   const handleTypeToggle = (type: string) => {
     setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
   }
@@ -111,6 +155,7 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
             handleTypeToggle={handleTypeToggle}
             events={events}
             onEventClick={handleEventClick}
+            handleCreateClick={handleCreateClick}
           />
         }
         sidebarStats={`${events.length}`}
@@ -124,6 +169,8 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
             handleCreateClick={handleCreateClick}
             month={currentMonth}
             onMonthChange={setCurrentMonth}
+            onEventDrop={handleEventDrop}
+            onEventClick={handleEventClick}
           />
         }
         mainHeader={null}
@@ -153,6 +200,14 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
         event={selectedEvent}
         onSubmit={handleSubmit}
         isProcessing={isProcessing}
+      />
+
+      <EventDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        event={selectedEvent}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteClick}
       />
     </>
   )

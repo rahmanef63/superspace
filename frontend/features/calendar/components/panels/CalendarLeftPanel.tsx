@@ -16,6 +16,7 @@ interface CalendarLeftPanelProps {
     handleTypeToggle: (type: string) => void
     events?: any[]
     onEventClick?: (event: any) => void
+    handleCreateClick?: (date?: Date) => void
 }
 
 export function CalendarLeftPanel({
@@ -25,8 +26,30 @@ export function CalendarLeftPanel({
     selectedTypes,
     handleTypeToggle,
     events = [],
-    onEventClick = () => {}
+    onEventClick = () => { },
+    handleCreateClick = () => { }
 }: CalendarLeftPanelProps) {
+
+    // Custom Day Component for Mini Calendar
+    const CustomDayContent = (props: any) => {
+        const { date: d, activeModifiers } = props;
+        return (
+            <div className="relative group w-full h-full flex items-center justify-center">
+                <span className="z-10">{d.getDate()}</span>
+                <div
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-background/80 transition-opacity cursor-pointer z-20 rounded-md"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateClick(d);
+                    }}
+                >
+                    <div className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     // Logic from CalendarSidebar for mobile view
     const displayEvents = useMemo(() => {
@@ -65,6 +88,9 @@ export function CalendarLeftPanel({
                         }}
                         modifiers={{ hasEvent: datesWithEvents }}
                         modifiersClassNames={{ hasEvent: "font-bold text-primary underline decoration-primary/50 decoration-2 underline-offset-2" }}
+                        components={{
+                            DayContent: CustomDayContent
+                        } as any}
                     />
                 </CardContent>
             </Card>
@@ -81,8 +107,8 @@ export function CalendarLeftPanel({
                                 onCheckedChange={() => handleTypeToggle(type.value)}
                                 className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                             />
-                            <Label 
-                                htmlFor={`filter-${type.value}`} 
+                            <Label
+                                htmlFor={`filter-${type.value}`}
                                 className="text-sm font-medium cursor-pointer capitalize group-hover:text-primary transition-colors"
                             >
                                 {type.name}

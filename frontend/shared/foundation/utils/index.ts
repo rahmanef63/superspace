@@ -39,8 +39,8 @@ export * from "./system"
 // Legacy Re-exports (for backward compatibility)
 // ============================================
 
-// Registry
-export { getGlobalRegistry, loadRegistry } from "./registry"
+// Registry (client-safe only)
+export { getGlobalRegistry } from "./registry"
 
 // Error handling
 export { handleError, getGlobalErrorHandler } from "./errors"

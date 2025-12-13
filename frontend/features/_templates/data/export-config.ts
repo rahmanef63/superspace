@@ -3,7 +3,7 @@
  * Copy this file to your feature's data/ folder and customize
  */
 
-import type { FeatureExportConfig } from "@/frontend/shared/foundation/utils/export/data-export-types"
+import type { FeatureExportConfig } from "@/frontend/shared/foundation/utils/data/shared"
 import type { Id } from "../../../../convex/_generated/dataModel"
 
 // ============================================================================
@@ -159,7 +159,7 @@ export const exportConfig: FeatureExportConfig = {
     // TODO: Implement your import logic
 
     // Parse the imported file
-    const { parseImportFile } = await import("@/frontend/shared/foundation/utils/export/data-import-engine")
+    const { parseImportFile } = await import("@/frontend/shared/foundation/utils/data/shared")
     const { data } = await parseImportFile(request.file, request.format)
 
     const results = {

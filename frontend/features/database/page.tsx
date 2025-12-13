@@ -1,9 +1,10 @@
 "use client";
 
 import type { Id } from "@convex/_generated/dataModel";
-import { DatabasePage } from "./views";
+import { DatabaseFeatureView } from "./views";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard } from "lucide-react";
+import { PageContainer } from "@/frontend/shared/ui/layout/container";
 
 export interface DatabaseFeaturePageProps {
   workspaceId: Id<"workspaces"> | null;
@@ -36,5 +37,10 @@ export default function DatabaseFeaturePage({
     );
   }
 
-  return <DatabasePage workspaceId={workspaceId} />;
+  return (
+    <PageContainer maxWidth="full" padding={false} className="h-full">
+      <DatabaseFeatureView workspaceId={workspaceId} />
+    </PageContainer>
+  );
 }
+

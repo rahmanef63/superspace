@@ -24,6 +24,24 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
+    "slug": "documents",
+    "name": "Documents",
+    "description": "Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)",
+    "icon": "FileText",
+    "version": "1.2.0",
+    "category": "productivity",
+    "tags": [
+      "collaboration",
+      "real-time",
+      "documents",
+      "editor",
+      "deprecated"
+    ],
+    "status": "stable",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
     "slug": "calendar",
     "name": "Calendar",
     "description": "Team calendar with event management and scheduling",

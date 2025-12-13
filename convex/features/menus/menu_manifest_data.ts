@@ -173,29 +173,6 @@ export const DEFAULT_MENU_ITEMS = [
     requiresPermission: "database.read"
   },
   {
-    name: "Documents" as const,
-    slug: "documents" as const,
-    type: "route" as const,
-    icon: "FileText" as const,
-    path: "/dashboard/documents",
-    component: "DocumentsPage" as const,
-    order: 9,
-    metadata: {
-      description: "Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)",
-      version: "1.2.0",
-      category: "productivity" as const,
-      tags: [
-        "collaboration",
-        "real-time",
-        "documents",
-        "editor",
-        "deprecated"
-      ],
-      featureType: "default" as const,
-      originalFeatureType: "default" as const
-    }
-  },
-  {
     name: "Menu Store",
     slug: "menus" as const,
     type: "route" as const,

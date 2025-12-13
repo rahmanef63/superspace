@@ -19,7 +19,7 @@ export interface SortableHeaderProps {
   isRequired?: boolean;
   disableDrag?: boolean;
   id: string;
-  
+
   // PropertyMenu handlers - all optional, pass what you have
   onRename?: (fieldId: string, name: string) => Promise<void> | void;
   onDuplicate?: (fieldId: string) => Promise<void> | void;
@@ -32,7 +32,7 @@ export interface SortableHeaderProps {
   onShowAs?: (fieldId: string, displayType: string) => Promise<void> | void;
   onDateFormat?: (fieldId: string, format: string) => Promise<void> | void;
   onTimeFormat?: (fieldId: string, format: string) => Promise<void> | void;
-  onEditOptions?: (fieldId: string) => void;
+  onEditOptions?: (fieldId: string, updatedOptions: Array<{ id: string; name: string; color: string }>) => Promise<void> | void;
   onManageColors?: (fieldId: string) => void;
   onNotifications?: (fieldId: string) => void;
   onShowPageIcon?: (fieldId: string) => void;
@@ -90,7 +90,7 @@ export function SortableHeader({
   // State for PropertyMenu
   const [menuOpen, setMenuOpen] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
-  
+
   // Cleanup timeout on unmount
   React.useEffect(() => {
     return () => {
@@ -99,7 +99,7 @@ export function SortableHeader({
       }
     };
   }, []);
-  
+
   // Get field icon
   const fieldDefinition = DATABASE_FIELD_DEFINITIONS[field.type as keyof typeof DATABASE_FIELD_DEFINITIONS];
   const FieldIcon = fieldDefinition?.icon;
@@ -110,16 +110,16 @@ export function SortableHeader({
     if ((e.target as HTMLElement).closest('[data-drag-handle]')) {
       return;
     }
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Clear any pending single-click timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
       clickTimeoutRef.current = undefined;
     }
-    
+
     // Single click - open menu (with small delay to detect double-click)
     clickTimeoutRef.current = setTimeout(() => {
       setMenuOpen(true);
@@ -131,16 +131,16 @@ export function SortableHeader({
     if ((e.target as HTMLElement).closest('[data-drag-handle]')) {
       return;
     }
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Clear single-click timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
       clickTimeoutRef.current = undefined;
     }
-    
+
     // Double click - trigger rename directly
     if (onRename) {
       const fieldId = getFieldId(field);

@@ -1,7 +1,7 @@
 # Bundle Splitting & Lazy Loading Plan (Pareto Layer 2)
 
 **Date:** December 12, 2025  
-**Status:** In Progress  
+**Status:** ✅ Complete  
 **Prerequisite:** Foundation hardening completed.
 
 ## Why This Matters
@@ -131,6 +131,14 @@ Patterns:
 - Add CI step that fails if:
   - initial dashboard JS exceeds a defined budget (set after baseline).
   - any single chunk exceeds a defined size (e.g., 500kb gzip).
+
+Done:
+- Added `scripts/validation/next-build-budgets.ts` and CI workflow `.github/workflows/next-build-budgets.yml`.
+- Current budgets (First Load JS):
+  - `/dashboard/[[...slug]]` ≤ 450 kB
+  - `/dashboard/workspace` ≤ 500 kB
+  - `/dashboard/workspace-store` ≤ 550 kB
+  - `/mock-dashboard/[[...slug]]` ≤ 250 kB
 
 ## Acceptance Criteria
 

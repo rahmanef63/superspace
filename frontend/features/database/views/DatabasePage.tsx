@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
+import { useSearchParams } from "next/navigation";
 import {
   DatabaseShell,
   EmptyState,
@@ -27,6 +28,7 @@ export interface DatabasePageProps {
 }
 
 export function DatabasePage({ workspaceId }: DatabasePageProps) {
+  const searchParams = useSearchParams();
   const [selectedTableId, setSelectedTableId] = useState<Id<"dbTables"> | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createTemplateId, setCreateTemplateId] = useState<DatabaseStarterTemplateId>("blank");
@@ -52,6 +54,13 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
     },
     [handlers.columnSizingUpdateRef]
   );
+
+  useEffect(() => {
+    const tableIdParam = searchParams.get("tableId");
+    if (!tableIdParam) return;
+    if (selectedTableId === tableIdParam) return;
+    setSelectedTableId(tableIdParam as Id<"dbTables">);
+  }, [searchParams, selectedTableId]);
 
   // Render sidebar with Suspense
   const sidebar = (
@@ -104,6 +113,7 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
     content = (
       <Suspense fallback={<DatabaseContentSkeleton />}>
         <DatabaseContentContainer
+          workspaceId={workspaceId}
           tableId={selectedTableId}
           handlers={handlers}
         />

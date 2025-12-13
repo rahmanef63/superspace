@@ -2,7 +2,7 @@
  * Analytics Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { BarChart3, Layout, Database, Download } from "lucide-react"
 import {
     AnalyticsGeneralSettings,
@@ -10,6 +10,7 @@ import {
     AnalyticsDataSettings,
     AnalyticsExportSettings,
 } from "./settings"
+import { registerAnalyticsAgent } from "./agents"
 
 registerFeatureSettings("analytics", () => [
     {
@@ -41,6 +42,8 @@ registerFeatureSettings("analytics", () => [
         component: AnalyticsExportSettings,
     },
 ])
+
+registerAnalyticsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Analytics feature settings registered")

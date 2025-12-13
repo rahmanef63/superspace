@@ -465,7 +465,14 @@ function PlatformAdminContent() {
     activeSection === "bundle-categories" && isBundleEditMode && editingBundle ? (
       <BundleEditInspectorPanel
         bundle={editingBundle}
-        onClose={() => setIsBundleEditMode(false)}
+        onClose={() => {
+          setIsBundleEditMode(false)
+          setEditingBundle(null)
+        }}
+        onSaved={(nextBundle) => {
+          setEditingBundle(nextBundle)
+          setSelectedItem(nextBundle)
+        }}
       />
     ) : (
       <AdminInspector

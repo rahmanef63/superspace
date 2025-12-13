@@ -8,7 +8,7 @@
  */
 
 import { useEffect } from "react"
-import { useSettingsRegistry } from "../SettingsRegistry"
+import { useSettingsRegistry } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 
 /**

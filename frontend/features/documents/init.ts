@@ -3,7 +3,7 @@
  * Registers documents settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { FileText, Share2, Users, Download } from "lucide-react"
 import {
   DocumentsEditorSettings,
@@ -11,6 +11,8 @@ import {
   DocumentsCollaborationSettings,
   DocumentsExportSettings,
 } from "./settings"
+
+import { registerDocumentsAgent } from "./agents"
 
 registerFeatureSettings("documents", () => [
   {
@@ -43,6 +45,8 @@ registerFeatureSettings("documents", () => [
   },
 ])
 
+registerDocumentsAgent()
+
 import { registerCreateActions } from "@/frontend/shared/foundation/registries/create-registry"
 import { registerCommands } from "@/frontend/shared/foundation/registries/command-registry"
 
@@ -73,3 +77,4 @@ registerCommands("documents", [
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.log("✅ Documents feature settings & actions registered")
 }
+

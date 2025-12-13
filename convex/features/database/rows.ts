@@ -266,3 +266,103 @@ export const reorder = mutation({
     );
   },
 });
+
+export const linkDocToRow = mutation({
+  args: {
+    rowId: v.id("dbRows"),
+    docId: v.id("documents"),
+  },
+  handler: async (ctx, { rowId, docId }) => {
+    const userId = await ensureUser(ctx);
+
+    const row = await ctx.db.get(rowId);
+    if (!row) {
+      throw new Error("Row not found");
+    }
+
+    // RBAC: Check permission before linking
+    await requirePermission(ctx, row.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
+    await assertWorkspaceAccess(ctx, row.workspaceId, userId);
+
+    const doc = await ctx.db.get(docId);
+    if (!doc) {
+      throw new Error("Document not found");
+    }
+
+    if (doc.workspaceId !== row.workspaceId) {
+      throw new Error("Document must belong to the same workspace as the row");
+    }
+
+    const canSeeDoc = doc.isPublic || doc.createdBy === userId;
+    if (!canSeeDoc) {
+      throw new Error("Unauthorized to link this document");
+    }
+
+    if (row.docId && row.docId !== docId) {
+      throw new Error("Row is already linked to a different document");
+    }
+
+    await ctx.db.patch(rowId, {
+      docId,
+      updatedById: userId,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: row.workspaceId,
+      actorUserId: userId,
+      action: "dbRow.docLinked",
+      resourceType: "dbRow",
+      resourceId: rowId,
+      metadata: { tableId: row.tableId, docId },
+      changes: { docId },
+    });
+
+    return { rowId, docId };
+  },
+});
+
+export const unlinkDocFromRow = mutation({
+  args: {
+    rowId: v.id("dbRows"),
+    docId: v.id("documents"),
+  },
+  handler: async (ctx, { rowId, docId }) => {
+    const userId = await ensureUser(ctx);
+
+    const row = await ctx.db.get(rowId);
+    if (!row) {
+      throw new Error("Row not found");
+    }
+
+    // RBAC: Check permission before unlinking
+    await requirePermission(ctx, row.workspaceId, PERMISSIONS.DATABASE_UPDATE);
+
+    await assertWorkspaceAccess(ctx, row.workspaceId, userId);
+
+    if (!row.docId) {
+      return { rowId, docId: null };
+    }
+
+    if (row.docId !== docId) {
+      throw new Error("Row is linked to a different document");
+    }
+
+    await ctx.db.patch(rowId, {
+      docId: undefined,
+      updatedById: userId,
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: row.workspaceId,
+      actorUserId: userId,
+      action: "dbRow.docUnlinked",
+      resourceType: "dbRow",
+      resourceId: rowId,
+      metadata: { tableId: row.tableId, docId },
+      changes: { docId: null },
+    });
+
+    return { rowId, docId: null };
+  },
+});

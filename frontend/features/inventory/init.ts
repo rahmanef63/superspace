@@ -3,7 +3,7 @@
  * Registers inventory settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Package, Layout, Bell, Zap } from "lucide-react"
 import {
     InventoryGeneralSettings,
@@ -11,6 +11,7 @@ import {
     InventoryAlertSettings,
     InventoryAutomationSettings,
 } from "./settings"
+import { registerInventoryAgent } from "./agents"
 
 registerFeatureSettings("inventory", () => [
     {
@@ -42,6 +43,8 @@ registerFeatureSettings("inventory", () => [
         component: InventoryAutomationSettings,
     },
 ])
+
+registerInventoryAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Inventory feature settings registered")

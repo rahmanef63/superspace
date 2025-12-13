@@ -2,7 +2,7 @@
  * Forms Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { FileText, Palette, Send, Shield } from "lucide-react"
 import {
     FormsGeneralSettings,
@@ -10,6 +10,7 @@ import {
     FormsSubmissionSettings,
     FormsPrivacySettings,
 } from "./settings"
+import { registerFormsAgent } from "./agents"
 
 registerFeatureSettings("forms", () => [
     {
@@ -41,6 +42,8 @@ registerFeatureSettings("forms", () => [
         component: FormsPrivacySettings,
     },
 ])
+
+registerFormsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Forms feature settings registered")

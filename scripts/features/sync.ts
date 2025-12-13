@@ -107,12 +107,11 @@ function validateBundles(): BundleError[] {
   console.log("\n🎯 Validating bundle configurations...")
   
   const errors: BundleError[] = []
-  
-  const flattenFeatures = (features: any[]): any[] => {
-    return features.flatMap(f => [f, ...(f.children ? flattenFeatures(f.children) : [])])
-  }
-  
-  const allFeatures = flattenFeatures(FEATURES_REGISTRY)
+
+  // Only validate top-level features.
+  // Child features (feature.children) inherit their parent's bundle membership and are not
+  // required to declare bundle configuration themselves.
+  const allFeatures = FEATURES_REGISTRY
   
   // Track features per bundle for reporting
   const bundleFeatures: Record<string, { core: string[], recommended: string[], optional: string[] }> = {}

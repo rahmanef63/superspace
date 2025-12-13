@@ -232,6 +232,7 @@ export function buildDatabaseViewModel(record: DatabaseRecord): DatabaseViewMode
 
     return {
       id: row._id,
+      docId: row.docId ?? null,
       name,
       status,
       owner,

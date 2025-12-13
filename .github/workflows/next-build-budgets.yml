@@ -1,0 +1,53 @@
+name: Next Build Budgets
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'frontend/**'
+      - 'components/**'
+      - 'next.config.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'scripts/validation/next-build-budgets.ts'
+      - '.github/workflows/next-build-budgets.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/**'
+      - 'frontend/**'
+      - 'components/**'
+      - 'next.config.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'scripts/validation/next-build-budgets.ts'
+      - '.github/workflows/next-build-budgets.yml'
+
+jobs:
+  budgets:
+    runs-on: ubuntu-latest
+    name: Enforce Next.js Budgets
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Next build + budget check
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://example.invalid
+        run: pnpm exec tsx scripts/validation/next-build-budgets.ts --run-build
+

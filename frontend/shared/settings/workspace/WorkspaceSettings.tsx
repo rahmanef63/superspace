@@ -24,7 +24,7 @@ import {
   getFeatureDefaultCategory,
 } from "../components"
 import type { FeatureSettingsSyncProps } from "../components"
-import { SettingsRegistryProvider } from "../SettingsRegistry"
+import { SettingsRegistryProvider } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 import { GeneralSettings } from "./GeneralSettings"
 import { DangerZoneSettings } from "./DangerZoneSettings"

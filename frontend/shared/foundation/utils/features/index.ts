@@ -4,8 +4,6 @@
  */
 
 // Archived - Re-export from original location
-export * from "../archived"
-
 // Notifications - Re-export from original location
 export * from "../notifications"
 

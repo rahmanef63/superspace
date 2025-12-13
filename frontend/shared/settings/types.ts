@@ -5,6 +5,7 @@
  */
 
 import type { LucideIcon } from "lucide-react"
+import type { MenuItem } from "@/frontend/shared/types"
 
 /**
  * Settings category definition
@@ -39,6 +40,13 @@ export interface RegisterSettingsPayload {
   /** Array of settings categories to register */
   categories: Omit<SettingsCategory, "featureSlug">[]
 }
+
+/**
+ * Function type for building feature settings dynamically
+ */
+export type FeatureSettingsBuilder = (ctx: {
+  menuItem: MenuItem
+}) => Omit<SettingsCategory, "featureSlug">[]
 
 /**
  * Settings context value

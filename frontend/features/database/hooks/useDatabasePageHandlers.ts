@@ -88,22 +88,22 @@ export function useDatabasePageHandlers({
     [deleteRow]
   );
 
-  const handleAddRow = useCallback(async () => {
+  const handleAddRow = useCallback(async (initialData?: Record<string, unknown>) => {
     if (!selectedTableId) {
       toast.error("Select a database before adding rows.");
       return;
     }
 
     try {
-      const data: Record<string, unknown> = {};
-      
+      const data: Record<string, unknown> = { ...initialData };
+
       // Only set title if record and mapping are available
       if (record && record.fields.length > 0) {
         const primaryField = record.fields.find((field) => field.isPrimary);
         const titleFieldId =
           mapping?.titleField ?? (primaryField ? String(primaryField._id) : null);
-        
-        if (titleFieldId) {
+
+        if (titleFieldId && !data[titleFieldId]) {
           data[titleFieldId] = "New page";
         }
       }
@@ -443,6 +443,41 @@ export function useDatabasePageHandlers({
     [updateTable]
   );
 
+  // Inline rename - accepts name directly (for double-click inline edit)
+  const handleRenameTableInline = useCallback(
+    async (table: DatabaseTable, newName: string) => {
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+
+      try {
+        await updateTable({ id: table._id, name: trimmed });
+        toast.success("Database renamed.");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to rename database.";
+        toast.error(message);
+      }
+    },
+    [updateTable]
+  );
+
+  // Update table icon
+  const handleUpdateTableIcon = useCallback(
+    async (table: DatabaseTable, iconData: { name: string; color: string }) => {
+      try {
+        await updateTable({
+          id: table._id,
+          icon: JSON.stringify(iconData)
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to update icon.";
+        toast.error(message);
+      }
+    },
+    [updateTable]
+  );
+
   const handleCopyTableId = useCallback(async (table: DatabaseTable) => {
     try {
       await navigator.clipboard.writeText(String(table._id));
@@ -604,6 +639,8 @@ export function useDatabasePageHandlers({
     handleColumnSizingChange,
     // Table operations
     handleRenameTable,
+    handleRenameTableInline,
+    handleUpdateTableIcon,
     handleCopyTableId,
     handleDuplicateTable,
     handleDeleteTable,

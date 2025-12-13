@@ -1,0 +1,1 @@
+export { PlatformAdminSettings } from "./PlatformAdminSettings"

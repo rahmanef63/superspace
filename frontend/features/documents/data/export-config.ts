@@ -2,9 +2,32 @@
  * Export/Import Configuration for Documents Feature
  */
 
-import type { FeatureExportConfig } from "@/frontend/shared/foundation/utils/export/data-export-types"
-import type { DocumentRecord, DocumentCategory } from "../shared/types"
+import { api } from "@/convex/_generated/api"
+import { parseImportFile } from "@/frontend/shared/foundation/utils/data/shared"
+import type { FeatureExportConfig, ImportResult } from "@/frontend/shared/foundation/utils/data/shared"
+import type { DocumentCategory } from "../shared/types"
 import { getDocumentCategory, getCategoryTag } from "../shared/types"
+
+type ExportedDocumentRow = {
+  _id: string
+  title: string
+  content: string
+  isPublic: boolean
+  parentId: string | null
+  workspaceId: string
+  createdBy: string | null
+  authorName?: string
+  authorEmail?: string
+  _creationTime: number
+  lastModified: number | null
+  lastEditedBy: string | null
+  isPinned: boolean
+  isStarred: boolean
+  category: DocumentCategory
+  tags: string[]
+  description?: string
+  version?: number
+}
 
 // ============================================================================
 // Export Properties Configuration
@@ -36,7 +59,7 @@ const exportProperties = [
     key: "isPublic",
     label: "Is Public",
     type: "boolean" as const,
-    required: true,
+    required: false,
     description: "Whether document is publicly accessible",
   },
   {
@@ -50,14 +73,14 @@ const exportProperties = [
     key: "workspaceId",
     label: "Workspace ID",
     type: "string" as const,
-    required: true,
+    required: false,
     description: "Workspace identifier",
   },
   {
     key: "createdBy",
     label: "Created By",
     type: "string" as const,
-    required: true,
+    required: false,
     description: "User ID who created the document",
   },
   {
@@ -115,7 +138,7 @@ const exportProperties = [
     key: "category",
     label: "Category",
     type: "select" as const,
-    required: true,
+    required: false,
     options: ["document", "article"],
     description: "Document category (document or article)",
   },
@@ -155,151 +178,66 @@ export const exportConfig: FeatureExportConfig = {
 
   // Export data function
   exportData: async (request) => {
-    // TODO: Replace with actual Convex query
-    // const documents = await ctx.db.query("documents")
-    //   .withIndex("by_workspace", q => q.eq("workspaceId", request.workspaceId))
-    //   .collect()
-
-    // Mock data for demonstration
-    const mockDocuments: (DocumentRecord & {
-      authorName?: string
-      authorEmail?: string
-      lastEditedBy?: string
-    })[] = [
-      {
-        _id: "doc-1" as any,
-        title: "Project Requirements",
-        content: "# Project Requirements\n\nThis document outlines the requirements for the new project...",
-        isPublic: false,
-        parentId: null,
-        workspaceId: "ws-1" as any,
-        createdBy: "user-1" as any,
-        authorName: "John Doe",
-        authorEmail: "john@example.com",
-        _creationTime: Date.now() - 86400000 * 7, // 7 days ago
-        lastModified: Date.now() - 86400000 * 2, // 2 days ago
-        lastEditedBy: "user-2" as any,
-        isPinned: true,
-        isStarred: false,
-        tags: ["important", "review"],
-        metadata: {
-          description: "High-level project requirements and specifications",
-          tags: ["important", "review"],
-          lastEditedBy: "user-2" as any,
-          version: 2,
-        },
-      },
-      {
-        _id: "doc-2" as any,
-        title: "Meeting Notes - Q4 Planning",
-        content: "## Q4 Planning Meeting\n\n### Attendees\n- John Doe\n- Jane Smith\n\n### Agenda\n1. Review Q3 results...",
-        isPublic: true,
-        parentId: null,
-        workspaceId: "ws-1" as any,
-        createdBy: "user-2" as any,
-        authorName: "Jane Smith",
-        authorEmail: "jane@example.com",
-        _creationTime: Date.now() - 86400000 * 14, // 14 days ago
-        lastModified: Date.now() - 86400000 * 1, // 1 day ago
-        isPinned: false,
-        isStarred: true,
-        tags: ["meeting", "planning"],
-        metadata: {
-          description: "Notes from Q4 planning meeting",
-          tags: ["meeting", "planning"],
-          version: 1,
-        },
-      },
-      {
-        _id: "doc-3" as any,
-        title: "API Documentation",
-        content: "# API Documentation\n\n## Authentication\nAll API requests require authentication...",
-        isPublic: true,
-        parentId: "doc-1" as any,
-        workspaceId: "ws-1" as any,
-        createdBy: "user-3" as any,
-        authorName: "Bob Johnson",
-        authorEmail: "bob@example.com",
-        _creationTime: Date.now() - 86400000 * 30, // 30 days ago
-        lastModified: Date.now() - 86400000 * 5, // 5 days ago
-        lastEditedBy: "user-3" as any,
-        isPinned: false,
-        isStarred: false,
-        tags: ["documentation", "reference"],
-        metadata: {
-          description: "Complete API documentation for developers",
-          tags: ["documentation", "reference"],
-          lastEditedBy: "user-3" as any,
-          version: 5,
-        },
-      },
-      {
-        _id: "doc-4" as any,
-        title: "Knowledge Base: Getting Started",
-        content: "# Getting Started Guide\n\nWelcome to our platform! This guide will help you...",
-        isPublic: true,
-        parentId: null,
-        workspaceId: "ws-1" as any,
-        createdBy: "user-1" as any,
-        authorName: "John Doe",
-        authorEmail: "john@example.com",
-        _creationTime: Date.now() - 86400000 * 60, // 60 days ago
-        lastModified: Date.now() - 86400000 * 10, // 10 days ago
-        isPinned: true,
-        isStarred: true,
-        tags: ["guide", "knowledge-base", getCategoryTag("article")],
-        metadata: {
-          description: "Getting started guide for new users",
-          tags: ["guide", "knowledge-base", getCategoryTag("article")],
-          lastEditedBy: "user-1" as any,
-          version: 3,
-        },
-      },
-    ]
-
-    // Transform data for export
-    const transformedDocuments = mockDocuments.map(doc => ({
-      ...doc,
-      category: getDocumentCategory(doc.tags),
-      description: doc.metadata?.description,
-      tags: doc.tags?.filter(tag => !tag.startsWith("__category:")),
-      version: doc.metadata?.version,
-      lastEditedBy: doc.metadata?.lastEditedBy,
-    }))
-
-    // Filter based on request
-    let filteredDocuments = transformedDocuments
-
-    if (request.dataType === "selected" && request.selectedIds) {
-      filteredDocuments = transformedDocuments.filter(doc =>
-        request.selectedIds!.includes(doc._id)
-      )
+    if (!request.workspaceId) return []
+    if (!request.convex?.query) {
+      throw new Error("Convex client not available for export")
     }
 
-    // Apply filters
+    const rawDocuments = (await request.convex.query(
+      (api as any)["features/docs/documents"].getWorkspaceDocuments,
+      { workspaceId: request.workspaceId as any }
+    )) as any[] | null | undefined
+
+    const transformedDocuments: ExportedDocumentRow[] = (rawDocuments ?? []).map((doc) => {
+      const rawTags: string[] = doc.metadata?.tags ?? []
+      const category = getDocumentCategory(rawTags)
+      const tags = rawTags.filter((tag) => !tag.startsWith("__category:"))
+
+      return {
+        _id: String(doc._id),
+        title: doc.title,
+        content: doc.content ?? "",
+        isPublic: Boolean(doc.isPublic),
+        parentId: doc.parentId ? String(doc.parentId) : null,
+        workspaceId: String(doc.workspaceId),
+        createdBy: doc.createdBy ? String(doc.createdBy) : null,
+        authorName: doc.author?.name ?? undefined,
+        authorEmail: undefined,
+        _creationTime: doc._creationTime,
+        lastModified: doc.lastModified ?? null,
+        lastEditedBy: doc.metadata?.lastEditedBy ? String(doc.metadata.lastEditedBy) : null,
+        isPinned: Boolean(doc.isPinned ?? false),
+        isStarred: Boolean(doc.isStarred ?? false),
+        category,
+        tags,
+        description: doc.metadata?.description,
+        version: doc.metadata?.version,
+      }
+    })
+
+    let filteredDocuments: ExportedDocumentRow[] = transformedDocuments
+
+    if (request.dataType === "selected" && request.selectedIds?.length) {
+      const selected = new Set(request.selectedIds.map(String))
+      filteredDocuments = filteredDocuments.filter((doc) => selected.has(String(doc._id)))
+    }
+
     if (request.filters) {
       Object.entries(request.filters).forEach(([field, value]) => {
         if (value !== undefined && value !== null) {
           if (field === "category") {
-            filteredDocuments = filteredDocuments.filter(doc =>
-              getDocumentCategory(doc.tags) === value
-            )
+            filteredDocuments = filteredDocuments.filter((doc) => doc.category === value)
           } else if (field === "isPublic") {
-            filteredDocuments = filteredDocuments.filter(doc =>
-              doc.isPublic === Boolean(value)
-            )
+            filteredDocuments = filteredDocuments.filter((doc) => doc.isPublic === Boolean(value))
           } else {
-            filteredDocuments = filteredDocuments.filter(doc =>
-              doc[field as keyof typeof doc] === value
-            )
+            filteredDocuments = filteredDocuments.filter((doc) => (doc as any)[field] === value)
           }
         }
       })
     }
 
-    // Apply sorting
     if (request.sortBy) {
-      filteredDocuments.sort((a, b) => {
+      filteredDocuments = [...filteredDocuments].sort((a: any, b: any) => {
         let aValue: any
         let bValue: any
 
@@ -332,8 +270,44 @@ export const exportConfig: FeatureExportConfig = {
   },
 
   // Import data function
-  importData: async (request): Promise<any> => {
-    const { parseImportFile } = await import("@/frontend/shared/foundation/utils/export/data-import-engine")
+  importData: async (request): Promise<ImportResult> => {
+    if (!request.workspaceId) {
+      throw new Error("workspaceId is required for import")
+    }
+    if (!request.convex?.mutation) {
+      throw new Error("Convex client not available for import")
+    }
+
+    const applyFieldMapping = (row: any): any => {
+      const mapping = request.options?.fieldMapping
+      if (!mapping || Object.keys(mapping).length === 0) return row
+
+      const mapped: Record<string, any> = { ...row }
+      for (const [header, key] of Object.entries(mapping)) {
+        if (row?.[header] !== undefined && mapped[key] === undefined) {
+          mapped[key] = row[header]
+        }
+      }
+      return mapped
+    }
+
+    const parseBoolean = (value: any, fallback = false) => {
+      if (value === null || value === undefined || value === "") return fallback
+      if (typeof value === "boolean") return value
+      const raw = String(value).trim().toLowerCase()
+      if (!raw) return fallback
+      return ["true", "1", "yes", "y"].includes(raw)
+    }
+
+    const parseTags = (value: any): string[] => {
+      if (value === null || value === undefined || value === "") return []
+      if (Array.isArray(value)) return value.map(String).map((t) => t.trim()).filter(Boolean)
+      return String(value)
+        .split(/[;,|]/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+    }
+
     const { data } = await parseImportFile(request.file, request.format)
 
     const results = {
@@ -344,14 +318,18 @@ export const exportConfig: FeatureExportConfig = {
       warnings: [] as any[],
     }
 
-    for (const item of data) {
+    for (let index = 0; index < data.length; index++) {
+      const rowNumber = index + 1
+      const item = applyFieldMapping(data[index])
+
       try {
         // Validate required fields
-        if (!item.title || item.workspaceId === undefined || item.createdBy === undefined) {
+        const title = String(item.title ?? "").trim()
+        if (!title) {
           results.failed++
           results.errors.push({
-            row: data.indexOf(item) + 1,
-            message: "Missing required fields: title, workspaceId, or createdBy",
+            row: rowNumber,
+            message: "Missing required field: title",
             type: "missing" as const,
           })
           continue
@@ -359,10 +337,11 @@ export const exportConfig: FeatureExportConfig = {
 
         // Validate category
         const validCategories = ["document", "article"]
-        if (item.category && !validCategories.includes(item.category)) {
+        const category = item.category ? String(item.category).trim().toLowerCase() : ""
+        if (category && !validCategories.includes(category)) {
           results.failed++
           results.errors.push({
-            row: data.indexOf(item) + 1,
+            row: rowNumber,
             message: `Invalid category: ${item.category}. Must be one of: ${validCategories.join(", ")}`,
             type: "validation" as const,
           })
@@ -370,60 +349,89 @@ export const exportConfig: FeatureExportConfig = {
         }
 
         // Process tags and category
-        const tags = item.tags ? (Array.isArray(item.tags) ? item.tags : [item.tags]) : []
-        if (item.category) {
-          tags.push(getCategoryTag(item.category as DocumentCategory))
-        }
+        const tags = parseTags(item.tags)
+        const categoryProvided = Boolean(category)
+        const effectiveCategory = (categoryProvided ? (category as DocumentCategory) : getDocumentCategory(tags)) || "document"
+        const categoryTag = getCategoryTag(effectiveCategory)
+        const tagsWithoutCategory = tags.filter((t) => !t.startsWith("__category:"))
+        const tagsProvided = tagsWithoutCategory.length > 0
+        const tagsWithCategory = Array.from(new Set([...tagsWithoutCategory, categoryTag]))
 
         // Prepare metadata
-        const metadata: any = {
-          description: item.description,
-          tags: item.tags,
-          version: item.version || 1,
-          lastEditedBy: item.lastEditedBy,
-        }
+        const descriptionRaw = item.description === null || item.description === undefined ? "" : String(item.description)
+        const description = descriptionRaw.trim()
+        const descriptionProvided = description.length > 0
+        const hasMetadataFields = descriptionProvided || tagsProvided || categoryProvided
+
+        const metadata: any = {}
+        if (descriptionProvided) metadata.description = description
+        // Always ensure imported docs have a category tag on create (even if tags/category omitted).
+        metadata.tags = tagsWithCategory
 
         // Check if document already exists
-        if (item._id) {
-          // Update existing document
-          // await ctx.db.patch(item._id, {
-          //   title: item.title,
-          //   content: item.content,
-          //   isPublic: Boolean(item.isPublic),
-          //   parentId: item.parentId || null,
-          //   lastModified: Date.now(),
-          //   isPinned: Boolean(item.isPinned),
-          //   isStarred: Boolean(item.isStarred),
-          //   tags,
-          //   metadata,
-          // })
+        const wantsUpdate = Boolean(request.options?.updateExisting)
+        const wantsCreate = Boolean(request.options?.createMissing ?? true)
+        const docId = item._id ? String(item._id).trim() : ""
+
+        const rawIsPublic = item.isPublic
+        const isPublicProvided =
+          rawIsPublic !== undefined && rawIsPublic !== null && String(rawIsPublic).trim() !== ""
+        const isPublic = parseBoolean(rawIsPublic, false)
+
+        const contentRaw = item.content === null || item.content === undefined ? "" : String(item.content)
+        const content = contentRaw
+        const contentProvided = contentRaw.trim().length > 0
+
+        const parentIdRaw =
+          item.parentId === null || item.parentId === undefined ? "" : String(item.parentId).trim()
+        const parentIdProvided = parentIdRaw.length > 0
+        const parentId = parentIdProvided ? parentIdRaw : null
+
+        if (docId && wantsUpdate) {
+          const updateArgs: any = {
+            id: docId as any,
+            title,
+          }
+          if (isPublicProvided) updateArgs.isPublic = isPublic
+          if (contentProvided) updateArgs.content = content
+          if (parentIdProvided) updateArgs.parentId = parentId as any
+
+          await request.convex.mutation((api as any)["features/docs/documents"].update, updateArgs)
           results.updated++
-        } else {
-          // Create new document
-          // await ctx.db.insert("documents", {
-          //   title: item.title,
-          //   content: item.content || "",
-          //   isPublic: Boolean(item.isPublic),
-          //   parentId: item.parentId || null,
-          //   workspaceId: item.workspaceId,
-          //   createdBy: item.createdBy,
-          //   _creationTime: item._creationTime ? new Date(item._creationTime).getTime() : Date.now(),
-          //   lastModified: item.lastModified ? new Date(item.lastModified).getTime() : undefined,
-          //   author: item.authorName ? {
-          //     name: item.authorName,
-          //     email: item.authorEmail,
-          //   } : null,
-          //   isPinned: Boolean(item.isPinned),
-          //   isStarred: Boolean(item.isStarred),
-          //   tags,
-          //   metadata,
-          // })
-          results.imported++
+          if (hasMetadataFields) {
+            results.warnings.push({
+              row: rowNumber,
+              message: "Updated title/content/visibility. Tags/description are only applied on create for now.",
+              type: "format" as const,
+            })
+          }
+          continue
         }
+
+        if (!wantsCreate) {
+          results.warnings.push({
+            row: rowNumber,
+            message: "Skipped (createMissing is disabled)",
+            type: "format" as const,
+          })
+          continue
+        }
+
+        const createArgs: any = {
+          title,
+          isPublic,
+          workspaceId: request.workspaceId as any,
+        }
+        if (contentProvided) createArgs.content = content
+        if (parentIdProvided) createArgs.parentId = parentId as any
+        if (metadata.description || metadata.tags) createArgs.metadata = metadata
+
+        await request.convex.mutation((api as any)["features/docs/documents"].create, createArgs)
+          results.imported++
       } catch (error) {
         results.failed++
         results.errors.push({
-          row: data.indexOf(item) + 1,
+          row: rowNumber,
           message: error instanceof Error ? error.message : "Unknown error",
           type: "validation" as const,
         })

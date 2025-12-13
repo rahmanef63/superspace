@@ -2,7 +2,7 @@
  * Marketing Feature Initialization
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Megaphone, Target, Mail, BarChart3 } from "lucide-react"
 import {
     MarketingGeneralSettings,
@@ -10,6 +10,7 @@ import {
     MarketingEmailSettings,
     MarketingAnalyticsSettings,
 } from "./settings"
+import { registerMarketingAgent } from "./agents"
 
 registerFeatureSettings("marketing", () => [
     {
@@ -41,6 +42,8 @@ registerFeatureSettings("marketing", () => [
         component: MarketingAnalyticsSettings,
     },
 ])
+
+registerMarketingAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Marketing feature settings registered")

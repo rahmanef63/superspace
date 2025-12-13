@@ -3,7 +3,7 @@
  * Registers database settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Database, Layout, Zap, Edit3, Download } from "lucide-react"
 import {
     DatabaseGeneralSettings,
@@ -12,6 +12,7 @@ import {
     DatabaseEditingSettings,
     DatabaseExportSettings,
 } from "./settings"
+import { registerDatabaseAgent } from "./agents"
 
 registerFeatureSettings("database", () => [
     {
@@ -50,6 +51,8 @@ registerFeatureSettings("database", () => [
         component: DatabaseExportSettings,
     },
 ])
+
+registerDatabaseAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Database feature settings registered")

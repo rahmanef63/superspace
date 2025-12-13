@@ -7,6 +7,7 @@ import { DocumentsView } from "../shared/components";
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
 import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
 import type { DocumentEditorMode } from "../shared";
+import { useSearchParams } from "next/navigation";
 
 interface DocumentsFeaturePageProps {
   workspaceId?: Id<"workspaces"> | null;
@@ -21,6 +22,10 @@ export default function DocumentsFeaturePage({
   editorMode = "block",
   hideHeader = false,
 }: DocumentsFeaturePageProps) {
+  const searchParams = useSearchParams();
+  const docIdParam = searchParams.get("docId");
+  const initialDocumentId = (docIdParam && docIdParam.length > 0 ? (docIdParam as Id<"documents">) : null);
+
   if (!workspaceId) {
     return (
       <div className="flex h-full items-center justify-center p-6">
@@ -38,7 +43,12 @@ export default function DocumentsFeaturePage({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Documents View */}
       <div className="flex-1 min-h-0">
-        <DocumentsView workspaceId={workspaceId} editorMode={editorMode} />
+        <DocumentsView
+          key={initialDocumentId ?? "documents"}
+          workspaceId={workspaceId}
+          editorMode={editorMode}
+          initialDocumentId={initialDocumentId}
+        />
       </div>
     </div>
   );

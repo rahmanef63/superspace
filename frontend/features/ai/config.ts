@@ -14,7 +14,7 @@ export default defineFeature({
   },
 
   technical: {
-    featureType: 'default',
+    featureType: 'optional',
     hasUI: true,
     hasConvex: true,
     hasTests: true,

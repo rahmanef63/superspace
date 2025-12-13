@@ -76,6 +76,7 @@ export interface DatabaseMarker {
 
 export interface DatabaseFeature {
   id: Id<"dbRows">;
+  docId?: Id<"documents"> | null;
   name: string;
   status?: DatabaseStatus | null;
   owner?: DatabasePerson | null;

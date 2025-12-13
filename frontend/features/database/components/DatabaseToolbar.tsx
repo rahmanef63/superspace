@@ -123,30 +123,8 @@ export function DatabaseToolbar({
 
   return (
     <div className="flex flex-col gap-3 border-b border-border px-6 py-3">
-      {/* Top Row: View Tabs + Actions */}
-      <div className="flex items-center justify-between gap-3">
-        <Tabs
-          value={activeView}
-          onValueChange={(value) => onViewChange(value as DatabaseViewType)}
-          className="flex-1"
-        >
-          <TabsList className="ml-[-0.25rem] justify-start gap-1">
-            {orderedViews.map((view) => {
-              const Icon =
-                VIEW_ICONS[view] ??
-                ((props: { size?: number; className?: string }) => (
-                  <LayoutListIcon size={props.size} className={props.className} />
-                ));
-              const label = getViewLabel(view);
-              return (
-                <TabsTrigger key={view} value={view} className="gap-2">
-                  <Icon size={16} />
-                  {label}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+      {/* Actions Row */}
+      <div className="flex items-center justify-end gap-2">
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-2">
@@ -162,100 +140,108 @@ export function DatabaseToolbar({
             Import
           </ImportControl>
           <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onMouseEnter={() => setMenuOpen(true)}
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onMouseEnter={() => setMenuOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-64"
+              onMouseLeave={() => setMenuOpen(false)}
+              onPointerLeave={() => setMenuOpen(false)}
             >
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-64"
-            onMouseLeave={() => setMenuOpen(false)}
-            onPointerLeave={() => setMenuOpen(false)}
-          >
-            <DropdownMenuLabel>View options</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {orderedViews.map((view) => {
-                const isActive = activeView === view;
-                const label = getViewLabel(view);
-                return (
-                  <DropdownMenuItem
-                    key={`switch-${view}`}
-                    onClick={() => onViewChange(view)}
-                  >
-                    {isActive ? (
-                      <Check className="h-4 w-4 text-primary" />
-                    ) : (
-                      <span className="h-4 w-4" />
-                    )}
-                    <span>{label}</span>
-                    {defaultViewType === view ? (
-                      <DropdownMenuShortcut>Default</DropdownMenuShortcut>
-                    ) : null}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Set default view</DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
+              <DropdownMenuLabel>View options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
                 {orderedViews.map((view) => {
+                  const isActive = activeView === view;
                   const label = getViewLabel(view);
-                  const isDefault = defaultViewType === view;
                   return (
                     <DropdownMenuItem
-                      key={`default-${view}`}
-                      onClick={() => onMakeDefaultView(view)}
+                      key={`switch-${view}`}
+                      onClick={() => onViewChange(view)}
                     >
-                      {isDefault ? (
+                      {isActive ? (
                         <Check className="h-4 w-4 text-primary" />
                       ) : (
                         <span className="h-4 w-4" />
                       )}
                       <span>{label}</span>
-                      {isDefault ? (
-                        <DropdownMenuShortcut>Selected</DropdownMenuShortcut>
+                      {defaultViewType === view ? (
+                        <DropdownMenuShortcut>Default</DropdownMenuShortcut>
                       ) : null}
                     </DropdownMenuItem>
                   );
                 })}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onManageViews} className="gap-2">
-              <Settings2 className="h-4 w-4" />
-              Manage views (CRUD)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onCopyData} className="gap-2">
-              <Copy className="h-4 w-4" />
-              Copy data
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onGetLink} className="gap-2">
-              <Link2 className="h-4 w-4" />
-              Copy view link
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Set default view</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {orderedViews.map((view) => {
+                    const label = getViewLabel(view);
+                    const isDefault = defaultViewType === view;
+                    return (
+                      <DropdownMenuItem
+                        key={`default-${view}`}
+                        onClick={() => onMakeDefaultView(view)}
+                      >
+                        {isDefault ? (
+                          <Check className="h-4 w-4 text-primary" />
+                        ) : (
+                          <span className="h-4 w-4" />
+                        )}
+                        <span>{label}</span>
+                        {isDefault ? (
+                          <DropdownMenuShortcut>Selected</DropdownMenuShortcut>
+                        ) : null}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onManageViews} className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                Manage views (CRUD)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onCopyData} className="gap-2">
+                <Copy className="h-4 w-4" />
+                Copy data
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onGetLink} className="gap-2">
+                <Link2 className="h-4 w-4" />
+                Copy view link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-      
+
       {/* Bottom Row: Filters (visible chips) */}
       <div className="flex items-center gap-2 min-h-[40px]">
         {properties.length > 0 && onFiltersChange ? (
-          <DatabaseFilters
-            properties={properties}
-            filters={filters} 
-            onFiltersChange={onFiltersChange}
-            variant="outline"
-            size="sm"
-          />
+          <>
+            <DatabaseFilters
+              properties={properties}
+              filters={filters}
+              onFiltersChange={onFiltersChange}
+              variant="outline"
+              size="sm"
+            />
+            {filters.length === 0 ? (
+              <div className="hidden lg:flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                <Filter className="h-3.5 w-3.5" />
+                Try filtering to narrow results
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="text-sm text-muted-foreground">
             {/* Empty state - filters akan muncul setelah database properties loaded */}

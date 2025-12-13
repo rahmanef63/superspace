@@ -43,7 +43,23 @@ type TimeRange = "today" | "7d" | "30d" | "90d"
  */
 export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d")
-  const { isLoading, overview, timeline, memberStats } = useAnalytics(workspaceId, timeRange)
+  const { isLoading, overview, timeline, memberStats, recentEvents } = useAnalytics(workspaceId, timeRange)
+
+  const formatPropertyValue = (value: unknown) => {
+    if (value === null || value === undefined) return ""
+    if (typeof value === "string") {
+      return value.length > 48 ? `${value.slice(0, 45)}...` : value
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value)
+    }
+    try {
+      const serialized = JSON.stringify(value)
+      return serialized.length > 48 ? `${serialized.slice(0, 45)}...` : serialized
+    } catch {
+      return String(value)
+    }
+  }
 
   if (!workspaceId) {
     return (
@@ -166,6 +182,10 @@ export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
                 <TabsTrigger value="tasks" className="gap-2">
                   <TrendingUp className="h-4 w-4" />
                   Tasks
+                </TabsTrigger>
+                <TabsTrigger value="events" className="gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Events
                 </TabsTrigger>
               </TabsList>
 
@@ -371,6 +391,55 @@ export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="events">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Recent Events</CardTitle>
+                    <CardDescription>Tracked product events (analyticsEvents)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {recentEvents.length > 0 ? (
+                      <div className="space-y-3">
+                        {recentEvents.slice(0, 25).map((event: any) => (
+                          <div
+                            key={String(event._id)}
+                            className="flex items-start justify-between gap-4 border-b pb-3 last:border-b-0 last:pb-0"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Badge variant="secondary" className="shrink-0">
+                                  {event.eventType}
+                                </Badge>
+                                <div className="text-sm font-medium truncate">{event.eventName}</div>
+                              </div>
+                              {event.properties ? (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {Object.entries(event.properties)
+                                    .slice(0, 4)
+                                    .map(([key, value]) => (
+                                      <Badge key={key} variant="outline" className="text-[10px]">
+                                        {key}:{formatPropertyValue(value)}
+                                      </Badge>
+                                    ))}
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <div className="text-xs text-muted-foreground whitespace-nowrap">
+                              {event.timestamp ? new Date(event.timestamp).toLocaleString() : ""}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex h-32 items-center justify-center text-muted-foreground">
+                        No events tracked yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>

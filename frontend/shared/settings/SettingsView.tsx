@@ -18,7 +18,7 @@ import {
   Keyboard,
   HelpCircle,
 } from "lucide-react"
-import { SettingsRegistryProvider } from "./SettingsRegistry"
+import { SettingsRegistryProvider } from "./SettingsProvider"
 import { DynamicSettingsView } from "./components/DynamicSettingsView"
 import type { SettingsCategory } from "./types"
 import {

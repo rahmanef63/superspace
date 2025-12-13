@@ -11,23 +11,11 @@ import { useEffect, useMemo, useRef } from "react"
 import { useQuery } from "convex/react"
 import type { Id } from "@convex/_generated/dataModel"
 import { api } from "@/convex/_generated/api"
-import { useSettingsRegistry } from "../SettingsRegistry"
-import { getFeatureSettingsBuilder, getAllRegisteredFeatures } from "../featureSettingsRegistry"
-import type { SettingsCategory } from "../types"
+import { useSettingsRegistry } from "../SettingsProvider"
+import { getFeatureSettingsBuilder, getAllRegisteredFeatures } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
+import type { SettingsCategory, FeatureSettingsBuilder } from "../types"
 
-type MenuItemRecord = {
-  _id: Id<"menuItems">
-  name: string
-  slug: string
-  type: "folder" | "route" | "divider" | "action" | "chat" | "document" | string
-  icon?: string | null
-  path?: string | null
-  metadata?: Record<string, any>
-}
-
-type FeatureSettingsBuilder = (ctx: {
-  menuItem: MenuItemRecord
-}) => Omit<SettingsCategory, "featureSlug">[]
+import type { MenuItem } from "@/frontend/shared/types"
 
 export interface FeatureSettingsSyncProps {
   /** Workspace ID to sync settings for */
@@ -57,7 +45,7 @@ export function FeatureSettingsSync({
   const menuItems = useQuery(
     (api as any)["features/menus/menuItems"].getWorkspaceMenuItems,
     workspaceId ? { workspaceId } : "skip"
-  ) as MenuItemRecord[] | undefined
+  ) as MenuItem[] | undefined
 
   const featureMenuItems = useMemo(() => {
     if (!Array.isArray(menuItems)) {

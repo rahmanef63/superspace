@@ -1,0 +1,1 @@
+export { PosSettings } from "./PosSettings"

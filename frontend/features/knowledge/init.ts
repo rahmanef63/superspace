@@ -3,7 +3,7 @@
  * Registers knowledge settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { BookOpen, Edit3, FolderTree, Search } from "lucide-react"
 import {
     KnowledgeGeneralSettings,
@@ -11,6 +11,7 @@ import {
     KnowledgeOrganizationSettings,
     KnowledgeSearchSettings,
 } from "./settings"
+import { registerKnowledgeAgent } from "./agents"
 
 registerFeatureSettings("knowledge", () => [
     {
@@ -42,6 +43,8 @@ registerFeatureSettings("knowledge", () => [
         component: KnowledgeSearchSettings,
     },
 ])
+
+registerKnowledgeAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Knowledge feature settings registered")

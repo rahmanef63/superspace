@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, FileText, Tag, User, X } from "lucide-react";
+import { Calendar, Clock, FileText, Link2, Link2Off, Tag, User, X } from "lucide-react";
 import { formatRelativeTime } from "../utils";
+import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider";
+import { toast } from "sonner";
 
 export interface DocumentInspectorProps {
   document: {
@@ -38,7 +46,91 @@ export function DocumentInspector({
   isMobile = false,
 }: DocumentInspectorProps) {
   const [newTag, setNewTag] = useState("");
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedTableId, setSelectedTableId] = useState<string>("");
+  const [selectedRowId, setSelectedRowId] = useState<string>("");
+  const [isLinking, setIsLinking] = useState(false);
   const tags = document.tags || [];
+  const { workspaceId } = useWorkspaceContext();
+
+  const linkedRows = useQuery(
+    (api.features.database.queries as any).getRowsLinkedToDoc,
+    { docId: document._id },
+  ) as Array<{
+    rowId: Id<"dbRows">;
+    tableId: Id<"dbTables">;
+    tableName: string;
+    rowTitle: string;
+  }> | undefined;
+
+  const tables = useQuery(
+    (api.features.database.queries as any).list,
+    workspaceId ? { workspaceId } : "skip",
+  ) as Array<{ _id: Id<"dbTables">; name: string }> | undefined;
+
+  const tableFields = useQuery(
+    (api.features.database.queries as any).listFields,
+    selectedTableId ? { tableId: selectedTableId as Id<"dbTables"> } : "skip",
+  ) as Array<{ _id: Id<"dbFields">; name: string; type: string; isPrimary?: boolean; position?: number }> | undefined;
+
+  const tableRows = useQuery(
+    (api.features.database.queries as any).listRows,
+    selectedTableId ? { tableId: selectedTableId as Id<"dbTables">, limit: 500 } : "skip",
+  ) as Array<{ _id: Id<"dbRows">; data: Record<string, unknown> }> | undefined;
+
+  const linkDocToRow = useMutation((api.features.database.mutations as any).linkDocToRow);
+  const unlinkDocFromRow = useMutation((api.features.database.mutations as any).unlinkDocFromRow);
+
+  const pickTitleFieldId = useMemo(() => {
+    if (!tableFields || tableFields.length === 0) return null;
+    const sorted = [...tableFields].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    const primary = sorted.find((field) => Boolean(field.isPrimary));
+    if (primary) return String(primary._id);
+    const byName = sorted.find((field) => {
+      const name = field.name.trim().toLowerCase();
+      return name === "name" || name === "title";
+    });
+    if (byName) return String(byName._id);
+    const firstText = sorted.find((field) => field.type === "text");
+    if (firstText) return String(firstText._id);
+    return String(sorted[0]._id);
+  }, [tableFields]);
+
+  const rowChoices = useMemo(() => {
+    if (!tableRows) return [];
+
+    const toTitleText = (value: unknown) => {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "string") return value.trim() || null;
+      if (typeof value === "number") return String(value);
+      if (typeof value === "boolean") return value ? "True" : "False";
+      if (typeof value === "object") {
+        if ("title" in value && typeof (value as any).title === "string") {
+          return (value as any).title.trim() || null;
+        }
+        if ("name" in value && typeof (value as any).name === "string") {
+          return (value as any).name.trim() || null;
+        }
+      }
+      return String(value);
+    };
+
+    return tableRows.map((row) => {
+      const titleValue = pickTitleFieldId ? row.data?.[pickTitleFieldId] : undefined;
+      return {
+        id: String(row._id),
+        title: toTitleText(titleValue) ?? `Row ${String(row._id)}`,
+      };
+    });
+  }, [pickTitleFieldId, tableRows]);
+
+  const sortedLinkedRows = useMemo(() => {
+    const items = linkedRows ?? [];
+    return [...items].sort((a, b) => {
+      if (a.tableName !== b.tableName) return a.tableName.localeCompare(b.tableName);
+      return a.rowTitle.localeCompare(b.rowTitle);
+    });
+  }, [linkedRows]);
 
   const handleAddTag = () => {
     const trimmedTag = newTag.trim();
@@ -52,6 +144,39 @@ export function DocumentInspector({
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
+    }
+  };
+
+  const handleLinkRow = async () => {
+    if (!selectedRowId) return;
+    setIsLinking(true);
+    try {
+      await linkDocToRow({
+        rowId: selectedRowId as Id<"dbRows">,
+        docId: document._id,
+      });
+      setLinkDialogOpen(false);
+      setSelectedTableId("");
+      setSelectedRowId("");
+      toast.success("Linked to database row.");
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to link database row.");
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleUnlinkRow = async (rowId: Id<"dbRows">) => {
+    setIsLinking(true);
+    try {
+      await unlinkDocFromRow({ rowId, docId: document._id });
+      toast.success("Unlinked database row.");
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to unlink database row.");
+    } finally {
+      setIsLinking(false);
     }
   };
 
@@ -173,6 +298,149 @@ export function DocumentInspector({
           </div>
         )}
       </div>
+
+      <Separator className="my-4" />
+
+      {/* Backlinks / Related Items */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="flex items-center gap-2 text-sm font-semibold">
+            <Link2 className="h-4 w-4" />
+            Related items
+          </Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => setLinkDialogOpen(true)}
+            disabled={!workspaceId}
+          >
+            Link
+          </Button>
+        </div>
+
+        {linkedRows === undefined ? (
+          <p className="text-sm text-muted-foreground">Loading related items...</p>
+        ) : sortedLinkedRows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No related database rows.</p>
+        ) : (
+          <div className="space-y-2">
+            {sortedLinkedRows.map((link) => (
+              <div
+                key={`${String(link.tableId)}:${String(link.rowId)}`}
+                className="flex items-center justify-between gap-2 rounded-md border p-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{link.rowTitle}</p>
+                  <p className="text-xs text-muted-foreground truncate">{link.tableName}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button asChild variant="ghost" size="sm" className="h-7 px-2">
+                    <Link href={`/dashboard/database?tableId=${encodeURIComponent(String(link.tableId))}`}>
+                      Open
+                    </Link>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => handleUnlinkRow(link.rowId)}
+                    disabled={isLinking}
+                    title="Unlink"
+                  >
+                    <Link2Off className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Dialog
+        open={linkDialogOpen}
+        onOpenChange={(nextOpen) => {
+          setLinkDialogOpen(nextOpen);
+          if (!nextOpen) {
+            setSelectedTableId("");
+            setSelectedRowId("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Link database row</DialogTitle>
+            <DialogDescription>
+              Choose a database and a row to link to this document.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Database</Label>
+              <Select
+                value={selectedTableId}
+                onValueChange={(value) => {
+                  setSelectedTableId(value);
+                  setSelectedRowId("");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={tables === undefined ? "Loading..." : "Select a database"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(tables ?? []).map((table) => (
+                    <SelectItem key={String(table._id)} value={String(table._id)}>
+                      {table.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedTableId ? (
+              <div className="space-y-1.5">
+                <Label>Row</Label>
+                <Command>
+                  <CommandInput placeholder="Search rows..." />
+                  <CommandList className="max-h-[240px]">
+                    <CommandEmpty>No rows found.</CommandEmpty>
+                    <CommandGroup>
+                      {rowChoices.map((choice) => (
+                        <CommandItem
+                          key={choice.id}
+                          value={choice.title}
+                          onSelect={() => setSelectedRowId(choice.id)}
+                        >
+                          <div className="flex items-center justify-between w-full gap-2">
+                            <span className="truncate">{choice.title}</span>
+                            {selectedRowId === choice.id ? (
+                              <Badge variant="secondary" className="text-[10px]">
+                                Selected
+                              </Badge>
+                            ) : null}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setLinkDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleLinkRow} disabled={!selectedRowId || isLinking}>
+              Link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

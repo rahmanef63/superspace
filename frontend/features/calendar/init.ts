@@ -3,7 +3,7 @@
  * Registers calendar settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Calendar, Layout, CalendarDays, RefreshCw } from "lucide-react"
 import {
     CalendarGeneralSettings,
@@ -11,6 +11,7 @@ import {
     CalendarEventSettings,
     CalendarSyncSettings,
 } from "./settings"
+import { registerCalendarAgent } from "./agents"
 
 registerFeatureSettings("calendar", () => [
     {
@@ -42,6 +43,8 @@ registerFeatureSettings("calendar", () => [
         component: CalendarSyncSettings,
     },
 ])
+
+registerCalendarAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ Calendar feature settings registered")

@@ -23,7 +23,7 @@ import {
   Puzzle,
   Building2,
 } from "lucide-react"
-import { SettingsRegistryProvider } from "./SettingsRegistry"
+import { SettingsRegistryProvider } from "./SettingsProvider"
 import { DynamicSettingsView } from "./components/DynamicSettingsView"
 import { FeatureSettingsSync } from "./components/FeatureSettingsSync"
 import type { SettingsCategory } from "./types"
@@ -164,7 +164,7 @@ function WorkspaceSettingsContent({
   defaultCategory?: string
 }) {
   // Lazy import to avoid circular deps
-  const { WorkspaceSettings } = require("./workspace/WorkspaceSettings")
+  const { WorkspaceSettingsContent } = require("./workspace/WorkspaceSettingsContent")
 
   if (!workspaceId) {
     return (
@@ -174,7 +174,7 @@ function WorkspaceSettingsContent({
     )
   }
 
-  return <WorkspaceSettings workspaceId={workspaceId} />
+  return <WorkspaceSettingsContent workspaceId={workspaceId} activeCategory={defaultCategory || "general"} />
 }
 
 export function SettingsPageWithTabs({

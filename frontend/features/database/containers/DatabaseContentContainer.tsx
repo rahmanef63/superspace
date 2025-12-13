@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useDatabaseRecord } from "../hooks/useDatabase";
 import { useDatabaseViewState } from "../hooks";
@@ -13,6 +16,7 @@ import type { ConvexQueryFilter } from "../filters";
 import { convertFieldsToProperties } from "../lib/field-converter";
 
 interface DatabaseContentContainerProps {
+  workspaceId: Id<"workspaces">;
   tableId: Id<"dbTables">;
   handlers: any; // Pass all handlers from parent
 }
@@ -22,12 +26,15 @@ interface DatabaseContentContainerProps {
  * This component can be wrapped in Suspense to enable partial rendering
  */
 export function DatabaseContentContainer({
+  workspaceId,
   tableId,
   handlers,
 }: DatabaseContentContainerProps) {
+  const pathname = usePathname();
+  const trackEvent = useMutation(api.features.analytics.mutations.trackEvent as any);
   const { record, viewModel, mapping, isLoading } = useDatabaseRecord(tableId);
 
-  const { activeView, setActiveView, defaultViewType } = useDatabaseViewState({
+  const { activeView, defaultViewType } = useDatabaseViewState({
     record,
     selectedTableId: tableId,
   });
@@ -35,6 +42,7 @@ export function DatabaseContentContainer({
   // Filter state
   const [filters, setFilters] = useState<UIFilter[]>([]);
   const [filterQuery, setFilterQuery] = useState<ConvexQueryFilter | null>(null);
+  const hadFiltersRef = useRef(false);
 
   const activeDbView = useMemo(() => {
     if (!record) return null;
@@ -51,9 +59,32 @@ export function DatabaseContentContainer({
   const handleFiltersChange = (newFilters: UIFilter[], query: ConvexQueryFilter) => {
     setFilters(newFilters);
     setFilterQuery(query);
-    console.log('Filters updated:', newFilters);
-    console.log('Convex query:', query);
-    // TODO: Pass filterQuery to data fetching
+
+    const hasFilters = newFilters.length > 0;
+    if (hasFilters && !hadFiltersRef.current) {
+      hadFiltersRef.current = true;
+      void trackEvent({
+        workspaceId,
+        eventType: "database",
+        eventName: "database.filter_applied",
+        properties: {
+          tableId,
+          view: activeView,
+          filterCount: newFilters.length,
+        },
+        metadata: {
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+          referrer: typeof document !== "undefined" ? document.referrer : undefined,
+          path: pathname ?? undefined,
+        },
+      }).catch((trackError: any) => {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[Database] analytics trackEvent failed", trackError);
+        }
+      });
+    } else if (!hasFilters) {
+      hadFiltersRef.current = false;
+    }
   };
 
   if (isLoading || !viewModel || !record) {

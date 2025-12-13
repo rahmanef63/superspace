@@ -197,22 +197,31 @@ describe('UniversalCalendarView', () => {
 
     it('switches to week view', async () => {
       const user = userEvent.setup();
-      const { container } = render(<UniversalCalendarView {...defaultProps} />);
-      
-      // Find the view mode select and verify it exists
-      const selects = container.querySelectorAll('[data-testid="select-mock"]');
-      const viewModeSelect = Array.from(selects).find(s => s.getAttribute('data-value') === 'month');
-      expect(viewModeSelect).toBeDefined();
+      render(<UniversalCalendarView {...defaultProps} />);
+
+      // Month view should render more than 7 day cells
+      expect(screen.getAllByTestId('calendar-day').length).toBeGreaterThan(7);
+
+      // Switch to week view via the view mode buttons
+      await user.click(screen.getByRole('button', { name: /week/i }));
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('calendar-day')).toHaveLength(7);
+      });
     });
 
     it('switches to day view', async () => {
       const user = userEvent.setup();
-      const { container } = render(<UniversalCalendarView {...defaultProps} />);
-      
-      // Verify select is present with month value
-      const selects = container.querySelectorAll('[data-testid="select-mock"]');
-      const viewModeSelect = Array.from(selects).find(s => s.getAttribute('data-value') === 'month');
-      expect(viewModeSelect).toBeDefined();
+      render(<UniversalCalendarView {...defaultProps} />);
+
+      await user.click(screen.getByRole('button', { name: /^day$/i }));
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('calendar-day')).toHaveLength(1);
+      });
+
+      // Day view hides weekday headers
+      expect(screen.queryByText('Sun')).not.toBeInTheDocument();
     });
   });
 
@@ -312,9 +321,9 @@ describe('UniversalCalendarView', () => {
         />
       );
       
-      // Should show date property selector - check for multiple selects
+      // Should show date property selector
       const selects = container.querySelectorAll('[data-testid="select-mock"]');
-      expect(selects.length).toBeGreaterThanOrEqual(2); // date selector + view mode selector
+      expect(selects.length).toBeGreaterThanOrEqual(1);
     });
 
     it('does not show property selector with single date property', () => {
@@ -378,8 +387,8 @@ describe('UniversalCalendarView', () => {
       expect(addButton).toBeDefined();
       
       await user.click(addButton!);
-      
-      expect(onAddRecord).toHaveBeenCalledWith(expect.any(Date));
+
+      expect(onAddRecord).toHaveBeenCalledWith(expect.any(Date), 'date');
     });
   });
 

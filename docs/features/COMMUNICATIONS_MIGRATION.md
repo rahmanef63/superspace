@@ -357,7 +357,6 @@ sections/
 
 1. **Create adapter layer** to map existing conversations to channels/DMs
 2. **Migrate data** from old tables to new tables
-3. **Update routes** from `/dashboard/chat` to `/dashboard/comms` or similar
 4. **Deprecate old components** gradually
 5. **Remove old code** after validation
 

@@ -120,10 +120,10 @@ function TableHeaderContent({ columnOrder, fixedColumnIds }: TableHeaderContentP
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                  
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+
                   {/* Google Sheets-like resize handle */}
                   {canResize && (
                     <div
@@ -236,14 +236,14 @@ export function DatabaseTableView({
   const cellEditor = useCellEditor({
     onNavigate: handleNavigate,
   });
-  
+
   // Use PropertyMenu handlers hook
   const propertyMenuHandlers = usePropertyMenuHandlers({
     tableId,
     fields,
     activeView,
   });
-  
+
   const orderedFields = useMemo(
     () =>
       [...fields].sort(
@@ -322,19 +322,19 @@ export function DatabaseTableView({
   useEffect(() => {
     setColumnOrder((prev) => {
       const next = displayFieldIds;
-      
+
       // If no previous state (first render), use next
       if (prev.length === 0) {
         return next;
       }
-      
+
       // Check if field set changed (added or removed)
       const prevSet = new Set(prev);
       const nextSet = new Set(next);
-      
+
       const added = next.filter(id => !prevSet.has(id));
       const removed = prev.filter(id => !nextSet.has(id));
-      
+
       // Only reset if fields were added or removed
       // Don't reset if it's just the same fields in different order (preserve user's drag order)
       if (added.length > 0 || removed.length > 0) {
@@ -343,7 +343,7 @@ export function DatabaseTableView({
         const newOnes = added;
         return [...reordered, ...newOnes];
       }
-      
+
       // If same fields, keep existing order (user might have dragged columns)
       return prev;
     });
@@ -352,9 +352,9 @@ export function DatabaseTableView({
   const rowIds = useMemo(() => features.map((f) => String(f.id)), [features]);
 
   // Optimized column resize with local state + debounced persistence
-  const { 
-    columnSizing: optimizedColumnSizing, 
-    handleColumnSizingChange: handleOptimizedResize 
+  const {
+    columnSizing: optimizedColumnSizing,
+    handleColumnSizingChange: handleOptimizedResize
   } = useOptimizedColumnResize({
     initialSizing: activeView?.settings.fieldWidths,
     onPersist: onColumnSizingChange,
@@ -381,20 +381,20 @@ export function DatabaseTableView({
         setColumnOrder((prev) => {
           const oldIndex = prev.indexOf(activeId);
           const newIndex = prev.indexOf(overId);
-          
+
           if (oldIndex === -1 || newIndex === -1) {
             return prev;
           }
-          
+
           const nextOrder = arrayMove(prev, oldIndex, newIndex);
-          
+
           // Track column order changes
           console.log('� [Column Order] DND:', {
             before: prev,
             after: nextOrder,
             moved: `${activeId} from position ${oldIndex} to ${newIndex}`
           });
-          
+
           if (onReorderFields) {
             void onReorderFields(nextOrder);
           }
@@ -405,9 +405,9 @@ export function DatabaseTableView({
       else if (rowIds.includes(activeId)) {
         const oldIndex = rowIds.indexOf(activeId);
         const newIndex = rowIds.indexOf(overId);
-        
+
         if (oldIndex === -1 || newIndex === -1) return;
-        
+
         const nextOrder = arrayMove(rowIds, oldIndex, newIndex);
         if (onReorderRows) {
           void onReorderRows(nextOrder);
@@ -582,10 +582,10 @@ export function DatabaseTableView({
                 {titleField && isEditableField(titleField) && titleFieldId ? (() => {
                   const rowIndex = features.findIndex(f => String(f.id) === rowId);
                   const colIndex = -1; // Title column is special, not in columnOrder
-                  
+
                   const isFocused = cellEditor.isCellFocused(rowId, titleFieldId);
                   const isEditing = cellEditor.isCellEditing(rowId, titleFieldId);
-                  
+
                   return (
                     <EditableCell
                       field={titleField}
@@ -669,10 +669,10 @@ export function DatabaseTableView({
           const rowId = String(row.original.id);
           const rowIndex = features.findIndex(f => String(f.id) === rowId);
           const colIndex = columnOrder.indexOf(fieldId);
-          
+
           const isFocused = cellEditor.isCellFocused(rowId, fieldId);
           const isEditing = cellEditor.isCellEditing(rowId, fieldId);
-          
+
           return (
             <EditableCell
               field={field}
@@ -710,6 +710,8 @@ export function DatabaseTableView({
         cell: ({ row }) => (
           <RowActions
             rowId={String(row.original.id)}
+            rowTitle={row.original.name}
+            docId={row.original.docId ?? null}
             onDelete={(rowId) => onDeleteRow?.(rowId as DatabaseFeature["id"])}
           />
         ),
@@ -767,8 +769,8 @@ export function DatabaseTableView({
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
           >
-            <TableHeaderContent 
-              columnOrder={columnOrder} 
+            <TableHeaderContent
+              columnOrder={columnOrder}
               fixedColumnIds={FIXED_COLUMN_IDS}
             />
             <SortableContext

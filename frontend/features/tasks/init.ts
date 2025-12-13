@@ -3,7 +3,7 @@
  * Registers tasks-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { CheckSquare, Bell, Settings2, Timer } from "lucide-react"
 import {
   TasksGeneralSettings,
@@ -11,6 +11,8 @@ import {
   TasksNotificationsSettings,
   TasksProductivitySettings,
 } from "./settings/TasksSettings"
+
+import { registerTasksAgent } from "./agents"
 
 // Register tasks feature settings
 registerFeatureSettings("tasks", () => [
@@ -44,6 +46,9 @@ registerFeatureSettings("tasks", () => [
   },
 ])
 
+registerTasksAgent()
+
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.log("✅ Tasks feature settings registered")
 }
+

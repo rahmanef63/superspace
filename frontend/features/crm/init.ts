@@ -3,7 +3,7 @@
  * Registers CRM settings with the shared settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Users, Layout, Bell, Zap } from "lucide-react"
 import {
     CRMGeneralSettings,
@@ -11,6 +11,7 @@ import {
     CRMNotificationSettings,
     CRMAutomationSettings,
 } from "./settings"
+import { registerCrmAgent } from "./agents"
 
 registerFeatureSettings("crm", () => [
     {
@@ -42,6 +43,8 @@ registerFeatureSettings("crm", () => [
         component: CRMAutomationSettings,
     },
 ])
+
+registerCrmAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("✅ CRM feature settings registered")

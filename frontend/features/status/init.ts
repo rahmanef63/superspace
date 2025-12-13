@@ -5,7 +5,7 @@
  * Import this file at app initialization to enable status settings
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Camera, Eye, Lock, Image as ImageIcon } from "lucide-react"
 import {
   StatusGeneralSettings,
@@ -13,6 +13,7 @@ import {
   StatusVisibilitySettings,
   StatusMediaSettings,
 } from "./settings/StatusSettings"
+import { registerStatusAgent } from "./agents"
 
 // ============================================================================
 // Register Status Settings
@@ -48,6 +49,8 @@ registerFeatureSettings("status", () => [
     component: StatusMediaSettings,
   },
 ])
+
+registerStatusAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.log("✅ Status feature settings registered")

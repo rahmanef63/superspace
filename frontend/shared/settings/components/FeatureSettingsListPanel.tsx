@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { DynamicIcon } from '@/frontend/shared/ui/icons'
-import { hasFeatureSettings } from '../featureSettingsRegistry'
+import { hasFeatureSettings } from '@/frontend/shared/foundation/utils/registry/feature-settings-registry'
 import type { Id } from '@/convex/_generated/dataModel'
 
 // Internal feature item representation
@@ -38,16 +38,7 @@ interface FeatureSettingsItem {
   hasSettings: boolean
 }
 
-// Menu item type for external usage
-interface MenuItem {
-  _id: Id<"menuItems">
-  name: string
-  slug: string
-  type: string
-  icon?: string | null
-  path?: string | null
-  metadata?: Record<string, any>
-}
+import type { MenuItem } from "@/frontend/shared/types"
 
 export interface FeatureSettingsListPanelProps {
   /** List of menu items to display (will filter for those with settings) */
@@ -117,7 +108,7 @@ export function FeatureSettingsListPanel({
   // Group by category
   const groupedFeatures = React.useMemo(() => {
     const groups: Record<string, FeatureSettingsItem[]> = {}
-    
+
     filteredFeatures.forEach((feature) => {
       const category = feature.category || 'Other'
       if (!groups[category]) {
@@ -175,7 +166,7 @@ export function FeatureSettingsListPanel({
           )}
         </div>
       )}
-      
+
       {/* Compact controls when header is hidden */}
       {hideHeader && searchable && (
         <div className="p-3 border-b space-y-2 bg-background/50">

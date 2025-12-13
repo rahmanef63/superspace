@@ -11,7 +11,6 @@ import {
   Flag,
   Trash2,
   Settings,
-  Download,
   Filter,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
 
@@ -185,12 +185,7 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
             icon: Filter,
             onClick: () => {},
           },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => {},
-          },
+          <FeatureExportImport key="export-import" featureId="tasks" variant="separate" />,
           {
             id: "settings",
             label: "Settings",

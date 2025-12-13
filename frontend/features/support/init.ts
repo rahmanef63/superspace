@@ -3,7 +3,7 @@
  * Registers support-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Ticket, MessageSquare, Clock, Bell } from "lucide-react"
 import {
   SupportTicketSettings,
@@ -11,6 +11,7 @@ import {
   SupportSLASettings,
   SupportNotificationSettings,
 } from "./settings"
+import { registerSupportAgent } from "./agents"
 
 // Register support feature settings
 registerFeatureSettings("support", () => [
@@ -43,6 +44,8 @@ registerFeatureSettings("support", () => [
     component: SupportNotificationSettings,
   },
 ])
+
+registerSupportAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.log("✅ Support feature settings registered")

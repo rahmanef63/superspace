@@ -255,6 +255,46 @@ export const getMemberStats = query({
   },
 })
 
+// Get recent tracked analytics events
+export const getRecentEvents = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    timeRange: v.optional(v.union(
+      v.literal("today"),
+      v.literal("7d"),
+      v.literal("30d"),
+      v.literal("90d")
+    )),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const now = Date.now()
+    const timeRange = args.timeRange || "30d"
+
+    const rangeMs = {
+      today: 24 * 60 * 60 * 1000,
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+      "90d": 90 * 24 * 60 * 60 * 1000,
+    }[timeRange]
+
+    const startTime = now - rangeMs
+    const limit = Math.min(Math.max(args.limit ?? 50, 1), 200)
+
+    const events = await ctx.db
+      .query("analyticsEvents")
+      .withIndex("by_workspace_timestamp", (q) =>
+        q.eq("workspaceId", args.workspaceId).gte("timestamp", startTime)
+      )
+      .order("desc")
+      .take(limit)
+
+    return events
+  },
+})
+
 // Get saved widgets
 export const getWidgets = query({
   args: {

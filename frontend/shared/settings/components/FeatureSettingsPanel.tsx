@@ -12,7 +12,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { useSettingsRegistry } from "../SettingsRegistry"
+import { useSettingsRegistry } from "../SettingsProvider"
 import type { SettingsCategory } from "../types"
 
 export interface FeatureSettingsPanelProps {
@@ -58,13 +58,13 @@ export function FeatureSettingsPanel({
   // (for when panel is used inside a provider pre-loaded with feature settings)
   const featureSettings = React.useMemo(() => {
     const filtered = getFeatureSettings(featureSlug)
-    
+
     if (process.env.NODE_ENV === "development") {
       console.log("[FeatureSettingsPanel] featureSlug:", featureSlug)
       console.log("[FeatureSettingsPanel] all categories:", categories.length, categories.map(c => ({ id: c.id, featureSlug: c.featureSlug })))
       console.log("[FeatureSettingsPanel] filtered by getFeatureSettings:", filtered.length)
     }
-    
+
     // If no feature-specific settings found, the provider might have
     // been initialized with pre-loaded settings (e.g., from FeatureSettingsButton)
     if (filtered.length === 0 && categories.length > 0) {

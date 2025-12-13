@@ -79,8 +79,11 @@ function flattenFeatures(features: any[]): any[] {
 function validateBundles(): ValidationResult {
   const errors: ValidationError[] = []
   const warnings: ValidationError[] = []
-  
-  const allFeatures = flattenFeatures(getAllFeatures())
+
+  // Only validate top-level features.
+  // Child features (feature.children) are treated as UI/route subdivisions that inherit
+  // their parent's bundle membership and are not required to declare bundles.
+  const allFeatures = getAllFeatures()
   
   // Track bundle membership
   const bundleFeatures: Record<BundleId, { core: string[], recommended: string[], optional: string[] }> = {} as any
@@ -202,11 +205,11 @@ function validateBundles(): ValidationResult {
     })
     
     // Feature type vs bundle membership consistency
-    if (feature.technical?.featureType === 'default' && bundles.optional?.length > 0 && bundles.core?.length === 0) {
+    if (feature.technical?.featureType === 'default' && (bundles.optional?.length || 0) > 0 && (bundles.core?.length || 0) === 0 && (bundles.recommended?.length || 0) === 0) {
       warnings.push({
         type: 'warning',
         featureId: feature.id,
-        message: `Default feature is only in optional bundles - consider adding to core bundles`
+        message: `Default feature is only in optional bundles - consider adding to core or recommended bundles`
       })
     }
   })
@@ -343,7 +346,7 @@ function main() {
     })
   
   // Build bundle features for report
-  const allFeatures = flattenFeatures(getAllFeatures())
+  const allFeatures = getAllFeatures()
   const bundleFeatures: Record<BundleId, { core: string[], recommended: string[], optional: string[] }> = {} as any
   BUNDLE_IDS.forEach(id => {
     bundleFeatures[id] = { core: [], recommended: [], optional: [] }

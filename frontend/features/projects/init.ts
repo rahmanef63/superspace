@@ -3,7 +3,7 @@
  * Registers projects-related settings with the settings registry
  */
 
-import { registerFeatureSettings } from "@/frontend/shared/settings/featureSettingsRegistry"
+import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { LayoutGrid, Users, Calendar, Workflow } from "lucide-react"
 import {
   ProjectsDisplaySettings,
@@ -11,6 +11,7 @@ import {
   ProjectsTimelineSettings,
   ProjectsWorkflowSettings,
 } from "./settings"
+import { registerProjectsAgent } from "./agents"
 
 // Register projects feature settings
 registerFeatureSettings("projects", () => [
@@ -43,6 +44,8 @@ registerFeatureSettings("projects", () => [
     component: ProjectsWorkflowSettings,
   },
 ])
+
+registerProjectsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.log("✅ Projects feature settings registered")

@@ -169,6 +169,115 @@ export const getRow = query({
   },
 });
 
+const pickTitleFieldId = (fields: Doc<"dbFields">[]): string | null => {
+  if (fields.length === 0) return null;
+
+  const primary = fields.find((field) => Boolean(field.isPrimary));
+  if (primary) return String(primary._id);
+
+  const byName = fields.find((field) => {
+    const name = field.name.trim().toLowerCase();
+    return name === "name" || name === "title";
+  });
+  if (byName) return String(byName._id);
+
+  const firstText = fields.find((field) => field.type === "text");
+  if (firstText) return String(firstText._id);
+
+  return String(fields[0]._id);
+};
+
+const toTitleText = (value: unknown): string | null => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") return value.trim() || null;
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") return value ? "True" : "False";
+  if (typeof value === "object") {
+    if ("title" in value && typeof (value as any).title === "string") {
+      return (value as any).title.trim() || null;
+    }
+    if ("name" in value && typeof (value as any).name === "string") {
+      return (value as any).name.trim() || null;
+    }
+  }
+  return String(value);
+};
+
+export const getRowsLinkedToDoc = query({
+  args: { docId: v.id("documents") },
+  returns: v.array(v.any()),
+  handler: async (ctx, { docId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const document = await ctx.db.get(docId);
+    if (!document) {
+      return [];
+    }
+
+    const canSeeDoc = document.isPublic || document.createdBy === userId;
+    if (!canSeeDoc) {
+      return [];
+    }
+
+    const allowed = await hasWorkspaceAccess(ctx, document.workspaceId, userId);
+    if (!allowed) {
+      return [];
+    }
+
+    const linkedRows = await ctx.db
+      .query("dbRows")
+      .withIndex("by_doc", (q) => q.eq("docId", docId))
+      .collect();
+
+    const rowsByTable = new Map<string, Doc<"dbRows">[]>();
+    for (const row of linkedRows) {
+      if (row.workspaceId !== document.workspaceId) continue;
+      const key = String(row.tableId);
+      const existing = rowsByTable.get(key);
+      if (existing) {
+        existing.push(row);
+      } else {
+        rowsByTable.set(key, [row]);
+      }
+    }
+
+    const results: Array<{
+      rowId: Id<"dbRows">;
+      tableId: Id<"dbTables">;
+      tableName: string;
+      rowTitle: string;
+    }> = [];
+
+    for (const [tableId, rows] of rowsByTable.entries()) {
+      const table = await ctx.db.get(tableId as Id<"dbTables">);
+      if (!table) continue;
+
+      const fields = await ctx.db
+        .query("dbFields")
+        .withIndex("by_table", (q) => q.eq("tableId", table._id))
+        .collect()
+        .then((items) => items.sort(sortByPosition));
+
+      const titleFieldId = pickTitleFieldId(fields);
+
+      for (const row of rows.sort(sortByPosition)) {
+        const titleValue = titleFieldId ? row.data?.[titleFieldId] : undefined;
+        results.push({
+          rowId: row._id,
+          tableId: row.tableId,
+          tableName: table.name,
+          rowTitle: toTitleText(titleValue) ?? `Row ${String(row._id)}`,
+        });
+      }
+    }
+
+    return results;
+  },
+});
+
 export const listRows = query({
   args: {
     tableId: v.id("dbTables"),

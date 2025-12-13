@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useSettingsRegistry } from "../SettingsRegistry"
+import { useSettingsRegistry } from "../SettingsProvider"
 import { DynamicSettingsSidebar } from "./DynamicSettingsSidebar"
 import type { SettingsCategory } from "../types"
 

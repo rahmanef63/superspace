@@ -789,6 +789,6 @@ For developing features in a new project:
 
 ---
 
-**Last Updated:** 2025-11-04
-**Version:** 1.0.0
+**Last Updated:** 2025-12-15
+**Version:** 1.1.0
 **Maintainer:** Development Team

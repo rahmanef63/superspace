@@ -292,11 +292,12 @@ The following old/redundant scripts have been removed:
 
 ## 📚 Related Documentation
 
-- [System Overview](../docs/1_SYSTEM_OVERVIEW.md) - Architecture overview
-- [Developer Guide](../docs/2_DEVELOPER_GUIDE.md) - Development workflows
-- [Feature Reference](../docs/5_FEATURE_REFERENCE.md) - Feature system details
+- [System Overview](../docs/core/01-SYSTEM-OVERVIEW.md) - Architecture overview
+- [Developer Guide](../docs/core/02-DEVELOPER-GUIDE.md) - Development workflows
+- [Feature Reference](../docs/core/05-FEATURE-REFERENCE.md) - Feature system details
+- [Feature Rules](../docs/rules/01-FEATURE-RULES.md) - Development rules
 
 ---
 
-**Last Updated:** 2025-01-25
+**Last Updated:** 2025-12-15
 **Maintained by:** SuperSpace Dev Team

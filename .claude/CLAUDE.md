@@ -1,7 +1,12 @@
 # Project Guardrails (SuperSpace / Convex)
 
 ## 🎯 **Project Overview**
-**SuperSpace** adalah Notion-like SaaS platform dengan arsitektur modular yang sungguhan. Built dengan Next.js 15, Convex, dan React 19. Project ini memiliki **28+ features** yang auto-discovered dengan zero hardcoding.
+**SuperSpace** adalah Notion-like SaaS platform dengan arsitektur modular. Built dengan Next.js 15, Convex, dan React 19. 
+
+**Status (December 2025):**
+- **19/19 Dynamic Menus** ✅ Complete
+- **Universal Database** ✅ 7 views, 20+ property types, 721 tests passing
+- **All Core Systems** ✅ CRM, CMS, Projects, Helpdesk, Accounting, HR, Inventory, etc.
 
 ## 🛠️ **Tech Stack**
 - **Frontend:** Next.js 15 (App Router), React 19, TypeScript
@@ -18,7 +23,7 @@
 - **Three-Tier Sharing:** Global → Feature → Local
 - **RBAC:** Permission hierarchy (0=Owner → 90=Guest)
 - **Audit Logging:** Immutable logs untuk compliance
-- **Universal Database:** 21 property types, 10 view layouts
+- **Universal Database:** 20+ property types, 7 view layouts
 
 ## 🚫 **Rules (DILARANG)**
 - Ganti arsitektur RBAC/Convex
@@ -45,6 +50,33 @@
 - **Validation:** `scripts/validate-*.ts`
 - **Tests:** `tests/*.test.ts`
 - **Feature Config:** `frontend/features/*/config.ts`
+
+## 🏗️ **Feature Structure (WAJIB)**
+
+Every feature MUST have `agents/` and `settings/` folders:
+
+```
+frontend/features/{slug}/
+├── config.ts           # SSOT - Single Source of Truth
+├── agents/             # 🔴 WAJIB - AI agent registration
+│   └── index.ts        # registerXxxAgent() function
+├── settings/           # 🔴 WAJIB - Feature settings
+│   ├── index.ts
+│   ├── XxxSettings.tsx
+│   └── useXxxSettings.ts
+├── components/
+├── hooks/
+├── views/
+├── init.ts             # Feature initialization
+└── page.tsx
+
+convex/features/{slug}/
+├── queries.ts
+├── mutations.ts
+├── schema.ts
+├── agents/             # 🔴 WAJIB - Server-side tool handlers
+└── shared/
+```
 
 ## Feature Analysis & Documentation
 
@@ -105,19 +137,13 @@ Features are auto-discovered from `frontend/features/*/config.ts` files. Each fe
 
 **Registry Location:** `lib/features/registry.server.ts`
 
-### Documentation Location
-
-All generated feature documentation is stored in:
-```
-docs/features/
-├── 2025-10-27-cms.md
-├── 2025-10-27-chat.md
-└── {date}-{feature-id}.md
-```
-
 ### When to Use
 
 - **Before modifying a feature:** Run analyzer untuk understand struktur lengkap
 - **Documentation updates:** Use `--save` untuk generate/update docs
 - **Onboarding new developers:** Share docs/features/ untuk feature overview
 - **Architecture reviews:** Analyze semua features untuk consistency check
+
+---
+
+**Last Updated:** December 15, 2025

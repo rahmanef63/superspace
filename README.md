@@ -101,12 +101,10 @@ const database: UniversalDatabase = {
 
 ### Documentation
 
-- **Specification:** `docs/UNIVERSAL_DATABASE_SPEC.md` - Complete v2.0 spec
-- **TODO List:** `docs/UNIVERSAL_DATABASE_TODO.md` - Implementation tasks
-- **Progress:** `docs/99_CURRENT_PROGRESS.md` - Phase tracker
-- **Completion Report:** `docs/PHASE_1_COMPLETION_REPORT.md` - Phase 1 details
-- **Progress Summary:** `docs/PHASE_1_PROGRESS_SUMMARY.md` - Current status
-- **Migration Guide:** `docs/MIGRATION_CHECKLIST.md` - V1 to Universal migration
+- **Specification:** `docs/features/universal-database/01-SPEC.md` - Complete v2.0 spec
+- **TODO List:** `docs/features/universal-database/02-TASKS.md` - Implementation tasks
+- **Progress:** `docs/features/universal-database/03-PROGRESS.md` - Phase tracker
+- **Migration Guide:** `docs/features/universal-database/05-MIGRATION.md` - V1 to Universal migration
 
 ### Testing
 

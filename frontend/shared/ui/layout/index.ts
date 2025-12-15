@@ -5,8 +5,8 @@ export { default as MasterDetailLayout } from "./MasterDetailLayout";
 // Chrome (Top-level UI)
 // ============================================================================
 
-export { HeaderBar } from "./chrome/HeaderBar";
-export type { HeaderBarProps, Breadcrumb } from "./chrome/HeaderBar";
+export { HeaderBar } from "./header/components/HeaderBar";
+export type { HeaderBarProps, Breadcrumb } from "./header/components/HeaderBar";
 export { StatusBar } from "./chrome/StatusBar";
 export type { StatusBarProps } from "./chrome/StatusBar";
 
@@ -26,18 +26,35 @@ export {
 export type { AppSidebarProps } from "./sidebar/primary";
 
 // Secondary Sidebar (includes SecondaryList and variants)
-export * from "./sidebar/secondary";
-
-// Explicit exports for SecondaryLayout components
 export {
   SecondarySidebarLayout,
   SecondarySidebarHeader,
   SecondarySidebar,
   SecondarySidebarTools,
+  SecondaryList,
+  // Registry
+  itemVariantRegistry,
+  createVariant,
+  itemVariant,
+  asVariantId,
+  registerBuiltInVariants,
+  // Types
   type SecondarySidebarLayoutProps,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
+  type SecondaryListProps,
+  type VariantId,
+  type ItemBase,
+  type RenderUtils,
+  type RenderCtx,
+  type VariantDef,
+  type SecondaryItem,
+  // Namespace
+  SecondarySidebarLayoutNamespace,
 } from "./sidebar/secondary";
+
+// Explicit exports for SecondaryLayout components
+// (Merged above)
 
 // Site Header & Components
 export {
@@ -130,13 +147,10 @@ export {
 
 export * as Container from "./container";
 export {
-  LayoutContainer,
-  SingleLayout,
-  SplitVerticalLayout,
-  SplitHorizontalLayout,
-  SidebarLayout,
+  PageContainer,
+  SingleColumnLayout,
+  TwoColumnLayout,
   ResizeHandle,
-  CollapsiblePanel,
   // Column Layout System
   ColumnLayout,
   ColumnHeader,
@@ -149,16 +163,21 @@ export {
   PanelHeader,
   PanelBody,
   PanelFooter,
-  type LayoutType,
-  type SplitMode,
-  type LayoutNode,
-  type PanelRenderContext,
-  type LayoutContainerProps,
+  type PageContainerProps,
+  type SingleColumnLayoutProps,
+  type TwoColumnLayoutProps,
   type ColumnLayoutProps,
   type ColumnHeaderProps,
   type ColumnMainProps,
   type ColumnFooterProps,
 } from "./container";
+
+// ============================================================================
+// Feature Layout (Standard minimum layout with AI panel support)
+// ============================================================================
+
+export { FeatureLayout } from "./feature-layout";
+export type { FeatureLayoutProps } from "./feature-layout";
 
 // ============================================================================
 // Tabs System (SSOT)

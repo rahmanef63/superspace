@@ -18,6 +18,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+import { Header } from "../../header"
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -95,22 +97,19 @@ export function ColumnHeader({
   sticky = false,
 }: ColumnHeaderProps) {
   return (
-    <div
+    <Header
+      variant={background === "transparent" ? "transparent" : "default"}
+      border={border === true}
+      sticky={sticky}
       className={cn(
-        "shrink-0 z-10",
-        // Border
-        border === true && "border-b",
-        border === "subtle" && "border-b border-border/50",
-        // Background
+        "p-0 min-h-0", // Reset padding/height constraints to act as a wrapper
         background === "muted" && "bg-muted/50",
-        background === "solid" && "bg-background",
-        // Sticky
-        sticky && "sticky top-0",
+        border === "subtle" && "border-b border-border/50",
         className
       )}
     >
       {children}
-    </div>
+    </Header>
   )
 }
 

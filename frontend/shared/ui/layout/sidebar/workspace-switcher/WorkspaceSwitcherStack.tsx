@@ -35,6 +35,7 @@ import {
   Pencil,
   Trash2,
   Share2,
+  Palette,
 } from "lucide-react"
 import type { Id, Doc } from "@convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
@@ -55,7 +56,7 @@ const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
  */
 function useUnifiedWorkspaceContext() {
   const isGuestMode = useIsGuestMode()
-  
+
   // Guest context
   let guestContext: ReturnType<typeof useGuestWorkspaceContext> | null = null
   try {
@@ -65,7 +66,7 @@ function useUnifiedWorkspaceContext() {
   } catch {
     // Not in guest mode
   }
-  
+
   // Real context
   let realContext: ReturnType<typeof useWorkspaceContext> | null = null
   try {
@@ -75,7 +76,7 @@ function useUnifiedWorkspaceContext() {
   } catch {
     // Not in real mode
   }
-  
+
   if (guestContext) {
     return {
       workspaceId: guestContext.workspaceId as Id<"workspaces"> | null,
@@ -90,7 +91,7 @@ function useUnifiedWorkspaceContext() {
       isGuestMode: true,
     }
   }
-  
+
   if (realContext) {
     return {
       workspaceId: realContext.workspaceId,
@@ -105,11 +106,11 @@ function useUnifiedWorkspaceContext() {
       isGuestMode: false,
     }
   }
-  
+
   // Fallback
   return {
     workspaceId: null as Id<"workspaces"> | null,
-    setWorkspaceId: () => {},
+    setWorkspaceId: () => { },
     workspaces: undefined as any[] | undefined,
     currentWorkspace: null as any,
     mainWorkspace: null as any,
@@ -126,6 +127,7 @@ interface WorkspaceSwitcherStackProps {
   onCreateWorkspace?: (parentId?: Id<"workspaces">) => void
   onEditWorkspace?: (workspaceId: Id<"workspaces">) => void
   onDeleteWorkspace?: (workspaceId: Id<"workspaces">) => void
+  onPersonalizeWorkspace?: (workspaceId: Id<"workspaces">) => void
   isLoading?: boolean
 }
 
@@ -147,11 +149,12 @@ export function WorkspaceSwitcherStack({
   onCreateWorkspace,
   onEditWorkspace,
   onDeleteWorkspace,
+  onPersonalizeWorkspace,
   isLoading = false,
 }: WorkspaceSwitcherStackProps) {
   const router = useRouter()
   const { isMobile } = useSidebar()
-  
+
   const {
     workspaceId,
     setWorkspaceId,
@@ -202,7 +205,7 @@ export function WorkspaceSwitcherStack({
   // Always show child placeholder if current workspace has children
   // This allows immediate selection without clicking parent dropdown first
   const showChildPlaceholder = childWorkspaces && childWorkspaces.length > 0
-  
+
   // Helper to get siblings for a workspace in guest mode
   const getGuestSiblings = (ws: any) => {
     if (!isGuestMode || !workspaces) return []
@@ -211,7 +214,7 @@ export function WorkspaceSwitcherStack({
     }
     return workspaces.filter((w: any) => !w.parentWorkspaceId && w._id !== ws._id)
   }
-  
+
   // Helper to get children for a workspace in guest mode
   const getGuestChildren = (ws: any) => {
     if (!isGuestMode || !workspaces) return []
@@ -231,13 +234,14 @@ export function WorkspaceSwitcherStack({
           onCreateWorkspace={isGuestMode ? undefined : onCreateWorkspace}
           onEditWorkspace={isGuestMode ? undefined : onEditWorkspace}
           onDeleteWorkspace={isGuestMode ? undefined : onDeleteWorkspace}
+          onPersonalizeWorkspace={isGuestMode ? undefined : onPersonalizeWorkspace || (() => router.push("/dashboard/settings?tab=workspace&category=appearance"))}
           isMobile={isMobile}
           isGuestMode={isGuestMode}
           guestSiblings={getGuestSiblings(level.workspace)}
           guestChildren={getGuestChildren(level.workspace)}
         />
       ))}
-      
+
       {/* If no path, show just main/current */}
       {stackLevels.length === 0 && currentWorkspace && (
         <WorkspaceLevelSwitcher
@@ -249,13 +253,14 @@ export function WorkspaceSwitcherStack({
           onCreateWorkspace={isGuestMode ? undefined : onCreateWorkspace}
           onEditWorkspace={isGuestMode ? undefined : onEditWorkspace}
           onDeleteWorkspace={isGuestMode ? undefined : onDeleteWorkspace}
+          onPersonalizeWorkspace={isGuestMode ? undefined : onPersonalizeWorkspace || (() => router.push("/dashboard/settings?tab=workspace&category=appearance"))}
           isMobile={isMobile}
           isGuestMode={isGuestMode}
           guestSiblings={getGuestSiblings(currentWorkspace)}
           guestChildren={getGuestChildren(currentWorkspace)}
         />
       )}
-      
+
       {/* Show child workspace selector when current workspace has children */}
       {showChildPlaceholder && currentWorkspace && (
         <ChildWorkspacePlaceholder
@@ -266,6 +271,7 @@ export function WorkspaceSwitcherStack({
           isMobile={isMobile}
         />
       )}
+
     </div>
   )
 }
@@ -279,6 +285,7 @@ interface WorkspaceLevelSwitcherProps {
   onCreateWorkspace?: (parentId?: Id<"workspaces">) => void
   onEditWorkspace?: (workspaceId: Id<"workspaces">) => void
   onDeleteWorkspace?: (workspaceId: Id<"workspaces">) => void
+  onPersonalizeWorkspace?: (workspaceId: Id<"workspaces">) => void
   isMobile: boolean
   isGuestMode?: boolean
   guestSiblings?: any[]
@@ -294,6 +301,7 @@ function WorkspaceLevelSwitcher({
   onCreateWorkspace,
   onEditWorkspace,
   onDeleteWorkspace,
+  onPersonalizeWorkspace,
   isMobile,
   isGuestMode = false,
   guestSiblings = [],
@@ -304,13 +312,13 @@ function WorkspaceLevelSwitcher({
     api.workspace.hierarchy.getSiblingWorkspaces,
     isGuestMode ? "skip" : { workspaceId: workspace._id }
   )
-  
+
   // Fetch children for THIS workspace (only if it's the active/current one) - skip in guest mode
   const childrenQuery = useQuery(
     api.workspace.hierarchy.getChildWorkspaces,
     isGuestMode ? "skip" : (isActive ? { workspaceId: workspace._id, includeLinked: true } : "skip")
   )
-  
+
   // Use guest data if in guest mode, otherwise use query results
   const siblings = isGuestMode ? guestSiblings : siblingsQuery
   const children = isGuestMode ? guestChildren : childrenQuery
@@ -318,17 +326,17 @@ function WorkspaceLevelSwitcher({
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
   const color = (workspace as any).color ?? "#6366f1"
   const isMainWorkspace = (workspace as any).isMainWorkspace
-  
+
   const siblingsArray = siblings ?? []
   const childrenArray = children ?? []
-  
+
   // Always use consistent sizing - only differentiate by color accent
   const hasCrudActions = isActive && (onCreateWorkspace || onEditWorkspace || onDeleteWorkspace)
-  
+
   // Combined options: siblings + children + CRUD actions
   // Always show dropdown if there's any interaction available
   const hasOptions = siblingsArray.length > 0 || childrenArray.length > 0 || hasCrudActions
-  
+
   // Is this workspace the currently selected one?
   const isCurrentSelection = String(workspace._id) === String(currentWorkspaceId)
 
@@ -340,18 +348,14 @@ function WorkspaceLevelSwitcher({
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              style={{ 
+              style={{
                 borderLeftWidth: "3px",
                 borderLeftColor: isActive ? color : "transparent",
                 borderLeftStyle: "solid",
               }}
             >
-              <div
-                className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
-                style={{ backgroundColor: color }}
-              >
-                <Icon className="size-4" />
-              </div>
+              <WorkspaceIcon workspace={workspace} className="aspect-square size-8" />
+
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate font-semibold">
@@ -371,7 +375,7 @@ function WorkspaceLevelSwitcher({
               <ChevronDown className="ml-auto size-4 transition-transform" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          
+
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
@@ -406,6 +410,18 @@ function WorkspaceLevelSwitcher({
                   >
                     <Pencil className="size-4" />
                     <span>Edit Workspace</span>
+                  </DropdownMenuItem>
+                )}
+                {onPersonalizeWorkspace && (
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer"
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      onPersonalizeWorkspace(workspace._id)
+                    }}
+                  >
+                    <Palette className="size-4" />
+                    <span>Personalize Workspace</span>
                   </DropdownMenuItem>
                 )}
                 {onDeleteWorkspace && !isMainWorkspace && (
@@ -450,7 +466,7 @@ function WorkspaceLevelSwitcher({
                 ))}
               </>
             )}
-            
+
             {/* Children */}
             {childrenArray.length > 0 && (
               <>
@@ -468,7 +484,7 @@ function WorkspaceLevelSwitcher({
                 ))}
               </>
             )}
-            
+
             {/* Empty state with create option */}
             {!hasCrudActions && siblingsArray.length === 0 && childrenArray.length === 0 && (
               <DropdownMenuItem disabled className="text-muted-foreground">
@@ -504,12 +520,7 @@ function WorkspaceMenuItem({
         onSelect()
       }}
     >
-      <div
-        className="flex size-6 items-center justify-center rounded-sm text-white"
-        style={{ backgroundColor: color }}
-      >
-        <Icon className="size-3.5" />
-      </div>
+      <WorkspaceIcon workspace={workspace} className="size-6 rounded-sm" iconClassName="size-3.5" />
       <div className="flex-1 text-left">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium">{workspace.name}</span>
@@ -546,6 +557,45 @@ interface ChildWorkspacePlaceholderProps {
   isMobile: boolean
 }
 
+// Helper component for workspace icon/logo
+function WorkspaceIcon({
+  workspace,
+  className,
+  iconClassName
+}: {
+  workspace: Doc<"workspaces">
+  className?: string
+  iconClassName?: string
+}) {
+  const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
+  const color = (workspace as any).color ?? "#6366f1"
+  const logoStorageId = (workspace as any).logoStorageId
+
+  // Use query to get logo URL if storage ID exists
+  const logoUrl = useQuery(api.workspace.storage.getWorkspaceLogoUrl,
+    logoStorageId ? { workspaceId: workspace._id } : "skip"
+  )
+
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={workspace.name}
+        className={cn("object-cover rounded-md bg-transparent", className)}
+      />
+    )
+  }
+
+  return (
+    <div
+      className={cn("flex items-center justify-center rounded-lg text-white", className)}
+      style={{ backgroundColor: color }}
+    >
+      <Icon className={cn("size-4", iconClassName)} />
+    </div>
+  )
+}
+
 function ChildWorkspacePlaceholder({
   parentWorkspace,
   children,
@@ -554,7 +604,7 @@ function ChildWorkspacePlaceholder({
   isMobile,
 }: ChildWorkspacePlaceholderProps) {
   const parentColor = (parentWorkspace as any).color ?? "#6366f1"
-  
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -563,7 +613,7 @@ function ChildWorkspacePlaceholder({
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border border-dashed border-muted-foreground/30 bg-muted/30 hover:bg-muted/50"
-              style={{ 
+              style={{
                 borderLeftWidth: "3px",
                 borderLeftColor: "transparent",
                 borderLeftStyle: "solid",
@@ -586,7 +636,7 @@ function ChildWorkspacePlaceholder({
               <ChevronDown className="ml-auto size-4 text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          
+
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
@@ -609,7 +659,7 @@ function ChildWorkspacePlaceholder({
                 <DropdownMenuSeparator />
               </>
             )}
-            
+
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Sub-Workspaces ({children.length})
             </DropdownMenuLabel>

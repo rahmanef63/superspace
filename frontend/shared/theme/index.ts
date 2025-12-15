@@ -53,6 +53,7 @@ export { useThemePresetStore } from "./store/theme-preset-store";
 // =============================================================================
 
 export { useUpdateTheme } from "./hooks/themes";
+export { useWorkspaceTheme } from "./hooks/useWorkspaceTheme";
 
 // =============================================================================
 // Utils

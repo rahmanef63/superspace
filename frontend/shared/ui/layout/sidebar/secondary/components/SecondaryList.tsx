@@ -216,7 +216,13 @@ export function SecondaryList({
         // Render with validated params
         return (
           <div key={item.id} role="option">
-            {def.render({ ...baseCtx, params: parsedParams })}
+            {def.render({
+              ...baseCtx,
+              item: {
+                ...baseCtx.item,
+                params: parsedParams,
+              },
+            })}
           </div>
         );
       })}

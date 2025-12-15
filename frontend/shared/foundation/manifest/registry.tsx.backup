@@ -46,6 +46,7 @@ import {
   MessageSquare,
   Package,
   Plug,
+  Settings,
   Shield,
   ShoppingCart,
   TrendingUp,
@@ -106,13 +107,13 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage workspace hierarchy with nested workspaces, drag & drop, and tree visualization",
     icon: Building2,
     component: lazy(async () => {
-        const module = await import("@/frontend/features/workspace-store")
-        const Component = module.WorkspaceStorePage
-        if (!Component) {
-          throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
-        }
-        return { default: Component }
-      }),
+      const module = await import("@/frontend/features/workspace-store")
+      const Component = module.WorkspaceStorePage
+      if (!Component) {
+        throw new Error("Failed to load component WorkspaceStorePage from @/frontend/features/workspace-store")
+      }
+      return { default: Component }
+    }),
   },
   {
     id: "knowledge",
@@ -153,13 +154,13 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Install and manage navigation menus",
     icon: Menu,
     component: lazy(async () => {
-        const module = await import("@/frontend/features/menu-store")
-        const Component = module.MenuStorePage
-        if (!Component) {
-          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
-        }
-        return { default: Component }
-      }),
+      const module = await import("@/frontend/features/menu-store")
+      const Component = module.MenuStorePage
+      if (!Component) {
+        throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
+      }
+      return { default: Component }
+    }),
   },
   {
     id: "calendar",
@@ -392,6 +393,21 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Super Admin panel for managing features, workspaces, and system configuration",
     icon: Shield,
     component: lazy(() => import("@/frontend/features/platform-admin/page")),
+  },
+  {
+    id: "settings",
+    componentId: "SettingsPage",
+    title: "Settings",
+    description: "Personal, workspace, and feature settings",
+    icon: Settings,
+    component: lazy(async () => {
+      const module = await import("@/frontend/shared/settings/SettingsPageWithTabs")
+      const Component = module.SettingsPageWithTabs
+      if (!Component) {
+        throw new Error("Failed to load component SettingsPageWithTabs")
+      }
+      return { default: Component }
+    }),
   }
 ]
 

@@ -442,6 +442,7 @@ export const updateWorkspace = mutation({
     isPublic: v.optional(v.boolean()),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
+    themePreset: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx)
@@ -453,6 +454,7 @@ export const updateWorkspace = mutation({
     if (args.isPublic !== undefined) updates.isPublic = args.isPublic
     if (args.icon !== undefined) updates.icon = args.icon
     if (args.color !== undefined) updates.color = args.color
+    if (args.themePreset !== undefined) updates.themePreset = args.themePreset
 
     await ctx.db.patch(args.workspaceId, updates)
     return args.workspaceId
@@ -1016,13 +1018,13 @@ export const searchWorkspaceMembers = query({
       memberships.map(async (membership) => {
         const user = await ctx.db.get(membership.userId)
         const role = await ctx.db.get(membership.roleId)
-        
+
         if (!user) return null
 
         // Search matching
         const nameMatch = user.name?.toLowerCase().includes(searchQuery) ?? false
         const emailMatch = user.email?.toLowerCase().includes(searchQuery) ?? false
-        
+
         if (!searchQuery || nameMatch || emailMatch) {
           return {
             ...membership,
@@ -1039,7 +1041,7 @@ export const searchWorkspaceMembers = query({
 
     const filtered = results.filter(Boolean)
     const limit = args.limit || 50
-    
+
     return filtered.slice(0, limit).sort((a: any, b: any) => {
       // Sort by name
       const nameA = a.name?.toLowerCase() || ""

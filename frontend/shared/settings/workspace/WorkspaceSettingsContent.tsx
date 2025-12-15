@@ -5,16 +5,18 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import {
-    Settings, Users, Layers, AlertTriangle, ExternalLink, Building2, Shield, Lock, Briefcase
+    Settings, Users, Layers, AlertTriangle, ExternalLink, Building2, Shield, Lock, Briefcase, Palette
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRouter } from "next/navigation"
+import { WorkspaceAppearanceSettings } from "./WorkspaceAppearanceSettings"
 
 // Inline workspace settings categories (previously in constants.ts)
 const ALL_WORKSPACE_SETTINGS = [
+    { id: "appearance", label: "Appearance", icon: Palette, description: "Icon, color, logo, and theme" },
     { id: "general", label: "General", icon: Building2, description: "Workspace name, description, and icon" },
     { id: "members", label: "Members", icon: Users, description: "Manage team members and invitations" },
     { id: "roles", label: "Roles & Permissions", icon: Shield, description: "Configure access levels" },
@@ -58,6 +60,11 @@ export function WorkspaceSettingsContent({ workspaceId, activeCategory }: Worksp
 
             <ScrollArea className="flex-1 min-h-0">
                 <div className="space-y-6 pb-6">
+                    {/* Appearance Tab - Icon, Color, Logo, Theme */}
+                    {activeCategory === "appearance" && workspaceId && (
+                        <WorkspaceAppearanceSettings workspaceId={workspaceId} />
+                    )}
+
                     {/* Preferences Tab */}
                     {activeCategory === "preferences" && (
                         <div className="space-y-4">

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data"
+import { FeatureLayout } from "@/frontend/shared/ui/layout/feature-layout"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
 import { TasksHeader } from "./TasksHeader"
@@ -168,8 +169,9 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
   }
 
   return (
-    <div className="flex h-full flex-col p-6 gap-6">
-      <TasksHeader />
+    <FeatureLayout featureId="tasks" padding={false}>
+      <div className="flex h-full flex-col p-6 gap-6">
+        <TasksHeader />
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
@@ -396,5 +398,6 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
         )}
       </div>
     </div>
+    </FeatureLayout>
   )
 }

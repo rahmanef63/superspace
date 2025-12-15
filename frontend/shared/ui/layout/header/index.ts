@@ -170,6 +170,21 @@ export type {
 export { MobileHeader } from "./MobileHeader"
 export type { MobileHeaderProps } from "./MobileHeader"
 
+// Feature Header Actions (dynamic Settings + AI Assistant)
+export { FeatureHeaderActions } from "./components/FeatureHeaderActions"
+export type { FeatureHeaderActionsProps } from "./components/FeatureHeaderActions"
+
+// ============================================================================
+// Utilities (shared helpers)
+// ============================================================================
+
+export {
+  getActiveFeatureSlug,
+  slugToDisplayName,
+  getPageTitle,
+  EXCLUDED_FEATURE_SLUGS,
+} from "./utils"
+
 // ============================================================================
 // Styles (for custom implementations)
 // ============================================================================

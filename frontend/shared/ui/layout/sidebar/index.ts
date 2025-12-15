@@ -18,7 +18,7 @@ export * from "./components";
 
 // Named exports for explicit imports
 export { AppSidebar } from "./primary/AppSidebar";
-export { WorkspaceSwitcher } from "./primary/WorkspaceSwitcher";
+export { WorkspaceSwitcher } from "./workspace-switcher/WorkspaceSwitcher";
 export { NavMain } from "./primary/NavMain";
 export { NavSecondary } from "./primary/NavSecondary";
 export { NavSystem } from "./primary/NavSystem";

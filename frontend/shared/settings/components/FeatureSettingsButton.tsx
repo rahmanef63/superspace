@@ -7,7 +7,7 @@
  * Designed to be placed in feature headers, on the right side opposite to the feature name.
  */
 
-import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,10 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { hasFeatureSettings, getFeatureSettingsBuilder } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
-import { FeatureSettingsDialog } from "./FeatureSettingsDialog"
-import { SettingsRegistryProvider } from "../SettingsProvider"
-import type { SettingsCategory } from "../types"
+import { hasFeatureSettings } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
 
 export interface FeatureSettingsButtonProps {
   /** Feature slug to show settings for */
@@ -78,7 +75,6 @@ export function FeatureSettingsButton({
   showLabel = false,
   label = "Settings",
 }: FeatureSettingsButtonProps) {
-  const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [hasSettings, setHasSettings] = useState(true) // Optimistic default
 
@@ -92,27 +88,18 @@ export function FeatureSettingsButton({
     return () => clearTimeout(timer)
   }, [featureSlug])
 
-  // Get settings for this feature from the global registry
-  const getFeatureCategories = useCallback((): SettingsCategory[] => {
-    const builder = getFeatureSettingsBuilder(featureSlug)
-    if (!builder) return []
-
-    // Build categories with a dummy menuItem (for compatibility)
-    const categories = builder({
-      menuItem: {
-        _id: "" as any,
-        name: featureName || featureSlug,
-        slug: featureSlug,
-        type: "route",
-      },
-    })
-
-    // Add featureSlug to each category
-    return categories.map((cat) => ({
-      ...cat,
-      featureSlug,
-    }))
-  }, [featureSlug, featureName])
+  function handleOpenSettings() {
+    // Dispatch global event to open comprehensive settings on features tab
+    window.dispatchEvent(
+      new CustomEvent("open-settings", {
+        detail: {
+          tab: "features",
+          id: "ft_settings",
+          featureSlug: featureSlug // Pass feature slug to load correct settings
+        }
+      })
+    )
+  }
 
   // Hide button if feature has no settings and hideIfNoSettings is true
   // Only hide after mount to avoid hydration mismatch
@@ -120,45 +107,25 @@ export function FeatureSettingsButton({
     return null
   }
 
-  const categories = getFeatureCategories()
-
-  if (process.env.NODE_ENV === "development") {
-    console.log("[FeatureSettingsButton] featureSlug:", featureSlug)
-    console.log("[FeatureSettingsButton] categories:", categories.length, categories.map(c => c.id))
-  }
-
   return (
-    <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant={variant}
-              size={size}
-              className={className}
-              onClick={() => setOpen(true)}
-            >
-              <Icon className="h-4 w-4" />
-              {showLabel && <span className="ml-2">{label}</span>}
-              <span className="sr-only">{featureName || featureSlug} Settings</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{featureName || featureSlug} Settings</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Wrap sheet in its own provider with pre-loaded settings */}
-      <SettingsRegistryProvider coreSettings={categories}>
-        <FeatureSettingsDialog
-          open={open}
-          onOpenChange={setOpen}
-          featureSlug={featureSlug}
-          featureName={featureName}
-          defaultCategory={defaultCategory}
-        />
-      </SettingsRegistryProvider>
-    </>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={variant}
+            size={size}
+            className={className}
+            onClick={handleOpenSettings}
+          >
+            <Icon className="h-4 w-4" />
+            {showLabel && <span className="ml-2">{label}</span>}
+            <span className="sr-only">{featureName || featureSlug} Settings</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{featureName || featureSlug} Settings</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }

@@ -1,22 +1,21 @@
 "use client"
 
 import React from "react"
-import { Home, Settings, RefreshCw } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Home, RefreshCcw } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface OverviewHeaderProps {
   onRefresh?: () => void
-  onSettings?: () => void
 }
 
 /**
  * OverviewHeader Component
  * 
  * Consistent header for the Overview feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function OverviewHeader({
   onRefresh,
-  onSettings,
 }: OverviewHeaderProps) {
   return (
     <FeatureHeader
@@ -27,17 +26,18 @@ export function OverviewHeader({
         {
           id: "refresh",
           label: "Refresh",
-          icon: RefreshCw,
+          icon: RefreshCcw,
           onClick: onRefresh ?? (() => {}),
         },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
-        },
       ]}
-    />
+    >
+      {/* Feature Settings & AI Assistant */}
+      <FeatureHeaderActions 
+        featureSlug="overview"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 

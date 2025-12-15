@@ -9,6 +9,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Header } from "./Header";
 
 export interface MobileHeaderProps {
   /** Header title */
@@ -37,31 +38,30 @@ export function MobileHeader({
   className,
 }: MobileHeaderProps) {
   return (
-    <div className={cn(
-      "flex items-center gap-3 px-4 py-3 border-b bg-background shrink-0",
-      className
-    )}>
-      {showBack && onBack && (
-        <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-      )}
-      
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        {Icon && <Icon className="h-5 w-5 text-muted-foreground shrink-0" />}
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold truncate">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
-          )}
+    <Header className={className} size="md">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        {showBack && onBack && (
+          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        )}
+        
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {Icon && <Icon className="h-5 w-5 text-muted-foreground shrink-0" />}
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold truncate">{title}</h1>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
+            )}
+          </div>
         </div>
       </div>
       
       {actions && (
-        <div className="flex items-center gap-1 shrink-0">
+        <Header.Actions>
           {actions}
-        </div>
+        </Header.Actions>
       )}
-    </div>
+    </Header>
   );
 }

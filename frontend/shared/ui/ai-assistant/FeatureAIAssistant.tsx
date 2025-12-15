@@ -3,6 +3,10 @@
  * 
  * A button that opens an AI assistant panel for the current feature.
  * Can be added to any feature header to provide AI-powered assistance.
+ * 
+ * Supports two modes:
+ * - "dialog" (default): Opens AI in a modal dialog/drawer
+ * - "panel": Toggles the right panel in TwoColumnWithAILayout
  */
 
 "use client";
@@ -37,6 +41,7 @@ import {
 } from "@/components/ui/tooltip";
 import { subAgentRegistry } from "@/frontend/features/ai/agents";
 import { AIChatPanel } from "./AIChatPanel";
+import { useAIAssistantPanelSafe } from "./AIAssistantPanelContext";
 
 // ============================================================================
 // Types
@@ -63,6 +68,13 @@ export interface FeatureAIAssistantProps {
     side?: "left" | "right" | "top" | "bottom";
     /** Output context (e.g. selected document) */
     context?: any;
+    /** 
+     * Mode of the assistant:
+     * - "dialog": Opens in a modal dialog/drawer (default)
+     * - "panel": Toggles the right panel in TwoColumnWithAILayout
+     * - "auto": Auto-detect based on whether AIAssistantPanelProvider exists
+     */
+    mode?: "dialog" | "panel" | "auto";
 }
 
 // ============================================================================
@@ -79,10 +91,23 @@ export function FeatureAIAssistant({
     showLabel = false,
     className,
     side = "right",
-    context
+    context,
+    mode = "auto"
 }: FeatureAIAssistantProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const isMobile = useIsMobile();
+    
+    // Try to get panel context for "panel" mode
+    const panelContext = useAIAssistantPanelSafe();
+    
+    // Determine effective mode
+    const effectiveMode = React.useMemo(() => {
+        if (mode === "auto") {
+            // Use panel mode if context is available, otherwise dialog
+            return panelContext ? "panel" : "dialog";
+        }
+        return mode;
+    }, [mode, panelContext]);
 
     // Get the agent for this feature
     const agent = React.useMemo(() => {
@@ -93,12 +118,28 @@ export function FeatureAIAssistant({
     const agentTitle = title || agent?.name || "AI Assistant";
     const agentDescription = description || agent?.description || `Get AI help for ${featureId}`;
 
+    // Handle button click
+    const handleClick = React.useCallback(() => {
+        if (effectiveMode === "panel" && panelContext) {
+            panelContext.togglePanel();
+            if (context) {
+                panelContext.setContext(context);
+            }
+        } else {
+            setIsOpen(true);
+        }
+    }, [effectiveMode, panelContext, context]);
+
+    // Button with active state for panel mode
+    const isActive = effectiveMode === "panel" && panelContext?.isPanelOpen;
+
     // Shared button component
     const TriggerButton = (
         <Button
-            variant={buttonVariant}
+            variant={isActive ? "secondary" : buttonVariant}
             size={buttonSize}
-            className={cn("gap-2", className)}
+            className={cn("gap-2", className, isActive && "bg-primary/10")}
+            onClick={effectiveMode === "panel" ? handleClick : undefined}
         >
             <Bot className="h-4 w-4" />
             {showLabel && <span>AI</span>}
@@ -136,6 +177,22 @@ export function FeatureAIAssistant({
             </div>
         </>
     );
+
+    // Panel mode: Just render the button (panel is handled by TwoColumnWithAILayout)
+    if (effectiveMode === "panel") {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        {TriggerButton}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{isActive ? "Close AI Assistant" : "Open AI Assistant"}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
 
     // Mobile: Use Drawer
     if (isMobile) {

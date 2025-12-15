@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Header } from "../header"
 import type { IDEPanelHeaderProps, IDEPanelProps } from "./types"
 
 /**
@@ -26,10 +27,10 @@ export function IDEPanelHeader({
   className,
 }: IDEPanelHeaderProps) {
   return (
-    <div
+    <Header
+      size="sm"
       className={cn(
-        "flex items-center justify-between h-9 px-3",
-        "bg-muted/50 border-b",
+        "h-9 bg-muted/50",
         className
       )}
     >
@@ -48,7 +49,7 @@ export function IDEPanelHeader({
         </span>
       </div>
       
-      <div className="flex items-center gap-1">
+      <Header.Actions className="gap-1">
         {actions}
         {onClose && (
           <button
@@ -58,8 +59,8 @@ export function IDEPanelHeader({
             <X className="h-3.5 w-3.5" />
           </button>
         )}
-      </div>
-    </div>
+      </Header.Actions>
+    </Header>
   )
 }
 

@@ -42,9 +42,19 @@ export function GlobalOverlays() {
 
     const { theme, setTheme } = useTheme()
 
+    const [initialTab, setInitialTab] = React.useState<"workspace" | "features" | "global">("workspace")
+    const [initialId, setInitialId] = React.useState<string | undefined>(undefined)
+    const [initialFeatureSlug, setInitialFeatureSlug] = React.useState<string | undefined>(undefined)
+
     React.useEffect(() => {
         // Event listeners for global triggers
-        const handleOpenSettings = () => setShowSettings(true)
+        const handleOpenSettings = (e: Event) => {
+            const detail = (e as CustomEvent).detail
+            if (detail?.tab) setInitialTab(detail.tab)
+            if (detail?.id) setInitialId(detail.id)
+            if (detail?.featureSlug) setInitialFeatureSlug(detail.featureSlug)
+            setShowSettings(true)
+        }
         const handleOpenNotifications = () => setShowNotifications(true)
         const handleOpenHelp = () => setShowHelp(true)
 
@@ -63,8 +73,12 @@ export function GlobalOverlays() {
         <>
             {/* Settings Dialog (Modal) */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
-                <DialogContent className="w-full h-full sm:max-w-5xl sm:h-[85vh] p-0 gap-0 overflow-hidden sm:rounded-xl">
-                    <ComprehensiveSettingsPage />
+                <DialogContent className="w-full h-full sm:max-w-7xl sm:h-[90vh] p-0 gap-0 overflow-hidden sm:rounded-xl">
+                    <ComprehensiveSettingsPage 
+                        defaultTab={initialTab} 
+                        defaultId={initialId} 
+                        defaultFeatureSlug={initialFeatureSlug}
+                    />
                 </DialogContent>
             </Dialog>
 

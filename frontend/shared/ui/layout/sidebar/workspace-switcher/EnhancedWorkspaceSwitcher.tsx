@@ -58,6 +58,8 @@ import { cn } from "@/lib/utils";
 
 // Import from SSOT
 import { WORKSPACE_COLORS } from "@/frontend/shared/constants/colors";
+import { WorkspaceIcon } from "./WorkspaceIcon";
+import { WorkspacePersonalization } from "./WorkspacePersonalization";
 
 // Workspace type icons
 const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
@@ -97,7 +99,8 @@ export function EnhancedWorkspaceSwitcher({
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
-  
+  const [personalizationOpen, setPersonalizationOpen] = React.useState(false);
+
   const {
     workspaceId,
     setWorkspaceId,
@@ -109,13 +112,13 @@ export function EnhancedWorkspaceSwitcher({
     siblingWorkspaces,
     workspacePath,
   } = useWorkspaceContext();
-  
+
   // Get available workspaces to link
   const availableToLink = useQuery(
     api.workspace.hierarchy.getAvailableWorkspacesToLink,
     workspaceId ? { parentWorkspaceId: workspaceId } : "skip"
   );
-  
+
   // Mutations
   const linkWorkspace = useMutation(api.workspace.hierarchy.linkWorkspaceAsChild);
   const unlinkWorkspace = useMutation(api.workspace.hierarchy.unlinkChildWorkspace);
@@ -248,12 +251,12 @@ export function EnhancedWorkspaceSwitcher({
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div
-                  className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
-                  style={{ backgroundColor: workspaceColor }}
-                >
-                  <WorkspaceIcon className="size-4" />
-                </div>
+                <WorkspaceIcon
+                  workspaceId={currentWorkspace?._id}
+                  iconName={currentWorkspace?.icon}
+                  name={currentWorkspace?.name || "W"}
+                  color={workspaceColor}
+                />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate font-semibold">
@@ -277,7 +280,7 @@ export function EnhancedWorkspaceSwitcher({
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            
+
             <DropdownMenuContent
               className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg"
               align="start"
@@ -393,6 +396,16 @@ export function EnhancedWorkspaceSwitcher({
               {/* Actions */}
               <DropdownMenuItem
                 className="gap-2 p-2"
+                onSelect={() => setPersonalizationOpen(true)}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                  <Palette className="size-4" />
+                </div>
+                <div className="font-medium text-muted-foreground">Personalize workspace</div>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="gap-2 p-2"
                 onSelect={() => setLinkDialogOpen(true)}
               >
                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
@@ -429,7 +442,6 @@ export function EnhancedWorkspaceSwitcher({
             <div className="space-y-1">
               {availableToLink && availableToLink.length > 0 ? (
                 availableToLink.map((ws) => {
-                  const Icon = WORKSPACE_TYPE_ICONS[ws.type ?? "personal"] ?? Briefcase;
                   return (
                     <Button
                       key={ws._id}
@@ -437,12 +449,12 @@ export function EnhancedWorkspaceSwitcher({
                       className="w-full justify-start gap-3"
                       onClick={() => handleLinkWorkspace(ws._id)}
                     >
-                      <div
-                        className="flex size-8 items-center justify-center rounded-lg text-white"
-                        style={{ backgroundColor: (ws as any).color ?? "#6366f1" }}
-                      >
-                        <Icon className="size-4" />
-                      </div>
+                      <WorkspaceIcon
+                        workspaceId={ws._id}
+                        iconName={(ws as any).icon}
+                        name={ws.name}
+                        color={(ws as any).color ?? "#6366f1"}
+                      />
                       <div className="text-left">
                         <div className="font-medium">{ws.name}</div>
                         <div className="text-xs text-muted-foreground">{ws.type}</div>
@@ -464,6 +476,15 @@ export function EnhancedWorkspaceSwitcher({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Personalization Dialog */}
+      {workspaceId && (
+        <WorkspacePersonalization
+          workspaceId={workspaceId}
+          open={personalizationOpen}
+          onOpenChange={setPersonalizationOpen}
+        />
+      )}
     </>
   );
 }
@@ -502,12 +523,13 @@ function WorkspaceMenuItem({
         onSelect();
       }}
     >
-      <div
-        className="flex size-6 items-center justify-center rounded-sm text-white"
-        style={{ backgroundColor: color }}
-      >
-        <Icon className="size-4 shrink-0" />
-      </div>
+      <WorkspaceIcon
+        workspaceId={workspace._id}
+        iconName={workspace.icon}
+        name={workspace.name}
+        color={color}
+        size="sm"
+      />
       <div className="grid flex-1 text-left text-sm leading-tight">
         <div className="flex items-center gap-1.5">
           <span className="truncate font-medium">{workspace.name}</span>
@@ -530,9 +552,9 @@ function WorkspaceMenuItem({
           {workspace.type}
         </span>
       </div>
-      
+
       {isSelected && <Check className="size-4" />}
-      
+
       {(onUnlink || onColorChange) && (
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="p-0 h-auto">

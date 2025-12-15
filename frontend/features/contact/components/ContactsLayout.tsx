@@ -1,11 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container";
 import { MemberInfoPanel, MemberInfoDrawer, useMemberInfo } from "@/frontend/shared/communications";
 import type { MemberInfoContact } from "@/frontend/shared/communications";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Id } from "@/convex/_generated/dataModel";
+import { 
+    AIAssistantPanelProvider, 
+    useAIAssistantPanelSafe,
+    AIChatPanel 
+} from "@/frontend/shared/ui/ai-assistant";
+import { Sparkles, X, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { subAgentRegistry } from "@/frontend/features/ai/agents";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerDescription,
+} from "@/components/ui/drawer";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+type RightPanelMode = "inspector" | "ai";
 
 interface ContactsLayoutProps {
     children: React.ReactNode;
@@ -14,62 +36,190 @@ interface ContactsLayoutProps {
     workspaceId: Id<"workspaces"> | null;
 }
 
-export function ContactsLayout({
+// ============================================================================
+// Inner Layout Component (uses AI context)
+// ============================================================================
+
+function ContactsLayoutInner({
     children,
     selectedContact,
     onCloseInspector,
     workspaceId,
 }: ContactsLayoutProps) {
     const isMobile = useIsMobile();
-
-    // Right panel state derived from selection
-    // If selectedContact is present, panel should be open.
-    // But ThreeColumnLayout manages state too.
-    // We'll control it.
-    const rightCollapsed = !selectedContact;
+    const panelContext = useAIAssistantPanelSafe();
+    
+    // Right panel mode: inspector or AI
+    const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>("inspector");
+    
+    // Determine if right panel should be open
+    const hasInspectorContent = !!selectedContact;
+    const isAIPanelOpen = panelContext?.isPanelOpen ?? false;
+    
+    // Right panel is open if either inspector has content OR AI panel is requested
+    const rightCollapsed = rightPanelMode === "inspector" 
+        ? !hasInspectorContent 
+        : !isAIPanelOpen;
 
     // Member info hook to fetch full profile details
     const memberInfo = useMemberInfo(selectedContact?.id, undefined);
 
     // Mobile drawer state
-    // If we have a selected contact on mobile, we show the drawer?
-    // Or navigate? Standard pattern for mobile might be navigation.
-    // But ChatsView uses Drawer for member info on mobile too (when in detail view).
-    // Here we are in List view. Drawer is good overlay.
     const showMobileDrawer = isMobile && !!selectedContact;
+    const showMobileAIDrawer = isMobile && isAIPanelOpen;
 
     const handleClose = () => {
-        onCloseInspector();
+        if (rightPanelMode === "ai") {
+            panelContext?.closePanel();
+        } else {
+            onCloseInspector();
+        }
     };
+    
+    const handleRightCollapsedChange = useCallback((collapsed: boolean) => {
+        if (collapsed) {
+            if (rightPanelMode === "ai") {
+                panelContext?.closePanel();
+            } else {
+                onCloseInspector();
+            }
+        }
+    }, [rightPanelMode, panelContext, onCloseInspector]);
 
-    const rightPanelContent = (
+    // Get AI agent info
+    const agent = useMemo(() => {
+        const agents = subAgentRegistry.getAllAgents();
+        return agents.find((a) => a.featureId === "contact");
+    }, []);
+
+    // Sync AI panel state with right panel mode
+    useMemo(() => {
+        if (isAIPanelOpen && rightPanelMode !== "ai") {
+            setRightPanelMode("ai");
+        }
+    }, [isAIPanelOpen, rightPanelMode]);
+
+    // ========================================================================
+    // Right Panel Header with Mode Toggle
+    // ========================================================================
+    const rightPanelHeader = (
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
+            <div className="flex items-center gap-1">
+                <Button
+                    variant={rightPanelMode === "inspector" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setRightPanelMode("inspector")}
+                    disabled={!hasInspectorContent}
+                >
+                    <User className="h-3.5 w-3.5 mr-1" />
+                    Info
+                </Button>
+                <Button
+                    variant={rightPanelMode === "ai" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                        setRightPanelMode("ai");
+                        panelContext?.openPanel();
+                    }}
+                >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    AI
+                </Button>
+            </div>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleClose}
+            >
+                <X className="h-3.5 w-3.5" />
+            </Button>
+        </div>
+    );
+
+    // ========================================================================
+    // Inspector Panel Content
+    // ========================================================================
+    const inspectorContent = (
+        <MemberInfoPanel
+            contact={selectedContact ?? null}
+            profile={memberInfo.profile}
+            sharedMedia={memberInfo.sharedMedia}
+            sharedFiles={memberInfo.sharedFiles}
+            sharedLinks={memberInfo.sharedLinks}
+            commonGroups={memberInfo.commonGroups}
+            loading={memberInfo.loading}
+            onClose={handleClose}
+            isFavorite={memberInfo.isFavorite}
+            isBlocked={memberInfo.isBlocked}
+            onAddToFavorites={() => selectedContact && workspaceId && memberInfo.addToFavorites(selectedContact.id, workspaceId)}
+            onRemoveFromFavorites={() => selectedContact && workspaceId && memberInfo.removeFromFavorites(selectedContact.id, workspaceId)}
+            onBlock={() => selectedContact && memberInfo.blockMember(selectedContact.id)}
+            onUnblock={() => selectedContact && memberInfo.unblockMember(selectedContact.id)}
+            onReport={() => selectedContact && memberInfo.reportMember(selectedContact.id, "spam")}
+        />
+    );
+
+    // ========================================================================
+    // AI Panel Content
+    // ========================================================================
+    const aiPanelContent = (
         <div className="flex flex-col h-full">
-            <div className="flex-1 min-h-0 overflow-hidden">
-                <MemberInfoPanel
-                    contact={selectedContact ?? null}
-                    profile={memberInfo.profile}
-                    sharedMedia={memberInfo.sharedMedia}
-                    sharedFiles={memberInfo.sharedFiles}
-                    sharedLinks={memberInfo.sharedLinks}
-                    commonGroups={memberInfo.commonGroups}
-                    loading={memberInfo.loading}
-                    onClose={handleClose}
-                    isFavorite={memberInfo.isFavorite}
-                    isBlocked={memberInfo.isBlocked}
-                    onAddToFavorites={() => selectedContact && workspaceId && memberInfo.addToFavorites(selectedContact.id, workspaceId)}
-                    onRemoveFromFavorites={() => selectedContact && workspaceId && memberInfo.removeFromFavorites(selectedContact.id, workspaceId)}
-                    onBlock={() => selectedContact && memberInfo.blockMember(selectedContact.id)}
-                    onUnblock={() => selectedContact && memberInfo.unblockMember(selectedContact.id)}
-                    onReport={() => selectedContact && memberInfo.reportMember(selectedContact.id, "spam")}
+            <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/20">
+                <div className="p-1.5 rounded-md bg-primary/10">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-sm font-medium truncate">
+                        {agent?.name || "Contacts AI"}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                        {agent?.description || "AI assistant for contacts"}
+                    </span>
+                </div>
+                {agent && (
+                    <Badge variant="secondary" className="text-[10px] h-5">
+                        {agent.tools.length} tools
+                    </Badge>
+                )}
+            </div>
+            <div className="flex-1 min-h-0">
+                <AIChatPanel
+                    featureId="contact"
+                    placeholder="Ask about contacts..."
+                    context={{
+                        selectedContactId: selectedContact?.id,
+                        selectedContactName: selectedContact?.name,
+                    }}
+                    className="h-full border-0"
+                    showDebugPanel={false}
                 />
             </div>
         </div>
     );
 
+    // ========================================================================
+    // Combined Right Panel
+    // ========================================================================
+    const rightPanelContent = (
+        <div className="flex flex-col h-full">
+            {(hasInspectorContent || isAIPanelOpen) && rightPanelHeader}
+            <div className="flex-1 min-h-0 overflow-hidden">
+                {rightPanelMode === "ai" ? aiPanelContent : inspectorContent}
+            </div>
+        </div>
+    );
+
+    // ========================================================================
+    // Mobile Layout
+    // ========================================================================
     if (isMobile) {
         return (
             <>
                 {children}
+                {/* Contact Inspector Drawer */}
                 {selectedContact && (
                     <MemberInfoDrawer
                         contact={selectedContact}
@@ -79,7 +229,7 @@ export function ContactsLayout({
                         sharedLinks={memberInfo.sharedLinks}
                         commonGroups={memberInfo.commonGroups}
                         loading={memberInfo.loading}
-                        isOpen={showMobileDrawer}
+                        isOpen={showMobileDrawer && rightPanelMode === "inspector"}
                         onClose={handleClose}
                         onBack={handleClose}
                         side="right"
@@ -92,18 +242,23 @@ export function ContactsLayout({
                         onReport={() => selectedContact && memberInfo.reportMember(selectedContact.id, "spam")}
                     />
                 )}
+                {/* AI Drawer */}
+                <Drawer open={showMobileAIDrawer} onOpenChange={(open) => !open && panelContext?.closePanel()}>
+                    <DrawerContent className="h-[85vh] flex flex-col p-0 gap-0">
+                        <DrawerHeader className="sr-only">
+                            <DrawerTitle>Contacts AI Assistant</DrawerTitle>
+                            <DrawerDescription>Get AI help for contacts</DrawerDescription>
+                        </DrawerHeader>
+                        {aiPanelContent}
+                    </DrawerContent>
+                </Drawer>
             </>
         );
     }
 
+    // ========================================================================
     // Desktop Layout
-    // We use ThreeColumnLayoutAdvanced but effectively disable Left column.
-    // We set left={null}, defaultLeftCollapsed={true}, collapsedWidth={0} if allowed,
-    // or wrap nicely.
-
-    // Note: ThreeColumnLayout renders border if not collapsed.
-    // If we force leftCollapsed=true and collapsedWidth=0, it might work seamlessly.
-
+    // ========================================================================
     return (
         <div className="h-full flex flex-col">
             <ThreeColumnLayoutAdvanced
@@ -111,15 +266,24 @@ export function ContactsLayout({
                 leftHidden
                 center={children}
                 right={rightPanelContent}
-
-                // Labels
                 centerLabel="Contacts"
-                rightLabel="Contact Info"
+                rightLabel={rightPanelMode === "ai" ? "AI Assistant" : "Contact Info"}
                 rightCollapsed={rightCollapsed}
-                onRightCollapsedChange={(collapsed) => {
-                    if (collapsed) onCloseInspector();
-                }}
+                onRightCollapsedChange={handleRightCollapsedChange}
+                rightWidth={380}
             />
         </div>
+    );
+}
+
+// ============================================================================
+// Main Export with AI Provider
+// ============================================================================
+
+export function ContactsLayout(props: ContactsLayoutProps) {
+    return (
+        <AIAssistantPanelProvider featureId="contact" defaultOpen={false}>
+            <ContactsLayoutInner {...props} />
+        </AIAssistantPanelProvider>
     );
 }

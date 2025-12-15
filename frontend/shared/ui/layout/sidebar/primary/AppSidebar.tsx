@@ -7,8 +7,8 @@ import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { Building, BookOpen, Calendar } from "lucide-react"
 
-import { WorkspaceSwitcherStack } from "./WorkspaceSwitcherStack"
-import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
+import { WorkspaceSwitcherStack } from "../workspace-switcher/WorkspaceSwitcherStack"
+import { WorkspaceSwitcher } from "../workspace-switcher/WorkspaceSwitcher"
 import { NavMain } from "./NavMain"
 import { usePathname, useRouter } from "next/navigation"
 import { NavUser } from "./NavUser"
@@ -39,7 +39,7 @@ import { GlobalOverlays } from "../../chrome/GlobalOverlays"
  */
 function useUnifiedWorkspaceContext() {
   const isGuestMode = useIsGuestMode()
-  
+
   // Guest context (will be available if in GuestWorkspaceProvider)
   let guestContext: ReturnType<typeof useGuestWorkspaceContext> | null = null
   try {
@@ -49,7 +49,7 @@ function useUnifiedWorkspaceContext() {
   } catch {
     // Not in guest mode
   }
-  
+
   // Real context (will be available if in WorkspaceProvider)
   let realContext: ReturnType<typeof useWorkspaceContext> | null = null
   try {
@@ -59,7 +59,7 @@ function useUnifiedWorkspaceContext() {
   } catch {
     // Not in real mode
   }
-  
+
   if (guestContext) {
     return {
       workspaceId: guestContext.workspaceId as Id<"workspaces"> | null,
@@ -70,7 +70,7 @@ function useUnifiedWorkspaceContext() {
       guestUser: guestContext.guestUser,
     }
   }
-  
+
   if (realContext) {
     return {
       workspaceId: realContext.workspaceId,
@@ -81,11 +81,11 @@ function useUnifiedWorkspaceContext() {
       guestUser: null,
     }
   }
-  
+
   // Fallback
   return {
     workspaceId: null as Id<"workspaces"> | null,
-    setWorkspaceId: () => {},
+    setWorkspaceId: () => { },
     currentWorkspace: null as any,
     workspaces: undefined as any[] | undefined,
     isGuestMode: false,
@@ -114,13 +114,13 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { 
-    workspaceId: ctxWorkspaceId, 
-    setWorkspaceId, 
+  const {
+    workspaceId: ctxWorkspaceId,
+    setWorkspaceId,
     currentWorkspace: contextWorkspace,
     workspaces: contextWorkspaces,
     isGuestMode,
-    guestUser 
+    guestUser
   } = useUnifiedWorkspaceContext()
 
   // Derive active view from pathname
@@ -141,7 +141,7 @@ export function AppSidebar({
     api.workspace.workspaces.getUserWorkspaces,
     isGuestMode ? "skip" : undefined
   )
-  
+
   // Use context workspaces in guest mode, query result otherwise
   const userWorkspaces = isGuestMode ? contextWorkspaces : userWorkspacesQuery
 

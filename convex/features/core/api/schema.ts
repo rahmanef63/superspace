@@ -67,6 +67,10 @@ export const workspaces = defineTable({
   logo: v.optional(v.string()),
   // Icon name (from lucide-react icon set)
   icon: v.optional(v.string()),
+  // Uploaded image logo (stored in Convex storage)
+  logoStorageId: v.optional(v.id("_storage")),
+  // Theme preset name from registry (e.g., "default", "blue", "zinc")
+  themePreset: v.optional(v.string()),
   isPublic: v.boolean(),
 
   // === Nested Workspace Hierarchy Fields ===

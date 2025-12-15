@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Id } from "@convex/_generated/dataModel"
-import { PageContainer } from "@/frontend/shared/ui/layout/container"
+import { FeatureLayout } from "@/frontend/shared/ui/layout/feature-layout"
 import { usePos } from "../hooks/usePos"
 import PosDashboard from "../components/PosDashboard"
 import { PosHeader } from "./PosHeader"
@@ -22,24 +22,26 @@ export default function PosPage({ workspaceId }: PosPageProps) {
 
   if (!workspaceId) {
     return (
-      <PageContainer centered>
+      <FeatureLayout featureId="pos" centered>
         <div className="text-center">
           <h2 className="text-xl font-semibold">No Workspace Selected</h2>
           <p className="mt-2 text-muted-foreground">
             Please select a workspace to view POS
           </p>
         </div>
-      </PageContainer>
+      </FeatureLayout>
     )
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <PosHeader />
+    <FeatureLayout featureId="pos" padding={false}>
+      <div className="flex h-full flex-col">
+        <PosHeader />
 
-      <div className="flex-1 overflow-auto p-6">
-        <PosDashboard data={data} isLoading={isLoading} />
+        <div className="flex-1 overflow-auto p-6">
+          <PosDashboard data={data} isLoading={isLoading} />
+        </div>
       </div>
-    </div>
+    </FeatureLayout>
   )
 }

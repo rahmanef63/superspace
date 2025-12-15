@@ -1,8 +1,8 @@
 // Primary Sidebar Components (Main App Sidebar)
 export * from "./AppSidebar";
-export * from "./WorkspaceSwitcher";
-export * from "./EnhancedWorkspaceSwitcher";
-export * from "./WorkspaceSwitcherStack";
+export * from "../workspace-switcher/WorkspaceSwitcher";
+export * from "../workspace-switcher/EnhancedWorkspaceSwitcher";
+export * from "../workspace-switcher/WorkspaceSwitcherStack";
 export * from "./NavMain";
 export * from "./NavSecondary";
 export * from "./NavSystem";

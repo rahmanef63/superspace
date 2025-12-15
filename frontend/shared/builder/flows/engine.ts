@@ -331,7 +331,7 @@ export async function executeFlow(
                 });
                 step.status = 'skipped';
                 step.finishedAt = Date.now();
-                step.duration = step.finishedAt - step.startedAt;
+                step.duration = step.finishedAt - (step.startedAt ?? step.finishedAt);
                 callbacks.onStepComplete?.(step);
                 continue;
             }
@@ -358,7 +358,7 @@ export async function executeFlow(
                 step.output = output.output;
                 step.status = 'completed';
                 step.finishedAt = Date.now();
-                step.duration = step.finishedAt - step.startedAt;
+                step.duration = step.finishedAt - (step.startedAt ?? step.finishedAt);
 
                 addLog({
                     level: 'info',
@@ -388,7 +388,7 @@ export async function executeFlow(
                 step.status = 'failed';
                 step.error = errorMessage;
                 step.finishedAt = Date.now();
-                step.duration = step.finishedAt - step.startedAt;
+                step.duration = step.finishedAt - (step.startedAt ?? step.finishedAt);
 
                 addLog({
                     level: 'error',

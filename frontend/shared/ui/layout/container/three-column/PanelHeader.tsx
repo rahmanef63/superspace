@@ -5,6 +5,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { Header } from "../../header"
 import { CollapseButton } from "./CollapseButton"
 import type { PanelHeaderProps } from "./types"
 
@@ -17,24 +18,43 @@ export function PanelHeader({
   children 
 }: PanelHeaderProps) {
   return (
-    <div className={cn(
-      "flex items-center h-10 px-2 border-b",
-      "bg-muted/30",
-      side === "left" ? "justify-between" : "flex-row-reverse justify-between"
-    )}>
-      {showButton && (
-        <CollapseButton
-          side={side}
-          collapsed={collapsed}
-          onClick={onToggle}
-          label={label}
-        />
+    <Header 
+      size="sm"
+      className={cn(
+        "h-10 px-2 bg-muted/30",
+        // Override default padding from size="sm" (px-3 py-2) to match original px-2
+        "px-2 py-0" 
       )}
-      {!collapsed && children && (
-        <div className="flex-1 truncate px-2 text-sm font-medium">
-          {children}
-        </div>
+    >
+      {/* Left Side (or Right Side content) */}
+      <div className="flex items-center gap-2 flex-1 overflow-hidden">
+        {side === "left" && showButton && (
+          <CollapseButton
+            side={side}
+            collapsed={collapsed}
+            onClick={onToggle}
+            label={label}
+          />
+        )}
+        
+        {!collapsed && children && (
+          <div className="truncate text-sm font-medium">
+            {children}
+          </div>
+        )}
+      </div>
+
+      {/* Right Side (Collapse button for right panel) */}
+      {side === "right" && showButton && (
+        <Header.Actions>
+          <CollapseButton
+            side={side}
+            collapsed={collapsed}
+            onClick={onToggle}
+            label={label}
+          />
+        </Header.Actions>
       )}
-    </div>
+    </Header>
   )
 }

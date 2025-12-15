@@ -333,6 +333,7 @@ import type * as workspace_roleMenuPermissions from "../workspace/roleMenuPermis
 import type * as workspace_roles from "../workspace/roles.js";
 import type * as workspace_search from "../workspace/search.js";
 import type * as workspace_settings from "../workspace/settings.js";
+import type * as workspace_storage from "../workspace/storage.js";
 import type * as workspace_workspaces from "../workspace/workspaces.js";
 
 import type {
@@ -675,6 +676,7 @@ declare const fullApi: ApiFromModules<{
   "workspace/roles": typeof workspace_roles;
   "workspace/search": typeof workspace_search;
   "workspace/settings": typeof workspace_settings;
+  "workspace/storage": typeof workspace_storage;
   "workspace/workspaces": typeof workspace_workspaces;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

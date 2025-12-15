@@ -4,6 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
+import { Header } from "../../../header";
 
 export interface SecondaryHeaderAction {
   label: string;
@@ -71,22 +72,27 @@ export function SecondarySidebarHeader({
   className,
 }: SecondarySidebarHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4 border-b bg-background p-6", className)}>
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {description ? (
-            <div className="text-sm text-muted-foreground">{description}</div>
-          ) : null}
-          {meta ? <div className="text-xs text-muted-foreground">{meta}</div> : null}
-        </div>
+    <Header 
+      variant="default" 
+      size="lg" 
+      layout="stacked" 
+      className={cn("gap-4", className)}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between w-full">
+        <Header.Title 
+          title={title} 
+          subtitle={description as string} 
+          size="lg"
+        >
+          {meta ? <div className="text-xs text-muted-foreground mt-1">{meta}</div> : null}
+        </Header.Title>
 
         {secondaryActions || primaryAction || settingsSlot ? (
-          <div className="flex flex-wrap items-center justify-end gap-2">
+          <Header.Actions>
             {settingsSlot}
             {secondaryActions}
             {renderPrimaryAction(primaryAction)}
-          </div>
+          </Header.Actions>
         ) : null}
       </div>
 
@@ -96,9 +102,7 @@ export function SecondarySidebarHeader({
         </div>
       ) : null}
 
-      {children ? <div className="flex flex-col gap-3">{children}</div> : null}
-
-      {toolbar ? <div className="flex flex-col gap-3">{toolbar}</div> : null}
-    </div>
+      {children ? <div className="flex flex-col gap-3 w-full">{children}</div> : null}
+    </Header>
   );
 }

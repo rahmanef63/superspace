@@ -11,8 +11,8 @@
 "use client";
 
 import { ReactNode } from "react";
-import { SecondarySidebarLayout } from "../sidebar/secondary";
-import type { SecondarySidebarLayoutProps } from "../sidebar/secondary/components/SecondarySidebarLayout";
+import { cn } from "@/lib/utils";
+import { TwoColumnLayout } from "../container/two-column";
 
 export interface SecondarySidebarWithViewProps {
   /**
@@ -85,32 +85,43 @@ export function SecondarySidebarWithView({
   showToolbarBorder = true,
 }: SecondarySidebarWithViewProps) {
   return (
-    <SecondarySidebarLayout
-      sidebar={sidebar}
-      header={header}
-      className={className}
-      sidebarClassName={sidebarClassName}
-      contentClassName={contentClassName}
-    >
-      <div className="flex h-full flex-col">
-        {/* View Toolbar */}
-        {viewToolbar && (
-          <div
-            className={
-              showToolbarBorder
-                ? "flex-shrink-0 border-b border-border"
-                : "flex-shrink-0"
-            }
-          >
-            {viewToolbar}
-          </div>
-        )}
+    <div className={cn("flex h-full min-h-0 flex-col", className)}>
+      {header && <div className="shrink-0">{header}</div>}
+      
+      <div className="flex-1 min-h-0">
+        <TwoColumnLayout
+          sidebar={
+            <div className={cn("h-full overflow-y-auto bg-muted/30", sidebarClassName)}>
+              {sidebar}
+            </div>
+          }
+          main={
+            <div className={cn("flex h-full flex-col", contentClassName)}>
+              {/* View Toolbar */}
+              {viewToolbar && (
+                <div
+                  className={
+                    showToolbarBorder
+                      ? "shrink-0 border-b border-border"
+                      : "shrink-0"
+                  }
+                >
+                  {viewToolbar}
+                </div>
+              )}
 
-        {/* View Content */}
-        <div className="flex-1 overflow-auto">
-          {viewContent}
-        </div>
+              {/* View Content */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {viewContent}
+              </div>
+            </div>
+          }
+          sidebarWidth={320}
+          sidebarPosition="left"
+          storageKey="secondary-sidebar-with-view"
+          persistState={true}
+        />
       </div>
-    </SecondarySidebarLayout>
+    </div>
   );
 }

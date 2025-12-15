@@ -23,13 +23,14 @@ import {
     Layout,
     FileImage,
     Settings,
-    Building2
+    Building2,
+    Puzzle
 } from "lucide-react"
 
 // ============================================================
 // Types
 // ============================================================
-export type SettingsTabType = "workspace" | "global"
+export type SettingsTabType = "workspace" | "features" | "global"
 export type SettingsId = string
 
 export interface SettingsMenuItem {
@@ -51,6 +52,7 @@ export const WORKSPACE_SETTINGS_MENU: SettingsMenuSection[] = [
     {
         label: "Workspace",
         items: [
+            { id: "ws_appearance", label: "Appearance", icon: FileImage, description: "Icon, color, logo, and theme" },
             { id: "ws_general", label: "General", icon: Building2, description: "Workspace name, description, and icon" },
             { id: "ws_members", label: "Members", icon: Users, description: "Manage team members and invitations" },
             { id: "ws_roles", label: "Roles & Permissions", icon: Shield, description: "Configure access levels" },
@@ -110,6 +112,19 @@ export const GLOBAL_SETTINGS_MENU: SettingsMenuSection[] = [
 ]
 
 // ============================================================
+// Features Settings Menu (Features tab - dynamically populated)
+// ============================================================
+// This will be populated dynamically based on active feature
+export const FEATURES_SETTINGS_MENU: SettingsMenuSection[] = [
+    {
+        label: "Active Feature",
+        items: [
+            { id: "ft_settings", label: "Feature Settings", icon: Settings, description: "Configure the current feature" },
+        ]
+    }
+]
+
+// ============================================================
 // Layout Component Props
 // ============================================================
 interface TwoTabSettingsLayoutProps {
@@ -120,6 +135,7 @@ interface TwoTabSettingsLayoutProps {
     onNavigate: (id: SettingsId) => void
     workspaceName?: string
     className?: string
+    featuresMenu?: SettingsMenuSection[]
 }
 
 // ============================================================
@@ -132,9 +148,14 @@ export function TwoTabSettingsLayout({
     onTabChange,
     onNavigate,
     workspaceName = "Current Workspace",
-    className
+    className,
+    featuresMenu
 }: TwoTabSettingsLayoutProps) {
-    const currentMenu = activeTab === "workspace" ? WORKSPACE_SETTINGS_MENU : GLOBAL_SETTINGS_MENU
+    const currentMenu = activeTab === "workspace"
+        ? WORKSPACE_SETTINGS_MENU
+        : activeTab === "features"
+            ? (featuresMenu || FEATURES_SETTINGS_MENU)
+            : GLOBAL_SETTINGS_MENU
 
     return (
         <div className={cn("flex h-full w-full bg-background", className)}>
@@ -144,14 +165,18 @@ export function TwoTabSettingsLayout({
                 <div className="p-4 pb-2 space-y-3">
                     <h2 className="text-lg font-bold tracking-tight px-2">Settings</h2>
                     <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as SettingsTabType)} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 h-9">
-                            <TabsTrigger value="workspace" className="text-xs">
-                                <Building2 className="h-3.5 w-3.5 mr-1.5" />
-                                This Workspace
+                        <TabsList className="grid w-full grid-cols-3 h-9">
+                            <TabsTrigger value="workspace" className="text-xs px-1">
+                                <Building2 className="h-3.5 w-3.5 mr-1" />
+                                <span className="truncate">This Workspace</span>
                             </TabsTrigger>
-                            <TabsTrigger value="global" className="text-xs">
-                                <Globe className="h-3.5 w-3.5 mr-1.5" />
-                                Global
+                            <TabsTrigger value="features" className="text-xs px-1">
+                                <Puzzle className="h-3.5 w-3.5 mr-1" />
+                                <span className="truncate">Features</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="global" className="text-xs px-1">
+                                <Globe className="h-3.5 w-3.5 mr-1" />
+                                <span className="truncate">Global</span>
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
@@ -199,7 +224,9 @@ export function TwoTabSettingsLayout({
                             <Settings className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
-                            <p className="font-medium text-foreground truncate">{activeTab === "workspace" ? workspaceName : "Global Settings"}</p>
+                            <p className="font-medium text-foreground truncate">
+                                {activeTab === "workspace" ? workspaceName : activeTab === "features" ? "Feature Settings" : "Global Settings"}
+                            </p>
                             <p className="text-[10px]">SuperSpace v1.0</p>
                         </div>
                     </div>

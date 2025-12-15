@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { TwoColumnLayout } from "../../../container/two-column";
 import { SecondarySidebarHeader, type SecondarySidebarHeaderProps } from "./SecondarySidebarHeader";
 import { SecondarySidebar, type SecondarySidebarProps } from "./SecondarySidebar";
 
@@ -41,19 +42,27 @@ function SecondarySidebarLayoutBase({
 
       <div className={cn("flex min-h-0 flex-1", bodyClassName)}>
         {resolvedSidebar ? (
-          <aside
-            className={cn(
-              "w-80 shrink-0 overflow-y-auto border-r bg-muted/30",
-              sidebarClassName,
-            )}
-          >
-            {resolvedSidebar}
-          </aside>
-        ) : null}
-
-        <main className={cn("flex-1 min-h-0 overflow-y-auto", contentClassName)}>
-          {children}
-        </main>
+          <TwoColumnLayout
+            main={
+              <div className={cn("h-full overflow-y-auto", contentClassName)}>
+                {children}
+              </div>
+            }
+            sidebar={
+              <div className={cn("h-full overflow-y-auto bg-muted/30", sidebarClassName)}>
+                {resolvedSidebar}
+              </div>
+            }
+            sidebarWidth={320}
+            sidebarPosition="left"
+            storageKey="secondary-sidebar-layout"
+            persistState={true}
+          />
+        ) : (
+          <main className={cn("flex-1 min-h-0 overflow-y-auto", contentClassName)}>
+            {children}
+          </main>
+        )}
       </div>
     </div>
   );

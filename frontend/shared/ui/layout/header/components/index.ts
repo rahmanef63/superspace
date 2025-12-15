@@ -51,3 +51,6 @@ export type {
   ViewOption,
 } from "./ViewToolbar"
 
+// Feature-aware actions (Settings, AI Assistant)
+export { FeatureHeaderActions } from "./FeatureHeaderActions"
+export type { FeatureHeaderActionsProps } from "./FeatureHeaderActions"

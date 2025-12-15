@@ -1,7 +1,7 @@
 "use client"
 
 import type { Id } from "@/convex/_generated/dataModel"
-import { PageContainer } from "@/frontend/shared/ui/layout/container"
+import { FeatureLayout } from "@/frontend/shared/ui/layout/feature-layout"
 import { OverviewView } from "./OverviewView"
 import { MainWorkspaceOverview } from "./MainWorkspaceOverview"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
@@ -15,12 +15,12 @@ export default function OverviewPage({ workspaceId }: OverviewPageProps) {
   const activeWorkspaceId = workspaceId ?? contextWorkspaceId
 
   return (
-    <PageContainer maxWidth="full" padding={true}>
+    <FeatureLayout featureId="overview" maxWidth="full" padding={true}>
       {isMainWorkspace && activeWorkspaceId ? (
         <MainWorkspaceOverview workspaceId={activeWorkspaceId} />
       ) : (
         <OverviewView workspaceId={activeWorkspaceId} />
       )}
-    </PageContainer>
+    </FeatureLayout>
   )
 }

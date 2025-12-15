@@ -53,23 +53,24 @@ export function ComprehensiveSettingsPage({
     // Update state if props change (re-opening dialog)
     React.useEffect(() => {
         setActiveTab(defaultTab)
-        
+
         if (defaultTab === "features" && defaultFeatureSlug) {
-             const builder = getFeatureSettingsBuilder(defaultFeatureSlug)
-             const items = builder ? builder() : []
-             if (items.length > 0) {
-                 // If defaultId is provided and exists in items, use it. Otherwise use first item.
-                 const exists = defaultId && items.some(i => i.id === defaultId)
-                 setActiveId(exists ? defaultId! : items[0].id)
-             } else {
-                 setActiveId("ft_settings")
-             }
-             setActiveFeatureSlug(defaultFeatureSlug)
+            const builder = getFeatureSettingsBuilder(defaultFeatureSlug)
+            const defaultCtx = { menuItem: { id: defaultFeatureSlug, name: defaultFeatureSlug, slug: defaultFeatureSlug, icon: 'Settings' } as any }
+            const items = builder ? builder(defaultCtx) : []
+            if (items.length > 0) {
+                // If defaultId is provided and exists in items, use it. Otherwise use first item.
+                const exists = defaultId && items.some(i => i.id === defaultId)
+                setActiveId(exists ? defaultId! : items[0].id)
+            } else {
+                setActiveId("ft_settings")
+            }
+            setActiveFeatureSlug(defaultFeatureSlug)
         } else {
-             setActiveId(defaultId || (defaultTab === "workspace" ? "ws_appearance" : defaultTab === "features" ? "ft_settings" : "gl_activity"))
-             if (defaultTab !== "features") {
-                 setActiveFeatureSlug(undefined)
-             }
+            setActiveId(defaultId || (defaultTab === "workspace" ? "ws_appearance" : defaultTab === "features" ? "ft_settings" : "gl_activity"))
+            if (defaultTab !== "features") {
+                setActiveFeatureSlug(undefined)
+            }
         }
     }, [defaultTab, defaultId, defaultFeatureSlug])
 
@@ -84,19 +85,19 @@ export function ComprehensiveSettingsPage({
     // Generate dynamic menu for features
     const featuresMenu = React.useMemo(() => {
         if (!activeFeatureSlug) return undefined
-        
+
         const builder = getFeatureSettingsBuilder(activeFeatureSlug)
         if (!builder) return undefined
-        
-        const items = builder()
-        
+
+        const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
+        const items = builder(defaultCtx)
+
         return [{
             label: activeFeatureSlug.charAt(0).toUpperCase() + activeFeatureSlug.slice(1),
             items: items.map(item => ({
                 id: item.id,
                 label: item.label,
-                icon: item.icon,
-                description: item.description
+                icon: item.icon
             }))
         }] as SettingsMenuSection[]
     }, [activeFeatureSlug])
@@ -110,7 +111,8 @@ export function ComprehensiveSettingsPage({
             // If we have an active feature, try to select its first item
             if (activeFeatureSlug) {
                 const builder = getFeatureSettingsBuilder(activeFeatureSlug)
-                const items = builder ? builder() : []
+                const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
+                const items = builder ? builder(defaultCtx) : []
                 if (items.length > 0) {
                     setActiveId(items[0].id)
                     return
@@ -158,9 +160,10 @@ export function ComprehensiveSettingsPage({
             // Try to find the component in the active feature settings
             if (activeFeatureSlug) {
                 const builder = getFeatureSettingsBuilder(activeFeatureSlug)
-                const items = builder ? builder() : []
+                const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
+                const items = builder ? builder(defaultCtx) : []
                 const activeItem = items.find(item => item.id === activeId)
-                
+
                 if (activeItem && activeItem.component) {
                     const Component = activeItem.component
                     return <Component />

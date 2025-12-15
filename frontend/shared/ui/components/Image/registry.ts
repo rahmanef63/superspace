@@ -1,3 +1,3 @@
-import { ImageWrapper } from "./Image.wrapper"
+import { ImageWrapper } from "./image-wrapper"
 export default ImageWrapper
 export { ImageWrapper }

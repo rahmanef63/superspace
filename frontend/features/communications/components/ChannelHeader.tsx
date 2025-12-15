@@ -90,7 +90,7 @@ export function ChannelHeader({
 
     if (!channel) {
         return (
-            <div className={cn("flex items-center h-12 px-4 border-b bg-background", className)}>
+            <div className={cn("flex items-center h-10 px-4 border-b bg-background", className)}>
                 <span className="text-muted-foreground text-sm">No channel selected</span>
             </div>
         )
@@ -102,7 +102,7 @@ export function ChannelHeader({
     return (
         <TooltipProvider delayDuration={0}>
             <div className={cn(
-                "flex items-center h-12 px-4 border-b bg-background shrink-0 gap-2",
+                "flex items-center h-10 px-4 border-b bg-background shrink-0 gap-2",
                 className
             )}>
                 {/* Channel Info */}

@@ -7,6 +7,7 @@ import {
     FileEdit,
     Copy,
     Trash2,
+    Database, // Added fallback icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 import type { DatabaseTable } from "../types";
 
 // Use shared IconPicker
-import { IconPicker, getIconComponent } from "@/frontend/shared/components/IconPicker";
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/icons";
 
 export interface DatabaseTreeProps {
     tables: DatabaseTable[];
@@ -111,7 +112,7 @@ function DatabaseTreeItem({
         return { iconName: name, iconColor: color };
     }, [table.icon]);
 
-    const IconComponent = getIconComponent(iconName);
+    const IconComponent = getIconComponent(iconName) || Database;
 
     // Handle double-click to edit
     const handleDoubleClick = useCallback((e: React.MouseEvent) => {

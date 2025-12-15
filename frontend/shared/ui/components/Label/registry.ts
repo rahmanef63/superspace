@@ -1,3 +1,3 @@
-import { LabelWrapper } from "./Label.wrapper"
+import { LabelWrapper } from "./label-wrapper"
 export default LabelWrapper
 export { LabelWrapper }

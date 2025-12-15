@@ -1,7 +1,7 @@
 /**
  * Icon Picker Component - Re-export from shared
  * 
- * DEPRECATED: Import from @/frontend/shared/components instead
+ * DEPRECATED: Import from @/frontend/shared/ui/icons instead
  * This file is kept for backward compatibility.
  * 
  * @module frontend/features/workspace-store/components/IconPicker
@@ -9,8 +9,8 @@
 
 "use client"
 
-// Re-export from SSOT
-export { 
+// Re-export from SSOT at ui/icons
+export {
   IconPicker as default,
   IconPicker,
   DynamicIcon,
@@ -18,10 +18,11 @@ export {
   getIconStyle,
   type IconPickerProps,
   type IconName,
-} from "@/frontend/shared/components/IconPicker";
+} from "@/frontend/shared/ui/icons";
 
 // Legacy exports for backward compatibility
-export { 
+export {
   DynamicIcon as WorkspaceIcon,
   getIconComponent as getIconByName,
-} from "@/frontend/shared/components/IconPicker";
+} from "@/frontend/shared/ui/icons";
+

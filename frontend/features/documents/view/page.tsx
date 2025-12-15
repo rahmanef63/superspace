@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, FileText, Plus } from "lucide-react";
 import { DocumentsView } from "../shared/components";
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
+import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data";
 import type { DocumentEditorMode } from "../shared";
 import { useSearchParams } from "next/navigation";
 

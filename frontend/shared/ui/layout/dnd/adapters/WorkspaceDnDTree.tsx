@@ -39,7 +39,7 @@ import {
   type TreeItemSlots,
 } from "@/frontend/shared/ui/layout/dnd"
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
-import { InlineColorPicker } from "@/frontend/shared/foundation/utils/color-picker"
+import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import {

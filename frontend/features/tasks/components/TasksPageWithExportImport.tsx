@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react"
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header/presets"
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions"
+import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Filter, MoreHorizontal } from "lucide-react"
+import { Plus, Filter, MoreHorizontal, CheckSquare, Check } from "lucide-react"
 import type { HeaderAction } from "@/frontend/shared/ui/layout/header/types"
 import {
   DropdownMenu,
@@ -135,19 +135,21 @@ export function TasksPageWithExportImport() {
       <FeatureHeader
         title="Tasks"
         subtitle="Manage and track your team's tasks"
-        icon="CheckSquare"
+        icon={CheckSquare}
         badge={{
           text: "Beta",
           variant: "secondary",
         }}
         meta={[
           {
-            label: `${tasks.length} total`,
-            icon: "CheckSquare",
+            label: "Total Tasks",
+            value: tasks.length,
+            icon: CheckSquare,
           },
           {
-            label: `${selectedTaskIds.length} selected`,
-            icon: "Check",
+            label: "Selected",
+            value: selectedTaskIds.length,
+            icon: Check,
           },
         ]}
         primaryAction={{

@@ -57,7 +57,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { getIconComponent } from "@/frontend/shared/ui/icons"
 
 // Feature statuses
 const FEATURE_STATUSES = [

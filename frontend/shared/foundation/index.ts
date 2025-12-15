@@ -63,18 +63,18 @@ export type {
 } from './manifest'
 
 // ============================================================
-// Registry Patterns
+// Registry Patterns - SSOT is at utils/registry/
 // ============================================================
 // Cross-Feature Registry
 export {
   useCrossFeatureRegistry,
   crossFeatureRegistry
-} from './registry/CrossFeatureRegistry'
+} from './utils/registry/CrossFeatureRegistry'
 export type {
   ComponentConfig,
   InspectorField,
   FeatureTab,
-} from './registry/CrossFeatureRegistry'
+} from './utils/registry/CrossFeatureRegistry'
 
 // ============================================================
 // Core Types

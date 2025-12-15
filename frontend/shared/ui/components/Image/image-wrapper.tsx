@@ -1,9 +1,9 @@
 /**
- * Image Component Wrapper
+ * image-component Wrapper
  * Displays an image with various styling options
  */
 
-import { ImageComponent } from "./Image.component"
+import { ImageComponent } from "./image-component"
 import { createComponent, textProp, booleanProp, selectProp } from "../utils/componentFactory"
 import type { ComponentWrapper } from "@/frontend/shared/foundation"
 

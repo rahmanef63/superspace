@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select"
 
 import { ColorPickerSimple } from "@/components/ui/shadcn-io/color-picker/ColorPickerSimple"
-import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/icons"
 
 import type { Id } from "@/convex/_generated/dataModel"
 import { useBundleCategoryMutations } from "../../hooks/usePlatformAdmin"

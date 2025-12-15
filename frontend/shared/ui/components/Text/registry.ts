@@ -1,3 +1,3 @@
-import { TextWrapper } from "./Text.wrapper"
+import { TextWrapper } from "./text-wrapper"
 export default TextWrapper
 export { TextWrapper }

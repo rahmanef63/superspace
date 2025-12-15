@@ -72,7 +72,7 @@ import {
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
-import { InlineColorPicker } from "@/frontend/shared/foundation/utils/color-picker"
+import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
 import { WORKSPACE_TYPE_OPTIONS } from "../constants"
 import type { WorkspaceStoreItem, WorkspaceType } from "../types"
 import { toast } from "sonner"

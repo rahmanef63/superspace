@@ -65,7 +65,7 @@ import { useTableSortAndFilter, ColumnDef } from "../hooks/useTableSortAndFilter
 import { EnhancedTableHeader } from "./EnhancedTableHeader"
 import type { Id } from "@/convex/_generated/dataModel"
 import { ColorPickerSimple } from "@/components/ui/shadcn-io/color-picker/ColorPickerSimple"
-import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/icons"
 
 // Bundle category types
 const BUNDLE_CATEGORIES = [
@@ -623,7 +623,7 @@ export function BundleCategoriesTable({ onItemSelect, selectedItemId }: BundleCa
                   trigger={
                     <Button variant="outline" className="w-full h-10 justify-start gap-2">
                       {(() => {
-                        const IconComp = getIconComponent(newBundle.icon)
+                        const IconComp = getIconComponent(newBundle.icon) || Package
                         return <IconComp className="h-4 w-4" style={{ color: newBundle.primaryColor }} />
                       })()}
                       <span>{newBundle.icon}</span>

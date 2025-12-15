@@ -12,6 +12,9 @@ export * from "./json-schema"
 // Registry types
 export * from "./registry"
 
+// Menu types
+export * from "./menu"
+
 // Conversion types
 export type {
   TypeScriptConversionOptions,

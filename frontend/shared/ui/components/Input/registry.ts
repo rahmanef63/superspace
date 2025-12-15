@@ -2,7 +2,7 @@
  * Input Registry
  */
 
-import { InputWrapper } from "./Input.wrapper"
+import { InputWrapper } from "./input-wrapper"
 
 export default InputWrapper
 export { InputWrapper }

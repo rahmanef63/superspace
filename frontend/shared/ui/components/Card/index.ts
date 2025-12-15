@@ -2,5 +2,5 @@
  * Card Component Index
  */
 
-export * from "./Card.wrapper"
+export * from "./card-wrapper"
 export { default } from "./registry"

@@ -19,9 +19,9 @@ import {
 } from "lucide-react"
 import { ThreeColumnLayoutAdvanced } from "@/frontend/shared/ui/layout/container"
 import { usePlatformAdmin, useSystemFeatures, useSystemFeatureMutations, useBundleCategories, useBundleCategoryMutations } from "../hooks/usePlatformAdmin"
-import { 
-  AdminNavigation, 
-  AdminInspector, 
+import {
+  AdminNavigation,
+  AdminInspector,
   StatCard,
   BundleCategoriesTable,
   PlatformUsersTable,
@@ -59,10 +59,10 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ConvexErrorBoundary } from "@/frontend/shared/ui/components/error/ConvexErrorBoundary"
-import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/icons"
 
 // Import content sections
-import { 
+import {
   SystemFeaturesContent,
   CustomFeaturesContent,
   WorkspacesContent,

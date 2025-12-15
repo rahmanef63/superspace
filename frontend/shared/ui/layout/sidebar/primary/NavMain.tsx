@@ -18,7 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/FeatureTag"
+import { FeatureTag, getFeatureTagFromMetadata, type FeatureTagType } from "@/frontend/shared/ui/components/feature-tag"
 import { cn } from "@/lib/utils"
 import { useIsGuestMode } from "@/frontend/shared/foundation/provider/GuestWorkspaceProvider"
 
@@ -47,10 +47,10 @@ interface NavMainProps {
 export function NavMain({ workspaceId, activeView, onViewChange, items, workspaceColor }: NavMainProps) {
   const { isMobile, setOpenMobile } = useSidebar()
   const isGuestMode = useIsGuestMode()
-  
+
   // Base URL for navigation - "/dashboard" for authenticated, "/mock-dashboard" for guest
   const baseUrl = isGuestMode ? "/mock-dashboard" : "/dashboard"
-  
+
   const fallback = getDefaultPages().map((p) => ({
     id: p.id,
     title: p.title,
@@ -98,8 +98,8 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
         >
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton 
-                tooltip={item.description} 
+              <SidebarMenuButton
+                tooltip={item.description}
                 isActive={isActive}
                 style={activeStyles}
                 className={cn(
@@ -121,67 +121,69 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
                     backgroundColor: `${workspaceColor}15`,
                     borderLeft: `2px solid ${workspaceColor}`,
                   } : undefined
-                  
+
                   return (
-                  <SidebarMenuSubItem key={subItem.id}>
-                    {subItem.children && subItem.children.length > 0 ? (
-                      // Nested child with more children - render as collapsible
-                      <Collapsible
-                        defaultOpen={subItem.isActive || activeView === subItem.id}
-                        className="group/nested-collapsible"
-                      >
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuSubButton style={subActiveStyles}>
+                    <SidebarMenuSubItem key={subItem.id}>
+                      {subItem.children && subItem.children.length > 0 ? (
+                        // Nested child with more children - render as collapsible
+                        <Collapsible
+                          defaultOpen={subItem.isActive || activeView === subItem.id}
+                          className="group/nested-collapsible"
+                        >
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuSubButton style={subActiveStyles}>
+                              {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                              <span className="flex-1">{subItem.title}</span>
+                              {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
+                              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/nested-collapsible:rotate-90" />
+                            </SidebarMenuSubButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="pl-4">
+                              {subItem.children?.map((nestedItem) => {
+                                const nestedFeatureTag = (nestedItem as NavItem).tag || getFeatureTagFromMetadata((nestedItem as NavItem).metadata)
+                                const nestedIsActive = activeView === nestedItem.id
+                                const nestedActiveStyles = nestedIsActive && workspaceColor ? {
+                                  backgroundColor: `${workspaceColor}15`,
+                                  borderLeft: `2px solid ${workspaceColor}`,
+                                } : undefined
+
+                                return (
+                                  <SidebarMenuSubButton key={nestedItem.id} asChild>
+                                    <Link
+                                      href={nestedItem.url || `${baseUrl}/${item.id}/${subItem.id}/${nestedItem.id}`}
+                                      onClick={() => handleMenuClick(nestedItem.id)}
+                                      className={nestedIsActive && !workspaceColor ? "bg-accent" : ""}
+                                      style={nestedActiveStyles}
+                                    >
+                                      {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
+                                      <span className="flex-1">{nestedItem.title}</span>
+                                      {nestedFeatureTag && <FeatureTag type={nestedFeatureTag} compact />}
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                )
+                              })}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ) : (
+                        // Leaf node - render as link
+                        <SidebarMenuSubButton asChild>
+                          <Link
+                            href={subItem.url || `${baseUrl}/${item.id}/${subItem.id}`}
+                            onClick={() => handleMenuClick(subItem.id)}
+                            className={subIsActive && !workspaceColor ? "bg-accent" : ""}
+                            style={subActiveStyles}
+                          >
                             {subItem.icon && <subItem.icon className="w-4 h-4" />}
                             <span className="flex-1">{subItem.title}</span>
                             {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
-                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/nested-collapsible:rotate-90" />
-                          </SidebarMenuSubButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="pl-4">
-                            {subItem.children?.map((nestedItem) => {
-                              const nestedFeatureTag = (nestedItem as NavItem).tag || getFeatureTagFromMetadata((nestedItem as NavItem).metadata)
-                              const nestedIsActive = activeView === nestedItem.id
-                              const nestedActiveStyles = nestedIsActive && workspaceColor ? {
-                                backgroundColor: `${workspaceColor}15`,
-                                borderLeft: `2px solid ${workspaceColor}`,
-                              } : undefined
-                              
-                              return (
-                              <SidebarMenuSubButton key={nestedItem.id} asChild>
-                                <Link
-                                  href={nestedItem.url || `${baseUrl}/${item.id}/${subItem.id}/${nestedItem.id}`}
-                                  onClick={() => handleMenuClick(nestedItem.id)}
-                                  className={nestedIsActive && !workspaceColor ? "bg-accent" : ""}
-                                  style={nestedActiveStyles}
-                                >
-                                  {nestedItem.icon && <nestedItem.icon className="w-4 h-4" />}
-                                  <span className="flex-1">{nestedItem.title}</span>
-                                  {nestedFeatureTag && <FeatureTag type={nestedFeatureTag} compact />}
-                                </Link>
-                              </SidebarMenuSubButton>
-                            )})}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ) : (
-                      // Leaf node - render as link
-                      <SidebarMenuSubButton asChild>
-                        <Link
-                          href={subItem.url || `${baseUrl}/${item.id}/${subItem.id}`}
-                          onClick={() => handleMenuClick(subItem.id)}
-                          className={subIsActive && !workspaceColor ? "bg-accent" : ""}
-                          style={subActiveStyles}
-                        >
-                          {subItem.icon && <subItem.icon className="w-4 h-4" />}
-                          <span className="flex-1">{subItem.title}</span>
-                          {subFeatureTag && <FeatureTag type={subFeatureTag} compact />}
-                        </Link>
-                      </SidebarMenuSubButton>
-                    )}
-                  </SidebarMenuSubItem>
-                )})}
+                          </Link>
+                        </SidebarMenuSubButton>
+                      )}
+                    </SidebarMenuSubItem>
+                  )
+                })}
               </SidebarMenuSub>
             </CollapsibleContent>
           </SidebarMenuItem>
@@ -191,9 +193,9 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
 
     return (
       <SidebarMenuItem key={item.id}>
-        <SidebarMenuButton 
-          asChild 
-          tooltip={item.description} 
+        <SidebarMenuButton
+          asChild
+          tooltip={item.description}
           isActive={isActive}
           style={activeStyles}
           className={cn(

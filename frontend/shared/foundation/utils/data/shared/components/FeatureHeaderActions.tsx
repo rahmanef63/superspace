@@ -16,7 +16,7 @@ import {
 import { ExportDialog } from "./ExportDialog"
 import { ImportDialog } from "./ImportDialog"
 import type { HeaderAction } from "@/frontend/shared/ui/layout/header/types"
-import { isExportImportSupported, getSupportedExportFeatures } from "@/frontend/shared/foundation/registry/data-export-registry"
+import { isExportImportSupported, getSupportedExportFeatures } from "@/frontend/shared/foundation/utils/data/shared/config/data-export-registry"
 
 // ============================================================================
 // Export/Import Actions Provider
@@ -63,7 +63,7 @@ export function FeatureExportImport({
     const initializeRegistry = async () => {
       try {
         console.log(`Initializing export/import registry for feature: ${featureId}`)
-        const { initializeDataExportRegistry } = await import("@/frontend/shared/foundation/registry/data-export-registry")
+        const { initializeDataExportRegistry } = await import("@/frontend/shared/foundation/utils/data/shared/config/data-export-registry")
         await initializeDataExportRegistry()
         console.log(`Registry initialized successfully for feature: ${featureId}`)
         setIsInitialized(true)

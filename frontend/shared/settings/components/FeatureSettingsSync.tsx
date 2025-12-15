@@ -15,7 +15,7 @@ import { useSettingsRegistry } from "../SettingsProvider"
 import { getFeatureSettingsBuilder, getAllRegisteredFeatures } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
 import type { SettingsCategory, FeatureSettingsBuilder } from "../types"
 
-import type { MenuItem } from "@/frontend/shared/types"
+import type { MenuItem } from "@/frontend/shared/foundation/types"
 
 export interface FeatureSettingsSyncProps {
   /** Workspace ID to sync settings for */

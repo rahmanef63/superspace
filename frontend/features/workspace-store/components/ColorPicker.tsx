@@ -14,7 +14,7 @@ export {
   InlineColorPicker,
   type PresetColorPickerProps as ColorPickerProps,
   type InlineColorPickerProps,
-} from "@/frontend/shared/foundation/utils/color-picker";
+} from "@/frontend/shared/ui/color-picker";
 
 // For backward compatibility, also export workspace-specific wrappers
 import {
@@ -22,7 +22,7 @@ import {
   InlineColorPicker as SharedInlineColorPicker,
   type PresetColorPickerProps,
   type InlineColorPickerProps as SharedInlineColorPickerProps,
-} from "@/frontend/shared/foundation/utils/color-picker";
+} from "@/frontend/shared/ui/color-picker";
 
 /**
  * Workspace Color Picker - pre-configured for workspace colors
@@ -37,4 +37,3 @@ export function WorkspaceColorPicker(props: Omit<PresetColorPickerProps, "varian
 export function InlineWorkspaceColorPicker(props: Omit<SharedInlineColorPickerProps, never>) {
   return <SharedInlineColorPicker {...props} />;
 }
-

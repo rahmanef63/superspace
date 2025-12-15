@@ -15,13 +15,13 @@ export type { StatusBarProps } from "./chrome/StatusBar";
 // ============================================================================
 
 // Primary Sidebar
-export { 
+export {
   AppSidebar,
   WorkspaceSwitcher,
   NavMain,
   NavSecondary,
   NavSystem,
-  NavUser 
+  NavUser
 } from "./sidebar/primary";
 export type { AppSidebarProps } from "./sidebar/primary";
 
@@ -68,7 +68,7 @@ export { TableView, GridView } from "./view-system";
 // ============================================================================
 
 export * as Compositions from "./compositions";
-export { 
+export {
   LayoutSwitcher,
   SecondarySidebarWithView,
   ThreeColumnLayout,
@@ -85,7 +85,7 @@ export {
 // ============================================================================
 
 export * as Menus from "./menus";
-export { 
+export {
   SecondaryMenuProvider,
   useSecondaryMenuContext,
   useMenuItems,
@@ -111,7 +111,7 @@ export {
 // ============================================================================
 
 export * as DnD from "./dnd";
-export { 
+export {
   DnDTreeProvider,
   useDnDTreeContext,
   useDnDState,
@@ -129,7 +129,7 @@ export {
 // ============================================================================
 
 export * as Container from "./container";
-export { 
+export {
   LayoutContainer,
   SingleLayout,
   SplitVerticalLayout,
@@ -213,4 +213,4 @@ export {
 // Notifications
 // ============================================================================
 
-export * from "./notifications";
+// export * from "./notifications"; // DEPRECATED - Use foundation/utils/notifications

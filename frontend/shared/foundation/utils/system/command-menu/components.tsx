@@ -34,7 +34,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { getAllCommands } from "@/frontend/shared/foundation/registries/command-registry"
+import { getAllCommands } from "@/frontend/shared/foundation/utils/registry/command-registry"
 
 export interface CommandAction {
   id: string

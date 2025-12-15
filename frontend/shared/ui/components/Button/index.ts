@@ -2,5 +2,5 @@
  * Button Component Index
  */
 
-export * from "./Button.wrapper"
+export * from "./button-wrapper"
 export { default } from "./registry"

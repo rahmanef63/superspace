@@ -2,7 +2,7 @@
  * Card Registry
  */
 
-import { CardWrapper } from "./Card.wrapper"
+import { CardWrapper } from "./card-wrapper"
 
 export default CardWrapper
 export { CardWrapper }

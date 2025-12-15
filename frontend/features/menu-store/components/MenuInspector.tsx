@@ -34,7 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DynamicIcon, IconPicker } from "@/frontend/shared/ui/icons"
-import { InlineColorPicker } from "@/frontend/shared/foundation/utils/color-picker"
+import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"
 import { FEATURE_TYPES } from "../constants"
 import type { MenuItem } from "../types"
 

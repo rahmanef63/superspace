@@ -42,7 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { getIconComponent } from "@/frontend/shared/ui/icons"
 import type { FeatureStatus } from "../../types"
 import type { AdminSection } from "../navigation/AdminNavigation"
 
@@ -408,13 +408,13 @@ function BundleInspector({ bundle, onEdit, onDelete, onClose }: BundleInspectorP
       <div className="flex-shrink-0 px-4 py-3 border-b bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div 
+            <div
               className="rounded-lg p-2 flex-shrink-0"
               style={{ backgroundColor: bundle.primaryColor ? `${bundle.primaryColor}20` : undefined }}
             >
               {IconComponent && (
-                <IconComponent 
-                  className="h-5 w-5" 
+                <IconComponent
+                  className="h-5 w-5"
                   style={{ color: bundle.primaryColor }}
                 />
               )}

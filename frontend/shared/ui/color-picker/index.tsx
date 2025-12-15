@@ -35,7 +35,7 @@ export {
 } from "@/components/ui/shadcn-io/color-picker";
 
 // Export simple full-featured picker (pre-composed)
-export { 
+export {
   SimpleColorPicker,
   type SimpleColorPickerProps,
 } from "./simple-color-picker";

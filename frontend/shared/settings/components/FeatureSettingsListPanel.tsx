@@ -38,7 +38,7 @@ interface FeatureSettingsItem {
   hasSettings: boolean
 }
 
-import type { MenuItem } from "@/frontend/shared/types"
+import type { MenuItem } from "@/frontend/shared/foundation/types"
 
 export interface FeatureSettingsListPanelProps {
   /** List of menu items to display (will filter for those with settings) */

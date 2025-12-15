@@ -49,8 +49,8 @@ registerFeatureSettings("documents", () => [
 
 registerDocumentsAgent()
 
-import { registerCreateActions } from "@/frontend/shared/foundation/registries/create-registry"
-import { registerCommands } from "@/frontend/shared/foundation/registries/command-registry"
+import { registerCreateActions } from "@/frontend/shared/foundation/utils/registry/create-registry"
+import { registerCommands } from "@/frontend/shared/foundation/utils/registry/command-registry"
 
 registerCreateActions("documents", [
   {
@@ -98,7 +98,7 @@ registerCommands("documents", [
     variant: "destructive",
     group: "danger",
     action: () => {
-       toast.error("Delete not implemented yet")
+      toast.error("Delete not implemented yet")
     }
   }
 ])

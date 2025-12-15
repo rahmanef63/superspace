@@ -8,7 +8,7 @@
  *   builder.SharedCanvasProvider(...)
  */
 
-export * as types from "./types";
+// export * as types from "./types"; // DELETED - Use foundation/types
 export * as builder from "./builder";
 export * as foundation from "./foundation";
 export * as communications from "./communications";

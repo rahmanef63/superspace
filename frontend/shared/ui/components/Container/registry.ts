@@ -1,3 +1,3 @@
-import { ContainerWrapper } from "./Container.wrapper"
+import { ContainerWrapper } from "./container-wrapper"
 export default ContainerWrapper
 export { ContainerWrapper }

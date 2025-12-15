@@ -1,2 +1,2 @@
-export * from "./Container.wrapper"
+export * from "./container-wrapper"
 export { default } from "./registry"

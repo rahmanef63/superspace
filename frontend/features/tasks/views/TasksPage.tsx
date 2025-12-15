@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions"
+import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
 
@@ -176,21 +176,21 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
         primaryAction={{
           label: "New Task",
           icon: Plus,
-          onClick: () => {},
+          onClick: () => { },
         }}
         secondaryActions={[
           {
             id: "filter",
             label: "Filter",
             icon: Filter,
-            onClick: () => {},
+            onClick: () => { },
           },
           <FeatureExportImport key="export-import" featureId="tasks" variant="separate" />,
           {
             id: "settings",
             label: "Settings",
             icon: Settings,
-            onClick: () => {},
+            onClick: () => { },
           },
         ]}
       />
@@ -363,11 +363,10 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
                           <h4
-                            className={`text-base font-semibold ${
-                              task.status === "completed"
+                            className={`text-base font-semibold ${task.status === "completed"
                                 ? "text-muted-foreground line-through"
                                 : ""
-                            }`}
+                              }`}
                           >
                             {task.title}
                           </h4>

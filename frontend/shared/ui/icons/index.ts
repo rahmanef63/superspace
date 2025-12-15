@@ -30,7 +30,7 @@ export type {
   ColorOption,
   DynamicIconProps,
   IconPickerProps,
-  ColorPickerProps,
+  // ColorPickerProps, // Conflict with ui/color-picker
   IconGridProps,
   IconLookup,
 } from "./types";
@@ -96,7 +96,7 @@ export {
 } from "./colors";
 
 // Components
-export { IconPicker } from "./components/icon-picker";
+export { IconPicker, getIconStyle } from "./components/icon-picker";
 export { IconGrid } from "./components/icon-grid";
 
 // Color picker has been moved to frontend/shared/ui/color-picker

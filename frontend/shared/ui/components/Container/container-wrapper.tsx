@@ -1,9 +1,9 @@
 /**
- * Container Component Wrapper
+ * container-component Wrapper
  * Provides flexible layout with display, spacing, and positioning options
  */
 
-import { ContainerComponent } from "./Container.component"
+import { ContainerComponent } from "./container-component"
 import { createComponent, selectProp, textProp, childrenProp } from "../utils/componentFactory"
 import type { ComponentWrapper } from "@/frontend/shared/foundation"
 

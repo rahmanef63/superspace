@@ -1,9 +1,9 @@
 /**
- * Text Component Wrapper
+ * text-component Wrapper
  * Provides comprehensive typography options
  */
 
-import { TextComponent } from "./Text.component"
+import { TextComponent } from "./text-component"
 import { createComponent, selectProp, textProp, booleanProp } from "../utils/componentFactory"
 import type { ComponentWrapper } from "@/frontend/shared/foundation"
 

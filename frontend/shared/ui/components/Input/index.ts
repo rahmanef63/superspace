@@ -2,5 +2,5 @@
  * Input Component Index
  */
 
-export * from "./Input.wrapper"
+export * from "./input-wrapper"
 export { default } from "./registry"

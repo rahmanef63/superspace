@@ -94,7 +94,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
-import { IconPicker, getIconComponent } from "@/frontend/shared/ui/components/icons"
+import { IconPicker, getIconComponent } from "@/frontend/shared/ui/icons"
 import { WorkspaceStorePage } from "@/frontend/features/workspace-store"
 import { ConvexErrorBoundary } from "@/frontend/shared/ui/components/error/ConvexErrorBoundary"
 

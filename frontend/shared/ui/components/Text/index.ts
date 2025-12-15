@@ -1,2 +1,2 @@
-export * from "./Text.wrapper"
+export * from "./text-wrapper"
 export { default } from "./registry"

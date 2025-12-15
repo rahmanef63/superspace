@@ -1,154 +1,54 @@
-# Shared Component System
+# Shared Architecture
 
-> A modular, hierarchical framework for building UI with 6 levels of abstraction
-
-**Version**: 1.0.0 ✅ Production Ready
-**Status**: All 9 phases completed
-
----
-
-## 🎯 Quick Start
-
-```typescript
-import { getComponentWrapper, exportToJSON } from "@/frontend/shared"
-
-// Get a component
-const button = getComponentWrapper("button")
-
-// Create a node
-const node = {
-  id: "button-1",
-  type: "component",
-  component: "button",
-  props: { text: "Click me" },
-}
-
-// Export to JSON
-const result = exportToJSON([node])
-console.log(result.data)
-```
-
-## 📖 Documentation
-
-See [docs/shared/README.md](../../docs/shared/README.md) for complete documentation.
+The `frontend/shared` directory is the **Single Source of Truth (SSOT)** for all reusable code in SuperSpace. It follows a Domain-Driven Design (DDD) approach, organized by **horizontal layers** rather than atomic design levels.
 
 ## 🏗️ Architecture
 
-6-level hierarchy:
-1. **Components** - Atomic UI (shadcn/ui wrappers)
-2. **Elements** - Composite components
-3. **Blocks** - Complex composites
-4. **Sections** - Multiple blocks
-5. **Templates** - Full pages
-6. **Flows** - Multi-page experiences
+The shared monolith is divided into 5 core domains:
 
-## 📂 Structure
+| Domain | Path | Description |
+|--------|------|-------------|
+| **UI** | `@/frontend/shared/ui` | **The Design System**. Icons, atomic components (buttons, inputs), generic layouts. |
+| **Foundation** | `@/frontend/shared/foundation` | **The Core Kernel**. Database, Auth, Context, Registry, Utils, Types. |
+| **Settings** | `@/frontend/shared/settings` | **Feature Configuration**. Unified settings pages, feature toggles, permission mapping. |
+| **Communications** | `@/frontend/shared/communications` | **Real-time Layer**. Chat, notifications, presence, AI streams. |
+| **Builder** | `@/frontend/shared/builder` | **Canvas System**. The visual builder engine used by multiple features. |
 
-```
-frontend/shared/
-├── types/          # TypeScript types
-├── lib/            # Core libraries
-├── components/     # Level 1 wrappers
-├── elements/       # Level 2 composites
-├── blocks/         # Level 3 blocks
-├── sections/       # Level 4 sections
-├── templates/      # Level 5 templates
-├── flows/          # Level 6 flows
-└── index.ts        # Main exports
-```
+## 📐 Strict SSOT Rules
 
-## ✨ Features
+1.  **No Component duplication**: If a generic component (e.g., `ColorPicker`, `IconPicker`) is needed by 2+ features, it **MUST** live in `frontend/shared/ui`.
+2.  **No Logic duplication**: Utility functions must be in `foundation`.
+3.  **Facades**: Always import from the domain index (e.g., `import { Button } from "@/frontend/shared/ui"`) when possible, or specific sub-paths if necessary.
 
-- ✅ Type-safe with TypeScript
-- ✅ Validated with Zod
-- ✅ JSON ↔ TypeScript conversion
-- ✅ CMS v0.4 compatible
-- ✅ Documents integration
-- ✅ Group & instance system
-- ✅ Dynamic registry
-- ✅ Comprehensive tests
-- ✅ Full documentation
+## 📂 Key Subsystems
 
-## 🚀 Usage
+### 1. Icon System (`ui/icons`)
+Dynamic icon loading system with unified picker.
+- **Imports**: `import { IconPicker, DynamicIcon } from "@/frontend/shared/ui/icons"`
+- **Features**: Search, Categories, Color support.
 
-```typescript
-// Import
-import {
-  getComponentWrapper,
-  createGroup,
-  exportToJSON,
-  exportToTypeScript,
-  importFromJSON,
-} from "@/frontend/shared"
+### 2. Color System (`ui/color-picker`)
+Standardized color picker.
+- **Imports**: `import { InlineColorPicker } from "@/frontend/shared/ui/color-picker"`
 
-// Use registry
-const button = getComponentWrapper("button")
+### 3. Registry Pattern (`foundation/utils/registry`)
+Central registration for cross-feature capabilities.
+- **Commands**: `registerCommands`
+- **Creation**: `registerCreateActions`
+- **Export**: `registerDataExport`
 
-// Create group
-const group = createGroup(["node-1", "node-2"])
+## 🛠️ Maintenance
 
-// Export
-const json = exportToJSON(nodes)
-const tsx = exportToTypeScript(nodes, "MyComponent")
+- **Types**: Core types live in `foundation/types`.
+- **Components**: Generic UI lives in `ui`.
+- **Feature Logic**: Feature-specific reusable logic lives in the feature folder, NOT here. Only truly shared code goes here.
 
-// Import
-const imported = importFromJSON(json.data)
-```
+## 🔄 Deprecated Paths
 
-## 📦 What's Included
+The following paths are deprecated and exist only for backward compatibility. **Do not use them for new code**:
 
-### Core (9 files)
-- Type system
-- Registry
-- Validation
-- Error handling
+- `frontend/shared/components` (Use `ui/icons` or `ui`)
+- `frontend/shared/foundation/utils/color-picker` (Use `ui/color-picker`)
+- `frontend/shared/foundation/registries` (Use `foundation/utils/registry`)
 
-### Libraries (13 files)
-- Registry system
-- Grouping operations
-- Export/Import
-- Converters
-
-### Components (9 wrappers)
-- Button, Input, Card
-- Text, Container, Image
-- Label, Textarea, Badge
-
-### Higher Levels
-- Elements, Blocks, Sections
-- Templates, Flows
-
-## 🧪 Testing
-
-```bash
-# Run tests
-pnpm test tests/shared/
-
-# Run specific test
-pnpm test tests/shared/registry.test.ts
-```
-
-## 📚 Documentation
-
-- [Overview](../../docs/shared/01-overview.md)
-- [Component System](../../docs/shared/02-component-system.md)
-- [Export/Import](../../docs/shared/05-export-import.md)
-- [Complete Docs](../../docs/shared/)
-
-## 🤝 Contributing
-
-1. Read documentation
-2. Follow patterns
-3. Write tests
-4. Update docs
-5. Submit PR
-
-## 📝 License
-
-Same as project license
-
----
-
-**Ready to use!** 🎉
-
-For detailed documentation, see [docs/shared/](../../docs/shared/)
+> Last Updated: Dec 2025

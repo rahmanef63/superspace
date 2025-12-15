@@ -30,7 +30,7 @@ import { formatRelativeTime } from "../utils";
 import { DocumentsTree } from "./DocumentsTree";
 import { DocumentsBreadcrumbs } from "./DocumentsBreadcrumbs";
 import { DocumentInspector } from "./DocumentInspector";
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
+import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data";
 
 export interface DocumentsListViewProps {
   documents: DocumentRecord[];
@@ -95,7 +95,7 @@ export function DocumentsListView({
   const [viewMode, setViewMode] = useToolbarViewMode(viewStorageKey, toolbarViewMode.tiles);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorDocument, setInspectorDocument] = useState<DocumentRecord | null>(null);
-  const noop = useCallback(() => {}, []);
+  const noop = useCallback(() => { }, []);
 
   // Map toolbar viewMode to legacy ViewSwitcher modes
   const legacyViewMode = useMemo(() => {
@@ -190,10 +190,10 @@ export function DocumentsListView({
     ) : undefined,
     primaryAction: onCreate
       ? {
-          label: "New Document",
-          icon: Plus,
-          onClick: onCreate,
-        }
+        label: "New Document",
+        icon: Plus,
+        onClick: onCreate,
+      }
       : undefined,
     secondaryActions: enableExportImport ? [
       <FeatureExportImport

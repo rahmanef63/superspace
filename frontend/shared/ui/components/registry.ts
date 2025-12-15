@@ -6,15 +6,15 @@
 import type { ComponentWrapper, RegistryEntry } from "@/frontend/shared/foundation"
 
 // Import all wrapper components
-import { BadgeWrapper } from "./Badge/Badge.wrapper"
-import { ButtonWrapper } from "./Button/Button.wrapper"
-import { CardWrapper } from "./Card/Card.wrapper"
-import { ContainerWrapper } from "./Container/Container.wrapper"
-import { ImageWrapper } from "./Image/Image.wrapper"
-import { InputWrapper } from "./Input/Input.wrapper"
-import { LabelWrapper } from "./Label/Label.wrapper"
-import { TextWrapper } from "./Text/Text.wrapper"
-import { TextareaWrapper } from "./Textarea/Textarea.wrapper"
+import { BadgeWrapper } from "./badge/badge-wrapper"
+import { ButtonWrapper } from "./button/button-wrapper"
+import { CardWrapper } from "./card/card-wrapper"
+import { ContainerWrapper } from "./container/container-wrapper"
+import { ImageWrapper } from "./image/image-wrapper"
+import { InputWrapper } from "./input/input-wrapper"
+import { LabelWrapper } from "./label/label-wrapper"
+import { TextWrapper } from "./text/text-wrapper"
+import { TextareaWrapper } from "./textarea/textarea-wrapper"
 
 // ============================================================================
 // Component Registry

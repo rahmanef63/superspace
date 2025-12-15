@@ -28,7 +28,7 @@ import { StandardFeatureHeader } from "@/frontend/shared/ui/layout/header/preset
 import { ContainerHeader } from "@/frontend/shared/ui/layout/header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FeatureExportImport } from "@/frontend/shared/ui/data-export/FeatureHeaderActions";
+import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data";
 import { FeatureAIAssistant } from "@/frontend/shared/ui/ai-assistant/FeatureAIAssistant";
 import { FeatureSkeletons } from "@/frontend/shared/ui/components/loading/FeatureSkeletons";
 import { cn } from "@/lib/utils";

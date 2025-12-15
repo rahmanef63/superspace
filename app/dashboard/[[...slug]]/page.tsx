@@ -12,7 +12,7 @@ import { useAuthed } from "@/frontend/shared/foundation/auth/hooks/useAuthed"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { getPageById } from "@/frontend/shared/foundation/manifest"
 import { AppContentWrapper } from "@/frontend/shared/context/AppContentWrapper"
-import { FeatureNotReady } from "@/frontend/shared/ui/components/FeatureNotReady"
+import { FeatureNotReady } from "@/frontend/shared/ui/components/feature-not-ready"
 import { useToast } from "@/hooks/use-toast"
 
 function toTitleCase(segment: string) {

@@ -5,7 +5,7 @@
  */
 
 import type { LucideIcon } from "lucide-react"
-import type { MenuItem } from "@/frontend/shared/types"
+import type { MenuItem } from "@/frontend/shared/foundation/types"
 
 /**
  * Settings category definition

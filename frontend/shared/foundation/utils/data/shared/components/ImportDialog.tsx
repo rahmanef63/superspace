@@ -543,7 +543,7 @@ export function ImportDialog({
 // Helper function to get feature export config from registry
 async function getFeatureExportConfig(featureId: string) {
   const { getFeatureExportConfig: getConfigFromRegistry } = await import(
-    "@/frontend/shared/foundation/registry/data-export-registry"
+    "@/frontend/shared/foundation/utils/data/shared/config/data-export-registry"
   )
   return getConfigFromRegistry(featureId)
 }

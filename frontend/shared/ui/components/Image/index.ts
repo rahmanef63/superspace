@@ -1,2 +1,2 @@
-export * from "./Image.wrapper"
+export * from "./image-wrapper"
 export { default } from "./registry"

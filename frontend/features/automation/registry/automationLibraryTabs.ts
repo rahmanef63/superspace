@@ -6,27 +6,46 @@ export const registerAutomationLibraryTabs = (registerFeatureTabs: (feature: str
       id: 'triggers',
       label: 'Triggers',
       feature: 'automation',
-      categories: ['Webhook', 'HTTP'],
+      categories: ['Trigger'],
     },
     {
-      id: 'actions',
-      label: 'Actions',
+      id: 'http',
+      label: 'HTTP',
       feature: 'automation',
-      categories: ['Integration', 'Data'],
+      categories: ['HTTP'],
+    },
+    {
+      id: 'data',
+      label: 'Data',
+      feature: 'automation',
+      categories: ['Data'],
     },
     {
       id: 'logic',
-      label: 'Logic',
+      label: 'Flow',
       feature: 'automation',
       categories: ['Logic'],
     },
     {
+      id: 'integrations',
+      label: 'Apps',
+      feature: 'automation',
+      categories: ['Integration'],
+    },
+    {
       id: 'ai',
-      label: 'AI & LLM',
+      label: 'AI',
       feature: 'automation',
       categories: ['AI', 'LLM'],
+    },
+    {
+      id: 'error',
+      label: 'Error',
+      feature: 'automation',
+      categories: ['Error'],
     }
   ];
 
   registerFeatureTabs('automation', automationLibraryTabs);
 };
+

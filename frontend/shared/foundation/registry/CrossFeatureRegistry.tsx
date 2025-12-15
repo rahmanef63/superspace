@@ -6,6 +6,10 @@ export interface InspectorField {
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;
+  // Extended properties for automation
+  description?: string;
+  required?: boolean;
+  defaultValue?: any;
 }
 
 export interface ComponentConfig {
@@ -81,7 +85,7 @@ class CrossFeatureRegistry {
   private updateStats(feature: string) {
     const featureComponents = this.getComponentsByFeature(feature);
     const byCategory: Record<string, number> = {};
-    
+
     featureComponents.forEach(component => {
       byCategory[component.category] = (byCategory[component.category] || 0) + 1;
     });
@@ -114,7 +118,7 @@ class CrossFeatureRegistry {
   }
 
   getComponentsByTags(tags: string[]): ComponentConfig[] {
-    return Array.from(this.components.values()).filter(comp => 
+    return Array.from(this.components.values()).filter(comp =>
       comp.tags && tags.some(tag => comp.tags!.includes(tag))
     );
   }
@@ -129,7 +133,7 @@ class CrossFeatureRegistry {
         comp.feature,
         ...(comp.tags || [])
       ].join(' ').toLowerCase();
-      
+
       return searchableText.includes(lowerQuery);
     });
   }
@@ -157,22 +161,22 @@ class CrossFeatureRegistry {
   getComponentsForTab(feature: string, tabId: string): ComponentConfig[] {
     const tabs = this.getFeatureTabs(feature);
     const tab = tabs.find(t => t.id === tabId);
-    
+
     if (!tab) return [];
-    
+
     if (tab.feature === 'all') {
       return this.getAllComponents();
     }
-    
+
     if (tab.feature !== feature && tab.feature !== 'cross') {
       // Cross-feature access
       return this.getComponentsByFeature(tab.feature);
     }
-    
+
     if (tab.categories) {
       return tab.categories.flatMap(category => this.getComponentsByCategory(category));
     }
-    
+
     return this.getComponentsByFeature(feature);
   }
 }

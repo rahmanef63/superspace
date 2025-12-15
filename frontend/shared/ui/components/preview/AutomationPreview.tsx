@@ -64,7 +64,7 @@ export const AutomationPreview: React.FC<AutomationPreviewProps> = ({
           <span className="text-xs text-gray-500 font-normal">Test your workflows</span>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="flex-1 flex flex-col pt-0">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-3 mb-4">
@@ -74,11 +74,10 @@ export const AutomationPreview: React.FC<AutomationPreviewProps> = ({
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                  message.sender === 'user'
+                className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${message.sender === 'user'
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-900'
-                }`}
+                  }`}
               >
                 {message.text}
               </div>
@@ -90,7 +89,7 @@ export const AutomationPreview: React.FC<AutomationPreviewProps> = ({
         <div className="flex gap-2">
           <Input
             value={inputText}
-            onChange={setInputText}
+            onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type a message to test automation..."
             className="flex-1"

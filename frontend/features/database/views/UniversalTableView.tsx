@@ -1,43 +1,32 @@
 /**
  * Universal Database Table View
- * 
- * Modern table view implementation that works with all 23 property types.
- * Uses TanStack Table for robust table functionality with sorting, filtering,
- * column resizing, inline editing, and more.
- * 
- * Features:
- * - Auto-discovery of property renderers/editors
- * - Inline editing with validation
- * - Column sorting and filtering
- * - Column reordering (drag & drop)
- * - Column resizing
- * - Row selection
- * - Pagination
- * - Keyboard navigation
+ *
+ * Refactored to use the shared Table component.
  */
 
 import React, { useMemo, useState } from "react";
 import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  type ColumnDef,
   type SortingState,
   type VisibilityState,
   type ColumnFiltersState,
-  useReactTable,
   type RowSelectionState,
 } from "@tanstack/react-table";
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  TableRow as TableRowUI,
+  TableCell as TableCellUI,
+  // TableBody, TableCell, TableHead, TableHeader, TableRow removed from here, imported from shared
 } from "@/components/ui/table";
+import {
+  TableProvider,
+  TablePagination,
+  TableContext,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/frontend/shared/components/views/table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,15 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Settings2,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Settings2, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   createTableColumns,
@@ -76,7 +57,11 @@ export interface UniversalTableViewProps {
   properties: PropertyColumnConfig[];
 
   /** Callback when cell value is updated */
-  onCellUpdate?: (rowId: string, propertyKey: string, value: any) => Promise<void>;
+  onCellUpdate?: (
+    rowId: string,
+    propertyKey: string,
+    value: any
+  ) => Promise<void>;
 
   /** Callback when row is deleted */
   onRowDelete?: (rowId: string) => Promise<void>;
@@ -113,6 +98,13 @@ export interface UniversalTableViewProps {
 }
 
 /**
+ * Internal Toolbar Component to access TableContext
+ */
+import { ViewToolbar } from '@/frontend/shared/ui/layout/header';
+
+// ... other imports
+
+/**
  * Universal Table View Component
  */
 export function UniversalTableView({
@@ -138,8 +130,8 @@ export function UniversalTableView({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useState("");
 
-  // Generate table columns from property configurations
-  const columns = useMemo<ColumnDef<PropertyRowData>[]>(() => {
+  // Generate table columns
+  const columns = useMemo(() => {
     const options: ColumnFactoryOptions = {
       onCellUpdate,
       onRowDelete,
@@ -158,231 +150,187 @@ export function UniversalTableView({
     enableDragHandle,
   ]);
 
-  // Create TanStack Table instance
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-      globalFilter,
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
-    enableRowSelection: enableRowSelection,
-    initialState: {
-      pagination: {
-        pageSize,
-      },
-    },
-  });
+  // Handle selection change side-effect
+  const handleRowSelectionChange = (
+    updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)
+  ) => {
+    let newSelection: RowSelectionState;
+    if (typeof updaterOrValue === 'function') {
+      newSelection = updaterOrValue(rowSelection);
+    } else {
+      newSelection = updaterOrValue;
+    }
+    setRowSelection(newSelection);
 
-  // Track selection changes
-  React.useEffect(() => {
     if (onSelectionChange) {
-      const selectedIds = Object.keys(rowSelection).filter((key) => rowSelection[key]);
+      const selectedIds = Object.keys(newSelection).filter(
+        (key) => newSelection[key]
+      );
       onSelectionChange(selectedIds);
     }
-  }, [rowSelection, onSelectionChange]);
+  };
+
+  const emptyContent = useMemo(() => (
+    <>
+      {/* Placeholder Visual Rows */}
+      {[...Array(3)].map((_, i) => (
+        <TableRowUI key={`empty-${i}`} className="hover:bg-transparent">
+          {columns.map((col) => (
+            <TableCellUI key={col.id} className="h-10 border-b" />
+          ))}
+        </TableRowUI>
+      ))}
+
+      {/* New Page Generic Row */}
+      <TableRowUI
+        className="cursor-pointer hover:bg-muted/50 group"
+        onClick={() => onRowAdd?.()}
+      >
+        <TableCellUI colSpan={columns.length} className="h-10 p-0 border-b-0">
+          <div className="flex items-center h-full px-4 text-muted-foreground group-hover:text-foreground">
+            <Plus className="h-4 w-4 mr-2" />
+            New page
+          </div>
+        </TableCellUI>
+      </TableRowUI>
+    </>
+  ), [columns, onRowAdd]);
+
+  // Sort Options
+  const sortOptions = useMemo(() => {
+    return properties
+      .filter(p => p.type !== 'button') // Exclude non-sortable types
+      .map(p => ({ label: p.name, value: p.key }));
+  }, [properties]);
+
+  const currentSort = useMemo(() => {
+    if (sorting.length === 0) return undefined;
+    return {
+      field: sorting[0].id,
+      direction: sorting[0].desc ? 'desc' : 'asc' as 'asc' | 'desc'
+    };
+  }, [sorting]);
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {/* Left side - Search */}
-        <div className="flex items-center gap-2 flex-1">
-          {enableGlobalSearch && (
-            <div className="relative max-w-sm">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search all columns..."
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          )}
+      <TableProvider
+        data={data}
+        columns={columns}
 
-          {/* Selection info */}
-          {enableRowSelection && Object.keys(rowSelection).length > 0 && (
-            <div className="text-sm text-muted-foreground">
-              {Object.keys(rowSelection).length} of {table.getFilteredRowModel().rows.length} row(s) selected
-            </div>
-          )}
-        </div>
+        sorting={sorting}
+        onSortingChange={setSorting}
 
-        {/* Right side - Actions */}
-        <div className="flex items-center gap-2">
-          {/* Add row button */}
-          {onRowAdd && (
-            <Button onClick={onRowAdd} size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Add row
-            </Button>
-          )}
+        columnFilters={columnFilters}
+        onColumnFiltersChange={setColumnFilters}
 
-          {/* Column visibility toggle */}
-          {enableColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Settings2 className="h-4 w-4 mr-2" />
-                  Columns
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+
+        rowSelection={rowSelection}
+        onRowSelectionChange={handleRowSelectionChange}
+
+        globalFilter={globalFilter}
+        onGlobalFilterChange={setGlobalFilter}
+
+        enableRowSelection={enableRowSelection}
+        enablePagination={enablePagination}
+        enableGlobalSearch={enableGlobalSearch}
+        renderAsTable={false}
+      >
+        <ViewToolbar
+          // Search
+          searchQuery={globalFilter}
+          onSearchChange={setGlobalFilter}
+          enableSearch={enableGlobalSearch}
+
+          // Search Actions
+          onAddItem={onRowAdd}
+          addItemLabel="Add row"
+
+          // Sorting
+          sortOptions={sortOptions}
+          currentSort={currentSort}
+          onSortChange={(sort) => {
+            if (sort) {
+              setSorting([{ id: sort.field, desc: sort.direction === 'desc' }]);
+            } else {
+              setSorting([]);
+            }
+          }}
+
+          // Custom Actions (Column Visibility)
+          trailingActions={
+            enableColumnVisibility && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8">
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {/* Since access to "table" instance inside toolbar slot is tricky without context, 
+                      we rely on internal implementation or passed props. 
+                      Actually, strictly speaking, clean separation would require properties here. 
+                      But we are inside the component where we can access columns? 
+                      Wait, "columns" variable is defined above, but visibility toggling requires access to table instance API usually.
+                      Or we can control it via "columnVisibility" state passed to TableProvider.
+                  */}
+                  {columns.map(col => {
+                    // Check if visible based on state "columnVisibility"
+                    // Default is visible if not in map, or true in map.
+                    const isVisible = columnVisibility[col.id as string] !== false;
                     return (
                       <DropdownMenuCheckboxItem
-                        key={column.id}
+                        key={col.id as string}
                         className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                        checked={isVisible}
+                        onCheckedChange={(val) => {
+                          setColumnVisibility(prev => ({
+                            ...prev,
+                            [col.id as string]: !!val
+                          }));
+                        }}
                       >
-                        {column.id}
+                        {col.header as string}
                       </DropdownMenuCheckboxItem>
-                    );
+                    )
                   })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
+          }
+        />
 
-      {/* Table */}
-      <div className="flex-1 overflow-auto">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={{
-                        width: header.getSize(),
-                        minWidth: header.column.columnDef.minSize,
-                        maxWidth: header.column.columnDef.maxSize,
-                      }}
-                      className="relative"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-
-                      {/* Column resizer */}
-                      {header.column.getCanResize() && (
-                        <div
-                          className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary/20 active:bg-primary/30"
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                        />
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="group"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+        {/* Table Content */}
+        <div className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-background z-10">
+              {({ headerGroup }) => (
+                <TableRowUI key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <TableHead key={header.id} header={header} className="relative" />
                   ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {enablePagination && (
-        <div className="flex items-center justify-between gap-2 p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="text-sm text-muted-foreground">
-            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-              table.getFilteredRowModel().rows.length
-            )}{" "}
-            of {table.getFilteredRowModel().rows.length} rows
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-              aria-label="Go to first page"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-              </span>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              aria-label="Next page"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-              aria-label="Go to last page"
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
+                </TableRowUI>
+              )}
+            </TableHeader>
+            <TableBody emptyContent={emptyContent}>
+              {({ row }) => (
+                <TableRow row={row} className="group" />
+              )}
+            </TableBody>
+          </Table>
         </div>
-      )}
+
+        {/* Pagination */}
+        {enablePagination && (
+          <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <TablePagination className="p-4" />
+          </div>
+        )}
+      </TableProvider>
     </div>
   );
 }

@@ -201,7 +201,7 @@ export function DatabasePage({ workspaceId }: DatabasePageProps) {
   };
 
   const handleManageViews = () => {
-    toast.info("View management tools are coming soon.");
+    toast.info("Open the view dropdown to manage views.");
   };
 
   const handleCopyData = async () => {

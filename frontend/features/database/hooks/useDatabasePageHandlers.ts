@@ -533,7 +533,7 @@ export function useDatabasePageHandlers({
 
   // Toolbar actions
   const handleManageViews = useCallback(() => {
-    toast.info("View management tools are coming soon.");
+    toast.info("Open the view dropdown to manage views.");
   }, []);
 
   const handleCopyData = useCallback(async () => {

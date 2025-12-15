@@ -142,13 +142,13 @@ export default function ContentDashboard({ data, isLoading }: ContentDashboardPr
 
                     {/* Other tabs would filter the list, but for now we just show placeholders or reuse the list if we implemented filtering logic */}
                     <TabsContent value="published">
-                        <div className="py-8 text-center text-muted-foreground">Filtered view coming soon</div>
+                        <div className="py-8 text-center text-muted-foreground">No published content yet</div>
                     </TabsContent>
                     <TabsContent value="drafts">
-                        <div className="py-8 text-center text-muted-foreground">Filtered view coming soon</div>
+                        <div className="py-8 text-center text-muted-foreground">No drafts available</div>
                     </TabsContent>
                     <TabsContent value="scheduled">
-                        <div className="py-8 text-center text-muted-foreground">Filtered view coming soon</div>
+                        <div className="py-8 text-center text-muted-foreground">No scheduled content</div>
                     </TabsContent>
                 </Tabs>
             </div>

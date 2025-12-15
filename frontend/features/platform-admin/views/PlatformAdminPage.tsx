@@ -930,7 +930,7 @@ function SystemFeaturesTable() {
                       <span className="font-medium">{feature.name}</span>
                       {!feature.isReady && (
                         <Badge variant="outline" className="text-xs bg-orange-500/10 text-orange-500 border-orange-500/20">
-                          Coming Soon
+                          In Development
                         </Badge>
                       )}
                     </div>
@@ -1659,10 +1659,11 @@ function PlatformAdminContent() {
                 Usage statistics and performance metrics
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-64 flex items-center justify-center text-muted-foreground">
+            <CardContent className="h-64 flex items-center justify-center">
               <div className="text-center">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Analytics dashboard coming soon</p>
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="font-medium text-foreground">Analytics Dashboard</p>
+                <p className="text-sm text-muted-foreground">View platform-wide usage statistics</p>
               </div>
             </CardContent>
           </Card>
@@ -1676,10 +1677,11 @@ function PlatformAdminContent() {
                 Configure platform-wide settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-64 flex items-center justify-center text-muted-foreground">
+            <CardContent className="h-64 flex items-center justify-center">
               <div className="text-center">
-                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Settings panel coming soon</p>
+                <Settings className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="font-medium text-foreground">System Configuration</p>
+                <p className="text-sm text-muted-foreground">Manage platform settings and configurations</p>
               </div>
             </CardContent>
           </Card>

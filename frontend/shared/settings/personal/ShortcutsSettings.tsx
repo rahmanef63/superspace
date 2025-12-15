@@ -54,12 +54,12 @@ export function ShortcutsSettings() {
         <CardHeader>
           <CardTitle>Customize Shortcuts</CardTitle>
           <CardDescription>
-            Keyboard shortcut customization coming soon
+            Personalize your keyboard shortcuts
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            The ability to customize keyboard shortcuts will be available in a future update.
+            Custom keyboard shortcut configuration will be available in a future update. For now, you can use the default shortcuts listed above.
           </p>
         </CardContent>
       </Card>

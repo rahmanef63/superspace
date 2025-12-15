@@ -83,12 +83,28 @@ export function DocumentsDbManagementView({ workspaceId, storageKey }: Documents
             />
           </TabsContent>
 
-          <TabsContent value="gallery" className="flex-1 flex items-center justify-center text-gray-500">
-            Gallery view is coming soon.
+          <TabsContent value="gallery" className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+            <div className="rounded-full bg-muted p-4">
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <p className="font-medium text-foreground">Gallery View</p>
+              <p className="text-sm">View documents as visual cards</p>
+            </div>
           </TabsContent>
 
-          <TabsContent value="timeline" className="flex-1 flex items-center justify-center text-gray-500">
-            Timeline view is coming soon.
+          <TabsContent value="timeline" className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+            <div className="rounded-full bg-muted p-4">
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <p className="font-medium text-foreground">Timeline View</p>
+              <p className="text-sm">View documents chronologically</p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

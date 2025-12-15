@@ -1,12 +1,11 @@
 "use client"
 
 import React from "react"
-import { LineChart, Plus } from "lucide-react"
+import { LineChart } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useBi } from "../hooks/useBi"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { BiDashboard } from "../components/BiDashboard"
-import { Button } from "@/components/ui/button"
+import { BiHeader } from "./BiHeader"
 
 interface BiPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -33,16 +32,7 @@ export default function BiPage({ workspaceId }: BiPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={LineChart}
-        title="Business Intelligence"
-        subtitle="Analytics and insights"
-        primaryAction={{
-          label: "New Dashboard",
-          icon: Plus,
-          onClick: () => { }
-        }}
-      />
+      <BiHeader />
 
       <div className="flex-1 overflow-auto p-4">
         <BiDashboard data={data} />

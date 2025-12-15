@@ -1,12 +1,11 @@
 "use client"
 
 import React from "react"
-import { CheckSquare, Plus, Settings } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import { useApprovals } from "../hooks/useApprovals"
 import ApprovalsDashboard from "../components/ApprovalsDashboard"
+import { ApprovalsHeader } from "./ApprovalsHeader"
 
 interface ApprovalsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -36,24 +35,7 @@ export default function ApprovalsPage({ workspaceId }: ApprovalsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={CheckSquare}
-        title="Approvals"
-        subtitle="Manage and track approval requests"
-        primaryAction={{
-          label: "New Request",
-          icon: Plus,
-          onClick: () => { },
-        }}
-        secondaryActions={[
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => { },
-          },
-        ]}
-      />
+      <ApprovalsHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <ApprovalsDashboard

@@ -223,9 +223,10 @@ export default function AccountingDashboard({ data, isLoading }: AccountingDashb
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Calculator className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Transaction history view coming soon</p>
+                            <div className="text-center py-12">
+                                <Calculator className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">No transactions yet</p>
+                                <p className="text-sm text-muted-foreground">Record your first transaction to get started</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -237,9 +238,10 @@ export default function AccountingDashboard({ data, isLoading }: AccountingDashb
                             <CardTitle>Invoices</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Invoice management view coming soon</p>
+                            <div className="text-center py-12">
+                                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">No invoices yet</p>
+                                <p className="text-sm text-muted-foreground">Create and manage customer invoices</p>
                             </div>
                         </CardContent>
                     </Card>

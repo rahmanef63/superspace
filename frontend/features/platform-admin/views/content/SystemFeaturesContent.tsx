@@ -408,7 +408,7 @@ export function SystemFeaturesContent({ onItemSelect, selectedItemId }: SystemFe
                           <span className="font-medium truncate">{feature.name}</span>
                           {!feature.isReady && (
                             <Badge variant="outline" className="text-xs bg-orange-500/10 text-orange-500 border-orange-500/20 flex-shrink-0">
-                              Coming Soon
+                              In Development
                             </Badge>
                           )}
                         </div>

@@ -2,6 +2,7 @@ import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
 import { requirePermission } from "../../auth/helpers"
 import { PERMS } from "../../workspace/permissions"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Mutations for content feature
@@ -32,11 +33,21 @@ export const createItem = mutation({
     const { membership } = await requirePermission(
       ctx,
       args.workspaceId,
-      PERMS.DOCUMENTS_CREATE // TODO: Use appropriate permission when content table is ready
+      PERMS.CONTENT_MANAGE
     )
 
     // TODO: Create content table in schema and implement proper storage
     // For now, return a placeholder response
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "content.item.create",
+      resourceType: "contentItem",
+      resourceId: "temp_id",
+      metadata: { name: args.name, type: args.type }
+    })
+
     return {
       success: true,
       message: "Content feature is being set up. Content table creation pending.",

@@ -1,7 +1,9 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
-import { requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
+import { requirePermission, resolveCandidateUserIds } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 import type { Id } from "../../_generated/dataModel"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Mutations for analytics feature
@@ -21,7 +23,7 @@ export const trackEvent = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     const userId = candidateIds.length > 0 ? candidateIds[0] as Id<"users"> : undefined
@@ -83,7 +85,7 @@ export const createWidget = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     if (candidateIds.length === 0) throw new Error("Not authenticated")
@@ -143,7 +145,7 @@ export const updateWidget = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const widget = await ctx.db.get(args.widgetId)
     if (!widget || widget.workspaceId !== args.workspaceId) {
@@ -168,7 +170,7 @@ export const deleteWidget = mutation({
     widgetId: v.id("analyticsWidgets"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const widget = await ctx.db.get(args.widgetId)
     if (!widget || widget.workspaceId !== args.workspaceId) {
@@ -210,7 +212,7 @@ export const createReport = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     if (candidateIds.length === 0) throw new Error("Not authenticated")
@@ -239,7 +241,7 @@ export const deleteReport = mutation({
     reportId: v.id("analyticsReports"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
 
     const report = await ctx.db.get(args.reportId)
     if (!report || report.workspaceId !== args.workspaceId) {
@@ -247,6 +249,14 @@ export const deleteReport = mutation({
     }
 
     await ctx.db.delete(args.reportId)
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "analytics.report.delete",
+      resourceType: "analyticsReport",
+      resourceId: args.reportId,
+    })
 
     return { success: true }
   },

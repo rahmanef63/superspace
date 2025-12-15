@@ -62,7 +62,7 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** CRM, ERP, HRIS, Projects, POS, Finance, CMS, Marketing, Helpdesk, Knowledge Base, BI
 - **Kenapa universal:** Semua sistem butuh starting page untuk ringkasan data
 - **Components:** Metrics cards, Charts, Recent activity, Quick actions
-- **Status:** ✅ Implemented
+- **Status:** 🔴 No Backend (UI components exist but no queries for aggregated data)
 
 ### 🟩 B. Reports
 - **Dipakai oleh:** CRM, ERP, HRIS, Finance, Projects, Inventory, POS, Marketing, Helpdesk, BI
@@ -122,7 +122,7 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** CRM, HRIS, Marketing, Projects, Helpdesk
 - **Kenapa universal:** Trigger–action–condition universal
 - **Components:** Workflow builder, Triggers, Actions, Conditions, Execution Engine
-- **Status:** ✅ Stable (Visual canvas + execution engine with 15+ node executors)
+- **Status:** 🔴 UI Only (Visual canvas exists 456 lines, but backend returns "not yet implemented")
 
 ### 🟩 L. Contacts / People
 - **Dipakai oleh:** CRM, HRIS, Marketing, Helpdesk
@@ -158,13 +158,13 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 - **Dipakai oleh:** Inventory, CRM, Accounting, Projects, HRIS
 - **Kenapa universal:** Semua modul butuh migrasi data
 - **Components:** CSV/Excel import, Export, Mapping, History
-- **Status:** ✅ Stable (DataTransferDashboard 424 lines, DnD, formats)
+- **Status:** 🟡 Partial (UI exists but no actual import/export logic - only history query)
 
 ### ✅ R. Integrations
 - **Dipakai oleh:** CRM, Marketing, CMS, Accounting, Helpdesk
 - **Kenapa universal:** Hubungkan ke API atau service lain
 - **Components:** Integration list, OAuth, Webhooks, API keys
-- **Status:** ✅ Stable (IntegrationsDashboard 354 lines, 12 services)
+- **Status:** 🟡 Partial (UI displays available integrations but no OAuth/webhook/connection logic)
 
 ### 🟩 S. Comments / Discussions
 - **Dipakai oleh:** Projects, Docs, CRM, Helpdesk
@@ -178,11 +178,20 @@ Berikut daftar menu **inti yang universal**, cocok dijadikan *foundational menu 
 
 | Status | Count | Percentage |
 |--------|-------|-----------|
-| ✅ Implemented | 19 | 100% |
-| 🟡 Partial | 0 | 0% |
-| 🔴 Not Started | 0 | 0% |
+| ✅ Implemented | 13 | 68% |
+| 🟡 Partial (UI only / incomplete backend) | 4 | 21% |
+| 🔴 Not Working | 2 | 11% |
 
-> **Note:** Updated December 14, 2025. All 19 Dynamic Menus are now ✅ complete. Automations execution engine added with validation, topological execution, and 15+ node executors.
+> **Note:** Updated December 16, 2025. Honest audit performed - several features marked "stable" were actually incomplete or placeholder only.
+
+### ⚠️ Features Requiring Attention:
+
+| Feature | Issue | Priority |
+|---------|-------|----------|
+| **Automations** | Backend returns "not implemented" - visual canvas exists but no execution | P0 |
+| **Overview** | No backend queries - needs dashboard data aggregation | P1 |
+| **Import/Export** | No actual import/export logic - UI only | P1 |
+| **Integrations** | No OAuth/webhook implementation - display only | P2 |
 
 ---
 
@@ -376,28 +385,28 @@ convex/features/X/
 
 ## 🎯 Implementation Priority
 
-### Phase 1 - Universal Menus (Q1) ✅
+### Phase 1 - Universal Menus (Q1) 🟡 68% Complete
 > Fokus: Build the 19 Dynamic Menus first
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 1 | Overview | ✅ Stable | Dashboard widgets, quick actions |
+| 1 | Overview | 🔴 No Backend | UI exists but no dashboard aggregation queries |
 | 2 | Settings | ✅ Stable | Workspace, users, permissions |
 | 3 | Search | ✅ Stable | Global search, filters |
 | 4 | Notifications | ✅ Stable | In-app, email preferences |
 | 5 | Users / Accounts | ✅ Stable | Invitations, roles, memberships |
 | 6 | Audit Log | ✅ Stable | Activity tracking, compliance |
 | 7 | Comments | ✅ Stable | Threaded discussions |
-| 8 | Reports | ✅ Stable | Basic charts, export |
+| 8 | Reports | ✅ Stable | Uses analytics API for data |
 | 9 | Activities/Tasks | ✅ Stable | Kanban, list view |
 | 10 | Files/Documents | ✅ Stable | Upload, versioning |
-| 11 | Calendar | ✅ Stable | Events, scheduling |
+| 11 | Calendar | ✅ Stable | Events, scheduling, drag-drop |
 | 12 | Analytics | ✅ Stable | Charts, metrics |
-| 13 | Automations | ✅ Stable | Execution engine with 15+ node executors |
-| 14 | Forms | ✅ Stable | FormBuilder 523 lines, 15 field types, DnD |
+| 13 | Automations | 🔴 UI Only | Visual canvas exists but backend NOT implemented |
+| 14 | Forms | ✅ Stable | FormBuilder with DnD, 15 field types |
 | 15 | Approvals | ✅ Beta | Pending/History tabs, approve/reject dialogs |
-| 16 | Import/Export | ✅ Stable | DataTransferDashboard 424 lines, DnD |
-| 17 | Integrations | ✅ Stable | IntegrationsDashboard 354 lines |
+| 16 | Import/Export | 🟡 Partial | UI exists but no actual import/export logic |
+| 17 | Integrations | 🟡 Partial | Display available services but no OAuth/connections |
 | 18 | Contacts/People | ✅ Stable | Contact management |
 | 19 | Tags/Categories | ✅ Stable | Tagging system |
 
@@ -787,4 +796,4 @@ AI dapat otomatis compose menu berdasarkan:
 
 ---
 
-*Last Updated: December 14, 2025 (status validation - corrected 5 features from Implemented to Partial)*
+*Last Updated: December 16, 2025 (honest audit - corrected false "stable" claims)*

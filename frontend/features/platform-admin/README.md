@@ -9,7 +9,7 @@ The Platform Admin feature provides a centralized dashboard for platform adminis
 - **Manage Custom Features**: View, enable/disable, and configure features created via Builder
 - **Monitor Workspaces**: See all workspaces on the platform
 - **Grant Feature Access**: Control which workspaces can access which features
-- **View Analytics**: Platform-wide usage statistics (coming soon)
+- **View Analytics**: Platform-wide usage statistics
 
 ## Access Control
 

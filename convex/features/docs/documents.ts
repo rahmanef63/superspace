@@ -1,7 +1,9 @@
 import { query, mutation } from "../../_generated/server";
 import { v } from "convex/values";
-import { ensureUser, getExistingUserId } from "../../auth/helpers";
+import { ensureUser, getExistingUserId, requireActiveMembership, hasPermission, requirePermission } from "../../auth/helpers";
 import { Doc, Id } from "../../_generated/dataModel";
+import { PERMS } from "../../workspace/permissions";
+import { logAuditEvent } from "../../shared/audit";
 
 type Document = Doc<"documents">;
 
@@ -119,7 +121,12 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
+    const { membership } = await requirePermission(
+      ctx,
+      args.workspaceId,
+      PERMS.DOCUMENTS_CREATE
+    );
+    const userId = membership.userId; // Standardize on membership user
 
     let parentId: Id<"documents"> | undefined;
     if (args.parentId !== undefined) {
@@ -133,14 +140,23 @@ export const create = mutation({
         if (parent.workspaceId !== args.workspaceId) {
           throw new Error("Parent document must belong to the same workspace");
         }
+        // Access control for parent matching create
         if (!parent.isPublic && parent.createdBy !== userId) {
-          throw new Error("Unauthorized to reference parent document");
+          // Allow if manage permission?
+          // For strict parity with original: throw error.
+          // But admins should be able to create children?
+          // Sticking to original logic for now, but enabling admin override via permission would be better.
+          // Leaving original strict check + Admin override
+          const { role } = await requireActiveMembership(ctx, args.workspaceId); // already got membership
+          if (!hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
+            throw new Error("Unauthorized to reference parent document");
+          }
         }
         parentId = parent._id;
       }
     }
 
-    return await ctx.db.insert("documents", {
+    const docId = await ctx.db.insert("documents", {
       title: args.title,
       isPublic: args.isPublic,
       createdBy: userId,
@@ -150,6 +166,17 @@ export const create = mutation({
       lastModified: Date.now(),
       metadata: args.metadata,
     });
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "document.create",
+      resourceType: "document",
+      resourceId: docId,
+      metadata: { title: args.title }
+    });
+
+    return docId;
   },
 });
 
@@ -159,14 +186,13 @@ export const updateTitle = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new Error("Document not found");
     }
 
-    if (document.createdBy !== userId) {
+    const { membership, role } = await requireActiveMembership(ctx, document.workspaceId);
+    if (document.createdBy !== membership.userId && !hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
       throw new Error("Unauthorized");
     }
 
@@ -174,26 +200,46 @@ export const updateTitle = mutation({
       title: args.title,
       lastModified: Date.now(),
     });
+
+    await logAuditEvent(ctx, {
+      workspaceId: document.workspaceId,
+      actorUserId: membership.userId,
+      action: "document.update_title",
+      resourceType: "document",
+      resourceId: args.id,
+      metadata: { title: args.title }
+    });
   },
 });
 
 export const togglePublic = mutation({
   args: { id: v.id("documents") },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new Error("Document not found");
     }
 
-    if (document.createdBy !== userId) {
-      throw new Error("Unauthorized");
+    const { membership, role } = await requireActiveMembership(ctx, document.workspaceId);
+    if (document.createdBy !== membership.userId && !hasPermission(role, PERMS.DOCUMENTS_PUBLISH)) {
+      // Assuming PUBLISH permission controls public toggle, or MANAGE.
+      if (!hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
+        throw new Error("Unauthorized");
+      }
     }
 
     await ctx.db.patch(args.id, {
       isPublic: !document.isPublic,
       lastModified: Date.now(),
+    });
+
+    await logAuditEvent(ctx, {
+      workspaceId: document.workspaceId,
+      actorUserId: membership.userId,
+      action: "document.toggle_public",
+      resourceType: "document",
+      resourceId: args.id,
+      metadata: { isPublic: !document.isPublic }
     });
   },
 });
@@ -207,15 +253,18 @@ export const update = mutation({
     parentId: v.optional(v.union(v.id("documents"), v.null())),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new Error("Document not found");
     }
 
-    if (document.createdBy !== userId) {
-      throw new Error("Unauthorized");
+    const { membership, role } = await requireActiveMembership(ctx, document.workspaceId);
+    const userId = membership.userId;
+
+    if (document.createdBy !== userId && !hasPermission(role, PERMS.DOCUMENTS_EDIT)) {
+      if (!hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
+        throw new Error("Unauthorized");
+      }
     }
 
     const updates: Partial<Document> = {
@@ -243,7 +292,11 @@ export const update = mutation({
           throw new Error("Parent document must belong to the same workspace");
         }
         if (!parent.isPublic && parent.createdBy !== userId) {
-          throw new Error("Unauthorized to reference parent document");
+          // Basic strict check. If admin logic required, usage of role is needed.
+          // But existing logic was strict Owner.
+          if (!hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
+            throw new Error("Unauthorized to reference parent document");
+          }
         }
         if (String(parent._id) === String(document._id)) {
           throw new Error("Document cannot be its own parent");
@@ -253,24 +306,41 @@ export const update = mutation({
     }
 
     await ctx.db.patch(args.id, updates);
+
+    await logAuditEvent(ctx, {
+      workspaceId: document.workspaceId,
+      actorUserId: userId,
+      action: "document.update",
+      resourceType: "document",
+      resourceId: args.id,
+    });
   },
 });
 
 export const deleteDocument = mutation({
   args: { id: v.id("documents") },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx);
-
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new Error("Document not found");
     }
 
-    if (document.createdBy !== userId) {
-      throw new Error("Unauthorized");
+    const { membership, role } = await requireActiveMembership(ctx, document.workspaceId);
+    if (document.createdBy !== membership.userId && !hasPermission(role, PERMS.DOCUMENTS_DELETE)) {
+      if (!hasPermission(role, PERMS.DOCUMENTS_MANAGE)) {
+        throw new Error("Unauthorized");
+      }
     }
 
     await ctx.db.delete(args.id);
+
+    await logAuditEvent(ctx, {
+      workspaceId: document.workspaceId,
+      actorUserId: membership.userId,
+      action: "document.delete",
+      resourceType: "document",
+      resourceId: args.id,
+    });
   },
 });
 
@@ -302,9 +372,9 @@ export const getWorkspaceDocuments = query({
           ...doc,
           author: author
             ? {
-                name: author.name ?? undefined,
-                image: author.avatarUrl ?? undefined,
-              }
+              name: author.name ?? undefined,
+              image: author.avatarUrl ?? undefined,
+            }
             : undefined,
         };
       })
@@ -345,9 +415,9 @@ export const searchDocuments = query({
           ...doc,
           author: author
             ? {
-                name: author.name ?? undefined,
-                image: author.avatarUrl ?? undefined,
-              }
+              name: author.name ?? undefined,
+              image: author.avatarUrl ?? undefined,
+            }
             : undefined,
         };
       })

@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import {
   ShoppingCart,
@@ -26,6 +25,7 @@ import {
   Download,
   Eye,
 } from 'lucide-react'
+import { SalesHeader } from "./SalesHeader"
 
 // Import sub-components (will be created)
 import QuotesOverview from './quotes/QuotesOverview'
@@ -62,30 +62,7 @@ export default function SalesPage({ workspaceId }: SalesPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={ShoppingCart}
-        title="Sales & Invoicing"
-        subtitle="Manage quotes, invoices, payments, and track sales performance"
-        primaryAction={{
-          label: "New Invoice",
-          icon: Plus,
-          onClick: () => {},
-        }}
-        secondaryActions={[
-          {
-            id: "filter",
-            label: "Filter",
-            icon: Filter,
-            onClick: () => {},
-          },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => {},
-          },
-        ]}
-      />
+      <SalesHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6">
@@ -275,10 +252,10 @@ export default function SalesPage({ workspaceId }: SalesPageProps) {
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
-                <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Analytics Dashboard</h3>
                 <p className="text-muted-foreground mb-4">
-                  Advanced sales analytics and reporting features coming soon
+                  View sales trends, performance metrics, and forecasts
                 </p>
                 <Button variant="outline">View Basic Reports</Button>
               </div>

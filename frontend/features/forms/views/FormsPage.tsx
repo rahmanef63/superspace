@@ -4,7 +4,6 @@ import React, { useState } from "react"
 import { FileText, Plus, Eye, Edit, Trash2, MoreHorizontal, ArrowLeft, Save, Send } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useForms } from "../hooks/useForms"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import FormBuilder from "../components/FormBuilder"
 import FormPreview from "../components/FormPreview"
+import { FormsHeader } from "./FormsHeader"
 
 interface FormsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -239,15 +239,8 @@ export default function FormsPage({ workspaceId }: FormsPageProps) {
   // Forms List View
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={FileText}
-        title="Forms"
-        subtitle="Create and manage forms for data collection"
-        primaryAction={{
-          label: "Create Form",
-          icon: Plus,
-          onClick: handleCreateNew,
-        }}
+      <FormsHeader
+        onCreateForm={handleCreateNew}
       />
 
       <div className="flex-1 overflow-auto p-4">

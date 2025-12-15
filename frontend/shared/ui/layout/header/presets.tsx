@@ -20,6 +20,9 @@ import {
 import { GlobalUtilityButtons } from "../chrome/GlobalUtilityButtons"
 import { HEADER_PRESETS, type HeaderAction, type HeaderMetaItem, type BreadcrumbItem } from "./types"
 
+// Import ViewToolbar types and component
+import { ViewToolbar, type ViewToolbarProps } from "./components"
+
 const isHeaderActionConfig = (action: HeaderAction | React.ReactNode): action is HeaderAction => (
   !React.isValidElement(action) &&
   typeof action === "object" &&
@@ -58,8 +61,10 @@ export interface FeatureHeaderProps {
   }
   /** Meta information (e.g., count, last updated) */
   meta?: HeaderMetaItem[]
-  /** Toolbar content below header */
+  /** @deprecated Use viewToolbar prop instead. Raw toolbar content below header */
   toolbar?: React.ReactNode
+  /** ViewToolbar configuration - renders consistent toolbar with search/sort/filter */
+  viewToolbar?: ViewToolbarProps
   /** Additional className */
   className?: string
   /** Children */
@@ -76,10 +81,14 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
   badge,
   meta,
   toolbar,
+  viewToolbar,
   className,
   children,
 }) => {
   const preset = HEADER_PRESETS.feature
+
+  // Determine what toolbar to render
+  const hasToolbar = toolbar || viewToolbar
 
   // Helper to render secondary actions
   const renderSecondaryActions = () => {
@@ -142,7 +151,7 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
         size={preset.size}
         layout="standard"
         background={preset.background}
-        border={!toolbar && preset.border}
+        border={!hasToolbar && preset.border}
         className={className}
       >
         <div className="flex-1 min-w-0">
@@ -188,7 +197,12 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
           {children}
         </Header.Actions>
       </Header>
-      {toolbar && (
+      {/* ViewToolbar takes precedence over legacy toolbar prop */}
+      {viewToolbar && (
+        <ViewToolbar {...viewToolbar} />
+      )}
+      {/* Legacy toolbar support */}
+      {!viewToolbar && toolbar && (
         <Header.Toolbar>{toolbar}</Header.Toolbar>
       )}
     </div>

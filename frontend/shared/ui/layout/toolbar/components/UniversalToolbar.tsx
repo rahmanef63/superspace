@@ -4,6 +4,9 @@
  * Main toolbar component that renders tools from registry.
  * Fully responsive with automatic mobile/tablet/desktop adaptations.
  *
+ * @deprecated Consider using `ViewToolbar` from `@/frontend/shared/ui/layout/header` for simpler props-based API.
+ * This component uses a registry-based pattern which is more complex for most use cases.
+ * 
  * @author SuperSpace Team
  * @version 1.0.0
  */
@@ -32,13 +35,13 @@ export interface UniversalToolbarProps extends Partial<ToolbarConfig> {
  */
 function useBreakpoint() {
   const isMobile = useIsMobile(); // <640px
-  
+
   // For tablet detection, we'll use a simple check
   // This could be enhanced with a more robust hook
-  const isTablet = typeof window !== "undefined" 
+  const isTablet = typeof window !== "undefined"
     ? window.innerWidth >= 640 && window.innerWidth < 1024
     : false;
-  
+
   const isDesktop = !isMobile && !isTablet;
 
   return {
@@ -92,7 +95,7 @@ function renderTool(
   context: Omit<ToolRenderContext, "tool">
 ): React.ReactNode {
   const toolDef = toolbarRegistry.get(tool.type as any);
-  
+
   if (!toolDef) {
     console.warn(`[UniversalToolbar] Tool type not found in registry: ${tool.type}`);
     return null;
@@ -100,7 +103,7 @@ function renderTool(
 
   try {
     // Validate params if schema exists
-    const validatedParams = tool.params 
+    const validatedParams = tool.params
       ? toolDef.paramsSchema.parse(tool.params)
       : undefined;
 

@@ -203,9 +203,10 @@ export default function PosDashboard({ data, isLoading }: PosDashboardProps) {
                             <CardTitle>Product Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Package className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Product catalog management coming soon</p>
+                            <div className="text-center py-12">
+                                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">Product Catalog</p>
+                                <p className="text-sm text-muted-foreground">Manage your products, prices, and categories</p>
                             </div>
                         </CardContent>
                     </Card>

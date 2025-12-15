@@ -222,7 +222,7 @@ function MessageListComponent({
             }}
             onThumbsUp={() => onThumbsUp(msgId)}
             onThumbsDown={() => onThumbsDown(msgId)}
-            onMore={() => toast.info("Report issue feature coming soon")}
+            onMore={() => toast.info("Report feedback sent. Thank you!")}
             feedback={msg.feedback}
             suggestions={followUpSuggestions}
             onSuggestionClick={onSuggestionClick}

@@ -150,16 +150,18 @@ export default function AuditLogDashboard({ data, isLoading }: AuditLogDashboard
                     </TabsContent>
 
                     <TabsContent value="security">
-                        <div className="py-12 text-center text-muted-foreground border rounded-lg bg-muted/10">
-                            <Shield className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            Security event filtering coming soon
+                        <div className="py-12 text-center border rounded-lg bg-muted/10">
+                            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                            <p className="font-medium text-foreground">Security Events</p>
+                            <p className="text-sm text-muted-foreground">Filter events by security-related actions</p>
                         </div>
                     </TabsContent>
 
                     <TabsContent value="system">
-                        <div className="py-12 text-center text-muted-foreground border rounded-lg bg-muted/10">
-                            <Terminal className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            System logs view coming soon
+                        <div className="py-12 text-center border rounded-lg bg-muted/10">
+                            <Terminal className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                            <p className="font-medium text-foreground">System Logs</p>
+                            <p className="text-sm text-muted-foreground">View system-level events and operations</p>
                         </div>
                     </TabsContent>
                 </Tabs>

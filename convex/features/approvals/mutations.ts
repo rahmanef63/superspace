@@ -1,7 +1,9 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
-import { requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
+import { requirePermission, resolveCandidateUserIds } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 import type { Id } from "../../_generated/dataModel"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Mutations for approvals feature
@@ -30,7 +32,7 @@ export const createRequest = mutation({
     data: v.optional(v.record(v.string(), v.any())),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.APPROVALS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     if (candidateIds.length === 0) throw new Error("Not authenticated")
@@ -64,7 +66,7 @@ export const approveRequest = mutation({
     comment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.APPROVALS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     if (candidateIds.length === 0) throw new Error("Not authenticated")
@@ -105,7 +107,7 @@ export const rejectRequest = mutation({
     reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.APPROVALS_MANAGE)
 
     const candidateIds = await resolveCandidateUserIds(ctx)
     if (candidateIds.length === 0) throw new Error("Not authenticated")

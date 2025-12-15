@@ -47,7 +47,7 @@ export function GeneralSettings() {
             disabled
           />
           <p className="text-xs text-muted-foreground px-3">
-            Language selection coming soon
+            Additional languages will be available in future updates
           </p>
         </CardContent>
       </Card>
@@ -76,7 +76,7 @@ export function GeneralSettings() {
             disabled
           />
           <p className="text-xs text-muted-foreground px-3">
-            Accessibility settings coming soon
+            Accessibility features will be available in future updates
           </p>
         </CardContent>
       </Card>

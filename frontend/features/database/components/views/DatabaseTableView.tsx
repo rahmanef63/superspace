@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import type { ColumnDef, ColumnSizingState } from "@/components/kibo-ui/table";
+import type { ColumnDef, ColumnSizingState } from "@/frontend/shared/components/views/table";
 import {
   TableProvider,
   TableHeader,
@@ -11,7 +11,7 @@ import {
   TableRow,
   TableCell,
   TableColumnHeader,
-} from "@/components/kibo-ui/table";
+} from "@/frontend/shared/components/views/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,7 +80,7 @@ export function DatabaseTableView({
 
     // Import filter helper
     const { applyConvexFilters } = require('@/convex/lib/filters');
-    
+
     // Apply filters client-side
     return applyConvexFilters(features, filterQuery);
   }, [features, filterQuery]);
@@ -103,17 +103,17 @@ export function DatabaseTableView({
 
   const displayFields: DatabaseField[] = visibleFieldIds
     ? visibleFieldIds
-        .map((id) => fieldById.get(id))
-        .filter((field): field is DatabaseField => {
-          if (!field) return false;
-          if (titleFieldId && String(field._id) === titleFieldId) {
-            return false;
-          }
-          return true;
-        })
+      .map((id) => fieldById.get(id))
+      .filter((field): field is DatabaseField => {
+        if (!field) return false;
+        if (titleFieldId && String(field._id) === titleFieldId) {
+          return false;
+        }
+        return true;
+      })
     : orderedFields.filter(
-        (field) => !titleFieldId || String(field._id) !== titleFieldId,
-      );
+      (field) => !titleFieldId || String(field._id) !== titleFieldId,
+    );
 
   const columns: ColumnDef<DatabaseFeature>[] = [
     {
@@ -259,9 +259,55 @@ export function DatabaseTableView({
   }, [activeView]);
 
   const handleColumnSizingChange = useCallback(
-    (state: ColumnSizingState) => {
+    (updaterOrValue: any) => {
       if (!onColumnSizingChange) {
         return;
+      }
+
+      // Resolve value if it's a function (Updater)
+      let state: ColumnSizingState;
+      if (typeof updaterOrValue === 'function') {
+        // We need current state to resolve updater, but here we only have access to new state?
+        // Actually, onColumnSizingChange expects OnChangeFn which gives Updater.
+        // Since we are wrapping TableProvider, we should probably access the current state via internal table state?
+        // But DatabaseTableView is wrapping TableProvider which manages state.
+        // Wait, DatabaseTableView passes `onColumnSizingChange` (the prop) directly to `TableProvider`?
+        // No, it defines `handleColumnSizingChange`.
+        // TableProvider calls `handleColumnSizingChange` with `Updater<ColumnSizingState>`.
+        // We need to resolve `Updater` with *some* "old" state. 
+        // But here we might not have easy access to the exact "old" state if it's controlled internally by TableProvider.
+        // HOWEVER, if `initialColumnSizing` is passed, TableProvider uses that as base?
+
+        // It's safer to just cast or assume for now if complex resolution is needed.
+        // Or better: simplfy. The `TableProvider` from shared implementation *already handles* state update logic
+        // and calls `onColumnSizingChange` prop with the *NEW resolved state* if it manages state?
+        // Let's check Shared TableProvider.
+
+        // Shared TableProvider:
+        // setColumnSizing((previous) => { const next = resolve(updater, previous); onColumnSizingChange?.(next); return next; });
+
+        // So Shared TableProvider calls `onColumnSizingChange` with the *RESOLVED NEXT STATE* (ColumnSizingState), NOT the Updater.
+        // So `handleColumnSizingChange` receiving `state: ColumnSizingState` IS CORRECT regarding what Shared TableProvider passes to its prop `onColumnSizingChange`.
+        // Wait, is there a type mismatch in `TableProviderProps`?
+        // Shared TableProvider: `onColumnSizingChange?: OnChangeFn<ColumnSizingState>;`
+        // OnChangeFn<T> = (updaterOrValue: Updater<T>) => void
+
+        // Using logic:
+        // setColumnSizing((previous) => { const next = ...; onColumnSizingChange?.(next); return next; })
+        // Here `next` is `ColumnSizingState`.
+        // But `onColumnSizingChange` is typed as `OnChangeFn` which expects `Updater`.
+        // Passing a value `next` to `OnChangeFn` IS valid (Updater is T | ((old:T)=>T)).
+        // So Shared TableProvider is passing `T` (ColumnSizingState) to the callback.
+
+        // The error says: `Type '(state: ColumnSizingState) => void' is not assignable to type 'OnChangeFn<ColumnSizingState>'`.
+        // `OnChangeFn` expects argument `Updater<T>`, which includes FUNCTION.
+        // Our handler `(state: ColumnSizingState) => void` ONLY accepts `T`. It does NOT accept function.
+        // But typescript sees `OnChangeFn` allows function, so it complains our handler doesn't handle function.
+        // We need to type our handler to accept `Updater<T>` but we know we always get `T`.
+
+        state = typeof updaterOrValue === 'function' ? {} : updaterOrValue; // Fallback, we shouldn't receive function from our shared provider implementation
+      } else {
+        state = updaterOrValue;
       }
 
       const normalized: Record<string, number> = {};

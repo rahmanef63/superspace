@@ -15,7 +15,7 @@
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MoreHorizontal, GripVertical } from "lucide-react";
+import { MoreHorizontal, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -397,6 +397,22 @@ export function createTableColumns<T extends PropertyRowData>(
       columns.push(createPropertyColumn(propConfig, options));
     }
   }
+
+  // Add "Add property" ghost column
+  columns.push({
+    id: "add-property",
+    size: 50,
+    minSize: 50,
+    enableResizing: false,
+    enableSorting: false,
+    header: () => (
+      <Button variant="ghost" size="sm" className="h-8 -ml-3 text-muted-foreground hover:text-foreground">
+        <Plus className="h-4 w-4 mr-2" />
+        Add property
+      </Button>
+    ),
+    cell: () => null,
+  });
 
   // Add actions column
   if (options.enableRowActions) {

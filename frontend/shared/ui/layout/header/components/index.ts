@@ -39,3 +39,15 @@ export type {
   DateRange,
   PaginationControlProps,
 } from "./HeaderControls"
+
+// ViewToolbar - Comprehensive toolbar for data views
+export { ViewToolbar, DEFAULT_VIEW_OPTIONS } from "./ViewToolbar"
+export type {
+  ViewToolbarProps,
+  SortState,
+  FilterOption,
+  FilterCondition,
+  ViewMode,
+  ViewOption,
+} from "./ViewToolbar"
+

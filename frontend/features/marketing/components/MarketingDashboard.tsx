@@ -202,9 +202,10 @@ export default function MarketingDashboard({ data, isLoading }: MarketingDashboa
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Megaphone className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Full campaign management coming soon</p>
+                            <div className="text-center py-12">
+                                <Megaphone className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">No campaigns yet</p>
+                                <p className="text-sm text-muted-foreground">Create your first marketing campaign to get started</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -216,9 +217,10 @@ export default function MarketingDashboard({ data, isLoading }: MarketingDashboa
                             <CardTitle>Creative Assets</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Asset library coming soon</p>
+                            <div className="text-center py-12">
+                                <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">Asset Library</p>
+                                <p className="text-sm text-muted-foreground">Upload and manage your creative assets</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -230,9 +232,10 @@ export default function MarketingDashboard({ data, isLoading }: MarketingDashboa
                             <CardTitle>Audience Segments</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Audience management coming soon</p>
+                            <div className="text-center py-12">
+                                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">Audience Segments</p>
+                                <p className="text-sm text-muted-foreground">Define and manage your target audiences</p>
                             </div>
                         </CardContent>
                     </Card>

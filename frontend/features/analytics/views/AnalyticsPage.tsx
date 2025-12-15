@@ -18,7 +18,6 @@ import {
 } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useAnalytics } from "../hooks/useAnalytics"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { AnalyticsHeader } from "./AnalyticsHeader"
 
 interface AnalyticsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -84,31 +84,7 @@ export default function AnalyticsPage({ workspaceId }: AnalyticsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={BarChart3}
-        title="Analytics"
-        subtitle="Workspace insights and performance metrics"
-        secondaryActions={[
-          {
-            id: "refresh",
-            label: "Refresh",
-            icon: RefreshCw,
-            onClick: () => {},
-          },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => {},
-          },
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => {},
-          },
-        ]}
-      />
+      <AnalyticsHeader />
 
       <div className="flex-1 overflow-auto p-6">
         {isLoading ? (

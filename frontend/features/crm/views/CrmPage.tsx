@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import {
   Users,
@@ -30,6 +29,7 @@ import {
   Phone,
   Mail,
 } from 'lucide-react'
+import { CrmHeader } from "./CrmHeader"
 
 // Import sub-components (will be created)
 import ContactsOverview from './contacts/ContactsOverview'
@@ -88,36 +88,7 @@ export default function CrmPage({ workspaceId }: CrmPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={Users}
-        title="CRM & Sales"
-        subtitle="Manage customers, leads, opportunities, and sales activities"
-        primaryAction={{
-          label: "Add Contact",
-          icon: Plus,
-          onClick: () => { },
-        }}
-        secondaryActions={[
-          {
-            id: "search",
-            label: "Search",
-            icon: Search,
-            onClick: () => { },
-          },
-          {
-            id: "filter",
-            label: "Filter",
-            icon: Filter,
-            onClick: () => { },
-          },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => { },
-          },
-        ]}
-      />
+      <CrmHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6">

@@ -1,12 +1,11 @@
 "use client"
 
 import React from "react"
-import { Activity, Settings, Download } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import { useAuditLog } from "../hooks/useAuditLog"
 import AuditLogDashboard from "../components/AuditLogDashboard"
+import { AuditLogHeader } from "./AuditLogHeader"
 
 interface AuditLogPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -36,24 +35,7 @@ export default function AuditLogPage({ workspaceId }: AuditLogPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={Activity}
-        title="Audit Log"
-        subtitle="Monitor system activity and security events"
-        primaryAction={{
-          label: "Export Logs",
-          icon: Download,
-          onClick: () => { },
-        }}
-        secondaryActions={[
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => { },
-          },
-        ]}
-      />
+      <AuditLogHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <AuditLogDashboard data={data} isLoading={isLoading} />

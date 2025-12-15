@@ -7,14 +7,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { ColumnDef, ColumnSizingState } from "@/components/kibo-ui/table";
+import type { ColumnDef, ColumnSizingState } from "@/frontend/shared/components/views/table";
 import {
   TableProvider,
   TableBody,
   TableRow,
   TableCell,
   TableContext,
-} from "@/components/kibo-ui/table";
+} from "@/frontend/shared/components/views/table";
 import {
   TableHeader as TableHeaderElement,
   TableRow as TableRowElement,

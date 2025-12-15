@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import {
   Package,
@@ -29,6 +28,7 @@ import {
   Filter,
   Download,
 } from 'lucide-react'
+import { InventoryHeader } from "./InventoryHeader"
 
 // Import sub-components (will be created)
 import ItemsOverview from './items/ItemsOverview'
@@ -80,36 +80,7 @@ export default function InventoryPage({ workspaceId }: InventoryPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={Package}
-        title="Inventory Management"
-        subtitle="Manage inventory, warehouses, purchase orders, and suppliers"
-        primaryAction={{
-          label: "Add Item",
-          icon: Plus,
-          onClick: () => {},
-        }}
-        secondaryActions={[
-          {
-            id: "search",
-            label: "Search",
-            icon: Search,
-            onClick: () => {},
-          },
-          {
-            id: "filter",
-            label: "Filter",
-            icon: Filter,
-            onClick: () => {},
-          },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => {},
-          },
-        ]}
-      />
+      <InventoryHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6">
@@ -317,10 +288,10 @@ export default function InventoryPage({ workspaceId }: InventoryPageProps) {
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
-                <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Analytics Dashboard</h3>
                 <p className="text-muted-foreground mb-4">
-                  Inventory analytics and insights coming soon
+                  View inventory insights and category breakdown
                 </p>
                 <Button variant="outline">View Reports</Button>
               </div>

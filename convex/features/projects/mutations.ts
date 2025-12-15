@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { ensureUser, requireActiveMembership } from "../../auth/helpers";
+import { ensureUser, requirePermission } from "../../auth/helpers";
+import { PERMS } from "../../workspace/permissions";
 import { logAuditEvent } from "../../shared/audit";
 
 
@@ -23,7 +24,7 @@ export const createProject = mutation({
   },
   returns: v.id("projects"),
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId);
+    await requirePermission(ctx, args.workspaceId, PERMS.PROJECTS_MANAGE);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -115,7 +116,7 @@ export const updateProject = mutation({
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error("Project not found");
-    await requireActiveMembership(ctx, project.workspaceId);
+    await requirePermission(ctx, project.workspaceId, PERMS.PROJECTS_MANAGE);
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -171,7 +172,7 @@ export const addProjectMember = mutation({
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error("Project not found");
-    await requireActiveMembership(ctx, project.workspaceId);
+    await requirePermission(ctx, project.workspaceId, PERMS.PROJECTS_MANAGE);
     const currentUserId = await ensureUser(ctx);
     if (!currentUserId) throw new Error("Not authenticated");
 
@@ -252,7 +253,7 @@ export const removeProjectMember = mutation({
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error("Project not found");
-    await requireActiveMembership(ctx, project.workspaceId);
+    await requirePermission(ctx, project.workspaceId, PERMS.PROJECTS_MANAGE);
     const currentUserId = await ensureUser(ctx);
     if (!currentUserId) throw new Error("Not authenticated");
 

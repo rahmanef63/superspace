@@ -7,7 +7,7 @@
 
 import { registerFeatureSettings } from "@/frontend/shared/settings"
 import { Contact } from "lucide-react"
-import { ContactsSettings } from "./settings"
+import { ContactSettings } from "./settings"
 import { registerContactsAgent } from "./agents"
 
 // ============================================================================
@@ -20,7 +20,7 @@ registerFeatureSettings("contacts", () => [
         label: "Contacts",
         icon: Contact,
         order: 500,
-        component: ContactsSettings,
+        component: ContactSettings,
     },
 ])
 

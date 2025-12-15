@@ -205,9 +205,10 @@ export default function HrDashboard({ data, isLoading }: HrDashboardProps) {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Employee directory coming soon</p>
+                            <div className="text-center py-12">
+                                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">No employees yet</p>
+                                <p className="text-sm text-muted-foreground">Add employees to build your team directory</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -219,9 +220,10 @@ export default function HrDashboard({ data, isLoading }: HrDashboardProps) {
                             <CardTitle>Leave Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Leave management system coming soon</p>
+                            <div className="text-center py-12">
+                                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">Leave Requests</p>
+                                <p className="text-sm text-muted-foreground">Manage employee time-off and leave requests</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -233,9 +235,10 @@ export default function HrDashboard({ data, isLoading }: HrDashboardProps) {
                             <CardTitle>Recruitment Pipeline</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>Applicant tracking system coming soon</p>
+                            <div className="text-center py-12">
+                                <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                <p className="font-medium text-foreground">Applicant Tracking</p>
+                                <p className="text-sm text-muted-foreground">Track candidates through your hiring process</p>
                             </div>
                         </CardContent>
                     </Card>

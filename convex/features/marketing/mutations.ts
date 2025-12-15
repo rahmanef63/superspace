@@ -1,7 +1,9 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
-import { requireActiveMembership, resolveCandidateUserIds } from "../../auth/helpers"
+import { requirePermission, resolveCandidateUserIds } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 import type { Id } from "../../_generated/dataModel"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Comprehensive Marketing Mutations
@@ -41,7 +43,7 @@ export const createCampaign = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingCampaigns", {
@@ -61,6 +63,15 @@ export const createCampaign = mutation({
       createdBy: userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "marketing_campaign.create",
+      resourceType: "marketingCampaign",
+      resourceId: id,
+      metadata: { name: args.name }
     })
 
     return { id, success: true }
@@ -98,7 +109,7 @@ export const updateCampaign = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const campaign = await ctx.db.get(args.campaignId)
     if (!campaign || campaign.workspaceId !== args.workspaceId) {
@@ -106,7 +117,7 @@ export const updateCampaign = mutation({
     }
 
     const updates: Record<string, any> = { updatedAt: Date.now() }
-    
+
     const fields = ["name", "description", "type", "status", "content", "schedule", "tags"]
     for (const field of fields) {
       if ((args as any)[field] !== undefined) {
@@ -126,7 +137,7 @@ export const deleteCampaign = mutation({
     campaignId: v.id("marketingCampaigns"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const campaign = await ctx.db.get(args.campaignId)
     if (!campaign || campaign.workspaceId !== args.workspaceId) {
@@ -151,7 +162,7 @@ export const duplicateCampaign = mutation({
     name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const original = await ctx.db.get(args.campaignId)
@@ -180,6 +191,15 @@ export const duplicateCampaign = mutation({
       updatedAt: Date.now(),
     })
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_campaign.duplicate",
+      resourceType: "marketingCampaign",
+      resourceId: id,
+      metadata: { originalId: args.campaignId }
+    })
+
     return { id, success: true }
   },
 })
@@ -192,7 +212,7 @@ export const scheduleCampaign = mutation({
     timezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const campaign = await ctx.db.get(args.campaignId)
     if (!campaign || campaign.workspaceId !== args.workspaceId) {
@@ -212,6 +232,15 @@ export const scheduleCampaign = mutation({
       updatedAt: Date.now(),
     })
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_campaign.schedule",
+      resourceType: "marketingCampaign",
+      resourceId: args.campaignId,
+      metadata: { sendAt: args.sendAt }
+    })
+
     return { success: true }
   },
 })
@@ -222,7 +251,7 @@ export const sendCampaign = mutation({
     campaignId: v.id("marketingCampaigns"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const campaign = await ctx.db.get(args.campaignId)
     if (!campaign || campaign.workspaceId !== args.workspaceId) {
@@ -238,6 +267,14 @@ export const sendCampaign = mutation({
       status: "active",
       sentAt: Date.now(),
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_campaign.send",
+      resourceType: "marketingCampaign",
+      resourceId: args.campaignId,
     })
 
     return { success: true }
@@ -277,7 +314,7 @@ export const createTemplate = mutation({
     }))),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingTemplates", {
@@ -296,6 +333,15 @@ export const createTemplate = mutation({
       createdBy: userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_template.create",
+      resourceType: "marketingTemplate",
+      resourceId: id,
+      metadata: { name: args.name, type: args.type }
     })
 
     return { id, success: true }
@@ -321,7 +367,7 @@ export const updateTemplate = mutation({
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const template = await ctx.db.get(args.templateId)
     if (!template || template.workspaceId !== args.workspaceId) {
@@ -330,7 +376,7 @@ export const updateTemplate = mutation({
 
     const updates: Record<string, any> = { updatedAt: Date.now() }
     const fields = ["name", "description", "category", "subject", "content", "htmlContent", "variables", "isPublic"]
-    
+
     for (const field of fields) {
       if ((args as any)[field] !== undefined) {
         updates[field] = (args as any)[field]
@@ -338,6 +384,14 @@ export const updateTemplate = mutation({
     }
 
     await ctx.db.patch(args.templateId, updates)
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_template.update",
+      resourceType: "marketingTemplate",
+      resourceId: args.templateId,
+    })
 
     return { success: true }
   },
@@ -349,7 +403,7 @@ export const deleteTemplate = mutation({
     templateId: v.id("marketingTemplates"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const template = await ctx.db.get(args.templateId)
     if (!template || template.workspaceId !== args.workspaceId) {
@@ -357,6 +411,14 @@ export const deleteTemplate = mutation({
     }
 
     await ctx.db.delete(args.templateId)
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_template.delete",
+      resourceType: "marketingTemplate",
+      resourceId: args.templateId,
+    })
 
     return { success: true }
   },
@@ -378,12 +440,12 @@ export const addSubscriber = mutation({
     customFields: v.optional(v.record(v.string(), v.any())),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     // Check if subscriber already exists
     const existing = await ctx.db
       .query("marketingSubscribers")
-      .withIndex("by_email", (q) => 
+      .withIndex("by_email", (q) =>
         q.eq("workspaceId", args.workspaceId).eq("email", args.email)
       )
       .first()
@@ -409,6 +471,15 @@ export const addSubscriber = mutation({
       }
 
       await ctx.db.patch(existing._id, updates)
+
+      await logAuditEvent(ctx, {
+        workspaceId: args.workspaceId,
+        actorUserId: membership.userId,
+        action: "marketing_subscriber.update",
+        resourceType: "marketingSubscriber",
+        resourceId: existing._id,
+      })
+
       return { id: existing._id, success: true, isNew: false }
     }
 
@@ -445,6 +516,15 @@ export const addSubscriber = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_subscriber.create",
+      resourceType: "marketingSubscriber",
+      resourceId: id,
+      metadata: { email: args.email }
+    })
+
     return { id, success: true, isNew: true }
   },
 })
@@ -465,7 +545,7 @@ export const updateSubscriber = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const subscriber = await ctx.db.get(args.subscriberId)
     if (!subscriber || subscriber.workspaceId !== args.workspaceId) {
@@ -474,7 +554,7 @@ export const updateSubscriber = mutation({
 
     const updates: Record<string, any> = { updatedAt: Date.now() }
     const fields = ["firstName", "lastName", "phone", "lists", "customFields", "preferences"]
-    
+
     for (const field of fields) {
       if ((args as any)[field] !== undefined) {
         updates[field] = (args as any)[field]
@@ -482,6 +562,14 @@ export const updateSubscriber = mutation({
     }
 
     await ctx.db.patch(args.subscriberId, updates)
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_subscriber.update",
+      resourceType: "marketingSubscriber",
+      resourceId: args.subscriberId,
+    })
 
     return { success: true }
   },
@@ -494,7 +582,7 @@ export const unsubscribe = mutation({
     reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const subscriber = await ctx.db.get(args.subscriberId)
     if (!subscriber || subscriber.workspaceId !== args.workspaceId) {
@@ -519,6 +607,15 @@ export const unsubscribe = mutation({
       }
     }
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_subscriber.unsubscribe",
+      resourceType: "marketingSubscriber",
+      resourceId: args.subscriberId,
+      metadata: { reason: args.reason }
+    })
+
     return { success: true }
   },
 })
@@ -529,7 +626,7 @@ export const deleteSubscriber = mutation({
     subscriberId: v.id("marketingSubscribers"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const subscriber = await ctx.db.get(args.subscriberId)
     if (!subscriber || subscriber.workspaceId !== args.workspaceId) {
@@ -549,6 +646,14 @@ export const deleteSubscriber = mutation({
 
     await ctx.db.delete(args.subscriberId)
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_subscriber.delete",
+      resourceType: "marketingSubscriber",
+      resourceId: args.subscriberId,
+    })
+
     return { success: true }
   },
 })
@@ -566,7 +671,7 @@ export const createList = mutation({
     doubleOptIn: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingLists", {
@@ -583,6 +688,15 @@ export const createList = mutation({
       updatedAt: Date.now(),
     })
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_list.create",
+      resourceType: "marketingList",
+      resourceId: id,
+      metadata: { name: args.name, type: args.type }
+    })
+
     return { id, success: true }
   },
 })
@@ -596,7 +710,7 @@ export const updateList = mutation({
     doubleOptIn: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const list = await ctx.db.get(args.listId)
     if (!list || list.workspaceId !== args.workspaceId) {
@@ -610,6 +724,14 @@ export const updateList = mutation({
 
     await ctx.db.patch(args.listId, updates)
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_list.update",
+      resourceType: "marketingList",
+      resourceId: args.listId,
+    })
+
     return { success: true }
   },
 })
@@ -620,7 +742,7 @@ export const deleteList = mutation({
     listId: v.id("marketingLists"),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const list = await ctx.db.get(args.listId)
     if (!list || list.workspaceId !== args.workspaceId) {
@@ -643,6 +765,14 @@ export const deleteList = mutation({
     }
 
     await ctx.db.delete(args.listId)
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_list.delete",
+      resourceType: "marketingList",
+      resourceId: args.listId,
+    })
 
     return { success: true }
   },
@@ -667,7 +797,7 @@ export const createSegment = mutation({
     autoRefresh: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingSegments", {
@@ -680,6 +810,15 @@ export const createSegment = mutation({
       createdBy: userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_segment.create",
+      resourceType: "marketingSegment",
+      resourceId: id,
+      metadata: { name: args.name }
     })
 
     return { id, success: true }
@@ -715,7 +854,7 @@ export const createAutomation = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingAutomations", {
@@ -736,6 +875,15 @@ export const createAutomation = mutation({
       updatedAt: Date.now(),
     })
 
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_automation.create",
+      resourceType: "marketingAutomation",
+      resourceId: id,
+      metadata: { name: args.name }
+    })
+
     return { id, success: true }
   },
 })
@@ -752,7 +900,7 @@ export const updateAutomationStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
 
     const automation = await ctx.db.get(args.automationId)
     if (!automation || automation.workspaceId !== args.workspaceId) {
@@ -762,6 +910,15 @@ export const updateAutomationStatus = mutation({
     await ctx.db.patch(args.automationId, {
       status: args.status,
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_automation.update_status",
+      resourceType: "marketingAutomation",
+      resourceId: args.automationId,
+      metadata: { status: args.status }
     })
 
     return { success: true }
@@ -804,7 +961,7 @@ export const createForm = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MARKETING_MANAGE)
     const userId = await getCurrentUserId(ctx)
 
     const id = await ctx.db.insert("marketingForms", {
@@ -820,6 +977,15 @@ export const createForm = mutation({
       createdBy: userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "marketing_form.create",
+      resourceType: "marketingForm",
+      resourceId: id,
+      metadata: { name: args.name, type: args.type }
     })
 
     return { id, success: true }
@@ -871,7 +1037,7 @@ export const submitForm = mutation({
     if (email && typeof email === "string") {
       const existing = await ctx.db
         .query("marketingSubscribers")
-        .withIndex("by_email", (q) => 
+        .withIndex("by_email", (q) =>
           q.eq("workspaceId", args.workspaceId).eq("email", email)
         )
         .first()
@@ -966,7 +1132,7 @@ export const trackEvent = mutation({
       const campaign = await ctx.db.get(args.campaignId)
       if (campaign) {
         const updates: Record<string, any> = { updatedAt: Date.now() }
-        
+
         switch (args.type) {
           case "sent":
             updates.sent = (campaign.sent || 0) + 1
@@ -1000,7 +1166,7 @@ export const trackEvent = mutation({
       const subscriber = await ctx.db.get(args.subscriberId)
       if (subscriber && subscriber.engagement) {
         const updates: Record<string, any> = { updatedAt: Date.now() }
-        
+
         if (args.type === "opened") {
           updates.engagement = {
             ...subscriber.engagement,

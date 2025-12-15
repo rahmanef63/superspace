@@ -1,30 +1,19 @@
 /**
  * Universal Board View
- * 
- * Kanban-style board view with drag-and-drop.
- * Groups records by select, status, or multi_select properties.
- * 
- * Features:
- * - Drag-and-drop cards between columns
- * - Group by any select/status/multi_select property
- * - Customizable card display
- * - Add cards to specific columns
- * - Column-based filtering
- * - Responsive horizontal scrolling
+ *
+ * Refactored to use the shared Kanban component.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCorners,
-} from "@dnd-kit/core";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+  KanbanProvider,
+  KanbanBoard,
+  // KanbanColumn removed as it doesn't exist
+  KanbanCard,
+  KanbanCards,
+  KanbanHeader,
+} from "@/frontend/shared/components/views/board";
+import type { DragEndEvent } from "@/frontend/shared/components/views/board";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -33,25 +22,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Settings2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BoardColumn } from "./board-column";
-import { BoardCard } from "./board-card";
+import { ViewToolbar } from '@/frontend/shared/ui/layout/header';
 import type { PropertyRowData, PropertyColumnConfig } from "./table-columns";
-import { getPropertyConfig } from "./table-columns";
+import { BoardCard } from "./board-card";
 
-/**
- * Group definition for board columns
- */
 export interface BoardGroup {
   id: string;
   title: string;
   color?: string;
 }
 
-/**
- * Universal Board View Props
- */
 export interface UniversalBoardViewProps {
   /** Board data rows */
   data: PropertyRowData[];
@@ -90,9 +72,19 @@ export interface UniversalBoardViewProps {
   onGroupByChange?: (propertyKey: string) => void;
 }
 
-/**
- * Universal Board View Component
- */
+type BoardItem = {
+  id: string;
+  name: string;
+  column: string;
+  originalData: PropertyRowData;
+}
+
+type BoardColumnType = {
+  id: string;
+  name: string;
+  color?: string;
+}
+
 export function UniversalBoardView({
   data,
   properties,
@@ -100,32 +92,11 @@ export function UniversalBoardView({
   groups: customGroups,
   onCardMove,
   onCardClick,
-  onCardDelete,
   onCardAdd,
   showEmptyGroups = true,
-  disableDrag = false,
   className,
   onGroupByChange,
 }: UniversalBoardViewProps) {
-  const [activeCardId, setActiveCardId] = useState<string | null>(null);
-
-  // Setup drag sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px movement required to start drag
-      },
-    })
-  );
-
-  // Get the groupBy property config
-  const groupByProperty = useMemo(
-    () => properties.find((p) => p.key === groupBy),
-    [properties, groupBy]
-  );
-
-  const groupByConfig = groupByProperty ? getPropertyConfig(groupByProperty.type) : null;
-
   // Determine groups based on property type
   const groups = useMemo<BoardGroup[]>(() => {
     if (customGroups) {
@@ -146,207 +117,192 @@ export function UniversalBoardView({
       }
     });
 
-    return Array.from(uniqueValues).map((value) => ({
+    const generatedGroups = Array.from(uniqueValues).map((value) => ({
       id: value,
       title: value,
     }));
+
+    return generatedGroups;
   }, [customGroups, data, groupBy]);
 
-  // Group cards by column
-  const cardsByGroup = useMemo(() => {
-    const grouped = new Map<string, PropertyRowData[]>();
-
-    // Initialize all groups with empty arrays
-    groups.forEach((group) => {
-      grouped.set(group.id, []);
-    });
-
-    // Add "ungrouped" for items without a group value
-    if (showEmptyGroups) {
-      grouped.set("__ungrouped__", []);
-    }
-
-    // Distribute cards into groups
-    data.forEach((row) => {
+  // Transform data for KanbanProvider
+  const kanbanData = useMemo<BoardItem[]>(() => {
+    return data.map((row) => {
       const value = row.properties[groupBy];
-      let groupId: string;
+      let columnId: string;
 
       if (value === null || value === undefined) {
-        groupId = "__ungrouped__";
+        columnId = "__ungrouped__";
       } else if (typeof value === "object" && "name" in value) {
-        groupId = value.name;
+        columnId = value.name;
       } else if (typeof value === "string") {
-        groupId = value;
+        columnId = value;
       } else {
-        groupId = "__ungrouped__";
+        columnId = "__ungrouped__";
       }
 
-      const cards = grouped.get(groupId);
-      if (cards) {
-        cards.push(row);
-      } else if (showEmptyGroups) {
-        // Add to ungrouped if group doesn't exist
-        grouped.get("__ungrouped__")?.push(row);
+      const groupExists = groups.some(g => g.id === columnId);
+      if (!groupExists && customGroups) {
+        columnId = "__ungrouped__";
       }
+
+      return {
+        id: row.id,
+        name: row.id,
+        column: columnId,
+        originalData: row,
+      };
     });
+  }, [data, groupBy, groups, customGroups]);
 
-    return grouped;
-  }, [data, groups, groupBy, showEmptyGroups]);
+  // Prepare columns for KanbanProvider
+  const kanbanColumns = useMemo<BoardColumnType[]>(() => {
+    const cols = groups.map((g) => ({
+      id: g.id,
+      name: g.title,
+      color: g.color,
+    }));
 
-  // Get groupable properties (select, status, multi_select)
+    const hasUngroupedItems = kanbanData.some(item => item.column === "__ungrouped__");
+    if (showEmptyGroups || hasUngroupedItems) {
+      if (!cols.find(c => c.id === "__ungrouped__")) {
+        cols.push({ id: "__ungrouped__", name: "No Status", color: undefined });
+      }
+    }
+
+    return cols;
+  }, [groups, kanbanData, showEmptyGroups]);
+
+  // Get groupable properties
   const groupableProperties = useMemo(
     () =>
       properties.filter(
         (p) =>
-          p.type === "select" || p.type === "status" || p.type === "multi_select"
+          p.type === "select" ||
+          p.type === "status" ||
+          p.type === "multi_select"
       ),
     [properties]
   );
 
-  // Handle drag start
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveCardId(event.active.id as string);
-  };
-
-  // Handle drag end
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-    setActiveCardId(null);
-
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    // Get the card being dragged
     const cardId = active.id as string;
-
-    // Get the new group (over.id is the column/group id)
     const newGroupId = over.id as string;
 
-    // Call the move callback
+    let targetColumnId = newGroupId;
+    const targetCard = kanbanData.find(c => c.id === newGroupId);
+    if (targetCard) {
+      targetColumnId = targetCard.column;
+    }
+
     if (onCardMove) {
-      try {
-        await onCardMove(cardId, newGroupId);
-      } catch (error) {
-        console.error("Failed to move card:", error);
-      }
+      onCardMove(cardId, targetColumnId);
     }
   };
 
-  // Get the active card for drag overlay
-  const activeCard = useMemo(() => {
-    if (!activeCardId) return null;
-    return data.find((row) => row.id === activeCardId);
-  }, [activeCardId, data]);
+  // Search state
+  const [searchQuery, setSearchQuery] = React.useState('');
 
-  // Visible columns (exclude empty groups if showEmptyGroups is false)
-  const visibleGroups = useMemo(() => {
-    if (showEmptyGroups) {
-      return groups;
-    }
-    return groups.filter((group) => {
-      const cards = cardsByGroup.get(group.id);
-      return cards && cards.length > 0;
-    });
-  }, [groups, cardsByGroup, showEmptyGroups]);
+  // Apply search filter
+  const filteredKanbanData = useMemo(() => {
+    if (!searchQuery.trim()) return kanbanData;
+    const q = searchQuery.toLowerCase();
+    return kanbanData.filter(item =>
+      item.originalData.id.toLowerCase().includes(q) ||
+      Object.values(item.originalData.properties || {}).some(v =>
+        v !== null && v !== undefined && String(v).toLowerCase().includes(q)
+      )
+    );
+  }, [kanbanData, searchQuery]);
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Group by:</span>
-          <Select
-            value={groupBy}
-            onValueChange={onGroupByChange}
-            disabled={!onGroupByChange}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {groupableProperties.map((prop) => (
-                <SelectItem key={prop.key} value={prop.key}>
-                  {prop.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Toolbar via ViewToolbar */}
+      <ViewToolbar
+        // Search
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        enableSearch={true}
 
-          <span className="text-sm text-muted-foreground ml-4">
-            {data.length} items across {visibleGroups.length} columns
-          </span>
-        </div>
+        // Sorting disabled for Board, we use groupBy instead
+        enableSorting={false}
 
-        <Button variant="outline" size="sm">
-          <Settings2 className="h-4 w-4 mr-2" />
-          View settings
-        </Button>
-      </div>
+        // Custom leading actions: Group By
+        leadingActions={
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Group by:</span>
+            <Select
+              value={groupBy}
+              onValueChange={onGroupByChange}
+              disabled={!onGroupByChange}
+            >
+              <SelectTrigger className="w-[180px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {groupableProperties.map((prop) => (
+                  <SelectItem key={prop.key} value={prop.key}>
+                    {prop.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      {/* Board */}
-      <div className="flex-1 overflow-hidden">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
+            <span className="text-sm text-muted-foreground ml-2">
+              {data.length} items across {kanbanColumns.length} columns
+            </span>
+          </div>
+        }
+
+        // Add card not in toolbar, it's per-column
+        onAddItem={undefined}
+      />
+
+      <div className="flex-1 overflow-hidden p-4">
+        <KanbanProvider<BoardItem, BoardColumnType>
+          columns={kanbanColumns}
+          data={kanbanData}
           onDragEnd={handleDragEnd}
         >
-          <ScrollArea className="h-full">
-            <div className="flex gap-4 p-4 h-full">
-              {visibleGroups.map((group) => {
-                const cards = cardsByGroup.get(group.id) || [];
-
-                return (
-                  <BoardColumn
-                    key={group.id}
-                    id={group.id}
-                    title={group.title}
-                    color={group.color}
-                    cards={cards}
-                    properties={properties}
-                    groupBy={groupBy}
-                    onCardClick={onCardClick}
-                    onCardDelete={onCardDelete}
-                    onAddCard={onCardAdd}
-                    disableDrag={disableDrag}
-                  />
-                );
-              })}
-
-              {/* Ungrouped column */}
-              {showEmptyGroups && cardsByGroup.has("__ungrouped__") && (
-                <BoardColumn
-                  id="__ungrouped__"
-                  title="No Status"
-                  cards={cardsByGroup.get("__ungrouped__") || []}
-                  properties={properties}
-                  groupBy={groupBy}
-                  onCardClick={onCardClick}
-                  onCardDelete={onCardDelete}
-                  onAddCard={onCardAdd}
-                  disableDrag={disableDrag}
-                />
-              )}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-
-          {/* Drag overlay */}
-          <DragOverlay>
-            {activeCard && (
-              <div className="rotate-3 scale-105">
-                <BoardCard
-                  data={activeCard}
-                  properties={properties}
-                  groupBy={groupBy}
-                  disableDrag={true}
-                />
-              </div>
-            )}
-          </DragOverlay>
-        </DndContext>
+          {(column) => (
+            <KanbanBoard id={column.id} className="w-[300px] min-w-[300px]">
+              <KanbanHeader className="flex items-center justify-between border-b p-3">
+                <div className="flex items-center gap-2">
+                  {column.color && <div className="h-3 w-3 rounded-full" style={{ backgroundColor: column.color }} />}
+                  <span className="font-medium">{column.id === "__ungrouped__" ? "No Status" : column.id}</span>
+                  <span className="text-xs text-muted-foreground ml-1">
+                    {kanbanData.filter(d => d.column === column.id).length}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onCardAdd?.(column.id)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </KanbanHeader>
+              <KanbanCards<BoardItem> id={column.id}>
+                {(item) => (
+                  <KanbanCard<BoardItem>
+                    id={item.id}
+                    name={item.name}
+                    column={item.column}
+                    originalData={item.originalData}
+                    className="p-0 bg-transparent shadow-none hover:shadow-none border-0"
+                  >
+                    <BoardCard
+                      data={item.originalData as PropertyRowData}
+                      properties={properties}
+                      groupBy={groupBy}
+                      disableDrag={true}
+                      onClick={() => onCardClick?.(item.id)}
+                    />
+                  </KanbanCard>
+                )}
+              </KanbanCards>
+            </KanbanBoard>
+          )}
+        </KanbanProvider>
       </div>
     </div>
   );

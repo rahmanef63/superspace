@@ -2,6 +2,7 @@ import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
 import { requirePermission } from "../../auth/helpers"
 import { PERMS } from "../../workspace/permissions"
+import { logAuditEvent } from "../../shared/audit"
 
 /**
  * Mutations for hr feature
@@ -27,12 +28,21 @@ export const createEmployee = mutation({
     const { membership } = await requirePermission(
       ctx,
       args.workspaceId,
-      PERMS.MANAGE_WORKSPACE // TODO: Add HR-specific permissions
+      PERMS.HR_MANAGE
     )
 
     // TODO: Implement employee creation logic
     // const employeeId = await ctx.db.insert("hr_employees", { ... })
-    
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: membership.userId,
+      action: "hr.employee.create",
+      resourceType: "hr_employee",
+      resourceId: "temp_id",
+      metadata: { email: args.email }
+    })
+
     return {
       success: true,
       message: "Employee creation - not yet implemented",

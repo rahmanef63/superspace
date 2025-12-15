@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { OverviewHeader } from "./views/OverviewHeader"
 import {
   Activity,
   Calendar,
@@ -98,28 +98,8 @@ export function OverviewView({ workspaceId, mockData }: OverviewViewProps) {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <FeatureHeader
-        title={workspaceName}
-        subtitle="Workspace overview and analytics"
-        primaryAction={{
-          label: "Refresh",
-          icon: RefreshCcw,
-          onClick: handleRefresh,
-        }}
-        secondaryActions={[
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => { },
-          },
-          {
-            id: "export",
-            label: "Export",
-            icon: Download,
-            onClick: () => { },
-          },
-        ]}
+      <OverviewHeader
+        onRefresh={handleRefresh}
       />
 
       {/* Time Range Selector */}

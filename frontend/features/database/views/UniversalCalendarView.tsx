@@ -1,226 +1,261 @@
-import React, { useMemo, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { SharedCalendar } from '@/frontend/shared/components/calendar/SharedCalendar';
-import { CalendarEvent, CalendarViewMode } from '@/frontend/shared/components/calendar/types';
-import type { PropertyRowData, PropertyColumnConfig } from './table-columns';
-// @ts-ignore - Module resolution issue workaround
-import { CalendarEventCard } from './calendar-event-card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+/**
+ * Universal Calendar View
+ *
+ * Refactored to use the shared Calendar component.
+ */
+
+import React, { useMemo, useState } from "react";
+import {
+  CalendarProvider,
+  CalendarHeader,
+  CalendarBody,
+  CalendarDatePagination,
+  CalendarMonthPicker,
+  CalendarYearPicker,
+  CalendarDatePicker,
+  CalendarItem,
+  type Feature,
+} from "@/frontend/shared/components/views/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Settings2, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { PropertyRowData, PropertyColumnConfig } from "./table-columns";
+import { getPropertyConfig } from "./table-columns";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { BoardCard } from "./board-card"; // Reusing card display for hover
 
 export interface UniversalCalendarViewProps {
+  /** Calendar data rows */
+  data: PropertyRowData[];
 
-  /** Array of records to display */
-  records: PropertyRowData[];
-
-  /** Array of properties for the records */
+  /** Property column configurations */
   properties: PropertyColumnConfig[];
 
-  /** The property to use for calendar dates (defaults to 'date' type) */
+  /** Property key to use for date */
   dateProperty?: string;
 
-  /** Callback when a record's date is changed via drag-drop */
-  onDateChange?: (recordId: string, newDate: Date, propertyKey: string) => void;
+  /** Property key to use as title */
+  titleProperty?: string;
 
-  /** Callback when a record is clicked */
-  onRecordClick?: (record: PropertyRowData) => void;
+  /** Callback when event is clicked */
+  onEventClick?: (eventId: string) => void;
 
-  /** Callback to add a new record on a specific date */
-  onAddRecord?: (date: Date, propertyKey: string) => void;
+  /** Callback when date property changes */
+  onDatePropertyChange?: (propertyKey: string) => void;
 
-  /** Optional CSS class name */
+  /** Custom CSS class */
   className?: string;
+
+  /** Callback to add a new row */
+  onAddRow?: (data?: Partial<Record<string, any>>) => Promise<void>;
 }
 
-export const UniversalCalendarView: React.FC<UniversalCalendarViewProps> = ({
-  records,
+export function UniversalCalendarView({
+  data,
   properties,
   dateProperty,
-  onDateChange,
-  onRecordClick,
-  onAddRecord,
+  titleProperty,
+  onEventClick,
+  onDatePropertyChange,
   className,
-}) => {
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDateProperty, setSelectedDateProperty] = useState<string>(dateProperty || '');
-  const [hasInitializedDate, setHasInitializedDate] = useState(false);
+  onAddRow,
+}: UniversalCalendarViewProps) {
+  // Get date properties to select from
+  const dateProperties = useMemo(
+    () => properties.filter((p) => p.type === "date"),
+    [properties]
+  );
 
-  // Find all date-type properties
-  const dateProperties = useMemo(() => {
-    return properties.filter(prop =>
-      prop.type === 'date' ||
-      prop.type === 'created_time' ||
-      prop.type === 'last_edited_time'
-    );
-  }, [properties]);
+  // Default to first date property if none selected
+  const activeDateProperty = dateProperty || dateProperties[0]?.key;
 
-  // Auto-select first date property if none selected
-  React.useEffect(() => {
-    if (!selectedDateProperty && dateProperties.length > 0) {
-      setSelectedDateProperty(dateProperties[0].key);
-    }
-  }, [selectedDateProperty, dateProperties]);
+  // Find status property for coloring
+  const statusProperty = useMemo(
+    () => properties.find((p) => p.type === "status" || p.type === "select"),
+    [properties]
+  );
 
-  // Find status property for color coding
-  const statusProperty = useMemo(() => {
-    return properties.find(prop => prop.type === 'status' || prop.type === 'select');
-  }, [properties]);
+  // Transform data to Calendar Feature format
+  const features = useMemo<Feature[]>(() => {
+    if (!activeDateProperty || !data) return [];
 
-  /* Fix lint error by checking correct type literal */
-  const titleProperty = useMemo(() => {
-    return properties.find(prop => prop.type === 'title' || (prop.type as string) === 'rich_text') || properties[0];
-  }, [properties]);
+    return data
+      .map((row) => {
+        const dateValue = row.properties[activeDateProperty];
+        let startDate: Date | undefined;
+        let endDate: Date | undefined;
 
-  // Convert records to calendar events
-  const events: CalendarEvent[] = useMemo(() => {
-    if (!selectedDateProperty) return [];
+        if (!dateValue) return null;
 
-    const calendarEvents: CalendarEvent[] = [];
-
-    for (const record of records) {
-      const dateValue = record.properties?.[selectedDateProperty];
-      if (!dateValue) continue;
-
-      // Parse date from various formats
-      let date: Date;
-      if (typeof dateValue === 'number') {
-        date = new Date(dateValue);
-      } else if (typeof dateValue === 'string') {
-        date = new Date(dateValue);
-      } else if (dateValue instanceof Date) {
-        date = dateValue;
-      } else {
-        continue;
-      }
-
-      if (isNaN(date.getTime())) continue;
-
-      // Get color from status property
-      let color: string | undefined;
-      if (statusProperty) {
-        const statusValue = record.properties?.[statusProperty.key];
-        if (typeof statusValue === 'object' && statusValue !== null && 'color' in statusValue) {
-          color = (statusValue as { color?: string }).color;
+        if (typeof dateValue === "number" || typeof dateValue === "string") {
+          startDate = new Date(dateValue);
+          endDate = new Date(dateValue); // Default to single day
+        } else if (dateValue instanceof Date) {
+          startDate = dateValue;
+          endDate = dateValue;
         }
-      }
+        // TODO: Handle range dates if custom property structure supports it
+        // For now assuming single date or standard simple date
 
-      // Get title from title property
-      let title = 'Untitled';
-      if (titleProperty) {
-        const titleValue = record.properties?.[titleProperty.key];
-        if (typeof titleValue === 'string') {
-          title = titleValue;
-        } else if (titleValue && typeof titleValue === 'object' && 'text' in titleValue) {
-          title = (titleValue as { text: string }).text;
+        if (!startDate || isNaN(startDate.getTime())) return null;
+
+        // Get title
+        let title = row.id;
+        if (titleProperty) {
+          const tVal = row.properties[titleProperty];
+          if (typeof tVal === "string") title = tVal;
+          else if (tVal && typeof tVal === "object" && "text" in tVal) title = (tVal as { text: string }).text;
+        } else {
+          // Fallback to first title property
+          const firstTitleProp = properties.find(p => p.type === 'title');
+          if (firstTitleProp) {
+            const tVal = row.properties[firstTitleProp.key];
+            if (typeof tVal === "string") title = tVal;
+            else if (tVal && typeof tVal === "object" && "text" in tVal) title = (tVal as { text: string }).text;
+          }
         }
-      }
 
-      calendarEvents.push({
-        id: record.id,
-        title,
-        startsAt: date,
-        color,
-        originalData: record
-      });
-    }
+        // Get status color
+        let color = "#3b82f6"; // Default blue
+        let statusName = "No Status";
+        if (statusProperty) {
+          const sVal = row.properties[statusProperty.key];
+          if (sVal && typeof sVal === "object" && "color" in sVal) {
+            color = (sVal as { color?: string }).color || color;
+            statusName = (sVal as { name?: string }).name || statusName;
+          } else if (typeof sVal === "string") {
+            statusName = sVal;
+          }
+        }
 
-    return calendarEvents;
-  }, [records, selectedDateProperty, statusProperty, titleProperty]);
+        return {
+          id: row.id,
+          name: title,
+          startAt: startDate,
+          endAt: endDate,
+          status: {
+            id: statusName,
+            name: statusName,
+            color,
+          },
+          originalData: row, // Keep original for hover card
+        };
+      })
+      .filter((f): f is Feature & { originalData: PropertyRowData } => f !== null);
+  }, [data, activeDateProperty, statusProperty, properties, titleProperty]);
 
-  // Initialize currentDate to first event's date when events are loaded
-  React.useEffect(() => {
-    if (!hasInitializedDate && events.length > 0) {
-      setCurrentDate(events[0].startsAt);
-      setHasInitializedDate(true);
-    }
-  }, [events, hasInitializedDate]);
-
-
-  if (dateProperties.length === 0) {
+  if (!activeDateProperty && dateProperties.length === 0) {
     return (
-      <Card className={className}>
-        <CardContent className="flex items-center justify-center h-[400px]">
-          <div className="text-center space-y-2">
-            <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto" />
-            <p className="text-muted-foreground">
-              No date properties found. Add a date, created_time, or last_edited_time property to use the calendar view.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex h-full items-center justify-center p-8 text-muted-foreground">
+        No date properties found in this database. Add a date property to use the Calendar view.
+      </div>
     );
   }
-
-  const handleEventDrop = (event: CalendarEvent, newDate: Date) => {
-    onDateChange?.(event.id, newDate, selectedDateProperty);
-  }
-
-  const handleEventClick = (event: CalendarEvent) => {
-    onRecordClick?.(event.originalData);
-  }
-
-  // Use the existing CalendarEventCard for rendering
-  const renderEvent = (event: CalendarEvent) => {
-    // Reconstitute the pseudo-event object expected by CalendarEventCard if needed, 
-    // or map props. The card likely expects { id, title, color, date ... }
-    // Let's create a compatible object or pass originalData if compatible.
-    // Looking at previous implementation, it constructed a custom object.
-
-    const cardEvent = {
-      id: event.id,
-      title: event.title,
-      color: event.color,
-      date: event.startsAt,
-      record: event.originalData,
-      status: (event.originalData as any).status // rudimentary status access
-    };
-
-    return (
-      <CalendarEventCard
-        event={cardEvent}
-        onClick={() => onRecordClick?.(event.originalData)}
-      />
-    )
-  }
-
-  // Construct custom controls
-  const customControls = useMemo(() => {
-    if (dateProperties.length <= 1) return null;
-    return (
-      <Select value={selectedDateProperty} onValueChange={setSelectedDateProperty}>
-        <SelectTrigger className="w-[180px] h-8 text-xs">
-          <SelectValue placeholder="Date Property" />
-        </SelectTrigger>
-        <SelectContent>
-          {dateProperties.map(prop => (
-            <SelectItem key={prop.key} value={prop.key}>
-              {prop.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )
-  }, [dateProperties, selectedDateProperty]);
 
   return (
-    <div className={className}>
-      <SharedCalendar
-        month={currentDate}
-        events={events}
-        onMonthChange={setCurrentDate}
-        date={currentDate}
-        onDateSelect={(d) => d && setCurrentDate(d)}
-        onEventDrop={onDateChange ? handleEventDrop : undefined}
-        onEventClick={handleEventClick}
-        onAddEventClick={onAddRecord ? (d) => onAddRecord(d || new Date(), selectedDateProperty) : undefined}
-        renderEvent={renderEvent}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        customControls={customControls}
-      />
+    <div className={cn("flex flex-col h-full", className)}>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-2 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Date:</span>
+            <Select
+              value={activeDateProperty}
+              onValueChange={onDatePropertyChange}
+              disabled={!onDatePropertyChange || dateProperties.length <= 1}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select date property" />
+              </SelectTrigger>
+              <SelectContent>
+                {dateProperties.map((prop) => (
+                  <SelectItem key={prop.key} value={prop.key}>
+                    {prop.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button size="sm" onClick={() => onAddRow?.()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Event
+          </Button>
+        </div>
+
+        <Button variant="outline" size="sm">
+          <Settings2 className="h-4 w-4 mr-2" />
+          View settings
+        </Button>
+      </div>
+
+      <div className="flex-1 overflow-hidden p-4">
+        <CalendarProvider className="h-full border rounded-md bg-background shadow-sm">
+          <div className="flex items-center justify-between border-b p-3">
+            <CalendarDatePicker>
+              <CalendarMonthPicker />
+              <CalendarYearPicker start={2020} end={2030} />
+            </CalendarDatePicker>
+            <CalendarDatePagination />
+          </div>
+          <CalendarHeader />
+          <CalendarBody features={features}>
+            {({ feature }) => (
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <div
+                    className="cursor-pointer"
+                    onClick={(e) => {
+                      // e.stopPropagation(); // Might interfere with HoverCard?
+                      onEventClick?.(feature.id);
+                    }}
+                  >
+                    <CalendarItem feature={feature} className="p-1 rounded-sm hover:bg-muted/50 text-xs transition-colors cursor-pointer" />
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80 p-0" align="start">
+                  {/* We reuse BoardCard's rendering logic or simpler card */}
+                  <div className="p-4">
+                    <h4 className="font-semibold text-sm mb-2">{feature.name}</h4>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      {feature.startAt.toLocaleDateString()}
+                    </div>
+                    {/* Simple rendering of properties */}
+                    <div className="space-y-1">
+                      {(feature as any).originalData && properties.slice(0, 3).map((prop) => {
+                        if (prop.key === (feature as any).originalData.id) return null; // Skip if title handled?
+                        const val = (feature as any).originalData.properties[prop.key];
+                        if (!val) return null;
+                        return (
+                          <div key={prop.key} className="flex gap-2 text-xs">
+                            <span className="text-muted-foreground w-20 truncate">{prop.name}:</span>
+                            <span className="truncate flex-1">
+                              {typeof val === 'object' && 'name' in val ? (val as any).name : String(val)}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            )}
+          </CalendarBody>
+        </CalendarProvider>
+      </div>
     </div>
   );
-};
+}
 
 export default UniversalCalendarView;

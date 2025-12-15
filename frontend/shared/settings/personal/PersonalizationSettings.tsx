@@ -3,13 +3,16 @@
 import { useTheme } from "next-themes"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SettingsToggle, SettingsSelect, SettingsRadioGroup } from "../primitives"
+import { ThemeSelector, useThemeConfig } from "@/frontend/shared/theme"
+import { Label } from "@/components/ui/label"
 
 /**
  * Personalization Settings - UI customization
- * Uses next-themes for theme management
+ * Uses next-themes for theme management and custom theme selector
  */
 export function PersonalizationSettings() {
   const { theme, setTheme } = useTheme()
+  const { activeTheme } = useThemeConfig()
 
   return (
     <div className="space-y-6">
@@ -17,10 +20,11 @@ export function PersonalizationSettings() {
         <CardHeader>
           <CardTitle>Theme</CardTitle>
           <CardDescription>
-            Customize the look and feel
+            Customize the look and feel of your workspace
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Color Scheme (Light/Dark/System) */}
           <SettingsRadioGroup
             id="color-scheme"
             label="Color Scheme"
@@ -34,22 +38,17 @@ export function PersonalizationSettings() {
             ]}
           />
           
-          <SettingsSelect
-            label="Accent Color"
-            description="Primary accent color"
-            value="blue"
-            onValueChange={() => {}}
-            options={[
-              { value: "blue", label: "Blue" },
-              { value: "green", label: "Green" },
-              { value: "purple", label: "Purple" },
-              { value: "orange", label: "Orange" },
-            ]}
-            disabled
-          />
-          <p className="text-xs text-muted-foreground px-3">
-            Accent color customization coming soon
-          </p>
+          {/* Theme Preset Selector */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Theme Preset</Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Select a color theme from our curated collection
+            </p>
+            <ThemeSelector />
+            <p className="text-xs text-muted-foreground mt-2">
+              Current theme: <span className="font-medium">{activeTheme}</span>
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -89,7 +88,7 @@ export function PersonalizationSettings() {
             disabled
           />
           <p className="text-xs text-muted-foreground px-3">
-            Layout customization coming soon
+            Layout customization will be available in future updates
           </p>
         </CardContent>
       </Card>

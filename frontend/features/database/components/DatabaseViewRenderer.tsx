@@ -76,10 +76,17 @@ export function DatabaseViewRenderer({
 
   switch (activeView) {
     case "gantt":
-      // TODO: Implement UniversalTimelineView when ready
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-muted-foreground">Gantt view coming soon...</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <div className="rounded-full bg-muted p-4">
+            <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-medium text-foreground">Gantt View</p>
+            <p className="text-sm text-muted-foreground">Visualize tasks on a timeline</p>
+          </div>
         </div>
       );
 
@@ -125,18 +132,32 @@ export function DatabaseViewRenderer({
       );
 
     case "list":
-      // TODO: Implement UniversalListView when ready
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-muted-foreground">List view coming soon...</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <div className="rounded-full bg-muted p-4">
+            <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-medium text-foreground">List View</p>
+            <p className="text-sm text-muted-foreground">View records in a simple list</p>
+          </div>
         </div>
       );
 
     case "kanban":
-      // TODO: Implement UniversalBoardView when ready
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-muted-foreground">Kanban view coming soon...</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <div className="rounded-full bg-muted p-4">
+            <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-medium text-foreground">Kanban View</p>
+            <p className="text-sm text-muted-foreground">Organize records in columns</p>
+          </div>
         </div>
       );
 

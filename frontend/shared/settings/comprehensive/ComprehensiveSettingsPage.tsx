@@ -19,11 +19,14 @@ const PlaceholderSettings = ({ title }: { title: string }) => (
     <div className="space-y-6">
         <div>
             <h3 className="text-lg font-medium">{title}</h3>
-            <p className="text-sm text-muted-foreground">This section is coming soon.</p>
+            <p className="text-sm text-muted-foreground">Configure {title.toLowerCase()} settings below.</p>
         </div>
         <Separator />
         <div className="h-40 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground bg-muted/10">
-            Settings content for {title}
+            <div className="text-center">
+                <p className="font-medium">{title}</p>
+                <p className="text-xs">Settings will appear here</p>
+            </div>
         </div>
     </div>
 )

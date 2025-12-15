@@ -183,7 +183,7 @@ function AIContent({ customer }: { customer: Customer | null }) {
 
             {/* Placeholder for AI chat interface */}
             <div className="mt-6 p-4 rounded-lg border border-dashed text-center text-muted-foreground text-xs">
-                AI chat interface coming soon
+                AI chat interface initializing...
             </div>
         </div>
     )

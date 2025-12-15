@@ -52,28 +52,28 @@ export type {
   HeaderVariant,
   HeaderLayout,
   HeaderAlignment,
-  
+
   // Breadcrumb
   BreadcrumbItem,
-  
+
   // Actions
   HeaderAction,
   HeaderActionGroup,
-  
+
   // Content (Config types - use these for props configuration)
   HeaderBadgeConfig,
   HeaderSearchConfig,
   HeaderMetaItem,
   HeaderStats,
   HeaderSlots,
-  
+
   // Props
   HeaderBaseProps,
   HeaderNavigationProps,
   HeaderActionProps,
   HeaderContentProps,
   HeaderProps,
-  
+
   // Compound component props
   HeaderRootProps,
   HeaderTitleProps,
@@ -85,10 +85,10 @@ export type {
   HeaderBackProps,
   HeaderBadgeProps,
   HeaderMetaProps,
-  
+
   // Context
   HeaderContextValue,
-  
+
   // Presets
   HeaderPresetName,
   HeaderPreset,
@@ -223,3 +223,18 @@ export type {
   DateRange,
   PaginationControlProps,
 } from "./components"
+
+// ============================================================================
+// ViewToolbar (Comprehensive data view toolbar)
+// ============================================================================
+
+export { ViewToolbar, DEFAULT_VIEW_OPTIONS } from "./components"
+export type {
+  ViewToolbarProps,
+  SortState,
+  FilterOption,
+  FilterCondition,
+  ViewMode,
+  ViewOption,
+} from "./components"
+

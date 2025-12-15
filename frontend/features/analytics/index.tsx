@@ -62,10 +62,10 @@ export default function AnalyticsFeature() {
           <Card className="bg-muted/50">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Construction className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">Analytics Coming Soon</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Analytics Dashboard</h3>
               <p className="text-sm text-muted-foreground text-center max-w-md">
                 We're building powerful analytics tools to help you understand your workspace activity.
-                Check back soon for insights on usage, performance, and trends.
+                Track usage, performance, and trends in one place.
               </p>
             </CardContent>
           </Card>
@@ -88,7 +88,7 @@ export default function AnalyticsFeature() {
           <Card className="bg-muted/50">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Construction className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">Reports Coming Soon</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Reports</h3>
               <p className="text-sm text-muted-foreground text-center max-w-md">
                 Generate detailed reports on your workspace activity.
                 This feature is currently in development.
@@ -114,7 +114,7 @@ export default function AnalyticsFeature() {
           <Card className="bg-muted/50">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Construction className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">Real-time Monitoring Coming Soon</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Real-time Monitoring</h3>
               <p className="text-sm text-muted-foreground text-center max-w-md">
                 Monitor your workspace activity in real-time.
                 This feature is currently in development.

@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 import { mutation } from "../../_generated/server"
-import { ensureUser, requireActiveMembership } from "../../auth/helpers"
+import { ensureUser, requirePermission } from "../../auth/helpers"
+import { PERMS } from "../../workspace/permissions"
 import { logAuditEvent } from "../../shared/audit"
 
 const TASK_STATUS = v.union(v.literal("todo"), v.literal("in_progress"), v.literal("completed"))
@@ -23,7 +24,7 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     // Require permission
-    const { membership } = await requireActiveMembership(ctx, args.workspaceId)
+    const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.TASKS_MANAGE)
     const actorId = membership?.userId ?? (await ensureUser(ctx))
     const now = Date.now()
 
@@ -83,7 +84,7 @@ export const update = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requirePermission(ctx, item.workspaceId, PERMS.TASKS_MANAGE)
     const actorId = membership?.userId ?? (await ensureUser(ctx))
     const now = Date.now()
 
@@ -144,7 +145,7 @@ export const remove = mutation({
     if (!item) throw new Error("Item not found")
 
     // Require permission
-    const { membership } = await requireActiveMembership(ctx, item.workspaceId)
+    const { membership } = await requirePermission(ctx, item.workspaceId, PERMS.TASKS_MANAGE)
     const actorId = membership?.userId ?? (await ensureUser(ctx))
 
     await ctx.db.delete(args.id)

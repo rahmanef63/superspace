@@ -1,12 +1,11 @@
 "use client"
 
 import React from "react"
-import { ShoppingCart, Plus, Settings } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { PageContainer } from "@/frontend/shared/ui/layout/container"
 import { usePos } from "../hooks/usePos"
 import PosDashboard from "../components/PosDashboard"
+import { PosHeader } from "./PosHeader"
 
 interface PosPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -36,24 +35,7 @@ export default function PosPage({ workspaceId }: PosPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={ShoppingCart}
-        title="Point of Sale"
-        subtitle="Retail management and sales terminal"
-        primaryAction={{
-          label: "New Sale",
-          icon: Plus,
-          onClick: () => { },
-        }}
-        secondaryActions={[
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => { },
-          },
-        ]}
-      />
+      <PosHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <PosDashboard data={data} isLoading={isLoading} />

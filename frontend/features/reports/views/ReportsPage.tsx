@@ -25,7 +25,6 @@ import {
   Share2,
   RefreshCw,
 } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -56,6 +55,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
+import { ReportsHeader } from "./ReportsHeader"
 
 interface ReportsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -256,17 +256,10 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={FileBarChart}
-        title="Reports"
-        subtitle="Analytics and business intelligence"
-        primaryAction={{
-          label: "Create Report",
-          icon: Plus,
-          onClick: () => {
-            setFormData(defaultFormData)
-            setCreateDialogOpen(true)
-          }
+      <ReportsHeader
+        onCreateReport={() => {
+          setFormData(defaultFormData)
+          setCreateDialogOpen(true)
         }}
       />
 

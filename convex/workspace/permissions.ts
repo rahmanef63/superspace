@@ -31,6 +31,11 @@ export const PERMS = {
 
   VIEW_WORKSPACE: "view_workspace",
   COMMUNICATIONS_VIEW: "communications.view",
+  COMMUNICATIONS_MANAGE: "communications.manage",
+
+  // Content
+  CONTENT_VIEW: "content.view",
+  CONTENT_MANAGE: "content.manage",
 
   // Database Permissions
   DATABASE_READ: "database.read",
@@ -38,6 +43,50 @@ export const PERMS = {
   DATABASE_UPDATE: "database.update",
   DATABASE_DELETE: "database.delete",
   DATABASE_MANAGE: "database.manage",
+
+  // CRM
+  CRM_VIEW: "crm.view",
+  CRM_MANAGE: "crm.manage",
+
+  // Tasks
+  TASKS_VIEW: "tasks.view",
+  TASKS_MANAGE: "tasks.manage",
+
+  // Projects
+  PROJECTS_VIEW: "projects.view",
+  PROJECTS_MANAGE: "projects.manage",
+
+  // Accounting
+  ACCOUNTING_VIEW: "accounting.view",
+  ACCOUNTING_MANAGE: "accounting.manage",
+
+  // HR
+  HR_VIEW: "hr.view",
+  HR_MANAGE: "hr.manage",
+
+  // Sales
+  SALES_VIEW: "sales.view",
+  SALES_MANAGE: "sales.manage",
+
+  // Marketing
+  MARKETING_VIEW: "marketing.view",
+  MARKETING_MANAGE: "marketing.manage",
+
+  // Automation
+  AUTOMATION_VIEW: "automation.view",
+  AUTOMATION_MANAGE: "automation.manage",
+
+  // Analytics
+  ANALYTICS_VIEW: "analytics.view",
+  ANALYTICS_MANAGE: "analytics.manage",
+
+  // Approvals
+  APPROVALS_VIEW: "approvals.view",
+  APPROVALS_MANAGE: "approvals.manage",
+
+  // Inventory
+  INVENTORY_VIEW: "inventory.view",
+  INVENTORY_MANAGE: "inventory.manage",
 } as const;
 
 export type Permission = (typeof PERMS)[keyof typeof PERMS];

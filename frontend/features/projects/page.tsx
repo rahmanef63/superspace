@@ -1,9 +1,9 @@
 "use client";
 
-import { FolderKanban, Plus, LayoutGrid } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 import { Id } from "@convex/_generated/dataModel";
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header";
 import { PageContainer } from "@/frontend/shared/ui/layout/container";
+import { ProjectsHeader } from "./views/ProjectsHeader";
 
 export interface ProjectsPageProps {
   workspaceId: Id<"workspaces"> | null;
@@ -25,26 +25,7 @@ export default function ProjectsPage({ workspaceId }: ProjectsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={FolderKanban}
-        title="Projects"
-        subtitle="Manage your workspace projects and task discussions"
-        badge={{ text: "Coming Soon", variant: "secondary" }}
-        primaryAction={{
-          label: "New Project",
-          icon: Plus,
-          onClick: () => {},
-          disabled: true,
-        }}
-        secondaryActions={[
-          {
-            id: "view",
-            label: "View",
-            icon: LayoutGrid,
-            onClick: () => {},
-          },
-        ]}
-      />
+      <ProjectsHeader />
 
       <div className="flex-1 overflow-auto p-6">
         <div className="flex h-full items-center justify-center">

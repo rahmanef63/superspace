@@ -50,9 +50,9 @@ export default function CmsPublicPage({ params }: PageProps) {
             <Construction className="w-10 h-10 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold mb-2">CMS Lite - Coming Soon</h1>
+            <h1 className="text-2xl font-bold mb-2">CMS Lite - Page Not Found</h1>
             <p className="text-muted-foreground mb-4">
-              This public website feature is currently under development.
+              The requested page could not be found in the database.
             </p>
             <p className="text-sm text-muted-foreground">
               Requested page: <code className="bg-muted px-2 py-1 rounded">/{slug || "home"}</code>

@@ -3,9 +3,9 @@ import { LoadingSpinner } from "../loading";
 import { Id } from "@convex/_generated/dataModel";
 
 // Simple fallback components for missing features
-const ChatFallback = () => <div className="p-6 text-center text-gray-500">Chat feature coming soon</div>;
-const DocumentsFallback = () => <div className="p-6 text-center text-gray-500">Document editor coming soon</div>;
-const CanvasFallback = () => <div className="p-6 text-center text-gray-500">Canvas builder coming soon</div>;
+const ChatFallback = () => <div className="p-6 text-center text-gray-500">Chat feature loading...</div>;
+const DocumentsFallback = () => <div className="p-6 text-center text-gray-500">Document editor loading...</div>;
+const CanvasFallback = () => <div className="p-6 text-center text-gray-500">Canvas builder loading...</div>;
 
 // Simple dashboard stub to avoid dynamic import resolution issues in the monorepo
 function Dashboard(props: { workspaceId?: Id<"workspaces">;[key: string]: any }) {
@@ -33,7 +33,7 @@ export function LazyLoader({ component, workspaceId, conversationId, ...props }:
 
       case 'menu-store':
         // For now, return a placeholder since MenuStore has import issues
-        return <div className="p-6 text-center text-gray-500">Menu Store coming soon</div>;
+        return <div className="p-6 text-center text-gray-500">Menu Store initializing...</div>;
 
       case 'chat':
         return <ChatFallback />;

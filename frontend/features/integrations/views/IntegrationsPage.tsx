@@ -1,11 +1,10 @@
 "use client"
 
 import React from "react"
-import { Plug } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useIntegrations } from "../hooks/useIntegrations"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { IntegrationsDashboard } from "../components/IntegrationsDashboard"
+import { IntegrationsHeader } from "./IntegrationsHeader"
 
 interface IntegrationsPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -48,11 +47,7 @@ export default function IntegrationsPage({ workspaceId }: IntegrationsPageProps)
 
   return (
     <div className="flex h-full flex-col">
-      <FeatureHeader
-        icon={Plug}
-        title="Integrations"
-        subtitle={`${data.integrations.length} connected`}
-      />
+      <IntegrationsHeader />
 
       <div className="flex-1 overflow-auto p-4">
         <IntegrationsDashboard

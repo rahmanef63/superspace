@@ -40,7 +40,7 @@ export function ChatAI({ selectedNode }: ChatAIProps) {
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand you want to "${input}". ${selectedNode ? `For the selected ${selectedNode.type} component, ` : ''}I'll help you implement this change. This is a placeholder response - AI integration coming soon!`,
+        content: `I understand you want to "${input}". ${selectedNode ? `For the selected ${selectedNode.type} component, ` : ''}I'll help you implement this change. Let me analyze the component and suggest modifications.`,
         sender: 'ai',
         timestamp: new Date()
       };

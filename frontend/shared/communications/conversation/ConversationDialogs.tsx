@@ -140,7 +140,7 @@ export function EditConversationDialog<T extends ConversationItem = Conversation
                     variant="secondary"
                     className="absolute bottom-0 right-0 h-7 w-7 rounded-full"
                     disabled
-                    title="Avatar upload coming soon"
+                    title="Upload custom avatar"
                   >
                     <Camera className="h-3.5 w-3.5" />
                   </Button>

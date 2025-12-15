@@ -28,10 +28,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 import { FeatureExportImport } from "@/frontend/shared/foundation/utils/data"
 import { useTasks } from "../hooks/useTasks"
 import type { Task, TaskPriority } from "../types"
+import { TasksHeader } from "./TasksHeader"
 
 interface TasksPageProps {
   workspaceId?: Id<"workspaces"> | null
@@ -169,31 +169,7 @@ export default function TasksPage({ workspaceId }: TasksPageProps) {
 
   return (
     <div className="flex h-full flex-col p-6 gap-6">
-      <FeatureHeader
-        icon={CheckSquare}
-        title="Tasks"
-        subtitle="Track work, manage owners, and stay ahead of deadlines"
-        primaryAction={{
-          label: "New Task",
-          icon: Plus,
-          onClick: () => { },
-        }}
-        secondaryActions={[
-          {
-            id: "filter",
-            label: "Filter",
-            icon: Filter,
-            onClick: () => { },
-          },
-          <FeatureExportImport key="export-import" featureId="tasks" variant="separate" />,
-          {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            onClick: () => { },
-          },
-        ]}
-      />
+      <TasksHeader />
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">

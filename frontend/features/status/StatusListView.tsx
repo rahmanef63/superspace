@@ -2,10 +2,8 @@ import { useState } from "react";
 import { Camera, Plus, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/frontend/shared/ui";
 import { getInitials } from "@/frontend/shared/communications";
 import { useQuery } from "convex/react";
@@ -29,13 +27,13 @@ const useStatusUpdates = () => {
 
   const rawStatuses = useQuery(
     api.features.status.queries.getStatusesByUser,
-    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : undefined
+    workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
   );
 
   const statuses: StatusUpdate[] = (rawStatuses ?? []).map((item) => ({
     id: item.userId,
-    name: item.user?.name ?? "User",
-    avatar: item.user?.image ?? "",
+    name: (item.user as { name?: string } | null)?.name ?? "User",
+    avatar: (item.user as { image?: string } | null)?.image ?? "",
     time: item.latestStatus ? new Date(item.latestStatus.createdAt).toLocaleTimeString() : "",
     hasUpdate: item.hasUnviewed,
     mediaType: item.latestStatus?.type === "video" ? "video" : "photo",
@@ -58,7 +56,6 @@ export function StatusListView({
   variant = "standalone",
 }: StatusListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
   const { statuses, isLoading } = useStatusUpdates();
 
   const filteredStatuses = statuses.filter(status =>
@@ -76,18 +73,10 @@ export function StatusListView({
     <div className={containerClasses}>
       {/* Header */}
       <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {isMobile && (
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-            )}
-            <h1 className="text-xl font-semibold text-foreground">Status</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Plus className="h-5 w-5" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-end mb-4">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Plus className="h-5 w-5" />
+          </Button>
         </div>
         <SearchBar
           placeholder="Search status updates"

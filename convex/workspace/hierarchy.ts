@@ -12,7 +12,7 @@
 
 import { v } from "convex/values"
 import { query, mutation, internalMutation } from "../_generated/server"
-import { ensureUser, requirePermission } from "../auth/helpers"
+import { ensureUser, requirePermission, getExistingUserId } from "../auth/helpers"
 import type { Id, Doc } from "../_generated/dataModel"
 import { PERMS } from "./permissions"
 
@@ -42,7 +42,8 @@ export const getMainWorkspace = query({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) return null
     
-    const userId = await ensureUser(ctx)
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return null
     
     // First try the optimized index
     const mainWorkspace = await ctx.db

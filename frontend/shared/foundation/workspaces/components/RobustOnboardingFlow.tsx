@@ -10,7 +10,7 @@ import { ArrowRight, ArrowLeft, Check, Loader2, Rocket } from "lucide-react"
 import { OnboardingProgress } from "./OnboardingProgress"
 import { BundleSelector } from "./BundleSelector"
 import { FeatureCustomizer } from "./FeatureCustomizer"
-import { 
+import {
   useBundleWithFeatures,
   getMergedBundleEnabledFeatures,
 } from "../hooks/useBundles"
@@ -52,10 +52,10 @@ const ONBOARDING_STEPS: OnboardingStepDef[] = [
   },
 ]
 
-export function RobustOnboardingFlow({ 
-  onComplete, 
+export function RobustOnboardingFlow({
+  onComplete,
   variant = "page",
-  initialType = "personal" 
+  initialType = "personal"
 }: RobustOnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -81,7 +81,7 @@ export function RobustOnboardingFlow({
   const createWorkspace = useMutation(api.workspace.workspaces.createWorkspace)
   const trackEvent = useMutation(api.features.analytics.mutations.trackEvent as any)
   const pathname = usePathname()
-  
+
   // Get the selected bundle with features from database/static
   const { bundle: selectedBundle } = useBundleWithFeatures(data.selectedBundleId)
 
@@ -94,7 +94,7 @@ export function RobustOnboardingFlow({
       disabledFeatures: [],
     }))
   }, [])
-  
+
   // Sync enabled features when selected bundle changes
   useEffect(() => {
     if (selectedBundle) {
@@ -188,11 +188,11 @@ export function RobustOnboardingFlow({
 
     let attempt = 0
     while (attempt < 10) {
-        const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`
-       try {
-          const workspaceId = await createWorkspace({
-            name: data.name,
-            slug: candidate,
+      const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`
+      try {
+        const workspaceId = await createWorkspace({
+          name: data.name,
+          slug: candidate,
           type: data.type,
           description: data.description,
           isPublic: false,
@@ -200,39 +200,39 @@ export function RobustOnboardingFlow({
           bundleId: data.selectedBundleId || undefined,
           enabledFeatures: data.enabledFeatures,
           // Use enabled features as selected menu slugs for menu system
-            selectedMenuSlugs: data.enabledFeatures,
-          })
+          selectedMenuSlugs: data.enabledFeatures,
+        })
 
-          void trackEvent({
-            workspaceId,
-            eventType: "onboarding",
-            eventName: "onboarding.workspace_created",
-            properties: {
-              workspaceType: data.type,
-              bundleId: data.selectedBundleId ?? undefined,
-              enabledFeaturesCount: data.enabledFeatures.length,
-              enabledFeatures: data.enabledFeatures,
-            },
-            metadata: {
-              userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
-              referrer: typeof document !== "undefined" ? document.referrer : undefined,
-              path: pathname ?? undefined,
-            },
-          }).catch((err: any) => {
-            if (process.env.NODE_ENV !== "production") {
-              console.warn("[Onboarding] analytics trackEvent failed", err)
-            }
-          })
+        void trackEvent({
+          workspaceId,
+          eventType: "onboarding",
+          eventName: "onboarding.workspace_created",
+          properties: {
+            workspaceType: data.type,
+            bundleId: data.selectedBundleId ?? undefined,
+            enabledFeaturesCount: data.enabledFeatures.length,
+            enabledFeatures: data.enabledFeatures,
+          },
+          metadata: {
+            userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+            referrer: typeof document !== "undefined" ? document.referrer : undefined,
+            path: pathname ?? undefined,
+          },
+        }).catch((err: any) => {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("[Onboarding] analytics trackEvent failed", err)
+          }
+        })
 
-          // Bundle and features are saved with the workspace creation
-          onComplete(workspaceId, data.enabledFeatures)
-          setIsSubmitting(false)
-          return
-        } catch (error: any) {
+        // Bundle and features are saved with the workspace creation
+        onComplete(workspaceId, data.enabledFeatures)
+        setIsSubmitting(false)
+        return
+      } catch (error: any) {
         const msg = String(error?.message || error)
         const duplicate = msg.includes("slug already exists") || (msg.includes("slug") && msg.includes("exists"))
         const unauthenticated = msg.toLowerCase().includes("not authenticated")
-        
+
         if (unauthenticated) {
           setSubmitError("Authentication expired. Please sign in again and retry.")
           break
@@ -252,13 +252,13 @@ export function RobustOnboardingFlow({
     switch (currentStep) {
       case 0: // Welcome
         return (
-          <div className="text-center py-12">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <Rocket className="h-10 w-10 text-primary" />
+          <div className="text-center py-8 sm:py-12">
+            <div className="mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-primary/10">
+              <Rocket className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
             </div>
-            <h2 className="mb-3 text-2xl font-bold">{ONBOARDING_STEPS[0].title}</h2>
+            <h2 className="mb-3 text-xl sm:text-2xl font-bold">{ONBOARDING_STEPS[0].title}</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              We'll help you set up your workspace in just a few steps. 
+              We'll help you set up your workspace in just a few steps.
               You can always customize everything later.
             </p>
           </div>
@@ -348,8 +348,8 @@ export function RobustOnboardingFlow({
   const content = (
     <div className="w-full max-w-4xl mx-auto">
       <OnboardingProgress currentStep={currentStep} totalSteps={ONBOARDING_STEPS.length} />
-      
-      <div className="mt-6 rounded-lg border border-border bg-background p-6 md:p-8">
+
+      <div className="mt-6 rounded-lg border border-border bg-background p-4 sm:p-6 md:p-8">
         {renderStepContent()}
 
         {submitError && (
@@ -358,15 +358,14 @@ export function RobustOnboardingFlow({
           </div>
         )}
 
-        <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
+        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0 border-t border-border pt-4 sm:pt-6">
           <button
             onClick={handleBack}
             disabled={isFirstStep || isSubmitting}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
-              isFirstStep || isSubmitting
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 ${isFirstStep || isSubmitting
                 ? "cursor-not-allowed text-muted-foreground"
                 : "text-foreground hover:bg-muted"
-            }`}
+              }`}
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -407,7 +406,7 @@ export function RobustOnboardingFlow({
   // Page variant - fills the dashboard content area with proper scrolling
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="py-8 px-4 md:px-8">
+      <div className="py-4 sm:py-8 px-3 sm:px-4 md:px-8">
         {content}
       </div>
     </div>

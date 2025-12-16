@@ -9,7 +9,7 @@
 
 import { v } from "convex/values"
 import { query } from "../_generated/server"
-import { ensureUser } from "../auth/helpers"
+import { ensureUser, getExistingUserId } from "../auth/helpers"
 import type { Id, Doc } from "../_generated/dataModel"
 
 // ============================================================================
@@ -67,7 +67,8 @@ export const getChildWorkspaceSummaries = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx)
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return []
     const limit = args.limit ?? 10
     
     // Verify this is the user's main workspace
@@ -138,7 +139,8 @@ export const getAggregatedReports = query({
     })),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx)
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return null
     
     // Verify this is the user's main workspace
     const mainWorkspace = await ctx.db.get(args.mainWorkspaceId)
@@ -258,7 +260,8 @@ export const getChildWorkspaceNotifications = query({
     unreadOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx)
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return []
     const limit = args.limit ?? 20
     
     // Verify this is the user's main workspace
@@ -327,7 +330,8 @@ export const getMainWorkspaceQuickStats = query({
     mainWorkspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    const userId = await ensureUser(ctx)
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return null
     
     // Verify this is the user's main workspace
     const mainWorkspace = await ctx.db.get(args.mainWorkspaceId)

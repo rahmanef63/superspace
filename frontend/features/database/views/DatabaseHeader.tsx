@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { Database, Plus, Settings, Table } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Database, Plus, Table } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface DatabaseHeaderProps {
   onCreateDatabase?: () => void
   onManageViews?: () => void
-  onSettings?: () => void
 }
 
 /**
  * DatabaseHeader Component
  * 
  * Consistent header for the Database feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function DatabaseHeader({
   onCreateDatabase,
   onManageViews,
-  onSettings,
 }: DatabaseHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function DatabaseHeader({
       primaryAction={{
         label: "New Database",
         icon: Plus,
-        onClick: onCreateDatabase ?? (() => {}),
+        onClick: onCreateDatabase ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "views",
           label: "Views",
           icon: Table,
-          onClick: onManageViews ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onManageViews ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="database"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default DatabaseHeader
+

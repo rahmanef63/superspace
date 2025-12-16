@@ -1,25 +1,23 @@
 "use client"
 
 import React from "react"
-import { Calculator, Plus, FileText, Settings } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Calculator, Plus, FileText } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface AccountingHeaderProps {
   onNewTransaction?: () => void
   onViewReports?: () => void
-  onSettings?: () => void
 }
 
 /**
  * AccountingHeader Component
  * 
  * Consistent header for the Accounting feature.
- * Extracted from AccountingPage for reusability and consistency.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function AccountingHeader({
   onNewTransaction,
   onViewReports,
-  onSettings,
 }: AccountingHeaderProps) {
   return (
     <FeatureHeader
@@ -29,24 +27,25 @@ export function AccountingHeader({
       primaryAction={{
         label: "New Transaction",
         icon: Plus,
-        onClick: onNewTransaction ?? (() => {}),
+        onClick: onNewTransaction ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "reports",
           label: "Reports",
           icon: FileText,
-          onClick: onViewReports ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onViewReports ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="accounting"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default AccountingHeader
+

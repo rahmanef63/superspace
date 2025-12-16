@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { Users, Plus, Settings, Download } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Users, Plus, Download } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface CrmHeaderProps {
   onAddContact?: () => void
   onExport?: () => void
-  onSettings?: () => void
 }
 
 /**
  * CrmHeader Component
  * 
  * Consistent header for the CRM feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function CrmHeader({
   onAddContact,
   onExport,
-  onSettings,
 }: CrmHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,26 @@ export function CrmHeader({
       primaryAction={{
         label: "Add Contact",
         icon: Plus,
-        onClick: onAddContact ?? (() => {}),
+        onClick: onAddContact ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "export",
           label: "Export",
           icon: Download,
-          onClick: onExport ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onExport ?? (() => { }),
         },
       ]}
-    />
+    >
+      {/* Feature Settings & AI Assistant */}
+      <FeatureHeaderActions
+        featureSlug="crm"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default CrmHeader
+

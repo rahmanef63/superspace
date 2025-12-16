@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { FileText, Plus, Settings, Layout } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { FileText, Plus, Layout } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface FormsHeaderProps {
   onCreateForm?: () => void
   onTemplates?: () => void
-  onSettings?: () => void
 }
 
 /**
  * FormsHeader Component
  * 
  * Consistent header for the Forms feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function FormsHeader({
   onCreateForm,
   onTemplates,
-  onSettings,
 }: FormsHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function FormsHeader({
       primaryAction={{
         label: "New Form",
         icon: Plus,
-        onClick: onCreateForm ?? (() => {}),
+        onClick: onCreateForm ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "templates",
           label: "Templates",
           icon: Layout,
-          onClick: onTemplates ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onTemplates ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="forms"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default FormsHeader
+

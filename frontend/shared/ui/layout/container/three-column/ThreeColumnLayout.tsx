@@ -25,10 +25,10 @@ import type { ThreeColumnLayoutAdvancedProps } from "./types"
 import { resolveThreeColumnPreset } from "./presets"
 
 // Default responsive breakpoints
-// Priority: Right panel collapses first, then left panel on very small screens
+// Priority: Right panel collapses first, then left panel on smaller desktops
 const DEFAULT_COLLAPSE_RIGHT_AT = 1024 // Collapse right panel first on smaller desktops
-const DEFAULT_COLLAPSE_LEFT_AT = 640   // Collapse left panel only on mobile
-const DEFAULT_STACK_AT = 480           // Stack on very small mobile
+const DEFAULT_COLLAPSE_LEFT_AT = 768   // Collapse left panel on tablets
+const DEFAULT_STACK_AT = 768           // Stack on tablets and below for mobile navigation
 
 export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedProps) {
   const presetConfig = resolveThreeColumnPreset(rawProps.preset)
@@ -130,12 +130,12 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
   const isLeftControlled = controlledLeftCollapsed !== undefined
   const isRightControlled = controlledRightCollapsed !== undefined
 
-  const computedLeftCollapsed = isLeftControlled 
-    ? controlledLeftCollapsed 
+  const computedLeftCollapsed = isLeftControlled
+    ? controlledLeftCollapsed
     : (autoLeftCollapsed || internalLeftCollapsed)
-  
-  const computedRightCollapsed = isRightControlled 
-    ? controlledRightCollapsed 
+
+  const computedRightCollapsed = isRightControlled
+    ? controlledRightCollapsed
     : (autoRightCollapsed || internalRightCollapsed)
 
   const leftCollapsed = hideLeft ? true : computedLeftCollapsed
@@ -239,8 +239,8 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
     const mobileContextValue = {
       leftCollapsed: !canShowLeft || mobileView !== "left",
       rightCollapsed: !canShowRight || mobileView !== "right",
-      toggleLeft: !canShowLeft ? () => {} : (mobileView === "left" ? goToCenter : goToLeft),
-      toggleRight: !canShowRight ? () => {} : (mobileView === "right" ? goToCenter : goToRight),
+      toggleLeft: !canShowLeft ? () => { } : (mobileView === "left" ? goToCenter : goToLeft),
+      toggleRight: !canShowRight ? () => { } : (mobileView === "right" ? goToCenter : goToRight),
     }
 
     return (
@@ -325,7 +325,7 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
   // Normal three-column layout
   return (
     <ThreeColumnContext.Provider value={contextValue}>
-      <div 
+      <div
         ref={containerRef}
         className={cn("relative flex flex-row w-full h-full overflow-hidden", className)}
       >
@@ -337,7 +337,7 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
                 "flex flex-col h-full border-r transition-all duration-200 ease-in-out flex-shrink-0",
                 leftCollapsed && "border-r-0"
               )}
-              style={{ 
+              style={{
                 width: leftCollapsed ? collapsedWidth : leftWidth,
                 minWidth: leftCollapsed ? collapsedWidth : minSideWidth,
                 maxWidth: leftCollapsed ? collapsedWidth : maxSideWidth,
@@ -393,7 +393,7 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
         {/* Center Panel */}
         <div
           className="flex flex-col h-full overflow-hidden transition-all duration-200 flex-1"
-          style={{ 
+          style={{
             minWidth: centerMinWidth,
             marginRight: rightCollapsed && !hideRight ? collapsedWidth : 0,
             flexShrink: centerFlexShrink,

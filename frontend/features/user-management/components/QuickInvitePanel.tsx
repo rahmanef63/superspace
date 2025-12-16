@@ -41,7 +41,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id, Doc } from "@convex/_generated/dataModel";
 import type { ContactForQuickInvite, Team, PropagationStrategy } from "../types";
 import {
   useBulkInviteContacts,
@@ -67,7 +67,7 @@ export function QuickInvitePanel({
   className,
 }: QuickInvitePanelProps) {
   // State
-  const [mode, setMode] = React.useState<"Contacts" | "hierarchy" | "team">("Contacts");
+  const [mode, setMode] = React.useState<"Contacts" | "hierarchy" | "team">("hierarchy");
   const [hierarchyMode, setHierarchyMode] = React.useState<"all" | "custom">("all");
   const [selectedWorkspaceIds, setSelectedWorkspaceIds] = React.useState<Set<string>>(new Set());
   const [selectedContactIds, setSelectedContactIds] = React.useState<Set<string>>(new Set());
@@ -234,36 +234,36 @@ export function QuickInvitePanel({
   };
 
   return (
-    <div className={cn("flex h-full gap-4", className)}>
+    <div className={cn("flex flex-col md:flex-row h-full gap-4", className)}>
       {/* Left: Mode selection and form */}
-      <div className="w-1/2 flex flex-col">
+      <div className="w-full md:w-1/2 flex flex-col">
         {/* Mode tabs */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            size="sm"
-            variant={mode === "Contacts" ? "default" : "outline"}
-            onClick={() => setMode("Contacts")}
-            className="flex-1 gap-1.5"
-          >
-            <UserPlus className="w-4 h-4" />
-            Contacts
-          </Button>
+        <div className="flex flex-wrap gap-2 mb-4">
           <Button
             size="sm"
             variant={mode === "hierarchy" ? "default" : "outline"}
             onClick={() => setMode("hierarchy")}
-            className="flex-1 gap-1.5"
+            className="flex-1 gap-1.5 min-w-[100px]"
           >
-            <GitBranch className="w-4 h-4" />
-            Hierarchy
+            <UserPlus className="w-4 h-4" />
+            Add Member
+          </Button>
+          <Button
+            size="sm"
+            variant={mode === "Contacts" ? "default" : "outline"}
+            onClick={() => setMode("Contacts")}
+            className="flex-1 gap-1.5 min-w-[100px]"
+          >
+            <Users className="w-4 h-4" />
+            Contacts
           </Button>
           <Button
             size="sm"
             variant={mode === "team" ? "default" : "outline"}
             onClick={() => setMode("team")}
-            className="flex-1 gap-1.5"
+            className="flex-1 gap-1.5 min-w-[100px]"
           >
-            <Users className="w-4 h-4" />
+            <GitBranch className="w-4 h-4" />
             Team
           </Button>
         </div>
@@ -411,7 +411,7 @@ export function QuickInvitePanel({
                 <div className="border rounded-md p-3 space-y-2 bg-muted/10 max-h-48 overflow-y-auto">
                   <Label className="text-xs text-muted-foreground uppercase">Available Workspaces</Label>
                   <div className="space-y-1.5">
-                    {matrix?.workspaces?.map(ws => (
+                    {matrix?.workspaces?.map((ws: Doc<"workspaces">) => (
                       <div key={ws._id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`ws-${ws._id}`}
@@ -525,7 +525,7 @@ export function QuickInvitePanel({
 
       {/* Right: Contacts list (for Contacts mode) */}
       {mode === "Contacts" && (
-        <div className="w-1/2 flex flex-col border-l pl-4">
+        <div className="w-full md:w-1/2 flex flex-col border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-sm">
               Available Contacts ({availableContacts.length})
@@ -536,7 +536,7 @@ export function QuickInvitePanel({
               </Badge>
             )}
           </div>
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 h-64 md:h-auto">
             <div className="space-y-1 pr-3">
               {availableContacts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -622,7 +622,7 @@ export function QuickInvitePanel({
 
       {/* Right: Info for hierarchy/team mode */}
       {(mode === "hierarchy" || mode === "team") && (
-        <div className="w-1/2 flex flex-col border-l pl-4">
+        <div className="w-full md:w-1/2 flex flex-col border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4">
           <Card className="flex-1">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">

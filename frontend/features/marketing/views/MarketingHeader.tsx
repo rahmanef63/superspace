@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { Megaphone, Plus, Settings, Target } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Megaphone, Plus, Target } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface MarketingHeaderProps {
   onCreateCampaign?: () => void
   onViewAnalytics?: () => void
-  onSettings?: () => void
 }
 
 /**
  * MarketingHeader Component
  * 
  * Consistent header for the Marketing feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function MarketingHeader({
   onCreateCampaign,
   onViewAnalytics,
-  onSettings,
 }: MarketingHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function MarketingHeader({
       primaryAction={{
         label: "New Campaign",
         icon: Plus,
-        onClick: onCreateCampaign ?? (() => {}),
+        onClick: onCreateCampaign ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "analytics",
           label: "Analytics",
           icon: Target,
-          onClick: onViewAnalytics ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onViewAnalytics ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="marketing"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default MarketingHeader
+

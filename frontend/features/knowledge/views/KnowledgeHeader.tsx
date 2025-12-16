@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { BookOpen, Plus, Settings, Search } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { BookOpen, Plus, Search } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface KnowledgeHeaderProps {
   onCreateArticle?: () => void
   onSearch?: () => void
-  onSettings?: () => void
 }
 
 /**
  * KnowledgeHeader Component
  * 
  * Consistent header for the Knowledge feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function KnowledgeHeader({
   onCreateArticle,
   onSearch,
-  onSettings,
 }: KnowledgeHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function KnowledgeHeader({
       primaryAction={{
         label: "New Article",
         icon: Plus,
-        onClick: onCreateArticle ?? (() => {}),
+        onClick: onCreateArticle ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "search",
           label: "Search",
           icon: Search,
-          onClick: onSearch ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onSearch ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="knowledge"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default KnowledgeHeader
+

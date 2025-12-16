@@ -43,7 +43,7 @@ export const create = mutation({
     if (args.dueDate !== undefined) doc.dueDate = args.dueDate
     if (args.assigneeId !== undefined) doc.assigneeId = args.assigneeId
     if ((args.status ?? "todo") === "completed") {
-      doc.completedAt = now
+      doc.completedDate = now
     }
 
     const itemId = await ctx.db.insert("tasks", doc)
@@ -109,7 +109,7 @@ export const update = mutation({
 
     if (patch.status !== undefined) {
       updates.status = patch.status
-      updates.completedAt = patch.status === "completed" ? now : undefined
+      updates.completedDate = patch.status === "completed" ? now : undefined
     }
 
     if (patch.dueDate !== undefined) {

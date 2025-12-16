@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { BarChart3, Plus, Settings, Download } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { BarChart3, Plus, Download } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface AnalyticsHeaderProps {
   onCreateReport?: () => void
   onExport?: () => void
-  onSettings?: () => void
 }
 
 /**
  * AnalyticsHeader Component
  * 
  * Consistent header for the Analytics feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function AnalyticsHeader({
   onCreateReport,
   onExport,
-  onSettings,
 }: AnalyticsHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function AnalyticsHeader({
       primaryAction={{
         label: "New Report",
         icon: Plus,
-        onClick: onCreateReport ?? (() => {}),
+        onClick: onCreateReport ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "export",
           label: "Export",
           icon: Download,
-          onClick: onExport ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onExport ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="analytics"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default AnalyticsHeader
+

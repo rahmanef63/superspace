@@ -114,9 +114,10 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
               size={action.size || "sm"}
               onClick={action.onClick}
               disabled={action.disabled}
+              className="shrink-0"
             >
-              {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
-              {action.label}
+              {ActionIcon && <ActionIcon className="h-4 w-4 md:mr-2" />}
+              <span className="hidden md:inline">{action.label}</span>
             </Button>
           )
         }
@@ -158,12 +159,13 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
           {breadcrumbs && breadcrumbs.length > 0 && (
             <Header.Breadcrumbs items={breadcrumbs} className="mb-2" />
           )}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Header.Title
               title={title}
               subtitle={subtitle}
               icon={icon}
               iconSize="lg"
+              className="[&_h1]:text-lg [&_h1]:sm:text-xl"
             />
             {badge && (
               <Header.Badge text={badge.text} variant={badge.variant} />
@@ -173,7 +175,7 @@ export const FeatureHeader: React.FC<FeatureHeaderProps> = ({
             <Header.Meta items={meta} className="mt-1" />
           )}
         </div>
-        <Header.Actions>
+        <Header.Actions className="shrink-0 gap-1 sm:gap-2 flex-wrap">
           {renderSecondaryActions()}
           {primaryAction && (
             <Button

@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { Headphones, Plus, Settings, BarChart3 } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Headphones, Plus, BarChart3 } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface SupportHeaderProps {
   onCreateTicket?: () => void
   onViewReports?: () => void
-  onSettings?: () => void
 }
 
 /**
  * SupportHeader Component
  * 
  * Consistent header for the Support feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function SupportHeader({
   onCreateTicket,
   onViewReports,
-  onSettings,
 }: SupportHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function SupportHeader({
       primaryAction={{
         label: "New Ticket",
         icon: Plus,
-        onClick: onCreateTicket ?? (() => {}),
+        onClick: onCreateTicket ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "reports",
           label: "Reports",
           icon: BarChart3,
-          onClick: onViewReports ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onViewReports ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="support"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default SupportHeader
+

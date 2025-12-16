@@ -10,4 +10,4 @@ export { default as starredConfig } from "./config"
 export { default as StarredPage } from "./page"
 
 // View
-export { default as StarredView } from "./StarredView"
+export { StarredView } from "./StarredView"

@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { FileText, Plus, Settings, Upload } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { FileText, Plus, Upload } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface DocumentsHeaderProps {
   onCreateDocument?: () => void
   onUpload?: () => void
-  onSettings?: () => void
 }
 
 /**
  * DocumentsHeader Component
  * 
  * Consistent header for the Documents feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function DocumentsHeader({
   onCreateDocument,
   onUpload,
-  onSettings,
 }: DocumentsHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,26 @@ export function DocumentsHeader({
       primaryAction={{
         label: "New Document",
         icon: Plus,
-        onClick: onCreateDocument ?? (() => {}),
+        onClick: onCreateDocument ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "upload",
           label: "Upload",
           icon: Upload,
-          onClick: onUpload ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onUpload ?? (() => { }),
         },
       ]}
-    />
+    >
+      {/* Feature Settings & AI Assistant */}
+      <FeatureHeaderActions
+        featureSlug="docs"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default DocumentsHeader
+

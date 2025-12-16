@@ -250,17 +250,17 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
             </div>
 
             {/* List */}
-            <div className="flex-1 border rounded-md overflow-hidden bg-card">
-                <Table>
+            <div className="flex-1 border rounded-md overflow-hidden bg-card overflow-x-auto">
+                <Table className="min-w-full">
                     <TableHeader>
                         <TableRow className="hover:bg-transparent bg-muted/50">
-                            <TableHead className="w-[300px] cursor-pointer" onClick={() => handleSort("name")}>
+                            <TableHead className="min-w-[150px] cursor-pointer" onClick={() => handleSort("name")}>
                                 <div className="flex items-center">Member <SortIcon field="name" /></div>
                             </TableHead>
                             <TableHead className="cursor-pointer" onClick={() => handleSort("role")}>
                                 <div className="flex items-center">Role <SortIcon field="role" /></div>
                             </TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort("joined")}>
+                            <TableHead className="hidden md:table-cell cursor-pointer" onClick={() => handleSort("joined")}>
                                 <div className="flex items-center">Joined <SortIcon field="joined" /></div>
                             </TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -286,7 +286,7 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
                                                 <span className="font-medium text-sm">
                                                     {member.user?.name || "Unknown User"}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                                <span className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">
                                                     {member.user?.email}
                                                 </span>
                                             </div>
@@ -306,7 +306,7 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
                                             {member.role?.name || "No Role"}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
+                                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="w-3.5 h-3.5 opacity-70" />
                                             {member._creationTime
@@ -317,7 +317,7 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
                                     <TableCell className="text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                                     <MoreVertical className="w-4 h-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>

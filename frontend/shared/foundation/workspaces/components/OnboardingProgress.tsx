@@ -34,7 +34,7 @@ export function OnboardingProgress({ currentStep, totalSteps }: OnboardingProgre
                 </div>
                 {/* Step Label */}
                 <span className={cn(
-                  "mt-2 text-xs font-medium",
+                  "mt-2 text-[10px] sm:text-xs font-medium text-center hidden sm:block",
                   isCurrent ? "text-primary" : "text-muted-foreground"
                 )}>
                   {STEP_LABELS[index] || `Step ${index + 1}`}
@@ -45,7 +45,7 @@ export function OnboardingProgress({ currentStep, totalSteps }: OnboardingProgre
               {index < totalSteps - 1 && (
                 <div
                   className={cn(
-                    "w-16 md:w-24 h-1 mx-2 rounded-full transition-all duration-300",
+                    "w-6 sm:w-16 md:w-24 h-1 mx-1 sm:mx-2 rounded-full transition-all duration-300",
                     index < currentStep 
                       ? "bg-primary" 
                       : "bg-muted"

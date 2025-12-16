@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { FolderKanban, Plus, Settings, BarChart3 } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { FolderKanban, Plus, BarChart3 } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface ProjectsHeaderProps {
   onCreateProject?: () => void
   onViewReports?: () => void
-  onSettings?: () => void
 }
 
 /**
  * ProjectsHeader Component
  * 
  * Consistent header for the Projects feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function ProjectsHeader({
   onCreateProject,
   onViewReports,
-  onSettings,
 }: ProjectsHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,26 @@ export function ProjectsHeader({
       primaryAction={{
         label: "New Project",
         icon: Plus,
-        onClick: onCreateProject ?? (() => {}),
+        onClick: onCreateProject ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "reports",
           label: "Reports",
           icon: BarChart3,
-          onClick: onViewReports ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onViewReports ?? (() => { }),
         },
       ]}
-    />
+    >
+      {/* Feature Settings & AI Assistant */}
+      <FeatureHeaderActions
+        featureSlug="projects"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default ProjectsHeader
+

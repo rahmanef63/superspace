@@ -1,24 +1,23 @@
 "use client"
 
 import React from "react"
-import { Workflow, Plus, Settings, Play } from "lucide-react"
-import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
+import { Workflow, Plus, Play } from "lucide-react"
+import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
 
 interface AutomationHeaderProps {
   onCreateWorkflow?: () => void
   onRunAll?: () => void
-  onSettings?: () => void
 }
 
 /**
  * AutomationHeader Component
  * 
  * Consistent header for the Automation feature.
+ * Uses FeatureHeaderActions for Settings and AI Assistant buttons.
  */
 export function AutomationHeader({
   onCreateWorkflow,
   onRunAll,
-  onSettings,
 }: AutomationHeaderProps) {
   return (
     <FeatureHeader
@@ -28,24 +27,25 @@ export function AutomationHeader({
       primaryAction={{
         label: "New Workflow",
         icon: Plus,
-        onClick: onCreateWorkflow ?? (() => {}),
+        onClick: onCreateWorkflow ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "run-all",
           label: "Run All",
           icon: Play,
-          onClick: onRunAll ?? (() => {}),
-        },
-        {
-          id: "settings",
-          label: "Settings",
-          icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onRunAll ?? (() => { }),
         },
       ]}
-    />
+    >
+      <FeatureHeaderActions
+        featureSlug="automation"
+        showSettings={true}
+        showAgent={true}
+      />
+    </FeatureHeader>
   )
 }
 
 export default AutomationHeader
+

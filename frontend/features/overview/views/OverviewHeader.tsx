@@ -3,6 +3,7 @@
 import React from "react"
 import { Home, RefreshCcw } from "lucide-react"
 import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout/header"
+import { Button } from "@/components/ui/button"
 
 interface OverviewHeaderProps {
   onRefresh?: () => void
@@ -26,26 +27,32 @@ export function OverviewHeader({
       icon={Home}
       title="Overview"
       subtitle="Dashboard overview with analytics and insights"
-      secondaryActions={[
-        {
-          id: "refresh",
-          label: "Refresh",
-          icon: RefreshCcw,
-          onClick: onRefresh ?? (() => { }),
-        },
-        {
-          id: "toggle-ai",
-          label: isAIPanelOpen ? "Close AI" : "Open Assistant",
-          icon: React.forwardRef((props, ref) => (
-            <div className="relative flex items-center justify-center">
-              <div className={`h-2 w-2 rounded-full ${isAIPanelOpen ? 'bg-green-500' : 'bg-transparent border border-current'}`} />
-            </div>
-          )),
-          onClick: onToggleAI ?? (() => { }),
-        }
-      ]}
     >
-      {/* Feature Settings & AI Assistant */}
+      {/* Custom Refresh button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRefresh}
+        className="hidden sm:flex gap-1.5"
+      >
+        <RefreshCcw className="h-4 w-4" />
+        <span className="hidden md:inline">Refresh</span>
+      </Button>
+
+      {/* AI Panel Toggle - only show if handler provided */}
+      {onToggleAI && (
+        <Button
+          variant={isAIPanelOpen ? "default" : "outline"}
+          size="sm"
+          onClick={onToggleAI}
+          className="hidden sm:flex gap-1.5"
+        >
+          <div className={`h-2 w-2 rounded-full ${isAIPanelOpen ? 'bg-white' : 'bg-green-500'}`} />
+          <span className="hidden md:inline">{isAIPanelOpen ? "Close AI" : "Open AI"}</span>
+        </Button>
+      )}
+
+      {/* Feature Settings & AI Chat (sheet-based) */}
       <FeatureHeaderActions
         featureSlug="overview"
         showSettings={true}

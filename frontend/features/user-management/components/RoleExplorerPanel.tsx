@@ -15,7 +15,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { RoleUserTree, type TreeViewMode } from "./RoleUserTree";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Building, GitBranch, ArrowLeftRight } from "lucide-react";
+import { Shield, Users, Building, GitBranch, ArrowLeftRight, ArrowLeft, MoreHorizontal, Edit2, Trash2, Check, Plus, X } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -35,7 +35,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Check, X, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { PERMS } from "@/convex/workspace/permissions";
@@ -162,9 +161,12 @@ export function RoleExplorerPanel({
         }
     };
     return (
-        <div className={cn("flex h-full border rounded-lg overflow-hidden bg-background", className)}>
+        <div className={cn("flex flex-col md:flex-row h-full border rounded-lg overflow-hidden bg-background", className)}>
             {/* Left Panel: Tree */}
-            <div className="w-1/3 min-w-[300px] flex flex-col border-r bg-muted/10">
+            <div className={cn(
+                "w-full md:w-1/3 md:min-w-[300px] flex flex-col border-b md:border-b-0 md:border-r bg-muted/10",
+                selectedItemId ? "hidden md:flex" : "flex" // On mobile, hide list if item selected
+            )}>
                 <div className="p-3 border-b flex items-center justify-between bg-muted/30">
                     <div className="flex items-center gap-2 font-medium text-sm">
                         {viewMode === "role" ? <Shield className="w-4 h-4" /> : <Users className="w-4 h-4" />}
@@ -230,7 +232,10 @@ export function RoleExplorerPanel({
             </div>
 
             {/* Center Panel: Inspector */}
-            <div className="flex-1 flex flex-col bg-background">
+            <div className={cn(
+                "flex-1 flex flex-col bg-background",
+                !selectedItemId ? "hidden md:flex" : "flex"
+            )}>
                 {!selectedItemId ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                         <GitBranch className="w-12 h-12 mb-4 opacity-20" />
@@ -240,6 +245,15 @@ export function RoleExplorerPanel({
                     <div className="flex flex-col h-full">
                         {selectedItemType === "role" && selectedData ? (
                             <div className="p-6 h-full flex flex-col">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="md:hidden mb-4 self-start -ml-2"
+                                    onClick={() => setSelectedItemId(null)}
+                                >
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Back to List
+                                </Button>
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-4">
                                         <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30">
@@ -360,14 +374,25 @@ export function RoleExplorerPanel({
                             // User Details View
                             <div className="flex flex-col h-full">
                                 {/* Header */}
-                                <div className="p-6 border-b flex items-center gap-4">
-                                    <Avatar className="w-16 h-16 border-2 border-background shadow-sm">
-                                        <AvatarImage src={(selectedData as any)?.user?.avatarUrl || (selectedData as any)?.avatarUrl} />
-                                        <AvatarFallback>{((selectedData as any)?.user?.name?.[0] || (selectedData as any)?.name?.[0] || "?").toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <h2 className="text-xl font-bold">{(selectedData as any)?.user?.name || (selectedData as any)?.name || "Unknown User"}</h2>
-                                        <p className="text-sm text-muted-foreground">{(selectedData as any)?.user?.email || (selectedData as any)?.email}</p>
+                                <div className="p-6 border-b flex flex-col items-start gap-4">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="md:hidden self-start -ml-2"
+                                        onClick={() => setSelectedItemId(null)}
+                                    >
+                                        <ArrowLeft className="w-4 h-4 mr-2" />
+                                        Back to List
+                                    </Button>
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="w-16 h-16 border-2 border-background shadow-sm">
+                                            <AvatarImage src={(selectedData as any)?.user?.avatarUrl || (selectedData as any)?.avatarUrl} />
+                                            <AvatarFallback>{((selectedData as any)?.user?.name?.[0] || (selectedData as any)?.name?.[0] || "?").toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <h2 className="text-xl font-bold">{(selectedData as any)?.user?.name || (selectedData as any)?.name || "Unknown User"}</h2>
+                                            <p className="text-sm text-muted-foreground">{(selectedData as any)?.user?.email || (selectedData as any)?.email}</p>
+                                        </div>
                                     </div>
                                 </div>
 

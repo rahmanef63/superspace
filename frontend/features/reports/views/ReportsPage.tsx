@@ -247,8 +247,8 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
   const totalProjects = overview?.projects?.total ?? 0
   const totalDocuments = overview?.documents ?? 0
 
-  const completionRate = totalTasks > 0 
-    ? Math.round((completedTasks / totalTasks) * 100) 
+  const completionRate = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
     : 0
 
   const reports = savedReports || []
@@ -265,7 +265,7 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
 
       {/* Time Range Filter */}
       <div className="border-b p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Time Range:</span>
@@ -388,7 +388,7 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
                           {new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                         </div>
                         <div className="flex-1">
-                          <div 
+                          <div
                             className="h-6 rounded bg-primary/20"
                             style={{ width: `${Math.min(100, (day.count / Math.max(...activityTimeline.map((t: any) => t.count), 1)) * 100)}%` }}
                           />
@@ -457,7 +457,7 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
                 <p className="mt-2 text-sm text-muted-foreground">
                   Create your first custom report to get started
                 </p>
-                <Button 
+                <Button
                   className="mt-4"
                   onClick={() => {
                     setFormData(defaultFormData)
@@ -500,7 +500,7 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
                               Share
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => handleDeleteReport(report._id)}
                             >
@@ -538,8 +538,8 @@ export default function ReportsPage({ workspaceId }: ReportsPageProps) {
               {REPORT_TEMPLATES.map((template) => {
                 const Icon = template.icon
                 return (
-                  <Card 
-                    key={template.id} 
+                  <Card
+                    key={template.id}
                     className="cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => {
                       setFormData({

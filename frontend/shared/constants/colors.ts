@@ -172,14 +172,14 @@ export const WORKSPACE_COLORS: WorkspaceColorOption[] = [
   { name: "Violet", value: "#a855f7", category: "primary" },
   { name: "Fuchsia", value: "#d946ef", category: "primary" },
   { name: "Pink", value: "#ec4899", category: "primary" },
-  
+
   // Warm
   { name: "Rose", value: "#f43f5e", category: "warm" },
   { name: "Red", value: "#ef4444", category: "warm" },
   { name: "Orange", value: "#f97316", category: "warm" },
   { name: "Amber", value: "#f59e0b", category: "warm" },
   { name: "Yellow", value: "#eab308", category: "warm" },
-  
+
   // Cool
   { name: "Lime", value: "#84cc16", category: "cool" },
   { name: "Green", value: "#22c55e", category: "cool" },
@@ -188,7 +188,7 @@ export const WORKSPACE_COLORS: WorkspaceColorOption[] = [
   { name: "Cyan", value: "#06b6d4", category: "cool" },
   { name: "Sky", value: "#0ea5e9", category: "cool" },
   { name: "Blue", value: "#3b82f6", category: "cool" },
-  
+
   // Neutral
   { name: "Slate", value: "#64748b", category: "neutral" },
   { name: "Gray", value: "#6b7280", category: "neutral" },
@@ -223,7 +223,7 @@ export const COLOR_PALETTE = NOTION_COLORS
 export const ICON_COLOR_PRESETS: ColorOption[] = [
   // Theme colors
   ...THEME_COLORS,
-  
+
   // Basic colors
   { value: "#ef4444", label: "Red", group: "Basic" },
   { value: "#f97316", label: "Orange", group: "Basic" },
@@ -242,7 +242,7 @@ export const ICON_COLOR_PRESETS: ColorOption[] = [
   { value: "#d946ef", label: "Fuchsia", group: "Basic" },
   { value: "#ec4899", label: "Pink", group: "Basic" },
   { value: "#f43f5e", label: "Rose", group: "Basic" },
-  
+
   // Neutrals
   { value: "#000000", label: "Black", group: "Neutral" },
   { value: "#ffffff", label: "White", group: "Neutral" },
@@ -258,7 +258,7 @@ export const ICON_COLOR_PRESETS: ColorOption[] = [
 export const BACKGROUND_COLOR_PRESETS: ColorOption[] = [
   { value: "transparent", label: "None", group: "Special" },
   { value: "inherit", label: "Inherit", group: "Special" },
-  
+
   // Light backgrounds
   { value: "#fef2f2", label: "Red", group: "Light" },
   { value: "#fff7ed", label: "Orange", group: "Light" },
@@ -272,7 +272,7 @@ export const BACKGROUND_COLOR_PRESETS: ColorOption[] = [
   { value: "#fdf4ff", label: "Fuchsia", group: "Light" },
   { value: "#fdf2f8", label: "Pink", group: "Light" },
   { value: "#f9fafb", label: "Gray", group: "Light" },
-  
+
   // Dark backgrounds
   { value: "#450a0a", label: "Dark Red", group: "Dark" },
   { value: "#431407", label: "Dark Orange", group: "Dark" },
@@ -284,6 +284,30 @@ export const BACKGROUND_COLOR_PRESETS: ColorOption[] = [
   { value: "#500724", label: "Dark Pink", group: "Dark" },
   { value: "#171717", label: "Dark Gray", group: "Dark" },
 ]
+
+// ============================================================================
+// Role Colors (for team composition)
+// ============================================================================
+
+/**
+ * Color classes for workspace member roles.
+ * Used in team composition displays and member lists.
+ */
+export const ROLE_COLORS: Record<string, string> = {
+  owner: "bg-purple-500",
+  admin: "bg-blue-500",
+  editor: "bg-green-500",
+  viewer: "bg-gray-500",
+  member: "bg-primary",
+  guest: "bg-orange-500",
+}
+
+/**
+ * Get role color class with fallback
+ */
+export function getRoleColor(role: string): string {
+  return ROLE_COLORS[role.toLowerCase()] ?? "bg-primary"
+}
 
 // ============================================================================
 // Utility Functions

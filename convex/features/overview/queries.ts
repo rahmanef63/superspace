@@ -61,6 +61,11 @@ export const getData = query({
       workspace: {
         name: workspace?.name || "Workspace",
         createdAt: workspace?._creationTime,
+        roles: members.reduce((acc: any, m: any) => {
+          const role = m.role || "member"
+          acc[role] = (acc[role] || 0) + 1
+          return acc
+        }, {}),
       },
       stats: {
         totalMembers: members.length,
@@ -79,6 +84,7 @@ export const getData = query({
       },
       recentActivity: recentActivity.map((a) => ({
         id: a._id,
+        entityId: a.entityId, // Add entityId for navigation
         action: a.action,
         actor: a.userEmail || "System",
         timestamp: a.timestamp || a._creationTime,
@@ -86,6 +92,71 @@ export const getData = query({
       })),
     }
   },
+})
+
+// Get upcoming events (calendar + tasks)
+export const getUpcomingEvents = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    const days = args.days || 14
+    const now = Date.now()
+    const endDate = now + days * 24 * 60 * 60 * 1000
+
+    // 1. Get Calendar Events
+    const calendarEvents = await ctx.db
+      .query("calendar")
+      .withIndex("by_workspace_start", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.gte(q.field("startsAt"), now))
+      .filter((q) => q.lte(q.field("startsAt"), endDate))
+      .collect()
+
+    // 2. Get Tasks with Due Dates
+    // We want Overdue tasks too, so we don't filter by start date > now for tasks, 
+    // but rather tasks that are NOT completed and have due date.
+    // However, for "upcoming" logic, showing overdue is good.
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .filter((q) => q.neq(q.field("status"), "completed"))
+      .filter((q) => q.neq(q.field("dueDate"), undefined))
+      .collect()
+
+    const relevantTasks = tasks.filter((t: any) => {
+      // Include overdue and upcoming within range
+      return t.dueDate && t.dueDate <= endDate
+    })
+
+    // 3. Normalize and Merge
+    const events = [
+      ...calendarEvents.map((e: any) => ({
+        id: e._id,
+        type: "event",
+        title: e.title,
+        description: e.description,
+        startTime: e.startsAt,
+        endTime: e.endsAt,
+        isAllDay: e.isAllDay,
+        color: e.color,
+      })),
+      ...relevantTasks.map((t: any) => ({
+        id: t._id,
+        type: "task", // Used for icon/color mapping
+        title: t.title,
+        description: t.description, // or status
+        startTime: t.dueDate!,
+        isAllDay: true, // Tasks usually treated as all-day for deadline
+        completed: t.status === "completed",
+      }))
+    ]
+
+    // 4. Sort by time
+    return events.sort((a, b) => a.startTime - b.startTime)
+  }
 })
 
 // Get quick stats for dashboard cards

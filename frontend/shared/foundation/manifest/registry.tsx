@@ -64,6 +64,9 @@ export interface PageManifestItem {
   icon?: ElementType
   color?: string
   component: React.LazyExoticComponent<React.ComponentType<any>>
+  path: string
+  aliases?: string[]
+  patterns?: Record<string, string>
 }
 
 export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
@@ -74,6 +77,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Dashboard overview with analytics and insights",
     icon: Home,
     component: lazy(() => import("@/frontend/features/overview/page")),
+    path: "/dashboard/overview",
+    aliases: ["dashboard"],
+    patterns: undefined,
   },
   {
     id: "communications",
@@ -82,6 +88,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Unified communication platform with channels, direct messages, voice/video calls, and AI integrations",
     icon: MessageSquare,
     component: lazy(() => import("@/frontend/features/communications/page")),
+    path: "/dashboard/communications",
+    aliases: ["message", "chat"],
+    patterns: undefined,
   },
   {
     id: "status",
@@ -90,6 +99,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Share status updates with your team",
     icon: Camera,
     component: lazy(() => import("@/frontend/features/status/page")),
+    path: "/dashboard/status",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "ai",
@@ -98,6 +110,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "AI assistant",
     icon: Bot,
     component: lazy(() => import("@/frontend/features/ai/page")),
+    path: "/dashboard/ai",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "workspace-store",
@@ -113,6 +128,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
         }
         return { default: Component }
       }),
+    path: "/dashboard/workspace-store",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "knowledge",
@@ -121,6 +139,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Centralized knowledge base with documents, articles, and AI-consumable data",
     icon: BookOpen,
     component: lazy(() => import("@/frontend/features/knowledge/page")),
+    path: "/dashboard/knowledge",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "contacts",
@@ -129,6 +150,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Manage your contacts and connections",
     icon: Contact,
     component: lazy(() => import("@/frontend/features/contact/page")),
+    path: "/dashboard/contacts",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "database",
@@ -137,6 +161,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Notion-style database views and management",
     icon: Database,
     component: lazy(() => import("@/frontend/features/database/page")),
+    path: "/dashboard/database",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "documents",
@@ -145,6 +172,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)",
     icon: FileText,
     component: lazy(() => import("@/frontend/features/documents/page")),
+    path: "/dashboard/documents",
+    aliases: ["doc", "file"],
+    patterns: {"file":"?file=:id"},
   },
   {
     id: "menus",
@@ -160,6 +190,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
         }
         return { default: Component }
       }),
+    path: "/dashboard/menus",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "calendar",
@@ -168,6 +201,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Team calendar with event management and scheduling",
     icon: Calendar,
     component: lazy(() => import("@/frontend/features/calendar/page")),
+    path: "/dashboard/calendar",
+    aliases: ["event", "deadline"],
+    patterns: {"event":"event/:id"},
   },
   {
     id: "user-management",
@@ -176,6 +212,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Unified user management: members, teams, invitations, and role hierarchy",
     icon: UserCog,
     component: lazy(() => import("@/frontend/features/user-management/page")),
+    path: "/dashboard/user-management",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "reports",
@@ -184,6 +223,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Analytics and reporting dashboard",
     icon: BarChart,
     component: lazy(() => import("@/frontend/features/reports/page")),
+    path: "/dashboard/reports",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "tasks",
@@ -192,6 +234,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Task management and tracking",
     icon: CheckSquare,
     component: lazy(() => import("@/frontend/features/tasks/page")),
+    path: "/dashboard/tasks",
+    aliases: ["task"],
+    patterns: {"task":"?id=:id"},
   },
   {
     id: "forms",
@@ -200,6 +245,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Build custom forms for data collection",
     icon: FileText,
     component: lazy(() => import("@/frontend/features/forms/page")),
+    path: "/dashboard/forms",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "approvals",
@@ -208,6 +256,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Approval workflows and request management",
     icon: CheckCircle,
     component: lazy(() => import("@/frontend/features/approvals/page")),
+    path: "/dashboard/approvals",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "support",
@@ -216,6 +267,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Customer support and helpdesk ticketing system",
     icon: Headphones,
     component: lazy(() => import("@/frontend/features/support/page")),
+    path: "/dashboard/support",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "projects",
@@ -224,6 +278,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Project management with team discussions",
     icon: FolderKanban,
     component: lazy(() => import("@/frontend/features/projects/page")),
+    path: "/dashboard/projects",
+    aliases: ["project"],
+    patterns: {"project":":id"},
   },
   {
     id: "audit-log",
@@ -232,6 +289,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "View activity logs and audit trail",
     icon: History,
     component: lazy(() => import("@/frontend/features/audit-log/page")),
+    path: "/dashboard/audit-log",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "import-export",
@@ -240,6 +300,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Import and export data across workspace",
     icon: ArrowUpDown,
     component: lazy(() => import("@/frontend/features/import-export/page")),
+    path: "/dashboard/import-export",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "integrations",
@@ -248,6 +311,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Connect with third-party services and APIs",
     icon: Plug,
     component: lazy(() => import("@/frontend/features/integrations/page")),
+    path: "/dashboard/integrations",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "pos",
@@ -256,6 +322,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Point of Sale and retail management",
     icon: ShoppingCart,
     component: lazy(() => import("@/frontend/features/pos/page")),
+    path: "/dashboard/pos",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "builder",
@@ -264,6 +333,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Build apps, content, and interfaces with visual builder tools",
     icon: Hammer,
     component: lazy(() => import("@/frontend/features/builder/page")),
+    path: "/dashboard/builder",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "builder-preview",
@@ -272,6 +344,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Preview your built interfaces in real-time",
     icon: Eye,
     component: lazy(() => import("@/frontend/features/builder/page")),
+    path: "/dashboard/builder/preview",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "marketing",
@@ -280,6 +355,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Marketing automation and campaign management",
     icon: Megaphone,
     component: lazy(() => import("@/frontend/features/marketing/page")),
+    path: "/dashboard/marketing",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "analytics",
@@ -288,6 +366,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Monitor your business performance with real-time analytics",
     icon: BarChart3,
     component: lazy(() => import("@/frontend/features/analytics/page")),
+    path: "/dashboard/analytics",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "analytics-dashboard",
@@ -296,6 +377,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Overview of key metrics",
     icon: TrendingUp,
     component: lazy(() => import("@/frontend/features/analytics/page")),
+    path: "/dashboard/analytics/dashboard",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "analytics-reports",
@@ -304,6 +388,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Generate detailed reports",
     icon: FileText,
     component: lazy(() => import("@/frontend/features/analytics/page")),
+    path: "/dashboard/analytics/reports",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "bi",
@@ -312,6 +399,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Advanced analytics and business intelligence",
     icon: LineChart,
     component: lazy(() => import("@/frontend/features/bi/page")),
+    path: "/dashboard/bi",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "automation",
@@ -320,6 +410,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Automate workflows and processes with visual builders",
     icon: Workflow,
     component: lazy(() => import("@/frontend/features/automation/page")),
+    path: "/dashboard/automation",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "automation-builder",
@@ -328,6 +421,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Visual workflow builder",
     icon: GitBranch,
     component: lazy(() => import("@/frontend/features/automation/page")),
+    path: "/dashboard/automation/builder",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "sales",
@@ -336,6 +432,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Sales management and pipeline tracking",
     icon: DollarSign,
     component: lazy(() => import("@/frontend/features/sales/page")),
+    path: "/dashboard/sales",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "hr",
@@ -344,6 +443,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Human Resources Management",
     icon: Users,
     component: lazy(() => import("@/frontend/features/hr/page")),
+    path: "/dashboard/hr",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "content",
@@ -352,6 +454,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Centralized content management for images, videos, audio, and documents with AI generation capabilities.",
     icon: Library,
     component: lazy(() => import("@/frontend/features/content/page")),
+    path: "/dashboard/content",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "cms-lite",
@@ -360,6 +465,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Cms Lite feature",
     icon: Box,
     component: lazy(() => import("@/frontend/features/cms-lite/page")),
+    path: "/dashboard/cms-lite",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "accounting",
@@ -368,6 +476,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Financial Management and Accounting",
     icon: Calculator,
     component: lazy(() => import("@/frontend/features/accounting/page")),
+    path: "/dashboard/accounting",
+    aliases: ["finance"],
+    patterns: {"invoice":"invoices/:id","expense":"expenses/:id"},
   },
   {
     id: "inventory",
@@ -376,6 +487,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Comprehensive inventory management with multi-warehouse support, stock tracking, and demand forecasting",
     icon: Package,
     component: lazy(() => import("@/frontend/features/inventory/page")),
+    path: "/dashboard/erp/inventory",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "crm",
@@ -384,6 +498,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Customer Relationship Management with contacts, leads, opportunities, and sales pipeline",
     icon: Users,
     component: lazy(() => import("@/frontend/features/crm/page")),
+    path: "/dashboard/erp/crm",
+    aliases: undefined,
+    patterns: undefined,
   },
   {
     id: "platform-admin",
@@ -392,6 +509,9 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Super Admin panel for managing features, workspaces, and system configuration",
     icon: Shield,
     component: lazy(() => import("@/frontend/features/platform-admin/page")),
+    path: "/dashboard/platform-admin",
+    aliases: undefined,
+    patterns: undefined,
   }
 ]
 
@@ -402,6 +522,21 @@ export const PAGE_MANIFEST_MAP: Record<string, PageManifestItem> = Object.fromEn
 export const COMPONENT_REGISTRY_MAP: Record<string, PageManifestItem> = Object.fromEntries(
   DEFAULT_PAGE_MANIFEST.map((p) => [p.componentId, p]),
 )
+
+export const RESOURCE_TO_FEATURE_MAP: Record<string, string> = {
+  "dashboard": "overview",
+  "message": "communications",
+  "chat": "communications",
+  "doc": "documents",
+  "file": "documents",
+  "event": "calendar",
+  "deadline": "calendar",
+  "task": "tasks",
+  "project": "projects",
+  "finance": "accounting",
+  "invoice": "accounting",
+  "expense": "accounting"
+}
 
 export function getDefaultPages(): PageManifestItem[] {
   return DEFAULT_PAGE_MANIFEST

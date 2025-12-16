@@ -4,7 +4,9 @@
  */
 
 export * from "./Registry"
-export * from "./RegistryLoader"
+// NOTE: RegistryLoader uses Node.js-only modules (fast-glob, path) 
+// It should only be imported server-side: import { RegistryLoader } from './RegistryLoader'
+// export * from "./RegistryLoader"
 export * from "./RegistryEventEmitter"
 export * from "./RegistryCache"
 export * from "./command-registry"
@@ -19,11 +21,12 @@ export {
   resetGlobalRegistry,
 } from "./Registry"
 
-export {
-  RegistryLoader,
-  loadRegistry,
-  loadRegistryFrom,
-} from "./RegistryLoader"
+// NOTE: RegistryLoader removed from exports - use direct import for server-side only
+// export {
+//   RegistryLoader,
+//   loadRegistry,
+//   loadRegistryFrom,
+// } from "./RegistryLoader"
 
 export {
   RegistryEventEmitter,

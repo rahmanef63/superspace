@@ -39,8 +39,15 @@ export default defineFeature({
     isReady: true,                     // Set to true when ready for production
   },
 
-  // Bundle Membership
-  // Defines which workspace templates include this feature
+  navigation: {
+    aliases: ['finance'],
+    patterns: {
+      'invoice': 'invoices/:id',
+      'expense': 'expenses/:id',
+    }
+  },
+
+  // Bundle membership - REQUIRED for non-system features which workspace templates include this feature
   // core: Cannot be disabled | recommended: Enabled by default | optional: User can enable
   bundles: {
     core: [],
@@ -52,5 +59,5 @@ export default defineFeature({
   tags: [
     "accounting",
     "administration"
-],
+  ],
 })

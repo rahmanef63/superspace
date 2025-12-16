@@ -26,6 +26,13 @@ export default defineFeature({
     isReady: true,
   },
 
+  navigation: {
+    aliases: ['project'],
+    patterns: {
+      'project': ':id',
+    }
+  },
+
   // Bundle membership
   bundles: {
     core: ['project-management'],

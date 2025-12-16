@@ -20,6 +20,7 @@
 - Feature-specific code in `frontend/features/{slug}/`
 - Feature-specific backend in `convex/features/{slug}/`
 - Feature-specific tests in `tests/features/{slug}/`
+- Navigation definitions in `config.ts` (using `navigation` property)
 
 **Why:** Hardcoding creates maintenance burden, bugs, and violates DRY principles. Every hardcoded reference is a future breaking point.
 
@@ -35,6 +36,7 @@ frontend/features/{slug}/config.ts
 **This file defines:**
 - Feature metadata (id, name, description)
 - UI configuration (icon, path, component, order)
+- Navigation (route, aliases, patterns)
 - Technical specs (type, version, dependencies)
 - Status (state, isReady)
 - Permissions (required permissions array)

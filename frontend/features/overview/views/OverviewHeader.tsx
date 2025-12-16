@@ -6,6 +6,8 @@ import { FeatureHeader, FeatureHeaderActions } from "@/frontend/shared/ui/layout
 
 interface OverviewHeaderProps {
   onRefresh?: () => void
+  onToggleAI?: () => void
+  isAIPanelOpen?: boolean
 }
 
 /**
@@ -16,6 +18,8 @@ interface OverviewHeaderProps {
  */
 export function OverviewHeader({
   onRefresh,
+  onToggleAI,
+  isAIPanelOpen = false,
 }: OverviewHeaderProps) {
   return (
     <FeatureHeader
@@ -27,12 +31,22 @@ export function OverviewHeader({
           id: "refresh",
           label: "Refresh",
           icon: RefreshCcw,
-          onClick: onRefresh ?? (() => {}),
+          onClick: onRefresh ?? (() => { }),
         },
+        {
+          id: "toggle-ai",
+          label: isAIPanelOpen ? "Close AI" : "Open Assistant",
+          icon: React.forwardRef((props, ref) => (
+            <div className="relative flex items-center justify-center">
+              <div className={`h-2 w-2 rounded-full ${isAIPanelOpen ? 'bg-green-500' : 'bg-transparent border border-current'}`} />
+            </div>
+          )),
+          onClick: onToggleAI ?? (() => { }),
+        }
       ]}
     >
       {/* Feature Settings & AI Assistant */}
-      <FeatureHeaderActions 
+      <FeatureHeaderActions
         featureSlug="overview"
         showSettings={true}
         showAgent={true}
@@ -42,3 +56,4 @@ export function OverviewHeader({
 }
 
 export default OverviewHeader
+

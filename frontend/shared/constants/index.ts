@@ -9,6 +9,7 @@
 
 // Colors
 export * from "./colors";
+export { ROLE_COLORS, getRoleColor } from "./colors";
 
 // Workspace Types (matches Convex schema)
 export {

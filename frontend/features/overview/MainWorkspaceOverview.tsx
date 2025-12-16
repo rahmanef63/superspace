@@ -20,23 +20,14 @@ import {
   ChevronRight,
   Home,
   Briefcase,
-  Heart,
-  TrendingUp,
   Clock,
   BarChart3,
   Sparkles,
   Link2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-// Workspace type icons
-const WORKSPACE_TYPE_ICONS: Record<string, React.ElementType> = {
-  personal: Home,
-  organization: Building2,
-  institution: Building2,
-  group: Users,
-  family: Heart,
-}
+import { formatRelativeTime } from "@/frontend/shared/foundation/utils/core/format"
+import { getWorkspaceTypeIcon } from "@/frontend/shared/foundation/utils/core/icons"
 
 interface MainWorkspaceOverviewProps {
   workspaceId: Id<"workspaces">
@@ -332,7 +323,7 @@ function WorkspaceCard({
   }
   onSelect: () => void
 }) {
-  const Icon = WORKSPACE_TYPE_ICONS[summary.workspace.type ?? "personal"] ?? Briefcase
+  const Icon = getWorkspaceTypeIcon(summary.workspace.type ?? "personal")
   const color = (summary.workspace as any).color ?? "#6366f1"
 
   return (
@@ -447,17 +438,4 @@ function MainWorkspaceOverviewSkeleton() {
   )
 }
 
-// Helper function to format relative time
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now()
-  const diff = now - timestamp
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (minutes < 1) return "just now"
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-  return new Date(timestamp).toLocaleDateString()
-}
+// formatRelativeTime is now imported from @/frontend/shared/foundation/utils/core/format

@@ -26,6 +26,10 @@ export default defineFeature({
     isReady: true,
   },
 
+  navigation: {
+    aliases: ['dashboard'],
+  },
+
   // Bundle membership - Overview is CORE for all bundles
   bundles: {
     core: [

@@ -81,6 +81,17 @@ export default defineFeaturePreview({
           { action: 'Invited new member Diana', user: 'Alice', timestamp: '2 days ago' },
           { action: 'Created 3 new tasks', user: 'Eve', timestamp: '3 days ago' },
         ],
+        recentItems: [
+          { id: '1', type: 'document', title: 'Q1 Strategy', subtitle: 'Modified 2h ago', timestamp: Date.now() - 7200000, href: '#' },
+          { id: '2', type: 'task', title: 'Review Annual Report', subtitle: 'Due Today', timestamp: Date.now() - 3600000, href: '#' },
+          { id: '3', type: 'message', title: 'Team Sync Discussion', subtitle: '5 new messages', timestamp: Date.now() - 86400000, href: '#' },
+        ],
+        upcomingEvents: [
+          { id: 'e1', title: 'Team Weekly Sync', startTime: Date.now() + 3600000, type: 'event', color: '#6366f1', href: '#' },
+          { id: 't1', title: 'Submit Expense Report', startTime: Date.now() + 86400000, type: 'deadline', href: '#' },
+          { id: 'e2', title: 'Client Demo', startTime: Date.now() + 172800000, type: 'event', color: '#22c55e', href: '#' },
+          { id: 't2', title: 'Update Documentation', startTime: Date.now() - 3600000, type: 'task', href: '#' }, // Overdue
+        ],
       },
     },
   ],

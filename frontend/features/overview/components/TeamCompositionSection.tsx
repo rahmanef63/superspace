@@ -9,6 +9,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getRoleColor } from "@/frontend/shared/constants"
 
 // ============================================================================
 // Types
@@ -23,19 +24,6 @@ export interface TeamCompositionSectionProps {
   subtitle?: string
   /** Additional className */
   className?: string
-}
-
-// ============================================================================
-// Role Colors
-// ============================================================================
-
-const ROLE_COLORS: Record<string, string> = {
-  owner: "bg-purple-500",
-  admin: "bg-blue-500",
-  editor: "bg-green-500",
-  viewer: "bg-gray-500",
-  member: "bg-primary",
-  guest: "bg-orange-500",
 }
 
 // ============================================================================
@@ -65,11 +53,11 @@ export function TeamCompositionSection({
             {Object.entries(roles).map(([role, count]) => (
               <div key={role} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className={cn(
                       "w-2 h-2 rounded-full",
-                      ROLE_COLORS[role.toLowerCase()] || "bg-primary"
-                    )} 
+                      getRoleColor(role)
+                    )}
                   />
                   <span className="capitalize">{role}</span>
                 </div>

@@ -2,7 +2,7 @@
 
 import type { Id } from "@/convex/_generated/dataModel"
 import { FeatureLayout } from "@/frontend/shared/ui/layout/feature-layout"
-import { OverviewView } from "./OverviewView"
+import { OverviewViewBlocks } from "./OverviewViewBlocks"
 import { MainWorkspaceOverview } from "./MainWorkspaceOverview"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 
@@ -19,7 +19,7 @@ export default function OverviewPage({ workspaceId }: OverviewPageProps) {
       {isMainWorkspace && activeWorkspaceId ? (
         <MainWorkspaceOverview workspaceId={activeWorkspaceId} />
       ) : (
-        <OverviewView workspaceId={activeWorkspaceId} />
+        <OverviewViewBlocks workspaceId={activeWorkspaceId} />
       )}
     </FeatureLayout>
   )

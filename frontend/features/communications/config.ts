@@ -41,6 +41,10 @@ export default defineFeature({
     isReady: true,
   },
 
+  navigation: {
+    aliases: ['message', 'chat'],
+  },
+
   // Bundle membership (merged from chat + calls)
   bundles: {
     core: [],
@@ -56,7 +60,7 @@ export default defineFeature({
 
   // Feature tags
   tags: [
-    'communication', 'chat', 'channels', 'calls', 
+    'communication', 'chat', 'channels', 'calls',
     'voice', 'video', 'messaging', 'dm', 'ai'
   ],
 

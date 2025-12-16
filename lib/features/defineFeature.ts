@@ -104,6 +104,13 @@ const BaseFeatureConfigSchema = z.object({
   technical: TechnicalConfigSchema,
   status: StatusConfigSchema,
 
+  // Navigation (Zero Hardcoding)
+  navigation: z.object({
+    route: z.string().optional(), // Override ui.path if needed
+    aliases: z.array(z.string()).optional(), // General aliases for the feature root
+    patterns: z.any().optional(), // Using z.any() due to Zod issue with z.record in this version
+  }).optional(),
+
   // Bundle membership - REQUIRED for non-system features
   bundles: BundleConfigSchema,
 

@@ -12,8 +12,19 @@ export type { StatsGridProps, StatCardProps } from "./StatsGrid"
 export { RecentActivitySection } from "./RecentActivitySection"
 export type { RecentActivitySectionProps, ActivityItem, ActivityType } from "./RecentActivitySection"
 
-export { QuickActionsSection, DEFAULT_QUICK_ACTIONS } from "./QuickActionsSection"
-export type { QuickActionsSectionProps } from "./QuickActionsSection"
+// New comprehensive sections
+export { RecentItemsSection } from "./RecentItemsSection"
+export type { RecentItemsSectionProps, RecentItem, RecentItemType } from "./RecentItemsSection"
+
+export { UpcomingEventsSection } from "./UpcomingEventsSection"
+export type { UpcomingEventsSectionProps, UpcomingEvent, EventUrgency } from "./UpcomingEventsSection"
+
+export { AIQuickChatSection } from "./AIQuickChatSection"
+export type { AIQuickChatSectionProps, QuickPrompt } from "./AIQuickChatSection"
+
+// Legacy (deprecated - use new sections instead)
+// export * from "./QuickActionsSection" // Deprecated
+// export type { QuickActionsSectionProps, QuickAction } from "./QuickActionsSection" // Deprecated
 
 export { TimeRangeSelector } from "./TimeRangeSelector"
 export type { TimeRangeSelectorProps, TimeRange } from "./TimeRangeSelector"
@@ -25,3 +36,4 @@ export { TeamCompositionSection } from "./TeamCompositionSection"
 export type { TeamCompositionSectionProps } from "./TeamCompositionSection"
 
 export { OverviewSkeleton } from "./OverviewSkeleton"
+

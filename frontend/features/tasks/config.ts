@@ -26,6 +26,13 @@ export default defineFeature({
     isReady: true,
   },
 
+  navigation: {
+    aliases: ['task'],
+    patterns: {
+      'task': '?id=:id', // Assuming task modal/sidebar
+    }
+  },
+
   agent: {
     definitionPath: "convex/features/tasks/agent.ts",
     capabilities: ["create", "read", "update", "delete", "search"],

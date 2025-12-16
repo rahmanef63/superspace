@@ -31,6 +31,13 @@ export default defineFeature({
     isReady: true,
   },
 
+  navigation: {
+    aliases: ['event', 'deadline'],
+    patterns: {
+      'event': 'event/:id',
+    }
+  },
+
   agent: {
     definitionPath: "convex/features/calendar/agent.ts",
     capabilities: ["create", "read", "update", "delete", "search"],

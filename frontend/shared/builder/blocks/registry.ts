@@ -1,18 +1,9 @@
 /**
  * Blocks Registry (Level 3)
- * Auto-loads all block wrappers from subdirectories
+ * Registry for block manifests (for builder integration)
  */
 
 import type { BlockWrapper } from "@/frontend/shared/foundation"
-
-// ============================================================================
-// Auto-Discovery Registry
-// Note: import.meta.glob() not supported in Next.js, using empty registry
-// ============================================================================
-
-const registryModules: Record<string, { default: BlockWrapper }> = {
-  // TODO: Add block registries here when available
-}
 
 // ============================================================================
 // Block Registry Map
@@ -20,19 +11,15 @@ const registryModules: Record<string, { default: BlockWrapper }> = {
 
 export const blockRegistry = new Map<string, BlockWrapper>()
 
-// Populate registry from auto-discovered modules
-for (const [path, module] of Object.entries(registryModules)) {
-  const wrapper = module.default
-  if (wrapper && wrapper.id) {
-    blockRegistry.set(wrapper.id, wrapper)
-  } else {
-    console.warn(`⚠️ Invalid block wrapper at ${path}`)
-  }
-}
-
 // ============================================================================
 // Registry Functions
 // ============================================================================
+
+export function registerBlock(wrapper: BlockWrapper): void {
+  if (wrapper && wrapper.id) {
+    blockRegistry.set(wrapper.id, wrapper)
+  }
+}
 
 export function getBlockWrapper(id: string): BlockWrapper | undefined {
   return blockRegistry.get(id)
@@ -40,6 +27,10 @@ export function getBlockWrapper(id: string): BlockWrapper | undefined {
 
 export function getAllBlockWrappers(): BlockWrapper[] {
   return Array.from(blockRegistry.values())
+}
+
+export function hasBlock(id: string): boolean {
+  return blockRegistry.has(id)
 }
 
 // ============================================================================
@@ -70,6 +61,6 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     registry: blockRegistry,
     getAll: getAllBlockWrappers,
     get: getBlockWrapper,
+    register: registerBlock,
   }
-  console.log(`📦 Auto-loaded ${blockRegistry.size} blocks`)
 }

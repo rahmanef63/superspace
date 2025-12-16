@@ -34,10 +34,17 @@ export default defineFeature({
   },
   agent: {
     definitionPath: "convex/features/docs/agent.ts",
-    capabilities: ["create", "read", "update", "delete", "search"],
+    capabilities: ["create", "read", "update", "delete"],
   },
 
-  // Bundle membership - keep out of standard templates; available in custom setups
+  navigation: {
+    aliases: ['doc', 'file'],
+    patterns: {
+      'file': '?file=:id',
+    }
+  },
+
+  // Bundle membership - REQUIRED for non-system features; available in custom setups
   bundles: {
     core: [],
     recommended: [],

@@ -70,7 +70,7 @@ function resolveComponentImport(feature: FeatureMetadata): ComponentImportConfig
 
   throw new Error(
     `Unable to resolve component path for "${feature.id}" (component "${component}"). ` +
-      `Ensure the component exists under frontend/features/${slugFromConfig ?? feature.id}/ or update the feature config.`,
+    `Ensure the component exists under frontend/features/${slugFromConfig ?? feature.id}/ or update the feature config.`,
   )
 }
 
@@ -148,6 +148,9 @@ function generateRegistryEntries(features: FeatureMetadata[]): string {
     const importConfig = resolveComponentImport(feature)
     const componentLoader = indentMultiline(renderLazyLoader(importConfig), 6)
     const iconName = getIconName(feature)
+    const aliases = feature.navigation?.aliases ? `[${feature.navigation.aliases.map(a => `"${a}"`).join(", ")}]` : "undefined"
+    const patterns = feature.navigation?.patterns ? JSON.stringify(feature.navigation.patterns) : "undefined"
+    const path = feature.navigation?.route ?? feature.ui.path
 
     return `  {
     id: "${feature.id}",
@@ -156,13 +159,41 @@ function generateRegistryEntries(features: FeatureMetadata[]): string {
     description: "${feature.description}",
     icon: ${iconName},
     component: ${componentLoader},
+    path: "${path}",
+    aliases: ${aliases},
+    patterns: ${patterns},
   }`
   }).join(',\n')
+}
+
+// Generate resource map
+function generateResourceMap(features: FeatureMetadata[]): string {
+  const allFeatures = flattenFeatures(features)
+  const mapEntries: string[] = []
+
+  allFeatures.forEach(feature => {
+    // Map aliases to feature ID
+    feature.navigation?.aliases?.forEach(alias => {
+      mapEntries.push(`  "${alias}": "${feature.id}"`)
+    })
+
+    // Map pattern keys to feature ID
+    if (feature.navigation?.patterns) {
+      Object.keys(feature.navigation.patterns).forEach(key => {
+        if (!feature.navigation?.aliases?.includes(key)) {
+          mapEntries.push(`  "${key}": "${feature.id}"`)
+        }
+      })
+    }
+  })
+
+  return mapEntries.join(',\n')
 }
 
 // Generate the manifest file
 function generateManifest(): string {
   const features = FEATURES_REGISTRY
+  const resourceMap = generateResourceMap(features)
 
   return `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
@@ -193,6 +224,9 @@ export interface PageManifestItem {
   icon?: ElementType
   color?: string
   component: React.LazyExoticComponent<React.ComponentType<any>>
+  path: string
+  aliases?: string[]
+  patterns?: Record<string, string>
 }
 
 export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
@@ -206,6 +240,10 @@ export const PAGE_MANIFEST_MAP: Record<string, PageManifestItem> = Object.fromEn
 export const COMPONENT_REGISTRY_MAP: Record<string, PageManifestItem> = Object.fromEntries(
   DEFAULT_PAGE_MANIFEST.map((p) => [p.componentId, p]),
 )
+
+export const RESOURCE_TO_FEATURE_MAP: Record<string, string> = {
+${resourceMap}
+}
 
 export function getDefaultPages(): PageManifestItem[] {
   return DEFAULT_PAGE_MANIFEST

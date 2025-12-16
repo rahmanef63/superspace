@@ -18,25 +18,25 @@
 // Basic Components
 // ============================================================
 // Export wrappers (default exports from index.ts)
-export * from './components/button'
-export * from './components/input'
-export * from './components/textarea'
-export * from './components/label'
-export * from './components/badge'
-export * from './components/card'
-export * from './components/text'
-export * from './components/image'
-export * from './components/container'
+export * from './components/Button'
+export * from './components/Input'
+export * from './components/Textarea'
+export * from './components/Label'
+export * from './components/Badge'
+export * from './components/Card'
+export * from './components/Text'
+export * from './components/Image'
+export * from './components/Container'
 
 // Export base components (for direct usage)
-export { TextComponent } from './components/text/text-component'
-export { ContainerComponent } from './components/container/container-component'
-export { ImageComponent } from './components/image/image-component'
+export { TextComponent } from './components/Text/text-component'
+export { ContainerComponent } from './components/Container/container-component'
+export { ImageComponent } from './components/Image/image-component'
 
 // For components that wrap shadcn directly, alias wrapper as Component
-export { InputWrapper as InputComponent } from './components/input/input-wrapper'
-export { LabelWrapper as LabelComponent } from './components/label/label-wrapper'
-export { TextareaWrapper as TextareaComponent } from './components/textarea/textarea-wrapper'
+export { InputWrapper as InputComponent } from './components/Input/input-wrapper'
+export { LabelWrapper as LabelComponent } from './components/Label/label-wrapper'
+export { TextareaWrapper as TextareaComponent } from './components/Textarea/textarea-wrapper'
 
 // ============================================================
 // Feature Components

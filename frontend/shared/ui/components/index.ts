@@ -10,9 +10,9 @@ export * from "./registry"
 export * from "./utils"
 
 // Component wrappers (individual exports)
-export * from "./button"
-export * from "./input"
-export * from "./card"
+export * from "./Button"
+export * from "./Input"
+export * from "./Card"
 export * from "./search-bar"
 
 // Rich Text Components

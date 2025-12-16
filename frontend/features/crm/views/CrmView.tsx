@@ -32,7 +32,7 @@ import type { Customer, CustomerStatus, CreateCustomerInput, UpdateCustomerInput
 
 // Components
 import { CrmRightPanel } from "../components/CrmRightPanel"
-import { CreateCustomerDialog } from "../components/CreateCustomerDialog"
+import { CreateCustomerDialog } from "../components/"
 import { EditCustomerDialog } from "../components/EditCustomerDialog"
 import { CustomerDetailView } from "../components/CustomerDetailView"
 

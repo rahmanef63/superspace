@@ -37,7 +37,7 @@ function addError(error: ValidationError) {
 }
 
 function validateSchema() {
-  console.log("\n🔍 Validating feature schemas...")
+
 
   const flattenFeatures = (features: any[], parent?: string): any[] => {
     return features.flatMap(f => {
@@ -61,11 +61,11 @@ function validateSchema() {
     })
   }
 
-  console.log(`  ✓ Validated ${allFeatures.length} features`)
+
 }
 
 function validateDuplicateSlugs() {
-  console.log("\n🔍 Checking for duplicate slugs...")
+
 
   const slugs = new Map<string, number>()
   const flattenFeatures = (features: any[]): any[] => {
@@ -87,11 +87,11 @@ function validateDuplicateSlugs() {
     }
   })
 
-  console.log(`  ✓ No duplicate slugs found`)
+
 }
 
 function validateVersions() {
-  console.log("\n🔍 Validating feature versions...")
+
 
   const semverRegex = /^\d+\.\d+\.\d+$/
 
@@ -106,11 +106,11 @@ function validateVersions() {
     }
   })
 
-  console.log(`  ✓ All versions valid`)
+
 }
 
 function validatePaths() {
-  console.log("\n🔍 Validating feature paths...")
+
 
   const paths = new Map<string, string>()
 
@@ -137,11 +137,11 @@ function validatePaths() {
     paths.set(feature.ui.path, feature.id)
   })
 
-  console.log(`  ✓ Paths validated`)
+
 }
 
 function validateComponents() {
-  console.log("\n🔍 Validating feature components...")
+
 
   const components = new Map<string, string[]>()
 
@@ -182,11 +182,11 @@ function validateComponents() {
     }
   })
 
-  console.log(`  ✓ Components validated`)
+
 }
 
 function validateDependencies() {
-  console.log("\n🔍 Validating feature dependencies...")
+
 
   const allSlugs = new Set(
     FEATURES_REGISTRY.flatMap(f => [f.id, ...(f.children?.map(c => c.id) || [])])
@@ -207,11 +207,11 @@ function validateDependencies() {
     })
   })
 
-  console.log(`  ✓ Dependencies validated`)
+
 }
 
 function validateFeatureFolders() {
-  console.log("\n🔍 Validating mandatory feature folders (agents/settings)...")
+
 
   const flattenFeatures = (features: any[], parent?: string): any[] => {
     return features.flatMap((f) => {
@@ -304,11 +304,11 @@ function validateFeatureFolders() {
     }
   }
 
-  console.log("  ✓ Folder checks completed")
+
 }
 
 function validateCategories() {
-  console.log("\n🔍 Validating categories...")
+
 
   const validCategories = [
     "communication",
@@ -332,28 +332,21 @@ function validateCategories() {
     }
   })
 
-  console.log(`  ✓ Categories validated`)
+
 }
 
 function generateReport() {
-  console.log("\n" + "=".repeat(60))
-  console.log(" FEATURE VALIDATION REPORT")
-  console.log("=".repeat(60))
+
 
   const errorCount = errors.filter(e => e.severity === "error").length
   const warningCount = errors.filter(e => e.severity === "warning").length
 
   if (errors.length === 0) {
-    console.log("\n✅ All features are valid!")
-    console.log(`\n  Total features: ${FEATURES_REGISTRY.length}`)
-    console.log(`  Default: ${FEATURES_REGISTRY.filter(f => f.technical.featureType === "default").length}`)
-    console.log(`  System: ${FEATURES_REGISTRY.filter(f => f.technical.featureType === "system").length}`)
-    console.log(`  Optional: ${FEATURES_REGISTRY.filter(f => f.technical.featureType === "optional").length}`)
-    console.log(`  Experimental: ${FEATURES_REGISTRY.filter(f => f.technical.featureType === "experimental").length}`)
+
     return true
   }
 
-  console.log(`\n❌ Found ${errorCount} error(s) and ${warningCount} warning(s)\n`)
+
 
   // Group by severity
   const errorsByFeature = new Map<string, ValidationError[]>()
@@ -366,25 +359,23 @@ function generateReport() {
 
   // Display errors
   if (errorCount > 0) {
-    console.log("ERRORS:")
-    console.log("".repeat(60))
+
     errors
       .filter(e => e.severity === "error")
       .forEach(error => {
         const field = error.field ? ` [${error.field}]` : ""
-        console.log(`  ❌ ${error.feature}${field}: ${error.message}`)
+
       })
   }
 
   // Display warnings
   if (warningCount > 0) {
-    console.log("\nWARNINGS:")
-    console.log("".repeat(60))
+
     errors
       .filter(e => e.severity === "warning")
       .forEach(error => {
         const field = error.field ? ` [${error.field}]` : ""
-        console.log(`  ⚠️  ${error.feature}${field}: ${error.message}`)
+
       })
   }
 
@@ -396,7 +387,7 @@ function generateReport() {
 // ============================================================================
 
 function main() {
-  console.log("🔍 Validating features.config.ts...\n")
+
 
   try {
     validateSchema()
@@ -410,14 +401,14 @@ function main() {
 
     const isValid = generateReport()
 
-    console.log("\n" + "=".repeat(60) + "\n")
+
 
     if (!isValid) {
       console.error("❌ Feature validation failed. Please fix the errors above.\n")
       process.exit(1)
     }
 
-    console.log("✅ Feature validation passed!\n")
+
     process.exit(0)
   } catch (error) {
     console.error("\n❌ Unexpected error during validation:")

@@ -34,16 +34,16 @@ interface Workspace {
 }
 
 async function migrateWorkspaceSettings() {
-  console.log(isDryRun ? "🔍 DRY RUN MODE - No changes will be made\n" : " MIGRATION MODE - Changes will be applied\n");
+
 
   try {
     // Fetch all workspaces (you'll need to create this query in convex)
-    console.log("📥 Fetching all workspaces...");
+
     // const workspaces: Workspace[] = await client.query("workspace/workspaces:listAll");
 
     // For demonstration, using mock data
     const workspaces: Workspace[] = [];
-    console.log(`   Found ${workspaces.length} workspaces\n`);
+
 
     let migratedCount = 0;
     let skippedCount = 0;
@@ -93,28 +93,22 @@ async function migrateWorkspaceSettings() {
     }
 
     // Print summary
-    console.log(" MIGRATION SUMMARY");
-    console.log("=".repeat(50));
-    console.log(`   Workspaces processed: ${workspaces.length}`);
-    console.log(`   Workspaces migrated:  ${migratedCount}`);
-    console.log(`   Workspaces skipped:   ${skippedCount}\n`);
+
 
     if (changes.length > 0) {
-      console.log("📝 CHANGES:");
+
       changes.forEach((change, idx) => {
-        console.log(`\n${idx + 1}. ${change.name} (${change.workspaceId})`);
-        console.log(`   Old: ${JSON.stringify(change.changes.old, null, 2)}`);
-        console.log(`   New: ${JSON.stringify(change.changes.new, null, 2)}`);
+
       });
-      console.log("");
+
     }
 
     if (isDryRun && changes.length > 0) {
-      console.log("✅ Dry run complete. Run without --dry-run to apply changes.");
+
     } else if (!isDryRun && changes.length > 0) {
-      console.log("✅ Migration complete!");
+
     } else {
-      console.log("✅ No workspaces needed migration.");
+
     }
 
     process.exit(0);

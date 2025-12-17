@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Import/Export Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("import-export", () => [
 registerImportExportAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Import/Export feature settings & agent registered", { icon: ArrowLeftRight })
 }

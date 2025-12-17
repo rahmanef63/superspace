@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Calendar Agent Initialization
  * 
  * Registers the Calendar Agent with the sub-agent registry.
@@ -15,7 +15,6 @@ subAgentRegistry.register(calendarAgent, {
 });
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Calendar Agent registered with sub-agent registry");
 }
 
 export { calendarAgent };

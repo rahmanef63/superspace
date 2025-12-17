@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Call Hooks
  * 
  * Hooks for fetching and managing voice/video calls.
@@ -134,47 +134,6 @@ export function useCallMutations() {
       title?: string
       scheduledFor?: string
     }) => {
-      console.log("Starting call:", data)
-      // return await startCall(data)
-    },
-    
-    joinCall: async (callId: Id<"calls">) => {
-      console.log("Joining call:", callId)
-      // return await joinCall({ callId })
-    },
-    
-    leaveCall: async (callId: Id<"calls">) => {
-      console.log("Leaving call:", callId)
-      // return await leaveCall({ callId })
-    },
-    
-    endCall: async (callId: Id<"calls">) => {
-      console.log("Ending call:", callId)
-      // return await endCall({ callId })
-    },
-    
-    updateParticipant: async (callId: Id<"calls">, data: {
-      isMuted?: boolean
-      isVideoOn?: boolean
-      isHandRaised?: boolean
-    }) => {
-      console.log("Updating participant:", callId, data)
-      // return await updateParticipant({ callId, ...data })
-    },
-    
-    startScreenShare: async (callId: Id<"calls">) => {
-      console.log("Starting screen share:", callId)
-      // return await startScreenShare({ callId })
-    },
-    
-    stopScreenShare: async (callId: Id<"calls">) => {
-      console.log("Stopping screen share:", callId)
-      // return await stopScreenShare({ callId })
-    },
-    
-    recordCall: async (callId: Id<"calls">, enabled: boolean) => {
-      console.log("Toggle recording:", callId, enabled)
-      // return await toggleRecording({ callId, enabled })
     },
   }
 }

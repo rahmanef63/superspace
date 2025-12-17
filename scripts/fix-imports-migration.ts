@@ -83,7 +83,7 @@ const importMappings: ImportMapping[] = [
 ]
 
 async function fixImports() {
-  console.log('🔧 Fixing import paths after restructuring...\n')
+
 
   // Sort by priority (highest first)
   const sortedMappings = [...importMappings].sort((a, b) => b.priority - a.priority)
@@ -93,7 +93,7 @@ async function fixImports() {
     ignore: ['node_modules/**', '.next/**', 'dist/**', 'build/**']
   })
 
-  console.log(`📁 Found ${files.length} files to check\n`)
+
 
   let totalReplacements = 0
   let filesModified = 0
@@ -120,20 +120,14 @@ async function fixImports() {
         writeFileSync(file, content, 'utf-8')
         filesModified++
         totalReplacements += fileReplacements
-        console.log(`✅ ${file} (${fileReplacements} replacements)`)
+
       }
     } catch (error) {
       console.error(`❌ Error processing ${file}:`, error)
     }
   }
 
-  console.log('\n' + '='.repeat(60))
-  console.log(`\n✨ Migration Complete!\n`)
-  console.log(`📊 Statistics:`)
-  console.log(`   - Files scanned: ${files.length}`)
-  console.log(`   - Files modified: ${filesModified}`)
-  console.log(`   - Total replacements: ${totalReplacements}`)
-  console.log('')
+
 }
 
 fixImports().catch(error => {

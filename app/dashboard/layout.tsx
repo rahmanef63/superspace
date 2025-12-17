@@ -30,11 +30,11 @@ export default function DashboardLayout({
           <Suspense fallback={null}>
             <OnboardingGuard />
           </Suspense>
-          <AppSidebar/>
+          <AppSidebar />
           <SidebarInset className="flex flex-col h-screen overflow-hidden">
             <LoadingBar />
             <SiteHeader />
-            <div className="@container/main flex flex-1 min-h-0">
+            <div className="@container/main flex flex-1 min-h-0 w-full overflow-hidden">
               {children}
             </div>
           </SidebarInset>

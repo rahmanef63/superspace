@@ -67,13 +67,9 @@ export function AIView() {
     if (selectedSessionId) {
       return (
         <div className="flex flex-col h-full bg-background">
-          <MobileHeader
-            title="AI"
-            icon={Sparkles}
-            onBack={handleBack}
-          />
-          <AICenterPanel 
-            chatId={selectedSessionId} 
+          {/* No duplicate header - AICenterPanel has its own AIChatHeader */}
+          <AICenterPanel
+            chatId={selectedSessionId}
             onBack={handleBack}
             onToggleInfo={() => setMobileDrawerOpen(true)}
             isInfoOpen={mobileDrawerOpen}
@@ -123,7 +119,7 @@ export function AIView() {
           />
         }
         center={
-          <AICenterPanel 
+          <AICenterPanel
             chatId={selectedSessionId ?? undefined}
             onBack={handleBack}
             onToggleInfo={handleToggleRightPanel}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Command registry for slash commands
  * @module shared/chat/config/commandRegistry
  */
@@ -16,7 +16,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/help [command]",
     handler: async (args) => {
       // TODO: Implement help display
-      console.log("Available commands:", Object.keys(BUILT_IN_COMMANDS));
     },
   },
 
@@ -26,7 +25,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/me <action>",
     handler: async (args) => {
       // TODO: Format as action message
-      console.log("Action:", args.join(" "));
     },
   },
 
@@ -36,7 +34,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/gpt <question>",
     handler: async (args) => {
       // TODO: Integrate with AI
-      console.log("GPT query:", args.join(" "));
     },
     permissions: ["send"],
   },
@@ -47,7 +44,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/assign @user <task>",
     handler: async (args) => {
       // TODO: Parse user and create assignment
-      console.log("Assign:", args);
     },
     permissions: ["manageUsers"],
   },
@@ -58,7 +54,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/rename <new name>",
     handler: async (args) => {
       // TODO: Update room name
-      console.log("Rename to:", args.join(" "));
     },
     permissions: ["rename"],
   },
@@ -69,7 +64,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/topic <description>",
     handler: async (args) => {
       // TODO: Update room topic
-      console.log("Topic:", args.join(" "));
     },
     permissions: ["rename"],
   },
@@ -81,7 +75,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     handler: async (args) => {
       // TODO: Export chat
       const format = args[0] || "json";
-      console.log("Export as:", format);
     },
     permissions: ["send"],
   },
@@ -92,7 +85,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/invite",
     handler: async (args) => {
       // TODO: Generate invite link
-      console.log("Generate invite link");
     },
     permissions: ["manageUsers"],
   },
@@ -103,7 +95,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/leave",
     handler: async (args) => {
       // TODO: Remove self from room
-      console.log("Leave room");
     },
     permissions: ["send"],
   },
@@ -114,7 +105,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/mute [duration]",
     handler: async (args) => {
       // TODO: Mute notifications
-      console.log("Mute:", args[0] || "indefinite");
     },
     permissions: ["send"],
   },
@@ -125,7 +115,6 @@ export const BUILT_IN_COMMANDS: Record<string, CommandDefinition> = {
     usage: "/unmute",
     handler: async (args) => {
       // TODO: Unmute notifications
-      console.log("Unmute");
     },
     permissions: ["send"],
   },

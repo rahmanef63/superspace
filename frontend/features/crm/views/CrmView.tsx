@@ -148,30 +148,6 @@ export function CrmView({ workspaceId }: CrmViewProps) {
 
     const headerActions = (
         <div className="flex items-center gap-2">
-            <Button
-                variant={rightPanelMode === "ai" && !rightPanelCollapsed ? "secondary" : "ghost"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                    setRightPanelMode("ai")
-                    setRightPanelCollapsed(false)
-                }}
-                title="AI Assistant"
-            >
-                <Sparkles className="h-4 w-4" />
-            </Button>
-            <Button
-                variant={rightPanelMode === "settings" && !rightPanelCollapsed ? "secondary" : "ghost"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                    setRightPanelMode("settings")
-                    setRightPanelCollapsed(false)
-                }}
-                title="Settings"
-            >
-                <Settings className="h-4 w-4" />
-            </Button>
             <Button size="sm" onClick={() => setCreateDialogOpen(true)} className="gap-2 h-8">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Add Customer</span>
@@ -358,6 +334,46 @@ export function CrmView({ workspaceId }: CrmViewProps) {
                         )
                     }
                     inspector={inspector}
+
+                    // ✨ NEW: Loading states
+                    loading={{
+                        sidebar: isLoading,
+                        center: false,
+                        right: false,
+                    }}
+
+                    // ✨ NEW: Empty states
+                    sidebarEmptyState={
+                        filteredCustomers.length === 0 && !isLoading ? {
+                            icon: Users,
+                            title: "No customers found",
+                            description: searchQuery ? "Try a different search term" : "Add your first customer to get started",
+                            action: !searchQuery ? {
+                                label: "Add Customer",
+                                onClick: () => setCreateDialogOpen(true),
+                            } : undefined,
+                        } : undefined
+                    }
+
+                    centerEmptyState={
+                        !selectedCustomer && customers.length > 0 ? {
+                            icon: Users,
+                            title: "No customer selected",
+                            description: "Select a customer from the sidebar to view details",
+                        } : undefined
+                    }
+
+                    // ✨ NEW: Right panel with tabs
+                    rightPanelConfig={{
+                        modes: ["inspector", "ai", "settings"],
+                        defaultMode: "inspector",
+                        tabs: true,
+                        collapsible: true,
+                    }}
+                    rightPanelMode={rightPanelMode as any}
+                    onRightPanelModeChange={setRightPanelMode as any}
+
+                    // Layout props
                     storageKey="crm-layout"
                     rightCollapsed={rightPanelCollapsed}
                     onRightCollapsedChange={setRightPanelCollapsed}

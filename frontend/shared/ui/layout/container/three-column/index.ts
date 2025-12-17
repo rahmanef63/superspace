@@ -34,6 +34,16 @@ export type {
   PanelHeaderProps,
   CollapsedPanelProps,
   PanelProps,
+  MobileNavigationLevel,
+  MobileNavigation,
+  MobileHeaderProps,
+  RightPanelMode,
+  RightPanelConfig,
+  EmptyStateConfig,
+  LoadingStateConfig,
+  AIActionConfig,
+  SettingsActionConfig,
+  HeaderActionsConfig,
 } from "./types"
 
 // Context
@@ -50,5 +60,14 @@ export { PanelHeader } from "./PanelHeader"
 export { CollapsedPanel } from "./CollapsedPanel"
 export { LeftPanel, CenterPanel, RightPanel } from "./Panels"
 
+// Mobile Components
+export { MobileHeader, useMobileNavigation, MobilePanelWrapper, MobileInspectorDrawer } from "./mobile"
+export type { UseMobileNavigationReturn, MobilePanelWrapperProps, MobileInspectorDrawerProps } from "./mobile"
+
+// Shared Components
+export { EmptyState, RightPanelTabs } from "./components"
+export type { EmptyStateProps, RightPanelTabsProps } from "./components"
+
 // Presets
 export { THREE_COLUMN_PRESETS, resolveThreeColumnPreset } from "./presets"
+

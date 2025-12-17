@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sub-Agent Initialization
  * 
  * This file initializes all sub-agents by importing their init modules.
@@ -22,10 +22,8 @@ if (typeof window !== "undefined") {
     setTimeout(() => {
         subAgentRegistry.markInitialized();
         if (process.env.NODE_ENV === "development") {
-            console.log(`✅ Sub-Agent Registry initialized with ${subAgentRegistry.size} agent(s)`);
             const agents = subAgentRegistry.getAllAgents();
             for (const agent of agents) {
-                console.log(`   - ${agent.name} (${agent.tools.length} tools)`);
             }
         }
     }, 0);

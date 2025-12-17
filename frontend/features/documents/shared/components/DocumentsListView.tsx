@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -112,12 +112,10 @@ export function DocumentsListView({
 
   const handleTagAdd = async (tag: string) => {
     // TODO: Implement tag add mutation
-    console.log("Add tag:", tag, "to document:", inspectorDocument?._id);
   };
 
   const handleTagRemove = async (tag: string) => {
     // TODO: Implement tag remove mutation
-    console.log("Remove tag:", tag, "from document:", inspectorDocument?._id);
   };
 
   const config = createDocumentViewConfig({

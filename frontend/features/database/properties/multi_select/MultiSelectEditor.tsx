@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { PropertyEditorProps } from '../../registry/types';
 import type { SelectOptions, SelectChoice } from '@/frontend/shared/foundation/types/property-options';
 import { Button } from '@/components/ui/button';
@@ -143,7 +143,6 @@ export const MultiSelectEditor: React.FC<PropertyEditorProps> = ({ value, onChan
 
   const handleOpenColorPicker = () => {
     if (searchQuery.trim()) {
-      console.log('🎨 [MultiSelectEditor] Opening color picker for:', searchQuery.trim());
       setTempNewChoice({
         id: searchQuery.toLowerCase().replace(/\s+/g, '-'),
         name: searchQuery.trim(),
@@ -189,7 +188,6 @@ export const MultiSelectEditor: React.FC<PropertyEditorProps> = ({ value, onChan
     (selectOptions?.allowCreate !== false);
 
   const handlePopoverChange = (isOpen: boolean) => {
-    console.log(`🔽 [MultiSelectEditor] Dropdown ${isOpen ? 'OPENED' : 'CLOSED'}`);
     setOpen(isOpen);
   };
 

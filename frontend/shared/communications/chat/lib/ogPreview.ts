@@ -1,4 +1,4 @@
-/**
+﻿/**
  * OpenGraph link preview utilities
  * @module shared/chat/lib/ogPreview
  */
@@ -28,7 +28,6 @@ export async function fetchOgMetadata(url: string): Promise<OgMetadata | null> {
     // Example: const response = await fetch('/api/og-preview', { method: 'POST', body: JSON.stringify({ url }) });
 
     // Mock implementation
-    console.log("Fetching OG metadata for:", url);
 
     // Return mock data for now
     return {

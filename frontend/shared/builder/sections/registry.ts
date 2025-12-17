@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sections Registry (Level 4)
  * Auto-loads all section wrappers from subdirectories
  */
@@ -71,5 +71,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     getAll: getAllSectionWrappers,
     get: getSectionWrapper,
   }
-  console.log(`📦 Auto-loaded ${sectionRegistry.size} sections`)
 }

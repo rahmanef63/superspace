@@ -1,4 +1,4 @@
-/**
+﻿/**
  * System Features Admin Queries and Mutations
  * 
  * Platform admin controls for managing system features.
@@ -506,7 +506,6 @@ export const seedSystemFeatures = internalMutation({
     // Check if already seeded
     const existing = await ctx.db.query("systemFeatures").first();
     if (existing) {
-      console.log("[seedSystemFeatures] Already seeded, skipping");
       return { action: "skipped", count: 0 };
     }
     
@@ -572,8 +571,6 @@ export const seedSystemFeatures = internalMutation({
         count++;
       }
     }
-    
-    console.log(`[seedSystemFeatures] Seeded ${count} features`);
     return { action: "seeded", count };
   },
 });

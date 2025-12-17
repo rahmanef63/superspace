@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useState, useEffect, useMemo, Suspense } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -63,7 +63,6 @@ export function DocumentsViewContent({
   category,
 }: DocumentsViewProps) {
   const deleteDocument = useDeleteDocument();
-  const [isMobile, setIsMobile] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   // Sorting state
@@ -78,25 +77,15 @@ export function DocumentsViewContent({
 
   // Layout State
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
-  const [rightPanelMode, setRightPanelMode] = useState<"inspector" | "ai" | "debug">("inspector");
+  const [rightPanelMode, setRightPanelMode] = useState<"inspector" | "ai" | "settings">("inspector");
 
   useEffect(() => {
     setIsMounted(true);
-    const checkMobile = () => {
-      const newIsMobile = window.innerWidth < 768;
-      setIsMobile(prev => prev !== newIsMobile ? newIsMobile : prev);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
     const handleOpenCreateDialog = () => {
       manager.openCreateDialog();
     };
     window.addEventListener('open-create-document-dialog', handleOpenCreateDialog);
-
     return () => {
-      window.removeEventListener('resize', checkMobile);
       window.removeEventListener('open-create-document-dialog', handleOpenCreateDialog);
     };
   }, [manager]);
@@ -177,28 +166,18 @@ export function DocumentsViewContent({
       />
 
       {/* AI Assistant Toggle Button */}
-      {isMobile ? (
-        <FeatureAIAssistant
-          featureId="knowledge/docs"
-          context={selectedDocument}
-          className="h-8 w-8"
-          buttonVariant="ghost"
-          title="Documents Assistant"
-        />
-      ) : (
-        <Button
-          variant={rightPanelMode === 'ai' && !rightPanelCollapsed ? "secondary" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => {
-            setRightPanelMode("ai");
-            setRightPanelCollapsed(false);
-          }}
-          title="AI Assistant"
-        >
-          <Sparkles className="h-4 w-4" />
-        </Button>
-      )}
+      <Button
+        variant={rightPanelMode === 'ai' && !rightPanelCollapsed ? "secondary" : "ghost"}
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => {
+          setRightPanelMode("ai");
+          setRightPanelCollapsed(false);
+        }}
+        title="AI Assistant"
+      >
+        <Sparkles className="h-4 w-4" />
+      </Button>
 
       {/* New Document */}
       <Button
@@ -211,7 +190,7 @@ export function DocumentsViewContent({
         <span className="sm:hidden">New</span>
       </Button>
     </div>
-  ), [selectedDocIds, manager.openCreateDialog, rightPanelMode, rightPanelCollapsed, isMobile, selectedDocument]);
+  ), [selectedDocIds, manager.openCreateDialog, rightPanelMode, rightPanelCollapsed, selectedDocument]);
 
   // 3. Search Config
   const searchConfig = useMemo(() => ({
@@ -344,8 +323,14 @@ export function DocumentsViewContent({
       onClose={() => setRightPanelCollapsed(true)}
       mode={rightPanelMode}
       onModeChange={setRightPanelMode}
-      onTagAdd={async (tag: string) => console.log("Add tag:", tag)}
-      onTagRemove={async (tag: string) => console.log("Remove tag:", tag)}
+      onTagAdd={async (tag: string) => {
+        // Implement tag addition
+        if (selectedDocument) {
+          await manager.updateDocument(selectedDocument._id, {
+            tags: [...(selectedDocument.tags || []), tag]
+          })
+        }
+      }}
     />
   );
 
@@ -365,65 +350,7 @@ export function DocumentsViewContent({
     <EmptyEditorState onCreate={manager.openCreateDialog} />
   );
 
-  // Mobile View
-  if (isMobile) {
-    if (manager.state.selectedDocumentId) {
-      // Mobile Editor View
-      return (
-        <div className="flex flex-col h-full bg-background">
-          {/* Edit Mobile Header */}
-          <div className="flex items-center border-b p-2 gap-2 h-14 bg-background">
-            <Button variant="ghost" size="icon" onClick={() => manager.selectDocument(null)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg>
-            </Button>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold truncate text-sm">{selectedDocument?.title}</h3>
-              <p className="text-xs text-muted-foreground truncate">
-                {selectedDocument ? formatRelativeTime(selectedDocument.lastModified || selectedDocument._creationTime) : ''}
-              </p>
-            </div>
-            {/* Mobile AI Button */}
-            <FeatureAIAssistant
-              featureId="knowledge/docs"
-              context={selectedDocument}
-              buttonVariant="ghost"
-              buttonSize="icon"
-              className="h-8 w-8"
-              title="Documents Assistant"
-            />
-          </div>
-          <div className="flex-1 overflow-hidden relative">
-            {editorContent}
-          </div>
-        </div>
-      );
-    }
-
-    // Mobile List View
-    return (
-      <div className="flex flex-col h-full bg-background">
-        {commonHeader}
-        <div className="flex-1 overflow-y-auto p-4">
-          {sidebarContent}
-        </div>
-
-        {isWorkspaceId(workspaceId) ? (
-          <CreateDocumentDialog
-            open={manager.state.createOpen}
-            onOpenChange={manager.toggleCreateDialog}
-            workspaceId={workspaceId}
-            category={category}
-            onCreated={(documentId) => {
-              manager.toggleCreateDialog(false);
-              manager.selectDocument(documentId);
-            }}
-          />
-        ) : null}
-      </div>
-    );
-  }
-
-  // Desktop View
+  // Render
   return (
     <div className="flex flex-col h-full">
       {/* 1. Global Feature Header */}
@@ -471,6 +398,33 @@ export function DocumentsViewContent({
           // Right
           inspector={inspector}
 
+          // ✨ NEW: Loading states
+          loading={{
+            sidebar: manager.isLoading,
+            center: false,
+            right: false,
+          }}
+
+          // ✨ NEW: Empty state for sidebar
+          sidebarEmptyState={
+            sortedDocuments.length === 0 ? {
+              icon: FileText,
+              title: "No documents",
+              description: "Create your first document to get started",
+              action: {
+                label: "New Document",
+                onClick: manager.openCreateDialog,
+              },
+            } : undefined
+          }
+
+          // ✨ NEW: Right panel with multiple modes
+          rightPanelConfig={{
+            modes: ["inspector", "ai", "settings"],
+            defaultMode: "inspector",
+            tabs: true,
+            collapsible: true,
+          }}
           // Layout Props
           storageKey={storageKey ?? "documents-layout"}
           rightCollapsed={rightPanelCollapsed}

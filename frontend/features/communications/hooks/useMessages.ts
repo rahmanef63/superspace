@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Message Hooks
  * 
  * Hooks for fetching and managing messages, threads, and typing indicators.
@@ -196,31 +196,8 @@ export function useMessageMutations() {
     },
 
     addReaction: async (messageId: Id<"channelMessages">, emoji: string) => {
-      console.log("Adding reaction not yet implemented:", messageId, emoji)
-    },
-
-    removeReaction: async (messageId: Id<"channelMessages">, emoji: string) => {
-      console.log("Removing reaction not yet implemented:", messageId, emoji)
-    },
-
-    pinMessage: async (messageId: Id<"channelMessages">) => {
-      console.log("Pinning message not yet implemented:", messageId)
-    },
-
-    unpinMessage: async (messageId: Id<"channelMessages">) => {
-      console.log("Unpinning message not yet implemented:", messageId)
-    },
-
-    createThread: async (messageId: Id<"channelMessages">, title?: string) => {
-      console.log("Creating thread not yet implemented:", messageId, title)
-    },
-
-    setTyping: async (data: {
-      channelId?: Id<"channels">
-      directConversationId?: Id<"directConversations">
-      isTyping: boolean
-    }) => {
-      // Typing indicators not yet implemented
+      // TODO: Implement reaction logic
+      console.log("Adding reaction:", messageId, emoji)
     },
   }
 }

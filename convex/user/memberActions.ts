@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+﻿import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import { getCurrentUserOrThrow, getCurrentUser } from "./users";
 import type { Id } from "../_generated/dataModel";
@@ -613,13 +613,6 @@ export const reportMember = mutation({
 
     // TODO: Create a reports table and store the report
     // For now, just log it
-    console.log("Report submitted:", {
-      reporterId: currentUser._id,
-      reportedId: memberId,
-      reason,
-      details,
-      timestamp: Date.now(),
-    });
 
     return true;
   },

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * usePropertyMenuHandlers Hook
  * 
  * Provides complete set of handlers for PropertyMenu actions.
@@ -126,25 +126,21 @@ export function usePropertyMenuHandlers({
     }
 
     // TODO: Implement sort update in view settings
-    console.log(`Sort ${fieldId} by ${direction}`);
   }, [activeView]);
 
   // Data Section: Filter
   const onFilter = useCallback((fieldId: string) => {
     // TODO: Open filter modal
-    console.log(`Open filter for ${fieldId}`);
   }, []);
 
   // Data Section: Calculate
   const onCalculate = useCallback((fieldId: string, calcType: string) => {
     // TODO: Update view aggregation settings
-    console.log(`Calculate ${calcType} for ${fieldId}`);
   }, []);
 
   // Data Section: Wrap
   const onWrap = useCallback((fieldId: string) => {
     // TODO: Toggle text wrapping in view settings
-    console.log(`Toggle wrap for ${fieldId}`);
   }, []);
 
   // Type-Specific: Set Format (Number)
@@ -199,19 +195,16 @@ export function usePropertyMenuHandlers({
   // Type-Specific: Manage Colors (Select/MultiSelect)
   const onManageColors = useCallback((fieldId: string) => {
     // TODO: Open color manager modal
-    console.log(`Manage colors for ${fieldId}`);
   }, []);
 
   // Type-Specific: Notifications (Date)
   const onNotifications = useCallback((fieldId: string) => {
     // TODO: Open notifications settings
-    console.log(`Configure notifications for ${fieldId}`);
   }, []);
 
   // Type-Specific: Show Page Icon (Title)
   const onShowPageIcon = useCallback((fieldId: string) => {
     // TODO: Toggle page icon visibility
-    console.log(`Toggle page icon for ${fieldId}`);
   }, []);
 
   // Column Section: Insert Left

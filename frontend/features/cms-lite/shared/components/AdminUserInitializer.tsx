@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useAction } from "convex/react";
@@ -18,7 +18,6 @@ export function AdminUserInitializer() {
     const initialize = async () => {
       try {
         const result = await initializeAdmin();
-        console.log("[AdminUserInitializer]", result.created ? "Created admin user" : "Admin user already exists");
         setInitialized(true);
       } catch (error: any) {
         console.error("[AdminUserInitializer] Failed to initialize admin user:", error);

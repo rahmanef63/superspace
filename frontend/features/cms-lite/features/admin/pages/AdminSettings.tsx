@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useBackend } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { Input, Select } from "../../../shared/components/Form";
@@ -95,7 +95,6 @@ export default function AdminSettings() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       logger.exported("semua data");
-      console.log(`📁 File tersimpan sebagai: ${fileName}`);
       toast({ title: "Data exported successfully" });
     } catch (err: any) {
       logger.error("ekspor", "data", err);
@@ -136,7 +135,6 @@ export default function AdminSettings() {
           .map(([key, count]) => `${key}: ${count}`);
         
         logger.imported("data ke database");
-        console.log("📊 Detail import:", response.imported);
         
         toast({
           title: "Data imported successfully",

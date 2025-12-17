@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from "react"
+import { Calendar } from "lucide-react"
 import { Id } from "@convex/_generated/dataModel"
 import { useCalendar } from "../hooks/useCalendar"
 import { EventFormDialog } from "../components/EventFormDialog"
@@ -158,7 +159,7 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
             handleCreateClick={handleCreateClick}
           />
         }
-        sidebarStats={`${events.length}`}
+        sidebarStats={`${events.length} events`}
 
         // Center Panel
         mainContent={
@@ -183,14 +184,39 @@ export default function CalendarPage({ workspaceId }: CalendarPageProps) {
               onEventClick={handleEventClick}
               title={date ? `Schedule: ${date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}` : "All Upcoming"}
             />
-            {/* Placeholder */}
-            {(!date || selectedDateEvents.length === 0) && filteredEvents.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground text-sm">
-                You don't have plan yet, <button className="text-primary underline" onClick={() => handleCreateClick()}>add here</button>
-              </div>
-            )}
           </div>
         }
+
+        // ✨ NEW: Loading states - automatically shows skeletons while loading
+        loading={{
+          sidebar: isLoading,
+          center: isLoading,
+          right: false,
+        }}
+
+        // ✨ NEW: Empty states - automatically shown when no events
+        sidebarEmptyState={
+          events.length === 0 ? {
+            icon: Calendar,
+            title: "No events yet",
+            description: "Create your first calendar event to get started",
+            action: {
+              label: "Create Event",
+              onClick: () => handleCreateClick(),
+            },
+          } : undefined
+        }
+
+        centerEmptyState={
+          !date && filteredEvents.length === 0 ? {
+            icon: Calendar,
+            title: "Select a date",
+            description: "Choose a date from the calendar to view or create events",
+          } : undefined
+        }
+
+        // Layout props
+        storageKey="calendar-layout"
       />
 
       <EventFormDialog

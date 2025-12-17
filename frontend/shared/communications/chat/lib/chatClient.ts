@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Chat client - Convex integration adapter
  * @module shared/chat/lib/chatClient
  */
@@ -202,7 +202,6 @@ export function createMockChatDataSource(): ChatDataSource {
       action: ParticipantAction
     ): Promise<void> {
       // Mock implementation
-      console.log(`Manage participant: ${action} ${userId} in ${roomId}`);
     },
   };
 }

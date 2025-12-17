@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Comments/Threads Panel
  * Side-panel discussion for any entity (page, document, task, etc.)
  */
@@ -119,11 +119,9 @@ export function CommentsPanel({
           }}
           events={{
             onSend: async (draft) => {
-              console.log(`Comment on ${entityType} ${entityId}:`, draft);
               // TODO: Notify entity owner
             },
             onMention: async (userIds, messageId) => {
-              console.log("Mentioned in comment:", userIds);
               // TODO: Send mention notifications
             },
           }}

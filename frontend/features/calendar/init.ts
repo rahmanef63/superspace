@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Calendar Feature Initialization
  * Registers calendar settings with the shared settings registry
  */
@@ -47,5 +47,4 @@ registerFeatureSettings("calendar", () => [
 registerCalendarAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Calendar feature settings registered")
 }

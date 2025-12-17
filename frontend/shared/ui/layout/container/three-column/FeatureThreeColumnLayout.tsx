@@ -17,7 +17,18 @@ import { useThreeColumnLayoutSafe } from "./context";
 import { HeaderControls } from "@/frontend/shared/ui/layout/header";
 import { UniversalToolbar, toolType, type SortToolParams } from "@/frontend/shared/ui/layout/toolbar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ThreeColumnLayoutAdvancedProps } from "./types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "./components/EmptyState";
+import { RightPanelTabs } from "./components/RightPanelTabs";
+import type {
+    ThreeColumnLayoutAdvancedProps,
+    MobileNavigation,
+    RightPanelConfig,
+    RightPanelMode,
+    EmptyStateConfig,
+    LoadingStateConfig,
+    HeaderActionsConfig,
+} from "./types";
 
 export interface FeatureThreeColumnLayoutProps extends Omit<ThreeColumnLayoutAdvancedProps, "left" | "center" | "right"> {
     // Left Panel Configuration
@@ -42,6 +53,34 @@ export interface FeatureThreeColumnLayoutProps extends Omit<ThreeColumnLayoutAdv
 
     // Right Panel Configuration
     inspector?: React.ReactNode; // If null, right panel is hidden/empty
+
+    // ✨ NEW: Mobile Configuration
+    /** Mobile navigation configuration */
+    mobile?: MobileNavigation;
+    /** Custom mobile header component (overrides default) */
+    mobileHeaderComponent?: React.ComponentType<any>;
+
+    // ✨ NEW: Right Panel Configuration
+    /** Right panel mode configuration */
+    rightPanelConfig?: RightPanelConfig;
+    /** Current right panel mode */
+    rightPanelMode?: RightPanelMode;
+    /** Right panel mode change callback */
+    onRightPanelModeChange?: (mode: RightPanelMode) => void;
+
+    // ✨ NEW: Empty States
+    /** Empty state configuration for sidebar */
+    sidebarEmptyState?: EmptyStateConfig;
+    /** Empty state configuration for center panel */
+    centerEmptyState?: EmptyStateConfig;
+
+    // ✨ NEW: Loading States
+    /** Loading state configuration */
+    loading?: LoadingStateConfig;
+
+    // ✨ NEW: Header Actions (standardize AI/Settings buttons)
+    /** Header actions configuration */
+    headerActions?: HeaderActionsConfig;
 }
 
 export function FeatureThreeColumnLayout({
@@ -57,6 +96,17 @@ export function FeatureThreeColumnLayout({
     mainContent,
     mainHeader,
     inspector,
+
+    // New Props
+    mobile,
+    mobileHeaderComponent,
+    rightPanelConfig,
+    rightPanelMode,
+    onRightPanelModeChange,
+    sidebarEmptyState,
+    centerEmptyState,
+    loading,
+    headerActions,
 
     // Layout Props
     className,
@@ -149,29 +199,113 @@ export function FeatureThreeColumnLayout({
     }
 
     // LEFT PANEL BODY (scrollable)
-    const leftPanelBody = React.useMemo(() => (
-        <ScrollArea className="h-full">
-            <div className="p-2">
-                {sidebarContent}
-            </div>
-        </ScrollArea>
-    ), [sidebarContent])
+    const leftPanelBody = React.useMemo(() => {
+        if (loading?.sidebar) {
+            return (
+                <div className="p-4 space-y-3">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-3 w-1/2" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        }
+
+        // Check if content is empty (simple check for empty array or falsy)
+        const isEmpty = React.isValidElement(sidebarContent)
+            ? false
+            : !sidebarContent || (Array.isArray(sidebarContent) && sidebarContent.length === 0)
+
+        if (isEmpty && sidebarEmptyState) {
+            return <EmptyState {...sidebarEmptyState} />
+        }
+
+        return (
+            <ScrollArea className="h-full">
+                <div className="p-2">
+                    {sidebarContent}
+                </div>
+            </ScrollArea>
+        )
+    }, [sidebarContent, loading?.sidebar, sidebarEmptyState])
 
     // ============================================================================
     // CENTER PANEL
     // ============================================================================
-    const centerPanel = React.useMemo(() => (
-        <div className="flex flex-col h-full min-h-0">
-            {mainHeader && (
-                <div className="flex-shrink-0 border-b bg-muted/30">
-                    {mainHeader}
+    const centerPanel = React.useMemo(() => {
+        if (loading?.center) {
+            return (
+                <div className="h-full flex flex-col p-6">
+                    <div className="border-b border-border pb-6 mb-6">
+                        <Skeleton className="h-8 w-96 mb-4" />
+                        <Skeleton className="h-4 w-48" />
+                    </div>
+                    <div className="flex-1 space-y-4">
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-5/6" />
+                        <Skeleton className="h-6 w-4/6" />
+                    </div>
                 </div>
-            )}
-            <div className="flex-1 min-h-0 overflow-auto">
-                {mainContent}
+            )
+        }
+
+        const content = (
+            <div className="flex flex-col h-full min-h-0">
+                {mainHeader && (
+                    <div className="flex-shrink-0 border-b bg-muted/30">
+                        {mainHeader}
+                    </div>
+                )}
+                <div className="flex-1 min-h-0 overflow-auto">
+                    {centerEmptyState && !mainContent ? (
+                        <EmptyState {...centerEmptyState} />
+                    ) : (
+                        mainContent
+                    )}
+                </div>
             </div>
-        </div>
-    ), [mainHeader, mainContent]);
+        )
+
+        return content
+    }, [mainHeader, mainContent, loading?.center, centerEmptyState]);
+
+    // ============================================================================
+    // RIGHT PANEL (with optional tabs)
+    // ============================================================================
+    const rightPanel = React.useMemo(() => {
+        if (!inspector) return null
+
+        if (loading?.right) {
+            return (
+                <div className="p-4 space-y-4">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+            )
+        }
+
+        // If right panel config is provided, wrap with tabs
+        if (rightPanelConfig?.modes && rightPanelConfig.modes.length > 0) {
+            return (
+                <RightPanelTabs
+                    modes={rightPanelConfig.modes}
+                    currentMode={rightPanelMode || rightPanelConfig.defaultMode || "inspector"}
+                    onModeChange={onRightPanelModeChange || (() => { })}
+                    collapsible={rightPanelConfig.collapsible}
+                >
+                    {inspector}
+                </RightPanelTabs>
+            )
+        }
+
+        return inspector
+    }, [inspector, rightPanelConfig, rightPanelMode, onRightPanelModeChange, loading?.right])
 
     return (
         <ThreeColumnLayoutAdvanced
@@ -184,7 +318,7 @@ export function FeatureThreeColumnLayout({
             rightLabel={effectiveRightLabel}
             left={leftPanelBody}
             center={centerPanel}
-            right={inspector}
+            right={rightPanel}
             {...layoutProps}
         />
     );

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Document Agent Initialization
  * 
  * Registers the Document Agent with the sub-agent registry.
@@ -15,7 +15,6 @@ subAgentRegistry.register(documentAgent, {
 });
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Document Agent registered with sub-agent registry");
 }
 
 export { documentAgent };

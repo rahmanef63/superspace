@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Migration Script: Fix Table Names Stored as JSON Strings
  * 
  * This script finds tables where name is stored as JSON string like:
@@ -29,19 +29,15 @@ export const fixTableNames = internalMutation({
           if (parsed && typeof parsed === 'object' && 'name' in parsed) {
             const cleanName = parsed.name;
             
-            console.log(`[Migration] Fixing table ${table._id}: "${name}" → "${cleanName}"`);
-            
             await ctx.db.patch(table._id, {
               name: cleanName,
             });
             
             fixed++;
           } else {
-            console.log(`[Migration] Skipping table ${table._id}: JSON but no name property`);
             skipped++;
           }
         } catch (error) {
-          console.log(`[Migration] Skipping table ${table._id}: Not valid JSON`);
           skipped++;
         }
       } else {

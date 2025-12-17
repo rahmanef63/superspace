@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tabs System
  * 
  * Standardized tabs component for consistent UI across the application.
@@ -37,46 +37,10 @@
  *     { id: "tab1", label: "Tab 1", icon: Icon1, content: <Content1 /> },
  *     { id: "tab2", label: "Tab 2", icon: Icon2, content: <Content2 />, badge: "3" },
  *   ]}
- *   onTabChange={(id) => console.log(id)}
+ *   onTabChange={(id) => {}}
  * />
  * ```
  */
-
-// Types
-export type {
-  TabItem,
-  TabItemWithContent,
-  TabVariant,
-  TabSize,
-  TabOrientation,
-  TabAlignment,
-  TabsProps,
-  TabsListProps,
-  TabsTriggerProps,
-  TabsContentProps,
-  TabsContextValue,
-  TabPreset,
-  TabPresetName,
-} from "./types"
-
-export { TAB_PRESETS } from "./types"
-
-// Context
-export { 
-  useTabsContext, 
-  useTabsContextSafe,
-  TabsProvider 
-} from "./context"
-
-// Components
-export { 
-  Tabs, 
-  TabsList, 
-  TabsTrigger, 
-  TabsContent 
-} from "./Tabs"
-
-// Styles (for custom implementations)
 export {
   getTabsContainerClasses,
   getTabsListClasses,

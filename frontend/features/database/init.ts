@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database Feature Initialization
  * Registers database settings with the shared settings registry
  */
@@ -55,5 +55,4 @@ registerFeatureSettings("database", () => [
 registerDatabaseAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Database feature settings registered")
 }

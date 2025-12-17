@@ -33,11 +33,7 @@ try {
   const raw = readFileSync(workspacePath, "utf-8");
   const data = JSON.parse(raw);
   WorkspaceSchema.parse(data);
-  console.log("✓ Workspace payload is valid");
-  console.log(`  Name: ${data.name}`);
-  console.log(`  Slug: ${data.slug}`);
-  console.log(`  Type: ${data.type}`);
-  console.log(`  Public: ${data.isPublic}`);
+
 } catch (err: unknown) {
   console.error("✗ Workspace payload is invalid:");
   if (err instanceof z.ZodError) {

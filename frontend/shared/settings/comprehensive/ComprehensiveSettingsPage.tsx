@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TwoTabSettingsLayout, SettingsId, SettingsTabType } from "./layout"
+import { TwoTabSettingsLayout, SettingsId, SettingsTabType, SettingsMenuSection } from "./layout"
 import { ActivityUsageSettings } from "./sections/ActivityUsageSettings"
 import { AIExperienceSettings } from "./sections/AIExperienceSettings"
 import { PrivacySettings } from "./sections/PrivacySettings"
@@ -13,8 +13,11 @@ import { Id } from "@/convex/_generated/dataModel"
 import { Separator } from "@/components/ui/separator"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { getFeatureSettingsBuilder } from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
-import { SettingsMenuSection } from "./layout"
+import {
+    getFeatureSettingsBuilder,
+    getAllRegisteredFeatures
+} from "@/frontend/shared/foundation/utils/registry/feature-settings-registry"
+import { Settings } from "lucide-react"
 
 // Placeholder for sections not yet implemented
 const PlaceholderSettings = ({ title }: { title: string }) => (
@@ -33,10 +36,36 @@ const PlaceholderSettings = ({ title }: { title: string }) => (
     </div>
 )
 
+// No features placeholder
+const NoFeaturesPlaceholder = () => (
+    <div className="space-y-6">
+        <div>
+            <h3 className="text-lg font-medium">Feature Settings</h3>
+            <p className="text-sm text-muted-foreground">Configure settings for your installed features.</p>
+        </div>
+        <Separator />
+        <div className="h-60 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground bg-muted/10">
+            <div className="text-center space-y-2">
+                <Settings className="h-10 w-10 mx-auto opacity-50" />
+                <p className="font-medium">No Feature Settings Available</p>
+                <p className="text-xs max-w-xs">Install features from the Feature Store to see their settings here.</p>
+            </div>
+        </div>
+    </div>
+)
+
 interface ComprehensiveSettingsPageProps {
     defaultTab?: SettingsTabType
     defaultId?: SettingsId
     defaultFeatureSlug?: string
+}
+
+// Helper to capitalize feature name
+function capitalizeFeatureName(slug: string): string {
+    return slug
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
 }
 
 export function ComprehensiveSettingsPage({
@@ -50,6 +79,62 @@ export function ComprehensiveSettingsPage({
     )
     const [activeFeatureSlug, setActiveFeatureSlug] = React.useState<string | undefined>(defaultFeatureSlug)
 
+    const { workspaceId } = useWorkspaceContext()
+
+    // Fetch workspace name for display
+    const workspaceData = useQuery(
+        (api as any)["workspace/workspaces"]?.getWorkspace,
+        workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
+    ) as { name?: string } | null | undefined
+
+    // Build menu for ALL features with registered settings
+    const allFeaturesMenu = React.useMemo((): SettingsMenuSection[] => {
+        const registeredFeatures = getAllRegisteredFeatures()
+
+        if (registeredFeatures.length === 0) {
+            return []
+        }
+
+        const sections: SettingsMenuSection[] = []
+
+        registeredFeatures.forEach(featureSlug => {
+            const builder = getFeatureSettingsBuilder(featureSlug)
+            if (!builder) return
+
+            const defaultCtx = {
+                menuItem: {
+                    id: featureSlug,
+                    name: featureSlug,
+                    slug: featureSlug,
+                    icon: 'Settings'
+                } as any
+            }
+            const items = builder(defaultCtx)
+
+            if (items.length > 0) {
+                sections.push({
+                    label: capitalizeFeatureName(featureSlug),
+                    items: items.map(item => ({
+                        id: `${featureSlug}::${item.id}`, // Prefix with feature slug for uniqueness
+                        label: item.label,
+                        icon: item.icon || Settings
+                    }))
+                })
+            }
+        })
+
+        return sections
+    }, [])
+
+    // Parse activeId to get feature slug and setting id
+    const parseActiveId = React.useCallback((id: SettingsId): { featureSlug: string | null, settingId: string } => {
+        if (id.includes('::')) {
+            const [featureSlug, settingId] = id.split('::')
+            return { featureSlug, settingId }
+        }
+        return { featureSlug: null, settingId: id }
+    }, [])
+
     // Update state if props change (re-opening dialog)
     React.useEffect(() => {
         setActiveTab(defaultTab)
@@ -59,68 +144,51 @@ export function ComprehensiveSettingsPage({
             const defaultCtx = { menuItem: { id: defaultFeatureSlug, name: defaultFeatureSlug, slug: defaultFeatureSlug, icon: 'Settings' } as any }
             const items = builder ? builder(defaultCtx) : []
             if (items.length > 0) {
-                // If defaultId is provided and exists in items, use it. Otherwise use first item.
-                const exists = defaultId && items.some(i => i.id === defaultId)
-                setActiveId(exists ? defaultId! : items[0].id)
+                // Use prefixed ID format
+                const prefixedId = `${defaultFeatureSlug}::${items[0].id}`
+                setActiveId(prefixedId)
             } else {
                 setActiveId("ft_settings")
             }
             setActiveFeatureSlug(defaultFeatureSlug)
-        } else {
-            setActiveId(defaultId || (defaultTab === "workspace" ? "ws_appearance" : defaultTab === "features" ? "ft_settings" : "gl_activity"))
-            if (defaultTab !== "features") {
-                setActiveFeatureSlug(undefined)
+        } else if (defaultTab === "features") {
+            // If no specific feature, select first available
+            if (allFeaturesMenu.length > 0 && allFeaturesMenu[0].items.length > 0) {
+                setActiveId(allFeaturesMenu[0].items[0].id)
+            } else {
+                setActiveId("ft_settings")
             }
+        } else {
+            setActiveId(defaultId || (defaultTab === "workspace" ? "ws_appearance" : "gl_activity"))
+            setActiveFeatureSlug(undefined)
         }
-    }, [defaultTab, defaultId, defaultFeatureSlug])
-
-    const { workspaceId } = useWorkspaceContext()
-
-    // Fetch workspace name for display
-    const workspaceData = useQuery(
-        (api as any)["workspace/workspaces"]?.getWorkspace,
-        workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
-    ) as { name?: string } | null | undefined
-
-    // Generate dynamic menu for features
-    const featuresMenu = React.useMemo(() => {
-        if (!activeFeatureSlug) return undefined
-
-        const builder = getFeatureSettingsBuilder(activeFeatureSlug)
-        if (!builder) return undefined
-
-        const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
-        const items = builder(defaultCtx)
-
-        return [{
-            label: activeFeatureSlug.charAt(0).toUpperCase() + activeFeatureSlug.slice(1),
-            items: items.map(item => ({
-                id: item.id,
-                label: item.label,
-                icon: item.icon
-            }))
-        }] as SettingsMenuSection[]
-    }, [activeFeatureSlug])
+    }, [defaultTab, defaultId, defaultFeatureSlug, allFeaturesMenu])
 
     // Reset activeId when tab changes
     const handleTabChange = (tab: SettingsTabType) => {
         setActiveTab(tab)
         // Set default item for each tab
-        if (tab === "workspace") setActiveId("ws_appearance")
-        else if (tab === "features") {
-            // If we have an active feature, try to select its first item
-            if (activeFeatureSlug) {
-                const builder = getFeatureSettingsBuilder(activeFeatureSlug)
-                const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
-                const items = builder ? builder(defaultCtx) : []
-                if (items.length > 0) {
-                    setActiveId(items[0].id)
-                    return
-                }
+        if (tab === "workspace") {
+            setActiveId("ws_appearance")
+        } else if (tab === "features") {
+            // Select first available feature setting
+            if (allFeaturesMenu.length > 0 && allFeaturesMenu[0].items.length > 0) {
+                setActiveId(allFeaturesMenu[0].items[0].id)
+            } else {
+                setActiveId("ft_settings")
             }
-            setActiveId("ft_settings")
+        } else {
+            setActiveId("gl_activity")
         }
-        else setActiveId("gl_activity")
+    }
+
+    // Handle navigation - update active feature slug when navigating
+    const handleNavigate = (id: SettingsId) => {
+        setActiveId(id)
+        const { featureSlug } = parseActiveId(id)
+        if (featureSlug) {
+            setActiveFeatureSlug(featureSlug)
+        }
     }
 
     const renderContent = () => {
@@ -152,30 +220,41 @@ export function ComprehensiveSettingsPage({
             }
         }
 
-
         // ==========================================
         // Features Settings (Features tab)
         // ==========================================
         if (activeTab === "features") {
-            // Try to find the component in the active feature settings
-            if (activeFeatureSlug) {
-                const builder = getFeatureSettingsBuilder(activeFeatureSlug)
-                const defaultCtx = { menuItem: { id: activeFeatureSlug, name: activeFeatureSlug, slug: activeFeatureSlug, icon: 'Settings' } as any }
-                const items = builder ? builder(defaultCtx) : []
-                const activeItem = items.find(item => item.id === activeId)
+            // Check if we have any features
+            if (allFeaturesMenu.length === 0) {
+                return <NoFeaturesPlaceholder />
+            }
 
-                if (activeItem && activeItem.component) {
-                    const Component = activeItem.component
-                    return <Component />
+            // Parse the active ID to get feature and setting
+            const { featureSlug, settingId } = parseActiveId(activeId)
+
+            if (featureSlug) {
+                const builder = getFeatureSettingsBuilder(featureSlug)
+                if (builder) {
+                    const defaultCtx = {
+                        menuItem: {
+                            id: featureSlug,
+                            name: featureSlug,
+                            slug: featureSlug,
+                            icon: 'Settings'
+                        } as any
+                    }
+                    const items = builder(defaultCtx)
+                    const activeItem = items.find(item => item.id === settingId)
+
+                    if (activeItem && activeItem.component) {
+                        const Component = activeItem.component
+                        return <Component />
+                    }
                 }
             }
 
-            switch (activeId) {
-                case "ft_settings":
-                    return <PlaceholderSettings title="Feature Settings" />
-                default:
-                    return <PlaceholderSettings title="Feature Settings" />
-            }
+            // Fallback
+            return <PlaceholderSettings title="Feature Settings" />
         }
 
         // ==========================================
@@ -211,11 +290,12 @@ export function ComprehensiveSettingsPage({
             activeTab={activeTab}
             activeId={activeId}
             onTabChange={handleTabChange}
-            onNavigate={setActiveId}
+            onNavigate={handleNavigate}
             workspaceName={workspaceData?.name || "Current Workspace"}
-            featuresMenu={featuresMenu}
+            featuresMenu={allFeaturesMenu.length > 0 ? allFeaturesMenu : undefined}
         >
             {renderContent()}
         </TwoTabSettingsLayout>
     )
 }
+

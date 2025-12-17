@@ -131,7 +131,7 @@ function AccessDenied() {
   )
 }
 
-function PlatformAdminErrorFallback({ error, onRetry }: { error: Error; onRetry: () => void }) {
+function PlatformAdminErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
   const message = error?.message ?? "An unexpected error occurred."
   const isAccessError = message.toLowerCase().includes("platform administrator access required")
 
@@ -140,7 +140,7 @@ function PlatformAdminErrorFallback({ error, onRetry }: { error: Error; onRetry:
       <div className="flex flex-col h-full p-6 space-y-4">
         <AccessDenied />
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button variant="outline" size="sm" onClick={reset}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry access check
           </Button>
@@ -156,7 +156,7 @@ function PlatformAdminErrorFallback({ error, onRetry }: { error: Error; onRetry:
         <h2 className="text-lg font-semibold">Unable to load the admin console</h2>
         <p className="text-sm text-muted-foreground">{message}</p>
       </div>
-      <Button variant="outline" size="sm" onClick={onRetry}>
+      <Button variant="outline" size="sm" onClick={reset}>
         <RefreshCw className="h-4 w-4 mr-2" />
         Retry
       </Button>
@@ -488,326 +488,141 @@ function PlatformAdminContent() {
         }}
         onDelete={() => {
           // TODO: Confirm and delete
-          console.log("Delete:", selectedItem)
         }}
-        onTogglePublic={() => {
-          // TODO: Toggle public visibility
-          console.log("Toggle public:", selectedItem)
-        }}
-        onToggleEnabled={() => {
-          // TODO: Toggle enabled state
-          console.log("Toggle enabled:", selectedItem)
-        }}
-        onClose={handleInspectorClose}
       />
     )
   )
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      {/* Page Header */}
-      <div className="flex-shrink-0 border-b px-6 py-3 bg-muted/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-gradient-to-br from-red-500 to-orange-500 p-2">
-              <Shield className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold">Platform Admin</h1>
-              <p className="text-xs text-muted-foreground">
-                Logged in as <span className="font-medium">{email}</span>
-              </p>
-            </div>
-          </div>
-          <Badge variant="outline" className={cn("gap-1", FEATURE_TAGS.admin.color)}>
-            <Shield className="h-3 w-3" />
-            Super Admin
-          </Badge>
-        </div>
-      </div>
+    <div className="h-full bg-background">
+      <ThreeColumnLayoutAdvanced
+        left={leftPanel}
+        center={centerPanel}
+        right={rightPanel}
+        rightCollapsed={rightPanelCollapsed}
+        onRightCollapsedChange={setRightPanelCollapsed}
+      />
 
-      {/* Three Column Layout */}
-      <div className="flex-1 min-h-0">
-        <ThreeColumnLayoutAdvanced
-          preset="admin"
-          left={leftPanel}
-          center={centerPanel}
-          right={rightPanel}
-          // Labels
-          leftLabel="Navigation"
-          centerLabel="Content"
-          rightLabel="Inspector"
-          persistState={true}
-          storageKey="platform-admin-layout"
-          rightCollapsed={rightPanelCollapsed}
-          onRightCollapsedChange={setRightPanelCollapsed}
-        />
-      </div>
-
-      {/* Edit Feature Sheet */}
+      {/* Edit Sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="w-full sm:max-w-[480px] p-0 gap-0 [&>button]:top-5 [&>button]:right-5">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
-            <SheetTitle className="text-xl">Edit Feature</SheetTitle>
+        <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit Feature</SheetTitle>
             <SheetDescription>
-              Update feature details for Menu Store
+              Update feature configuration and settings
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-6">
-            {/* Feature ID - Read Only */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Feature ID</Label>
-              <Input value={editingFeature?.featureId || ""} disabled className="font-mono bg-muted/50 h-10" />
-            </div>
-
-            {/* Basic Info Section */}
+          <div className="py-6 space-y-6">
             <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic Information</h4>
-
+              {/* Basic Info */}
               <div className="space-y-2">
-                <Label htmlFor="edit-name" className="text-sm font-medium">Name <span className="text-red-500">*</span></Label>
+                <Label>Details</Label>
                 <Input
-                  id="edit-name"
                   value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  placeholder="Feature name"
-                  className="h-10"
+                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Feature Name"
+                />
+                <Textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Description"
+                />
+              </div>
+
+              {/* Toggles */}
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Publicly Available</Label>
+                  <div className="text-xs text-muted-foreground">Is this visible to users?</div>
+                </div>
+                <Switch
+                  checked={editForm.isPublic}
+                  onCheckedChange={(c) => setEditForm(prev => ({ ...prev, isPublic: c }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Feature Enabled</Label>
+                  <div className="text-xs text-muted-foreground">Is this feature enabled globally?</div>
+                </div>
+                <Switch
+                  checked={editForm.isEnabled}
+                  onCheckedChange={(c) => setEditForm(prev => ({ ...prev, isEnabled: c }))}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-description" className="text-sm font-medium">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  placeholder="Brief description of the feature"
-                  rows={3}
-                  className="resize-none"
+                <Label>Bundles</Label>
+                <BundleMultiSelect
+                  value={selectedBundles}
+                  onChange={setSelectedBundles}
+                  options={bundleOptions}
                 />
               </div>
-            </div>
 
-            {/* Version & Icon */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Version & Appearance</h4>
-
+              {/* Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-version" className="text-sm font-medium">Version <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="edit-version"
-                    value={editForm.version}
-                    onChange={(e) => setEditForm({ ...editForm, version: e.target.value })}
-                    placeholder="1.0.0"
-                    className="h-10 font-mono"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-icon" className="text-sm font-medium">Icon</Label>
-                  <IconPicker
-                    icon={editForm.icon}
-                    onIconChange={(icon) => setEditForm({ ...editForm, icon })}
-                    showColor={false}
-                    className="w-full"
-                    trigger={
-                      <Button variant="outline" className="w-full h-10 justify-start gap-2">
-                        {(() => {
-                          const IconComp = getIconComponent(editForm.icon)
-                          return IconComp ? <IconComp className="h-4 w-4" /> : <Box className="h-4 w-4" />
-                        })()}
-                        <span>{editForm.icon}</span>
-                      </Button>
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Classification */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Classification</h4>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-category" className="text-sm font-medium">Category <span className="text-red-500">*</span></Label>
-                  <Select value={editForm.category} onValueChange={(v) => setEditForm({ ...editForm, category: v })}>
-                    <SelectTrigger id="edit-category" className="h-10">
+                  <Label>Status</Label>
+                  <Select
+                    value={editForm.status}
+                    onValueChange={(v) => setEditForm(prev => ({ ...prev, status: v }))}
+                  >
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {FEATURE_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status" className="text-sm font-medium">Status <span className="text-red-500">*</span></Label>
-                  <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                    <SelectTrigger id="edit-status" className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FEATURE_STATUSES.map((s) => (
+                      {FEATURE_STATUSES.map(s => (
                         <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-type" className="text-sm font-medium">Feature Type</Label>
-                  <Select value={editForm.featureType} onValueChange={(v) => setEditForm({ ...editForm, featureType: v })}>
-                    <SelectTrigger id="edit-type" className="h-10">
+                  <Label>Type</Label>
+                  <Select
+                    value={editForm.featureType}
+                    onValueChange={(v) => setEditForm(prev => ({ ...prev, featureType: v }))}
+                  >
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {FEATURE_TYPES.map((t) => (
+                      {FEATURE_TYPES.map(t => (
                         <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-release" className="text-sm font-medium">Expected Release</Label>
-                  <Input
-                    id="edit-release"
-                    value={editForm.expectedRelease}
-                    onChange={(e) => setEditForm({ ...editForm, expectedRelease: e.target.value })}
-                    placeholder="Q1 2025"
-                    className="h-10"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-tags" className="text-sm font-medium">Tags</Label>
-                <Input
-                  id="edit-tags"
-                  value={editForm.tags.join(", ")}
-                  onChange={(e) => setEditForm({
-                    ...editForm,
-                    tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean)
-                  })}
-                  placeholder="productivity, workflow, automation"
-                  className="h-10"
-                />
-                <p className="text-xs text-muted-foreground">Separate tags with commas</p>
-              </div>
-            </div>
-
-            {/* Bundle Categories Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Bundle Categories</h4>
-              <p className="text-xs text-muted-foreground -mt-2">
-                Assign this feature to workspace bundles. Each bundle can have this feature as core (always on), recommended (default on), or optional (default off).
-              </p>
-
-              <BundleMultiSelect
-                options={bundleOptions}
-                value={selectedBundles}
-                onChange={setSelectedBundles}
-                placeholder="Select bundle categories..."
-                allowCreate={true}
-                onCreateBundle={async (bundleId, name) => {
-                  await createBundle({
-                    bundleId,
-                    name,
-                    description: `Created for ${editForm.name}`,
-                    icon: "Package",
-                    category: "productivity",
-                    recommendedFor: ["personal"],
-                    tags: [],
-                  })
-                }}
-              />
-            </div>
-
-            {/* Visibility Settings */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Visibility & Status</h4>
-
-              <div className="space-y-1 rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Ready for Use</Label>
-                    <p className="text-xs text-muted-foreground">Feature is production ready</p>
-                  </div>
-                  <Switch
-                    checked={editForm.isReady}
-                    onCheckedChange={(v) => setEditForm({ ...editForm, isReady: v })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1 rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Public Visibility</Label>
-                    <p className="text-xs text-muted-foreground">Show in Menu Store</p>
-                  </div>
-                  <Switch
-                    checked={editForm.isPublic}
-                    onCheckedChange={(v) => setEditForm({ ...editForm, isPublic: v })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1 rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Enabled</Label>
-                    <p className="text-xs text-muted-foreground">Feature can be installed</p>
-                  </div>
-                  <Switch
-                    checked={editForm.isEnabled}
-                    onCheckedChange={(v) => setEditForm({ ...editForm, isEnabled: v })}
-                  />
-                </div>
               </div>
             </div>
           </div>
 
-          <SheetFooter className="px-6 py-4 border-t flex-shrink-0">
-            <div className="flex w-full gap-3">
-              <Button variant="outline" onClick={() => setIsEditSheetOpen(false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button onClick={handleSaveEdit} disabled={isSaving} className="flex-1">
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
+          <SheetFooter>
+            <Button variant="outline" onClick={() => setIsEditSheetOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>
-
     </div>
   )
 }
 
-export default function PlatformAdminPage() {
+/**
+ * Main Page Component with Error Boundary
+ */
+export default function PlatformAdminPageNew() {
   return (
-    <ConvexErrorBoundary fallback={(error, reset) => (
-      <PlatformAdminErrorFallback error={error} onRetry={reset} />
-    )}>
-      <PlatformAdminContent />
-    </ConvexErrorBoundary>
+    <div className="h-full bg-background animate-in fade-in duration-500">
+      <ConvexErrorBoundary fallback={(error, reset) => <PlatformAdminErrorFallback error={error} reset={reset} />}>
+        <PlatformAdminContent />
+      </ConvexErrorBoundary>
+    </div>
   )
 }

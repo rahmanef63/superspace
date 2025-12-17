@@ -1,4 +1,4 @@
-// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
+﻿// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { query, mutation } from "../_generated/server"
 import { v } from "convex/values"
 import { api } from "../_generated/api"
@@ -302,58 +302,3 @@ export const migrateAllBrokenWorkspaces = mutation({
   }),
   handler: async (ctx) => {
     // This is a dangerous operation - require manual confirmation
-    console.log("🚨 WARNING: Running migration on ALL workspaces")
-
-    const workspaces = await ctx.db.query("workspaces").collect()
-    const details: Array<{
-      workspaceId: any
-      workspaceName: string
-      status: string
-      issues: string[]
-    }> = []
-
-    let fixed = 0
-    let failed = 0
-
-    for (const workspace of workspaces) {
-      const health = await ctx.runQuery(api.workspace.health.checkWorkspaceHealth, {
-        workspaceId: workspace._id,
-      })
-
-      if (!health.isHealthy) {
-        try {
-          const result = await ctx.runMutation(api.workspace.health.fixWorkspaceIssues, {
-            workspaceId: workspace._id,
-            fixMenus: true,
-            fixRoles: true,
-          })
-
-          details.push({
-            workspaceId: workspace._id,
-            workspaceName: workspace.name,
-            status: "fixed",
-            issues: result.fixed,
-          })
-
-          fixed++
-        } catch (error) {
-          details.push({
-            workspaceId: workspace._id,
-            workspaceName: workspace.name,
-            status: "failed",
-            issues: [error instanceof Error ? error.message : String(error)],
-          })
-
-          failed++
-        }
-      }
-    }
-
-    return {
-      total: workspaces.length,
-      fixed,
-      failed,
-      details,
-    }
-  },
-})

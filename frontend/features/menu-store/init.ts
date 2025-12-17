@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Menus (Menu Store) Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("menus", () => [
 registerMenusAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Menus feature settings & agent registered", { icon: Menu })
 }

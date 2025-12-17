@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Approvals Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("approvals", () => [
 registerApprovalsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Approvals feature settings & agent registered", { icon: CheckCircle })
 }

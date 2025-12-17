@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useWebsiteSettings, useWorkspaceId } from "../../../shared/hooks/useWebsiteSettings";
 import { Button } from "../../../shared/components/Button";
 import { Input, Select } from "../../../shared/components/Form";
@@ -824,7 +824,7 @@ export default function AdminWebsiteSettings() {
               <textarea
                 value={form.customHeadCode}
                 onChange={(e) => setForm({ ...form, customHeadCode: e.target.value })}
-                placeholder="<script>console.log('Hello!');</script>"
+                placeholder="<script></script>"
                 className="w-full min-h-[100px] px-3 py-2 border rounded-lg font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">

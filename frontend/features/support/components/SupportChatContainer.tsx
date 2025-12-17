@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Support/Helpdesk Chat Container
  * Ticket-based customer support chat
  */
@@ -49,7 +49,6 @@ export function SupportChatContainer({
 
   // Handle support message
   const handleSupportMessage = async (draft: MessageDraft) => {
-    console.log(`Support message on ticket ${ticketId}:`, draft);
 
     // Update ticket status if needed
     if (ticketStatus === "pending") {
@@ -134,7 +133,6 @@ export function SupportChatContainer({
             onSend: handleSupportMessage,
             onModeration: handleModeration,
             onCommand: async (cmd, args) => {
-              console.log("Support command:", cmd, args);
 
               switch (cmd) {
                 case "/resolve":
@@ -151,7 +149,6 @@ export function SupportChatContainer({
                 case "/note":
                   // Add internal note
                   const note = args.join(" ");
-                  console.log("Internal note:", note);
                   break;
               }
             },

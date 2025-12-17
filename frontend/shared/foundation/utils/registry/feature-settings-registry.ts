@@ -1,4 +1,4 @@
-// Feature settings registry - works on both client and server
+﻿// Feature settings registry - works on both client and server
 
 /**
  * Feature Settings Registry
@@ -45,58 +45,48 @@ export function registerFeatureSettings(
   featureSettingsBuilders.set(featureSlug, builder)
 
   if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log(`✅ Registered settings for feature: ${featureSlug}`)
+    (window as any).__FEATURE_SETTINGS_REGISTRY__ = {
+      builders: featureSettingsBuilders,
+      register: registerFeatureSettings,
+      get: getFeatureSettingsBuilder,
+      getAll: getAllRegisteredFeatures,
+      has: hasFeatureSettings,
+      clear: clearFeatureSettingsRegistry,
+    }
   }
 }
 
 /**
- * Unregister feature settings (useful for hot module replacement)
+ * Unregister feature settings builder
  */
 export function unregisterFeatureSettings(featureSlug: string): void {
   featureSettingsBuilders.delete(featureSlug)
 }
 
 /**
- * Get settings builder for a feature
+ * Get feature settings builder
  */
-export function getFeatureSettingsBuilder(
-  featureSlug: string
-): FeatureSettingsBuilder | undefined {
+export function getFeatureSettingsBuilder(featureSlug: string): FeatureSettingsBuilder | undefined {
   return featureSettingsBuilders.get(featureSlug)
 }
 
 /**
- * Get all registered feature slugs
+ * Get all registered features
  */
 export function getAllRegisteredFeatures(): string[] {
   return Array.from(featureSettingsBuilders.keys())
 }
 
 /**
- * Check if feature has settings registered
+ * Check if feature has settings
  */
 export function hasFeatureSettings(featureSlug: string): boolean {
   return featureSettingsBuilders.has(featureSlug)
 }
 
 /**
- * Clear all registrations (useful for testing)
+ * Clear all registered features (for testing/cleanup)
  */
 export function clearFeatureSettingsRegistry(): void {
   featureSettingsBuilders.clear()
-}
-
-// ============================================================================
-// Debug
-// ============================================================================
-
-if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  (window as any).__FEATURE_SETTINGS_REGISTRY__ = {
-    builders: featureSettingsBuilders,
-    register: registerFeatureSettings,
-    get: getFeatureSettingsBuilder,
-    getAll: getAllRegisteredFeatures,
-    has: hasFeatureSettings,
-    clear: clearFeatureSettingsRegistry,
-  }
 }

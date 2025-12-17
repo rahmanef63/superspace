@@ -41,12 +41,7 @@ try {
   const raw = readFileSync(componentPath, "utf-8");
   const data = JSON.parse(raw);
   ComponentSchema.parse(data);
-  console.log("✓ Component payload is valid");
-  console.log(`  Key: ${data.key}`);
-  console.log(`  Version: ${data.version}`);
-  console.log(`  Type: ${data.type}`);
-  console.log(`  Category: ${data.category}`);
-  console.log(`  Status: ${data.status}`);
+
 } catch (err: unknown) {
   console.error("✗ Component payload is invalid:");
   if (err instanceof z.ZodError) {

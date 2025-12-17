@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Support Dashboard
  * Lists tickets and shows chat
  */
@@ -59,7 +59,6 @@ export function SupportDashboard({ workspaceId }: SupportDashboardProps) {
   const isMobile = useIsMobile();
 
   const handleTicketUpdate = (ticketId: string, update: any) => {
-    console.log("Update ticket:", ticketId, update);
     // TODO: Update ticket in backend
   };
 

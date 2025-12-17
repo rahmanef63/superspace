@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Audit Log Feature Initialization
  * Registers audit-log settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("audit-log", () => [
 registerAuditLogAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Audit Log feature settings & agent registered", { icon: History })
 }

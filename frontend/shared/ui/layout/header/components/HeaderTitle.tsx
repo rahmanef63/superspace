@@ -10,6 +10,7 @@ import {
   getIconSizeClass,
 } from "../styles"
 import type { HeaderTitleProps } from "../types"
+import { cn } from "@/lib/utils"
 
 export const HeaderTitle = React.forwardRef<HTMLDivElement, HeaderTitleProps>(
   ({ title, subtitle, icon: Icon, iconSize, size, className, children }, ref) => {
@@ -37,7 +38,7 @@ export const HeaderTitle = React.forwardRef<HTMLDivElement, HeaderTitleProps>(
             </h1>
           )}
           {subtitle && (
-            <p className={getSubtitleClasses({ size: effectiveSize })}>
+            <p className={cn(getSubtitleClasses({ size: effectiveSize }), "hidden md:block")}>
               {subtitle}
             </p>
           )}

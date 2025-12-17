@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -54,7 +54,6 @@ export const CartProvider: React.FC<{
   const addToCart = async (productId: string, quantity: number = 1) => {
     setIsLoading(true);
     try {
-      console.log("TODO: Implement Convex cart add", { workspaceId, productId, quantity });
       toast({ 
         title: "Added to cart", 
         description: "Product has been added to your cart" 
@@ -74,7 +73,6 @@ export const CartProvider: React.FC<{
   const updateQuantity = async (id: string, quantity: number) => {
     setIsLoading(true);
     try {
-      console.log("TODO: Implement Convex cart update", { workspaceId, id, quantity });
     } catch (error: any) {
       console.error("Failed to update quantity:", error);
       toast({ 
@@ -90,7 +88,6 @@ export const CartProvider: React.FC<{
   const removeItem = async (id: string) => {
     setIsLoading(true);
     try {
-      console.log("TODO: Implement Convex cart remove", { workspaceId, id });
       toast({ 
         title: "Removed from cart", 
         description: "Item has been removed from your cart" 
@@ -110,7 +107,6 @@ export const CartProvider: React.FC<{
   const clearCart = async () => {
     setIsLoading(true);
     try {
-      console.log("TODO: Implement Convex cart clear", { workspaceId });
       setCart([]);
       toast({ 
         title: "Cart cleared", 

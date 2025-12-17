@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Content Feature Initialization
  * Registers content settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("content", () => [
 registerContentAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Content feature settings registered")
 }

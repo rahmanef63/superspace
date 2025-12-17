@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Elements Registry
  * Level 2 - Composite elements
  * Auto-loads all element wrappers from subdirectories
@@ -76,5 +76,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     getAll: getAllElementWrappers,
     get: getElementWrapper,
   }
-  console.log(`📦 Auto-loaded ${elementRegistry.size} elements`)
 }

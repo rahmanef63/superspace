@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ActionCtx,
   MutationCtx,
   QueryCtx,
@@ -54,7 +54,6 @@ export async function getMembership(
   // PLATFORM ADMIN CHECK (HIGHEST PRIORITY)
   // ========================================
   if (isPlatformAdmin(email)) {
-    console.log(`[auth] Platform admin membership granted for: ${email}`);
     
     // Platform admin has access to ALL workspaces with full permissions
     const convexUser = await getUserByExternalId(ctx, identity.subject);

@@ -53,9 +53,9 @@ export interface DocumentRightPanelProps {
     /** Callback when tag is removed */
     onTagRemove?: (tag: string) => void;
     /** Current mode of the panel */
-    mode?: "inspector" | "ai" | "debug";
+    mode?: "inspector" | "ai" | "settings";
     /** Callback when mode changes */
-    onModeChange?: (mode: "inspector" | "ai" | "debug") => void;
+    onModeChange?: (mode: "inspector" | "ai" | "settings") => void;
     /** AI Session for debug panel */
     aiSession?: {
         _id: string;
@@ -74,7 +74,7 @@ export interface DocumentRightPanelProps {
     } | null;
 }
 
-type PanelMode = "inspector" | "ai" | "debug";
+type PanelMode = "inspector" | "ai" | "settings";
 
 // ============================================================================
 // Component
@@ -118,10 +118,10 @@ export function DocumentRightPanel({
                     subtitle: "Ask about documents",
                     icon: Sparkles,
                 };
-            case "debug":
+            case "settings":
                 return {
-                    title: "Debug",
-                    subtitle: "AI Agent Tracing",
+                    title: "Settings",
+                    subtitle: "Document Settings",
                     icon: Bug,
                 };
         }
@@ -166,12 +166,12 @@ export function DocumentRightPanel({
                                     <Bot className="h-3.5 w-3.5" />
                                 </Toggle>
                                 <Toggle
-                                    pressed={mode === "debug"}
-                                    onPressedChange={() => handleModeChange("debug")}
+                                    pressed={mode === "settings"}
+                                    onPressedChange={() => handleModeChange("settings")}
                                     size="sm"
                                     className="rounded-l-none h-7 w-7 p-0"
-                                    aria-label="Debug mode"
-                                    title="Debug / Session Info"
+                                    aria-label="Settings mode"
+                                    title="Settings"
                                 >
                                     <Bug className="h-3.5 w-3.5" />
                                 </Toggle>

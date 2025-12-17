@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Knowledge Feature Initialization
  * Registers knowledge settings with the shared settings registry
  */
@@ -47,5 +47,4 @@ registerFeatureSettings("knowledge", () => [
 registerKnowledgeAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Knowledge feature settings registered")
 }

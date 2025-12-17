@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Projects Feature Initialization
  * Registers projects-related settings with the settings registry
  */
@@ -48,5 +48,4 @@ registerFeatureSettings("projects", () => [
 registerProjectsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Projects feature settings registered")
 }

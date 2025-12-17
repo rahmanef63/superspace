@@ -4,7 +4,10 @@ import React from "react"
 import { BarChart, Plus, Settings, Download } from "lucide-react"
 import { FeatureHeader } from "@/frontend/shared/ui/layout/header"
 
+import type { Id } from "@convex/_generated/dataModel"
+
 interface ReportsHeaderProps {
+  workspaceId?: Id<"workspaces"> | null
   onCreateReport?: () => void
   onExport?: () => void
   onSettings?: () => void
@@ -16,6 +19,7 @@ interface ReportsHeaderProps {
  * Consistent header for the Reports feature.
  */
 export function ReportsHeader({
+  workspaceId,
   onCreateReport,
   onExport,
   onSettings,
@@ -28,20 +32,20 @@ export function ReportsHeader({
       primaryAction={{
         label: "New Report",
         icon: Plus,
-        onClick: onCreateReport ?? (() => {}),
+        onClick: onCreateReport ?? (() => { }),
       }}
       secondaryActions={[
         {
           id: "export",
           label: "Export",
           icon: Download,
-          onClick: onExport ?? (() => {}),
+          onClick: onExport ?? (() => { }),
         },
         {
           id: "settings",
           label: "Settings",
           icon: Settings,
-          onClick: onSettings ?? (() => {}),
+          onClick: onSettings ?? (() => { }),
         },
       ]}
     />

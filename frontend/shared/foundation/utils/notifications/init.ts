@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Notifications Feature Initialization
  * Registers notifications-related settings with the settings registry
  */
@@ -51,5 +51,4 @@ const registerNotificationsSettings = async () => {
 registerNotificationsSettings()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Notifications feature settings registered")
 }

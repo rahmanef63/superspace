@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { PropertyEditorProps } from '../../registry/types';
 import { Input } from '@/components/ui/input';
 import { ValidationDialog } from '../../components/ValidationDialog';
 
 export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange }) => {
-  console.log('🎯 [NumberEditor] Component mounted', { value });
   
   const [localValue, setLocalValue] = useState(
     value !== null && value !== undefined ? String(value) : ''
@@ -14,17 +13,14 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
 
   useEffect(() => {
     const displayValue = value !== null && value !== undefined ? String(value) : '';
-    console.log('🎯 [NumberEditor] Value changed:', { value, displayValue });
     setLocalValue(displayValue);
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log('⌨️ [NumberEditor] User typing:', newValue);
     
     // Allow empty value
     if (newValue === '') {
-      console.log('✅ [NumberEditor] Empty value - cleared');
       setLocalValue('');
       onChange(null);
       return;
@@ -34,7 +30,6 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
     // These are valid intermediate states but not complete numbers
     const intermediatePattern = /^-?$|^-?\.$|^\.$/;
     if (intermediatePattern.test(newValue)) {
-      console.log('⏳ [NumberEditor] Intermediate state:', newValue);
       setLocalValue(newValue);
       // Don't call onChange yet - wait for complete number
       return;
@@ -45,13 +40,10 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
     const validPattern = /^-?[\d,]*\.?\d*$/;
     
     if (!validPattern.test(newValue)) {
-      console.log('❌ [NumberEditor] VALIDATION FAILED - Invalid characters:', newValue);
       setValidationMessage('Input tidak valid. Hanya angka, koma (,), dan titik (.) yang diperbolehkan.');
       setShowValidationDialog(true);
       return;
     }
-
-    console.log('✅ [NumberEditor] Valid input:', newValue);
     setLocalValue(newValue);
 
     // Remove commas for parsing (treat comma as thousand separator)
@@ -59,7 +51,6 @@ export const NumberEditor: React.FC<PropertyEditorProps> = ({ value, onChange })
     const numValue = Number(cleanValue);
     
     if (!isNaN(numValue)) {
-      console.log('💾 [NumberEditor] Saving value:', { raw: newValue, parsed: numValue });
       onChange(numValue);
     }
     // Don't show validation dialog for intermediate parsing states

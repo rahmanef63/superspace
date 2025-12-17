@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Documents Feature Initialization
  * Registers documents settings with the shared settings registry
  */
@@ -104,6 +104,5 @@ registerCommands("documents", [
 ])
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Documents feature settings & actions registered")
 }
 

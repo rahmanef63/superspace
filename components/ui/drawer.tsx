@@ -6,16 +6,24 @@ import { Drawer as DrawerPrimitive } from "vaul"
 import { cn } from "@/lib/utils"
 
 function Drawer({
+  direction = "bottom",
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
-  return <DrawerPrimitive.Root data-slot="drawer" {...props} />
+  return <DrawerPrimitive.Root data-slot="drawer" direction={direction} {...props} />
 }
 
-function DrawerTrigger({
-  ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {
-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />
-}
+const DrawerTrigger = React.forwardRef<
+  React.ElementRef<typeof DrawerPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Trigger
+    ref={ref}
+    data-slot="drawer-trigger"
+    className={className}
+    {...props}
+  />
+))
+DrawerTrigger.displayName = DrawerPrimitive.Trigger.displayName
 
 function DrawerPortal({
   ...props

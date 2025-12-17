@@ -1,4 +1,4 @@
-import type { Doc } from "../../_generated/dataModel";
+﻿import type { Doc } from "../../_generated/dataModel";
 import {
   getMembership,
   hasPermission as membershipHasPermission,
@@ -46,7 +46,6 @@ async function getActiveAdminUser(ctx: AnyConvexCtx): Promise<AdminUserDoc> {
   // PLATFORM ADMIN CHECK (HIGHEST PRIORITY)
   // ========================================
   if (isPlatformAdmin(email)) {
-    console.log(`[rbac] Platform admin access granted for: ${email}`);
     
     // Return a virtual admin user with full permissions
     return {
@@ -75,7 +74,6 @@ async function getActiveAdminUser(ctx: AnyConvexCtx): Promise<AdminUserDoc> {
 
   // Auto-create admin user if user is a workspace owner
   if (!adminUser) {
-    console.log(`[rbac] Admin user not found for ${identity.subject}, checking workspace ownership...`);
     
     // Get the user from users table
     const user = await ctx.db
@@ -102,8 +100,6 @@ async function getActiveAdminUser(ctx: AnyConvexCtx): Promise<AdminUserDoc> {
     // The actual admin user record will be created by initializeSelfAsAdmin action
     const email = (identity.email ?? identity.emailVerified ?? user.email ?? "no-email@example.com") as string;
     const name = (identity.name ?? identity.nickname ?? user.name ?? "User") as string;
-    
-    console.log(`[rbac] User ${email} is a workspace owner, allowing access (admin record will be auto-created)`);
     
     // Return a temporary admin user object that matches workspace owner permissions
     return {

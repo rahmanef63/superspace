@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BI Feature Initialization
  * Registers BI settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("bi", () => [
 registerBiAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ BI feature settings registered")
 }

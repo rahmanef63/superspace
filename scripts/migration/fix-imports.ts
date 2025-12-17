@@ -73,7 +73,7 @@ function fixImports(filePath: string): { fixed: boolean; changes: string[] } {
 }
 
 function main() {
-  console.log(`${colors.bold}${colors.blue}Import Pattern Migration Script${colors.reset}\n`);
+
 
   // Find all TypeScript/TSX files in frontend
   const files = globSync("frontend/**/*.{ts,tsx}", {
@@ -88,21 +88,19 @@ function main() {
     if (result.fixed) {
       fixedCount++;
       fixedFiles.push(file);
-      console.log(`${colors.green}✅ Fixed:${colors.reset} ${file}`);
+
       result.changes.forEach((change) => {
-        console.log(`   - ${change}`);
+
       });
     }
   });
 
-  console.log(`\n${colors.bold}Summary:${colors.reset}`);
-  console.log(`  Fixed: ${fixedCount} files`);
-  console.log(`  Total checked: ${files.length} files\n`);
+
 
   if (fixedCount > 0) {
-    console.log(`${colors.yellow}⚠️  Please review the changes and test your application${colors.reset}\n`);
+
   } else {
-    console.log(`${colors.green}✅ No import fixes needed${colors.reset}\n`);
+
   }
 }
 

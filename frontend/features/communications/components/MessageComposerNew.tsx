@@ -18,8 +18,8 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
-import { 
-  UniversalComposer, 
+import {
+  UniversalComposer,
   type MentionItem,
   type ComposerAttachment,
   type SlashCommand,
@@ -111,7 +111,7 @@ function GifPicker({ open, onClose, onSelect }: GifPickerProps) {
           <DialogTitle>Choose a GIF</DialogTitle>
           <DialogDescription>Search for the perfect reaction</DialogDescription>
         </DialogHeader>
-        
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -258,11 +258,11 @@ function PollCreator({ open, onClose, onCreatePoll }: PollCreatorProps) {
               </span>
               <span className="text-xs text-muted-foreground">Min 2, Max 10</span>
             </Label>
-            
+
             <div className="space-y-2">
               {options.map((option, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="group flex items-center gap-2 animate-in slide-in-from-left-2 duration-200"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
@@ -298,9 +298,9 @@ function PollCreator({ open, onClose, onCreatePoll }: PollCreatorProps) {
             </div>
 
             {options.length < 10 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleAddOption}
                 className="w-full h-10 border-dashed border-2 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all rounded-lg"
               >
@@ -322,8 +322,8 @@ function PollCreator({ open, onClose, onCreatePoll }: PollCreatorProps) {
                 onClick={() => setAllowMultiple(!allowMultiple)}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
-                  allowMultiple 
-                    ? "border-violet-500 bg-violet-500/5" 
+                  allowMultiple
+                    ? "border-violet-500 bg-violet-500/5"
                     : "border-border hover:border-muted-foreground/30 hover:bg-muted/30"
                 )}
               >
@@ -346,8 +346,8 @@ function PollCreator({ open, onClose, onCreatePoll }: PollCreatorProps) {
                 onClick={() => setIsAnonymous(!isAnonymous)}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
-                  isAnonymous 
-                    ? "border-violet-500 bg-violet-500/5" 
+                  isAnonymous
+                    ? "border-violet-500 bg-violet-500/5"
                     : "border-border hover:border-muted-foreground/30 hover:bg-muted/30"
                 )}
               >
@@ -389,7 +389,7 @@ function PollCreator({ open, onClose, onCreatePoll }: PollCreatorProps) {
             <Button variant="ghost" onClick={onClose} className="h-9">
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={!canSubmit}
               className="h-9 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-500/25"
@@ -806,47 +806,31 @@ export function MessageComposer({
         document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
         break
       default:
-        console.log("Command:", command.id)
     }
-  }, [channelId, channelName, workspaceId, setActiveCall, setViewMode])
-
-  // Handle mention
-  const handleMention = React.useCallback((item: MentionItem) => {
-    console.log("Mentioned:", item.displayName)
-  }, [])
-
-  // Handle voice record button
-  const handleVoiceRecord = React.useCallback(() => {
-    setShowVoiceRecorder(true)
-  }, [])
+  }, [channelId, channelName, setActiveCall, setViewMode, workspaceId, setShowGifPicker, setShowPollCreator, setShowVoiceRecorder, setShowCodeBlock])
 
   return (
     <>
       <UniversalComposer
-        context={context}
-        targetName={channelName}
+        className={className}
         placeholder={placeholder}
         disabled={disabled}
-        replyTo={replyTo ? {
-          id: replyTo.id,
-          content: replyTo.content || "",
-          senderName: replyTo.sender?.name || "Unknown",
-        } : null}
         onSend={handleSend}
         onTyping={onTyping}
         onCancelReply={onCancelReply}
+        replyTo={replyTo}
+        mentions={mentionItems}
         onSlashCommand={handleSlashCommand}
-        onMention={handleMention}
-        onVoiceRecord={handleVoiceRecord}
-        mentionItems={mentionItems}
-        enableSlashCommands={true}
-        enableMentions={true}
-        allowAttachments={true}
-        allowEmoji={true}
-        allowVoice={true}
-        allowGif={context === "chat"}
-        allowStickers={context === "chat"}
-        className={className}
+        slashCommands={[
+          { id: "giphy", title: "GIF", description: "Search and insert a GIF", icon: Search },
+          { id: "poll", title: "Poll", description: "Create a poll", icon: Search },
+          { id: "voice", title: "Voice Message", description: "Record a voice clip", icon: Mic },
+          { id: "code", title: "Code Block", description: "Insert code snippet", icon: Search },
+          { id: "call", title: "Start Call", description: "Start an audio call", icon: Search },
+          { id: "video", title: "Start Video", description: "Start a video call", icon: Search },
+          { id: "image", title: "Upload Image", description: "Upload an image", icon: Search },
+          { id: "file", title: "Upload File", description: "Upload a file", icon: Search },
+        ]}
       />
 
       {/* Dialogs */}
@@ -855,16 +839,19 @@ export function MessageComposer({
         onClose={() => setShowGifPicker(false)}
         onSelect={handleGifSelect}
       />
+
       <PollCreator
         open={showPollCreator}
         onClose={() => setShowPollCreator(false)}
         onCreatePoll={handleCreatePoll}
       />
+
       <VoiceRecorder
         open={showVoiceRecorder}
         onClose={() => setShowVoiceRecorder(false)}
         onRecordComplete={handleVoiceRecordComplete}
       />
+
       <CodeBlockDialog
         open={showCodeBlock}
         onClose={() => setShowCodeBlock(false)}

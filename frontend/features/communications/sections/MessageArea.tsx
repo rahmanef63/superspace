@@ -279,7 +279,9 @@ export function MessageArea({ type, className }: MessageAreaProps) {
                         onReply={setReplyingTo}
                         onReact={(msg, emoji) => {
                           // Handle reaction - would update store
-                          console.log("React:", msg.id, emoji)
+                        }}
+                        onDelete={() => {
+                          // Handle delete using mutation
                         }}
                       />
                     ))}
@@ -289,52 +291,18 @@ export function MessageArea({ type, className }: MessageAreaProps) {
             )}
             <div ref={scrollRef} />
           </div>
-
-          {/* Jump to present button */}
-          {showScrollButton && (
-            <Button
-              size="sm"
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 shadow-lg gap-1 z-10"
-              onClick={scrollToBottom}
-            >
-              <ArrowDown className="h-3 w-3" />
-              Jump to Present
-            </Button>
-          )}
         </ScrollArea>
       </PanelBody>
 
-      {/* Footer - Fixed composer area */}
-      <PanelFooter border="subtle" padding="none" className="bg-background">
-        {/* Typing indicator */}
-        {typingUsers.length > 0 && (
-          <div className="px-4 py-1 text-sm border-t border-border/50">
-            <span className="inline-flex items-center gap-2">
-              <span className="flex gap-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
-              </span>
-              <span className="text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {typingUsers.map(t => t.user?.name || "Someone").join(", ")}
-                </span>
-                {" "}is typing...
-              </span>
-            </span>
-          </div>
-        )}
-
-        {/* Message Input */}
-        <div className="px-4 pb-4 pt-2">
-          <MessageComposer
-            channelName={selectedItem.name}
-            channelId={selectedId || ""}
-            replyTo={replyingTo}
-            onCancelReply={() => setReplyingTo(null)}
-            onSend={handleSendMessage}
-          />
-        </div>
+      {/* Footer - Input */}
+      <PanelFooter>
+        <MessageComposer
+          onSend={handleSendMessage}
+          onTyping={() => {
+            // Send typing indicator
+          }}
+          placeholder={`Message #${selectedItem.name}`}
+        />
       </PanelFooter>
     </PanelRoot>
   )

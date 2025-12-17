@@ -49,10 +49,7 @@ try {
   const raw = readFileSync(conversationPath, "utf-8");
   const data = JSON.parse(raw);
   ConversationSchema.parse(data);
-  console.log("✓ Conversation payload is valid");
-  console.log(`  Type: ${data.type}`);
-  console.log(`  Workspace ID: ${data.workspaceId}`);
-  console.log(`  Participants: ${data.participantIds.length}`);
+
   if (data.name) console.log(`  Name: ${data.name}`);
   if (data.metadata?.aiModel) console.log(`  AI Model: ${data.metadata.aiModel}`);
 } catch (err: unknown) {

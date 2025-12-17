@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Components Registry
  * Auto-loads all component wrappers from subdirectories
  */
@@ -127,5 +127,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     get: getComponentWrapper,
     search: searchComponents,
   }
-  console.log(`📦 Auto-loaded ${componentRegistry.size} components`)
 }

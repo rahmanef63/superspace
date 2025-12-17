@@ -34,12 +34,7 @@ try {
   const raw = readFileSync(rolePath, "utf-8");
   const data = JSON.parse(raw);
   RoleSchema.parse(data);
-  console.log("✓ Role payload is valid");
-  console.log(`  Name: ${data.name}`);
-  console.log(`  Level: ${data.level}`);
-  console.log(`  Workspace ID: ${data.workspaceId}`);
-  console.log(`  Permissions: ${data.permissions?.length || 0}`);
-  if (data.isDefault) console.log(`  Default: ${data.isDefault}`);
+
 } catch (err: unknown) {
   console.error("✗ Role payload is invalid:");
   if (err instanceof z.ZodError) {

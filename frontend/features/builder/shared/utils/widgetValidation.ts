@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../types';
+﻿import type { WidgetConfig } from '../types';
 import { resolveWidgetIcon, categoryIcons } from './iconUtils';
 
 /**
@@ -144,14 +144,11 @@ export const printValidationResults = (
   const summary = getValidationSummary(results);
   
   console.group('🔍 Widget Registry Validation Results');
-  console.log(` Summary: ${summary.valid}/${summary.total} widgets valid`);
   
   if (summary.withErrors > 0) {
-    console.log(`❌ ${summary.withErrors} widgets with errors`);
   }
   
   if (summary.withWarnings > 0) {
-    console.log(`⚠️  ${summary.withWarnings} widgets with warnings`);
   }
 
   Object.entries(results).forEach(([key, result]) => {

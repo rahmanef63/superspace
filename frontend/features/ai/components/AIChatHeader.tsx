@@ -64,9 +64,7 @@ export function AIChatHeader({
       {/* Left: Back button + History + Avatar + Title */}
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
 
-        {/* Chat History Dropdown */}
-        <ChatHistoryDropdown />
-
+        {/* Back button on mobile */}
         {onBack && (
           <Button
             variant="ghost"
@@ -77,6 +75,11 @@ export function AIChatHeader({
             <ChevronLeft className="h-4 w-4" />
           </Button>
         )}
+
+        {/* Chat History Dropdown - hidden on mobile for cleaner UI */}
+        <div className="hidden md:block">
+          <ChatHistoryDropdown />
+        </div>
 
         <div className="flex items-center gap-2 min-w-0">
           {/* Icon Picker or Avatar */}

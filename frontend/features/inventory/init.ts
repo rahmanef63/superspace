@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Inventory Feature Initialization
  * Registers inventory settings with the shared settings registry
  */
@@ -47,5 +47,4 @@ registerFeatureSettings("inventory", () => [
 registerInventoryAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Inventory feature settings registered")
 }

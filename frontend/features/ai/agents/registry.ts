@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sub-Agent Registry
  * 
  * Central registry for managing and discovering sub-agents.
@@ -58,7 +58,6 @@ class SubAgentRegistry {
         });
 
         if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-            console.log(`[SubAgentRegistry] Registered agent: ${agent.id} (${agent.tools.length} tools)`);
         }
     }
 
@@ -68,7 +67,6 @@ class SubAgentRegistry {
     unregister(agentId: string): boolean {
         const removed = this.agents.delete(agentId);
         if (removed && typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-            console.log(`[SubAgentRegistry] Unregistered agent: ${agentId}`);
         }
         return removed;
     }

@@ -86,7 +86,7 @@ describe('Shared Import Validation - Baseline', () => {
         await import('@/frontend/shared/ui')
       } catch (e) {
         // May not have index, that's ok for baseline
-        console.log('Menu components may need index.ts')
+
       }
     })
   })
@@ -165,7 +165,7 @@ describe('Shared Import Validation - Baseline', () => {
       try {
         await import('@/frontend/shared/foundation')
       } catch (e) {
-        console.log('Types import:', e)
+
       }
     })
   })
@@ -301,7 +301,7 @@ describe('Type Safety Validation', () => {
       await import('@/frontend/shared/foundation')
       expect(true).toBe(true)
     } catch (e) {
-      console.log('Type imports:', e)
+
     }
   })
 })
@@ -414,7 +414,7 @@ describe('Import Performance', () => {
     const end = performance.now()
     const duration = end - start
 
-    console.log(`Import time: ${duration.toFixed(2)}ms`)
+
 
     // Should be fast (< 1000ms for 5 imports)
     expect(duration).toBeLessThan(1000)

@@ -17,6 +17,8 @@ import {
   Dialog,
   DialogContent,
   DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import type { ViewComponentProps, ViewField } from "../types"
 
@@ -221,6 +223,9 @@ export function GalleryView<T extends GalleryItem>({
           className="max-w-[90vw] max-h-[90vh] p-0 gap-0"
           onKeyDown={handleKeyDown}
         >
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Gallery</DialogTitle>
+          </DialogHeader>
           {lightboxIndex !== null && (
             <>
               {/* Close button */}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Property Auto-Discovery
  *
  * Automatically discovers and registers all property type configurations
@@ -122,10 +122,6 @@ export function registerAllProperties(): number {
   });
 
   if (process.env.NODE_ENV === "development") {
-    console.log(
-      `📦 Property Registry: Registered ${successCount} property types` +
-        (failCount > 0 ? ` (${failCount} failed)` : "")
-    );
   }
 
   return successCount;

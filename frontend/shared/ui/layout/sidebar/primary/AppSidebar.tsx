@@ -203,11 +203,15 @@ export function AppSidebar({
 
   if (userWorkspaces === undefined) {
     return (
-      <Sidebar collapsible={collapsible} side={side} variant={variant}>
-        <SidebarContent>
-          <div className="p-4 flex items-center justify-center text-gray-500 mx-auto ">Loading...</div>
-        </SidebarContent>
-      </Sidebar>
+      <>
+        <Sidebar collapsible={collapsible} side={side} variant={variant}>
+          <SidebarContent>
+            <div className="p-4 flex items-center justify-center text-gray-500 mx-auto ">Loading...</div>
+          </SidebarContent>
+        </Sidebar>
+        <CommandMenu />
+        <GlobalOverlays />
+      </>
     )
   }
 
@@ -229,29 +233,33 @@ export function AppSidebar({
 
   if (workspaces.length === 0) {
     return (
-      <Sidebar collapsible={collapsible} side={side} variant={variant}>
-        <SidebarHeader>
-          <WorkspaceSwitcher
-            workspaces={[]}
-            currentWorkspace={undefined}
-            onWorkspaceSelect={() => { }}
-            isLoading={false}
-          />
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="space-y-2 p-4">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <div key={idx} className="h-8 rounded-md bg-muted/80 animate-pulse" />
-            ))}
-          </div>
-        </SidebarContent>
-        <SidebarFooter>
-          <div className="px-4 pb-4 text-xs text-muted-foreground">
-            Create a workspace to see navigation and data.
-          </div>
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
+      <>
+        <Sidebar collapsible={collapsible} side={side} variant={variant}>
+          <SidebarHeader>
+            <WorkspaceSwitcher
+              workspaces={[]}
+              currentWorkspace={undefined}
+              onWorkspaceSelect={() => { }}
+              isLoading={false}
+            />
+          </SidebarHeader>
+          <SidebarContent>
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <div key={idx} className="h-8 rounded-md bg-muted/80 animate-pulse" />
+              ))}
+            </div>
+          </SidebarContent>
+          <SidebarFooter>
+            <div className="px-4 pb-4 text-xs text-muted-foreground">
+              Create a workspace to see navigation and data.
+            </div>
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+        <CommandMenu />
+        <GlobalOverlays />
+      </>
     )
   }
 
@@ -263,80 +271,82 @@ export function AppSidebar({
   ]
 
   return (
-    <Sidebar collapsible={collapsible} side={side} variant={variant}>
-      <SidebarHeader>
-        <WorkspaceSwitcherStack
-          onWorkspaceSelect={(wsId) => {
-            if (onWorkspaceChange) {
-              onWorkspaceChange(wsId)
-            } else {
-              setWorkspaceId(wsId)
-            }
-          }}
-          onCreateWorkspace={isGuestMode ? undefined : openCreateDialog}
-          onEditWorkspace={isGuestMode ? undefined : openEditDialog}
-          onDeleteWorkspace={isGuestMode ? undefined : openDeleteDialog}
-          isLoading={userWorkspaces === undefined}
-        />
-      </SidebarHeader>
-      <SidebarContent className="flex justify-between">
-        <div>
-          {effectiveWorkspaceId ? (
-            <NavMain
-              workspaceId={effectiveWorkspaceId as Id<"workspaces">}
-              activeView={effectiveActiveView}
-              onViewChange={handleViewChange}
-              items={navItems}
-              workspaceColor={contextWorkspace?.color}
-            />
+    <>
+      <Sidebar collapsible={collapsible} side={side} variant={variant}>
+        <SidebarHeader>
+          <WorkspaceSwitcherStack
+            onWorkspaceSelect={(wsId) => {
+              if (onWorkspaceChange) {
+                onWorkspaceChange(wsId)
+              } else {
+                setWorkspaceId(wsId)
+              }
+            }}
+            onCreateWorkspace={isGuestMode ? undefined : openCreateDialog}
+            onEditWorkspace={isGuestMode ? undefined : openEditDialog}
+            onDeleteWorkspace={isGuestMode ? undefined : openDeleteDialog}
+            isLoading={userWorkspaces === undefined}
+          />
+        </SidebarHeader>
+        <SidebarContent className="flex justify-between">
+          <div>
+            {effectiveWorkspaceId ? (
+              <NavMain
+                workspaceId={effectiveWorkspaceId as Id<"workspaces">}
+                activeView={effectiveActiveView}
+                onViewChange={handleViewChange}
+                items={navItems}
+                workspaceColor={contextWorkspace?.color}
+              />
+            ) : (
+              <div className="space-y-2 p-4">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="h-6 rounded bg-muted animate-pulse" />
+                ))}
+              </div>
+            )}
+            <NavSystem system={finalSystemItems} />
+          </div>
+          <NavSecondary />
+        </SidebarContent>
+        <SidebarFooter>
+          {isGuestMode && guestUser ? (
+            <GuestNavUser user={guestUser} />
           ) : (
-            <div className="space-y-2 p-4">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="h-6 rounded bg-muted animate-pulse" />
-              ))}
-            </div>
+            <NavUser />
           )}
-          <NavSystem system={finalSystemItems} />
-        </div>
-        <NavSecondary />
-      </SidebarContent>
-      <SidebarFooter>
-        {isGuestMode && guestUser ? (
-          <GuestNavUser user={guestUser} />
-        ) : (
-          <NavUser />
+        </SidebarFooter>
+        <SidebarRail />
+
+        {/* Workspace CRUD Dialogs - only show in authenticated mode */}
+        {!isGuestMode && (
+          <>
+            <CreateWorkspaceDialog
+              open={createDialogOpen}
+              onOpenChange={setCreateDialogOpen}
+              onSubmit={handleCreateSubmit}
+              parentWorkspace={createParentWorkspace}
+            />
+
+            <EditWorkspaceDialog
+              open={editDialogOpen}
+              onOpenChange={setEditDialogOpen}
+              workspace={editWorkspaceItem}
+              onSubmit={handleEditSubmit}
+            />
+
+            <DeleteWorkspaceDialog
+              open={deleteDialogOpen}
+              onOpenChange={setDeleteDialogOpen}
+              workspace={deleteWorkspaceItem}
+              onConfirm={handleDeleteConfirm}
+            />
+          </>
         )}
-      </SidebarFooter>
-      <SidebarRail />
-
-      {/* Workspace CRUD Dialogs - only show in authenticated mode */}
-      {!isGuestMode && (
-        <>
-          <CreateWorkspaceDialog
-            open={createDialogOpen}
-            onOpenChange={setCreateDialogOpen}
-            onSubmit={handleCreateSubmit}
-            parentWorkspace={createParentWorkspace}
-          />
-
-          <EditWorkspaceDialog
-            open={editDialogOpen}
-            onOpenChange={setEditDialogOpen}
-            workspace={editWorkspaceItem}
-            onSubmit={handleEditSubmit}
-          />
-
-          <DeleteWorkspaceDialog
-            open={deleteDialogOpen}
-            onOpenChange={setDeleteDialogOpen}
-            workspace={deleteWorkspaceItem}
-            onConfirm={handleDeleteConfirm}
-          />
-        </>
-      )}
+      </Sidebar>
       <CommandMenu />
       <GlobalOverlays />
-    </Sidebar>
+    </>
   )
 }
 

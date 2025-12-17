@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CRM Feature Initialization
  * Registers CRM settings with the shared settings registry
  */
@@ -47,5 +47,4 @@ registerFeatureSettings("crm", () => [
 registerCrmAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ CRM feature settings registered")
 }

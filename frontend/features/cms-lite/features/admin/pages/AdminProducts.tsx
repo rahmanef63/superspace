@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { useBackend, useQuery, api } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { EmptyState } from "../../../shared/components/Loading";
@@ -128,7 +128,6 @@ export default function AdminProducts() {
       a.click();
       URL.revokeObjectURL(url);
       logger.exported("products", res.data.length);
-      console.log(`📁 File tersimpan sebagai: ${fileName}`);
       toast({ title: `Exported ${res.data.length} product(s) to JSON` });
     } catch (err: any) {
       logger.error("ekspor", "products", err);

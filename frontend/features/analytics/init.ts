@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Feature Initialization
  */
 
@@ -46,5 +46,4 @@ registerFeatureSettings("analytics", () => [
 registerAnalyticsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Analytics feature settings registered")
 }

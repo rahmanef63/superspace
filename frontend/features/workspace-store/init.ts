@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Workspace Store Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("workspace-store", () => [
 registerWorkspaceStoreAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Workspace Store feature settings & agent registered", { icon: Store })
 }

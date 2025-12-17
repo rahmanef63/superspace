@@ -41,7 +41,7 @@ export function AddContactModal({ workspaceId, onClose }: AddContactModalProps) 
     const [message, setMessage] = useState("");
 
     // API mutation for sending contact request
-    const sendContactRequest = useMutation(api.user.Contacts.sendContactRequest);
+    const sendContactRequest = useMutation(api.user.contacts.sendContactRequest);
 
     // Get workspace members
     const workspaceMembers = useQuery(

@@ -256,7 +256,7 @@ export function SystemFeaturesContent({ onItemSelect, selectedItemId }: SystemFe
       <div className="flex-shrink-0 p-4 border-b space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-full sm:min-w-[200px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search features..."
@@ -271,7 +271,7 @@ export function SystemFeaturesContent({ onItemSelect, selectedItemId }: SystemFe
             value={filters.category || "all"}
             onValueChange={(v) => handleFilter("category", v === "all" ? null : v)}
           >
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full sm:w-[150px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Category" />
             </SelectTrigger>
@@ -288,7 +288,7 @@ export function SystemFeaturesContent({ onItemSelect, selectedItemId }: SystemFe
             value={filters.status || "all"}
             onValueChange={(v) => handleFilter("status", v === "all" ? null : v)}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

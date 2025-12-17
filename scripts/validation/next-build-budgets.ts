@@ -168,10 +168,10 @@ async function main() {
     }
   }
 
-  console.log("\n[next-build-budgets] Route budgets:");
+
   for (const budget of DEFAULT_BUDGETS) {
     const measured = stats.get(budget.route);
-    console.log(
+
       `- ${budget.route}: ${measured ? measured.firstLoadLabel : "(missing)"} (max ${budget.max})`,
     );
   }
@@ -184,7 +184,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("\n[next-build-budgets] ✅ All budgets within limits.");
+
 }
 
 main().catch((error) => {

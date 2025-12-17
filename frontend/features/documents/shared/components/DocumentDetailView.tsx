@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -35,12 +35,10 @@ export function DocumentDetailView({ documentId, mode = "block", onBack, classNa
 
   const handleTagAdd = async (tag: string) => {
     // TODO: Implement tag add mutation
-    console.log("Add tag:", tag);
   };
 
   const handleTagRemove = async (tag: string) => {
     // TODO: Implement tag remove mutation
-    console.log("Remove tag:", tag);
   };
 
   const EditorComponent = mode === "tiptap" ? TiptapDocumentEditor : BlockNoteDocumentEditor;

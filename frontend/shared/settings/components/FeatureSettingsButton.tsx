@@ -89,6 +89,7 @@ export function FeatureSettingsButton({
   }, [featureSlug])
 
   function handleOpenSettings() {
+    console.log("Settings button clicked")
     // Dispatch global event to open comprehensive settings on features tab
     window.dispatchEvent(
       new CustomEvent("open-settings", {

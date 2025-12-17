@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Feature Settings Initialization
  *
  * This file imports all feature init files to register their settings
@@ -64,5 +64,4 @@ import "@/frontend/features/support/init"
 import "@/frontend/features/audit-log/init"
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ All feature settings initialized")
 }

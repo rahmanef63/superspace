@@ -12,13 +12,6 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet"
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerHeader,
-    DrawerTitle,
-} from "@/components/ui/drawer"
-import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -30,7 +23,6 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ComprehensiveSettingsPage } from "@/frontend/shared/settings/comprehensive"
-import { useIsMobile } from "@/hooks/use-mobile"
 
 
 
@@ -38,7 +30,6 @@ export function GlobalOverlays() {
     const [showSettings, setShowSettings] = React.useState(false)
     const [showNotifications, setShowNotifications] = React.useState(false)
     const [showHelp, setShowHelp] = React.useState(false)
-    const isMobile = useIsMobile()
 
     const { theme, setTheme } = useTheme()
 
@@ -46,16 +37,26 @@ export function GlobalOverlays() {
     const [initialId, setInitialId] = React.useState<string | undefined>(undefined)
     const [initialFeatureSlug, setInitialFeatureSlug] = React.useState<string | undefined>(undefined)
 
+    // Track if component is mounted (to avoid SSR hydration issues with isMobile)
+    const [mounted, setMounted] = React.useState(false)
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     React.useEffect(() => {
         // Event listeners for global triggers
         const handleOpenSettings = (e: Event) => {
+            console.log('[Mobile Debug] Settings clicked', { event: e, detail: (e as CustomEvent).detail })
             const detail = (e as CustomEvent).detail
             if (detail?.tab) setInitialTab(detail.tab)
             if (detail?.id) setInitialId(detail.id)
             if (detail?.featureSlug) setInitialFeatureSlug(detail.featureSlug)
             setShowSettings(true)
         }
-        const handleOpenNotifications = () => setShowNotifications(true)
+        const handleOpenNotifications = () => {
+            console.log('[Mobile Debug] Notifications clicked')
+            setShowNotifications(true)
+        }
         const handleOpenHelp = () => setShowHelp(true)
 
         window.addEventListener("open-settings", handleOpenSettings)
@@ -69,65 +70,62 @@ export function GlobalOverlays() {
         }
     }, [])
 
+    // Settings content component
+    const SettingsContent = () => (
+        <ComprehensiveSettingsPage
+            defaultTab={initialTab}
+            defaultId={initialId}
+            defaultFeatureSlug={initialFeatureSlug}
+        />
+    )
+
+    // Notifications content component
+    const NotificationsContent = () => (
+        <div className="py-6 px-4">
+            <div className="flex flex-col items-center justify-center h-[200px] text-center space-y-4">
+                <div className="p-3 rounded-full bg-muted">
+                    <Bell className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                    <p className="font-medium">No new notifications</p>
+                    <p className="text-sm text-muted-foreground">You're all caught up!</p>
+                </div>
+            </div>
+        </div>
+    )
+
+    // Don't render dialogs/drawers until mounted to get correct isMobile value
+    if (!mounted) {
+        return null
+    }
+
     return (
         <>
-            {/* Settings Dialog (Modal) */}
+            {/* Settings - Dialog for all devices */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
-                <DialogContent className="w-full h-full sm:max-w-7xl sm:h-[90vh] p-0 gap-0 overflow-hidden sm:rounded-xl">
-                    <ComprehensiveSettingsPage 
-                        defaultTab={initialTab} 
-                        defaultId={initialId} 
-                        defaultFeatureSlug={initialFeatureSlug}
-                    />
+                <DialogContent className="w-full h-full max-w-full sm:max-w-7xl sm:h-[90vh] p-0 gap-0 overflow-hidden sm:rounded-xl">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Settings</DialogTitle>
+                        <DialogDescription>
+                            Configure your workspace and application settings.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <SettingsContent />
                 </DialogContent>
             </Dialog>
 
-            {/* Notifications - Drawer on mobile, Sheet on desktop */}
-            {isMobile ? (
-                <Drawer open={showNotifications} onOpenChange={setShowNotifications}>
-                    <DrawerContent className="h-[70vh]">
-                        <DrawerHeader>
-                            <DrawerTitle>Notifications</DrawerTitle>
-                            <DrawerDescription>
-                                Stay updated with the latest activity.
-                            </DrawerDescription>
-                        </DrawerHeader>
-                        <div className="py-6 px-4">
-                            <div className="flex flex-col items-center justify-center h-[200px] text-center space-y-4">
-                                <div className="p-3 rounded-full bg-muted">
-                                    <Bell className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="font-medium">No new notifications</p>
-                                    <p className="text-sm text-muted-foreground">You're all caught up!</p>
-                                </div>
-                            </div>
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
-                    <SheetContent side="right" className="w-[380px]">
-                        <SheetHeader>
-                            <SheetTitle>Notifications</SheetTitle>
-                            <SheetDescription>
-                                Stay updated with the latest activity.
-                            </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-6">
-                            <div className="flex flex-col items-center justify-center h-[300px] text-center space-y-4">
-                                <div className="p-3 rounded-full bg-muted">
-                                    <Bell className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="font-medium">No new notifications</p>
-                                    <p className="text-sm text-muted-foreground">You're all caught up!</p>
-                                </div>
-                            </div>
-                        </div>
-                    </SheetContent>
-                </Sheet>
-            )}
+            {/* Notifications - Sheet for all devices */}
+            <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
+                <SheetContent side="right" className="w-full sm:w-[380px]">
+                    <SheetHeader>
+                        <SheetTitle>Notifications</SheetTitle>
+                        <SheetDescription>
+                            Stay updated with the latest activity.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <NotificationsContent />
+                </SheetContent>
+            </Sheet>
 
             {/* Help Dialog (Modal) */}
             <Dialog open={showHelp} onOpenChange={setShowHelp}>
@@ -162,3 +160,4 @@ export function GlobalOverlays() {
         </>
     )
 }
+

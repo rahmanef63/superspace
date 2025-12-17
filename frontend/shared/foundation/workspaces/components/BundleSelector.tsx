@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Check, Sparkles, Loader2 } from "lucide-react"
 import * as Icons from "lucide-react"
 import { cn } from "@/lib/utils"
-import { 
+import {
   useBundlesForWorkspaceType,
   getMergedBundleEnabledFeatures,
   type MergedBundle,
@@ -19,7 +19,7 @@ interface BundleSelectorProps {
 
 export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: BundleSelectorProps) {
   const [hoveredBundle, setHoveredBundle] = useState<string | null>(null)
-  
+
   // Use the new hook that fetches from database with static fallback
   const { bundles, isLoading } = useBundlesForWorkspaceType(workspaceType)
 
@@ -38,10 +38,10 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
 
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold mb-2">Choose Your Template</h2>
-        <p className="text-muted-foreground">
-          Select a pre-configured bundle to get started quickly, or customize your own
+      <div className="text-center mb-4">
+        <h2 className="text-xl font-bold mb-1">Choose Your Template</h2>
+        <p className="text-sm text-muted-foreground">
+          Select a pre-configured bundle to get started
         </p>
       </div>
 
@@ -60,11 +60,10 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
               onMouseEnter={() => setHoveredBundle(bundle.id)}
               onMouseLeave={() => setHoveredBundle(null)}
               className={cn(
-                "relative flex flex-col items-start p-4 rounded-lg border-2 transition-all duration-200 text-left",
+                "relative flex flex-col items-start p-3 rounded-lg border-2 transition-all duration-200 text-left",
                 isSelected
                   ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/50 hover:bg-muted/50",
-                bundle.id === 'custom' && "col-span-full md:col-span-1"
+                  : "border-border hover:border-primary/50 hover:bg-muted/50"
               )}
             >
               {/* Recommended Badge */}
@@ -88,26 +87,26 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
 
               {/* Icon and Title */}
               <div className="flex items-center gap-3 mb-2">
-                <div 
+                <div
                   className={cn(
                     "h-10 w-10 rounded-lg flex items-center justify-center",
                     isSelected ? "bg-primary/20" : "bg-muted"
                   )}
-                  style={{ 
-                    backgroundColor: isSelected && bundle.theme?.primaryColor 
-                      ? `${bundle.theme.primaryColor}20` 
-                      : undefined 
+                  style={{
+                    backgroundColor: isSelected && bundle.theme?.primaryColor
+                      ? `${bundle.theme.primaryColor}20`
+                      : undefined
                   }}
                 >
-                  <IconComponent 
+                  <IconComponent
                     className={cn(
                       "h-5 w-5",
                       isSelected ? "text-primary" : "text-muted-foreground"
                     )}
-                    style={{ 
-                      color: isSelected && bundle.theme?.primaryColor 
-                        ? bundle.theme.primaryColor 
-                        : undefined 
+                    style={{
+                      color: isSelected && bundle.theme?.primaryColor
+                        ? bundle.theme.primaryColor
+                        : undefined
                     }}
                   />
                 </div>
@@ -118,7 +117,7 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
               </div>
 
               {/* Description */}
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
                 {bundle.description}
               </p>
 

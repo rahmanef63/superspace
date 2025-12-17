@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Support Feature Initialization
  * Registers support-related settings with the settings registry
  */
@@ -48,5 +48,4 @@ registerFeatureSettings("support", () => [
 registerSupportAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Support feature settings registered")
 }

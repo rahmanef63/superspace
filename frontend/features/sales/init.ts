@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sales Feature Initialization
  * Registers sales settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("sales", () => [
 registerSalesAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Sales feature settings registered")
 }

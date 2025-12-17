@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Overview Feature Initialization
  * Registers overview-related settings and agent surface.
  */
@@ -22,5 +22,4 @@ registerOverviewAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   // Keep a recognizable log for debugging init order
-  console.log("✅ Overview feature settings & agent registered", { icon: Home })
 }

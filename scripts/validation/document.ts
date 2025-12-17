@@ -38,11 +38,7 @@ try {
   const raw = readFileSync(documentPath, "utf-8");
   const data = JSON.parse(raw);
   DocumentSchema.parse(data);
-  console.log("✓ Document payload is valid");
-  console.log(`  Title: ${data.title}`);
-  console.log(`  Workspace ID: ${data.workspaceId}`);
-  console.log(`  Public: ${data.isPublic}`);
-  if (data.parentId) console.log(`  Parent ID: ${data.parentId}`);
+
 } catch (err: unknown) {
   console.error("✗ Document payload is invalid:");
   if (err instanceof z.ZodError) {

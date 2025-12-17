@@ -42,6 +42,7 @@ export interface DocumentsManagerHook {
   stats: DocumentStats;
   lastUpdatedHumanized: string;
   category?: DocumentCategory;
+  updateDocument: (id: Id<"documents">, updates: Partial<DocumentRecord>) => Promise<void>;
 }
 
 export function useDocumentsManager(options: DocumentManagerOptions = {}): DocumentsManagerHook {
@@ -125,5 +126,9 @@ export function useDocumentsManager(options: DocumentManagerOptions = {}): Docum
     stats,
     lastUpdatedHumanized,
     category,
+    updateDocument: async (id: Id<"documents">, updates: Partial<DocumentRecord>) => {
+      // Placeholder implementation - will need actual mutation hook
+      console.log("Updating document", id, updates);
+    }
   };
 }

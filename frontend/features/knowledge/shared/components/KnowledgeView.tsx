@@ -16,6 +16,16 @@ import { ProfileDataForm } from "@/frontend/features/knowledge/features/profile/
 // Import workspace context page
 import WorkspaceContextPage from "@/frontend/features/knowledge/features/workspace-context/page";
 
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { KNOWLEDGE_TYPE_CONFIG } from "../types";
+
 interface KnowledgeViewProps {
   workspaceId: Id<"workspaces"> | null;
   editorMode?: DocumentEditorMode;
@@ -28,6 +38,8 @@ export function KnowledgeView({
   initialSection = "article",
 }: KnowledgeViewProps) {
   const [activeSection, setActiveSection] = useState<KnowledgeItemType>(initialSection);
+  const isMobile = useIsMobile();
+
 
   if (!workspaceId) {
     return (
@@ -48,26 +60,26 @@ export function KnowledgeView({
         // Knowledge base articles - using documents with knowledge base filter
         return (
           <div className="h-full">
-            <DocumentsView 
-              workspaceId={workspaceId} 
+            <DocumentsView
+              workspaceId={workspaceId}
               editorMode={editorMode}
               storageKey="knowledge-articles"
             />
           </div>
         );
-      
+
       case "document":
         // Regular documents
         return (
           <div className="h-full">
-            <DocumentsView 
-              workspaceId={workspaceId} 
+            <DocumentsView
+              workspaceId={workspaceId}
               editorMode={editorMode}
               storageKey="knowledge-documents"
             />
           </div>
         );
-      
+
       case "profile-data":
         // User profile data for AI context
         return (
@@ -75,7 +87,7 @@ export function KnowledgeView({
             <ProfileDataForm />
           </div>
         );
-      
+
       case "workspace-context":
         // Workspace context for AI
         return (
@@ -83,11 +95,41 @@ export function KnowledgeView({
             <WorkspaceContextPage workspaceId={workspaceId} />
           </div>
         );
-      
+
       default:
         return null;
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-full bg-background">
+        <div className="flex items-center gap-2 p-2 border-b bg-muted/10 shrink-0">
+          <span className="text-xs font-medium text-muted-foreground ml-1">Section:</span>
+          <Select
+            value={activeSection}
+            onValueChange={(v) => setActiveSection(v as KnowledgeItemType)}
+          >
+            <SelectTrigger className="h-8 text-sm bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(KNOWLEDGE_TYPE_CONFIG) as KnowledgeItemType[]).map((type) => (
+                <SelectItem key={type} value={type}>
+                  <div className="flex items-center gap-2">
+                    <span>{KNOWLEDGE_TYPE_CONFIG[type].label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full">

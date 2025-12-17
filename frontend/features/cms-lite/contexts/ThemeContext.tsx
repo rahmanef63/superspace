@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -85,7 +85,6 @@ export function ThemeProvider({
 
   useEffect(() => {
     // TODO: Load theme colors from Convex settings
-    console.log("TODO: Load theme colors from Convex for workspace", workspaceId);
     
     // Placeholder: Apply default colors
     const primaryColor = "#3b82f6";

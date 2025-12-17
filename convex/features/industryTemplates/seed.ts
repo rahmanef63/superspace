@@ -1,4 +1,4 @@
-import { mutation } from "../../_generated/server";
+﻿import { mutation } from "../../_generated/server";
 
 // Feature module type matching the schema
 type FeatureModule = "pos" | "inventory" | "crm" | "marketing" | "hr" | "accounting" | "projects" | "support" | "bi" | "forms" | "workflows" | "docs" | "chat" | "calendar" | "bookings" | "cms" | "analytics" | "integrations";
@@ -58,7 +58,6 @@ export const seedOfficialTemplates = mutation({
       .first();
 
     if (existingTemplates) {
-      console.log("Official templates already seeded");
       return { seeded: false, message: "Templates already exist" };
     }
 

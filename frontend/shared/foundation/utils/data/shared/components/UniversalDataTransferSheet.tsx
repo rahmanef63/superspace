@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Universal Data Transfer Sheet Component
  * 
  * A highly dynamic, reusable component for export/import functionality
@@ -643,12 +643,10 @@ export function UniversalDataTransferSheet({
     const [isLoading] = useState(false);
 
     const handleImport = async (file: File, entityType: string, format: ExportFormat) => {
-        console.log("Import:", { file, entityType, format, featureId });
         // Implementation would call onImport callback
     };
 
     const handleExport = async (entityType: string, format: ExportFormat) => {
-        console.log("Export:", { entityType, format, featureId });
         // Implementation would call onExport callback
     };
 

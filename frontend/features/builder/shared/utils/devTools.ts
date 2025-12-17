@@ -1,4 +1,4 @@
-import { cmsWidgetRegistry, widgetStats, widgetCategories } from '../../widgets/registry';
+﻿import { cmsWidgetRegistry, widgetStats, widgetCategories } from '../../widgets/registry';
 import { validateWidgetRegistry, printValidationResults } from './widgetValidation';
 
 /**
@@ -14,21 +14,14 @@ export const printRegistryStats = () => {
 
   console.group(' CMS Widget Registry Statistics');
   
-  console.log(`📈 Total Widgets: ${widgetStats.total}`);
-  console.log('📂 Widgets by Category:');
-  
   Object.entries(widgetStats.byCategory).forEach(([category, count]) => {
     const percentage = ((count / widgetStats.total) * 100).toFixed(1);
-    console.log(`  ${category}: ${count} widgets (${percentage}%)`);
   });
-
-  console.log('\n📋 Widget List by Category:');
   Object.entries(widgetCategories).forEach(([category, widgets]) => {
     if (widgets.length > 0) {
       console.group(`${category} (${widgets.length})`);
       widgets.forEach(widget => {
         const config = cmsWidgetRegistry[widget];
-        console.log(`  • ${config.label} (${widget})`);
       });
       console.groupEnd();
     }
@@ -60,32 +53,16 @@ export const printWidgetDetails = (widgetKey: string) => {
   }
 
   console.group(`🔧 Widget Details: ${widget.label} (${widgetKey})`);
-  
-  console.log('📄 Basic Info:');
-  console.log(`  Label: ${widget.label}`);
-  console.log(`  Category: ${widget.category}`);
-  console.log(`  Description: ${widget.description || 'No description'}`);
-  console.log(`  Tags: ${widget.tags?.join(', ') || 'No tags'}`);
-  
-  console.log('\n🎛️ Defaults:');
-  console.log(widget.defaults);
-  
-  console.log('\n🔍 Inspector Fields:');
   if (widget.inspector?.fields) {
     widget.inspector.fields.forEach((field, index) => {
-      console.log(`  ${index + 1}. ${field.label} (${field.key}) - ${field.type}`);
       if (field.options) {
-        console.log(`     Options: ${field.options.join(', ')}`);
       }
     });
   } else {
-    console.log('  No inspector fields defined');
   }
   
   if (widget.autoConnect) {
-    console.log('\n🔗 Auto Connect:');
     Object.entries(widget.autoConnect).forEach(([key, config]) => {
-      console.log(`  ${key}: ${config.type}`);
     });
   }
 
@@ -108,11 +85,6 @@ export const printCategoryWidgets = (category: string) => {
   
   widgets.forEach(widgetKey => {
     const widget = cmsWidgetRegistry[widgetKey];
-    console.log(`• ${widget.label} (${widgetKey})`);
-    console.log(`  Description: ${widget.description || 'No description'}`);
-    console.log(`  Inspector Fields: ${widget.inspector?.fields?.length || 0}`);
-    console.log(`  Tags: ${widget.tags?.join(', ') || 'None'}`);
-    console.log('');
   });
 
   console.groupEnd();
@@ -140,11 +112,8 @@ export const searchWidgets = (searchTerm: string) => {
   console.group(`🔍 Search Results for "${searchTerm}" (${results.length})`);
   
   if (results.length === 0) {
-    console.log('No widgets found matching the search term');
   } else {
     results.forEach(([key, widget]) => {
-      console.log(`• ${widget.label} (${key}) - ${widget.category}`);
-      console.log(`  ${widget.description || 'No description'}`);
     });
   }
 
@@ -168,6 +137,4 @@ export const CMSDevTools = {
 // Add to global scope in development
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   (window as any).CMSDevTools = CMSDevTools;
-  console.log('🛠️ CMS Dev Tools available as window.CMSDevTools');
-  console.log('   Commands: printStats(), validate(), widget(key), category(name), search(term)');
 }

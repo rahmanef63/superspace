@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Accounting Feature Initialization
  * Registers accounting settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("accounting", () => [
 registerAccountingAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Accounting feature settings registered")
 }

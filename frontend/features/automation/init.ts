@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Automation Feature Initialization
  */
 
@@ -46,5 +46,4 @@ registerFeatureSettings("automation", () => [
 registerAutomationAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Automation feature settings registered")
 }

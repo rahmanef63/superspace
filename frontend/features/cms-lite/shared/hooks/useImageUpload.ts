@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { optimizeImage, CompressionOptions, ImageMetadata } from '../utils/imageCompression';
 
 /**
@@ -108,7 +108,6 @@ export function useImageUpload(): UseImageUploadReturn {
 
         if (attempt < maxRetries) {
           const delay = retryDelay * Math.pow(2, attempt);
-          console.log(`Retrying in ${delay}ms...`);
           await sleep(delay);
         }
       }

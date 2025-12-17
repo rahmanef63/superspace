@@ -28,7 +28,7 @@ export function SiteHeader() {
   const activeFeatureSlug = useMemo(() => getActiveFeatureSlug(pathname), [pathname])
 
   return (
-    <Header 
+    <Header
       className="h-(--header-height) shrink-0 gap-2 overflow-hidden transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)"
       // Use size="md" (px-4 py-3) but override padding to match original (px-4 lg:px-6)
       // Original had padding on inner div. Header puts it on root.
@@ -93,7 +93,10 @@ export function SiteHeader() {
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          onClick={() => window.dispatchEvent(new Event("open-notifications"))}
+          onClick={() => {
+            console.log("Notification button clicked")
+            window.dispatchEvent(new Event("open-notifications"))
+          }}
         >
           <Bell className="h-4 w-4" />
           <span className="sr-only">Notifications</span>
@@ -103,7 +106,7 @@ export function SiteHeader() {
         {activeFeatureSlug && (
           <>
             {/* Data button (Import/Export) */}
-            <FeatureExportImport 
+            <FeatureExportImport
               featureId={activeFeatureSlug}
               variant="dropdown"
               buttonVariant="ghost"
@@ -111,7 +114,7 @@ export function SiteHeader() {
             />
 
             {/* Actions button (burger/•••) */}
-            <FeatureActionMenu 
+            <FeatureActionMenu
               featureSlug={activeFeatureSlug}
               className="text-muted-foreground hover:text-foreground"
             />

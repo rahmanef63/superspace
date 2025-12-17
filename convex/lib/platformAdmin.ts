@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Platform Admin System
  * 
  * Provides platform-level super admin functionality.
@@ -82,7 +82,6 @@ export function isPlatformAdmin(email: string | undefined | null): boolean {
   const isAdmin = adminEmails.includes(normalizedEmail);
   
   if (isAdmin) {
-    console.log(`[platformAdmin] Platform admin access granted for: ${normalizedEmail}`);
   }
   
   return isAdmin;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useCallback,
@@ -389,11 +389,6 @@ export function DatabaseTableView({
           const nextOrder = arrayMove(prev, oldIndex, newIndex);
 
           // Track column order changes
-          console.log('� [Column Order] DND:', {
-            before: prev,
-            after: nextOrder,
-            moved: `${activeId} from position ${oldIndex} to ${newIndex}`
-          });
 
           if (onReorderFields) {
             void onReorderFields(nextOrder);

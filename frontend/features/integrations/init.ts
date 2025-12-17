@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Integrations Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("integrations", () => [
 registerIntegrationsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Integrations feature settings & agent registered", { icon: Plug })
 }

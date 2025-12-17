@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Status Feature Initialization
  * Registers status settings with the shared settings registry
  *
@@ -53,5 +53,4 @@ registerFeatureSettings("status", () => [
 registerStatusAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Status feature settings registered")
 }

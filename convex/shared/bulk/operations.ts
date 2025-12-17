@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Shared Bulk Operations Implementation
  * Provides bulk operation functionality across all ERP modules
  */
@@ -71,7 +71,6 @@ export const processBulkOperation = action({
     operationId: v.string(),
   },
   handler: async (ctx, { operationId }) => {
-    console.log(`Processing bulk operation: ${operationId}`);
 
     // In a real implementation, this would:
     // 1. Get the operation details

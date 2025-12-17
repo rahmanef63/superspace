@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserProfile } from './UserProfile';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 
-type MenuItem = 
+type MenuItem =
   | {
-      label: string;
-      href?: string;
-      onClick?: () => void;
-      icon?: LucideIcon;
-      divider?: false;
-    }
+    label: string;
+    href?: string;
+    onClick?: () => void;
+    icon?: LucideIcon;
+    divider?: false;
+  }
   | {
-      divider: true;
-      label?: never;
-      href?: never;
-      onClick?: never;
-      icon?: never;
-    };
+    divider: true;
+    label?: never;
+    href?: never;
+    onClick?: never;
+    icon?: never;
+  };
 
 interface UserMenuProps {
   user: {
@@ -39,7 +39,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, menuItems = [], classN
     { label: 'Profile', href: '/profile', icon: UserIcon },
     { label: 'Settings', href: '/settings', icon: Settings },
     { divider: true },
-    { label: 'Sign out', onClick: () => console.log('Sign out'), icon: LogOut },
+    { label: 'Sign out', onClick: () => { }, icon: LogOut },
   ];
 
   const items = menuItems.length > 0 ? menuItems : defaultMenuItems;

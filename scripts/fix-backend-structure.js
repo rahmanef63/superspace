@@ -22,7 +22,7 @@ features.forEach(feature => {
 export const tools = [];
 `;
             fs.writeFileSync(indexFile, content);
-            console.log(`Created agents/index.ts for ${feature}`);
+
         }
     }
 });

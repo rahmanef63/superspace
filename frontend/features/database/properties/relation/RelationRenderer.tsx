@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { PropertyRendererProps } from '../../registry/types';
@@ -40,7 +40,6 @@ export const RelationRenderer: React.FC<PropertyRendererProps> = ({ value, prope
 
   const handleOpenRelation = (relationId: string) => {
     // In a real implementation, this would navigate to the related record
-    console.log('Opening relation:', relationId);
     // Example: router.push(`/database/record/${relationId}`);
   };
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Project Discussion Chat
  * Task-focused communication for projects
  */
@@ -60,16 +60,12 @@ export function ProjectDiscussionChat({
         onCommand: async (cmd, args) => {
           switch (cmd) {
             case "/assign":
-              console.log("Assign task:", args);
               break;
             case "/milestone":
-              console.log("Create milestone:", args);
               break;
             case "/status":
-              console.log("Update status:", args);
               break;
             case "/task":
-              console.log("Create task:", args);
               break;
           }
         },

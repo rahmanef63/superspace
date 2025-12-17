@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Channel Hooks
  * 
  * Hooks for fetching and managing channels, categories, members, and roles.
@@ -214,15 +214,6 @@ export function useChannelMutations() {
     },
     deleteChannel: async (channelId: Id<"channels">) => {
       // Note: Delete mutation would need to be added to backend
-      console.log("Delete channel not yet implemented:", channelId)
-    },
-    joinChannel: async (channelId: Id<"channels">) => {
-      // Note: Join channel would add participant
-      console.log("Join channel not yet implemented:", channelId)
-    },
-    leaveChannel: async (channelId: Id<"channels">) => {
-      // Note: Leave channel would remove participant
-      console.log("Leave channel not yet implemented:", channelId)
     },
   }
 }

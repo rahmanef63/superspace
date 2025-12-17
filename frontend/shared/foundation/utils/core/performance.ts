@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Performance Utilities
  * Helper functions for performance optimization
  */
@@ -48,52 +48,27 @@ export async function measureTime<T>(
   const duration = performance.now() - start
 
   if (label) {
-    console.log(`[${label}] Duration: ${duration.toFixed(2)}ms`)
+    console.log(`${label}: ${duration.toFixed(2)}ms`)
   }
 
   return { result, duration }
 }
 
 /**
- * Memoize function results
+ * Retry a function with exponential backoff
  */
-export function memoize<T extends (...args: any[]) => any>(
-  fn: T,
-  keyFn?: (...args: Parameters<T>) => string
-): T {
-  const cache = new Map<string, ReturnType<T>>()
-
-  return function (this: any, ...args: Parameters<T>): ReturnType<T> {
-    const key = keyFn ? keyFn(...args) : JSON.stringify(args)
-
-    if (cache.has(key)) {
-      return cache.get(key)!
-    }
-
-    const result = fn.apply(this, args)
-    cache.set(key, result)
-    return result
-  } as T
+interface RetryOptions {
+  maxRetries?: number
+  baseDelay?: number
+  maxDelay?: number
+  onRetry?: (error: Error, attempt: number) => void
 }
 
-/**
- * Sleep/delay utility
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-/**
- * Retry function with exponential backoff
- */
 export async function retry<T>(
   fn: () => Promise<T>,
-  options: {
-    maxRetries?: number
-    baseDelay?: number
-    maxDelay?: number
-    onRetry?: (error: Error, attempt: number) => void
-  } = {}
+  options: RetryOptions = {}
 ): Promise<T> {
   const { maxRetries = 3, baseDelay = 1000, maxDelay = 10000, onRetry } = options
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Direct Message Hooks
  * 
  * Hooks for fetching and managing direct conversations and messages.
@@ -265,29 +265,7 @@ export function useDirectMessageMutations() {
      * Archive a conversation (not yet implemented in backend)
      */
     archiveConversation: async (conversationId: string) => {
-      console.log("Archive not yet implemented:", conversationId)
-    },
-
-    /**
-     * Unarchive a conversation (not yet implemented in backend)
-     */
-    unarchiveConversation: async (conversationId: string) => {
-      console.log("Unarchive not yet implemented:", conversationId)
-    },
-  }
-}
-
-/**
- * Find or create a conversation with a specific user
- */
-export function useStartConversation() {
-  const { createConversation } = useDirectMessageMutations()
-
-  return async (userId: Id<"users">, workspaceId?: Id<"workspaces">) => {
-    return createConversation({
-      participantIds: [userId],
-      workspaceId,
-    })
+    }
   }
 }
 

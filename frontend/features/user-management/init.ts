@@ -1,4 +1,4 @@
-/**
+﻿/**
  * User Management Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("user-management", () => [
 registerUserManagementAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ User Management feature settings & agent registered", { icon: Users })
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Feature Initialization
  * Registers AI settings with the shared settings registry
  * and initializes the sub-agent system.
@@ -56,5 +56,4 @@ registerFeatureSettings("ai", () => [
 ])
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ AI feature settings registered")
 }

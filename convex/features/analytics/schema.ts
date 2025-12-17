@@ -12,7 +12,7 @@ export const analyticsTables = {
     eventType: v.string(), // e.g., "page_view", "feature_used", "action_completed"
     eventName: v.string(),
     properties: v.optional(v.record(v.string(), v.any())),
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.string()),
     sessionId: v.optional(v.string()),
     workspaceId: v.id("workspaces"),
     timestamp: v.number(),

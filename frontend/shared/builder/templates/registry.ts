@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Templates Registry (Level 5)
  * Auto-loads all template wrappers from subdirectories
  */
@@ -71,5 +71,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     getAll: getAllTemplateWrappers,
     get: getTemplateWrapper,
   }
-  console.log(`📦 Auto-loaded ${templateRegistry.size} templates`)
 }

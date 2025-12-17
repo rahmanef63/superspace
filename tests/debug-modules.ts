@@ -22,9 +22,9 @@ const modules = import.meta.glob([
   "../convex/_generated/**/*.js",
 ], { eager: true });
 
-console.log("Loaded modules:");
+
 for (const path of Object.keys(modules).sort()) {
   const mod = modules[path] as any;
   const exports = Object.keys(mod);
-  console.log(`  ${path} -> exports: ${exports.join(", ")}`);
+
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Flows Registry (Level 6)
  * Auto-loads all flow wrappers from subdirectories
  */
@@ -71,5 +71,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     getAll: getAllFlowWrappers,
     get: getFlowWrapper,
   }
-  console.log(`📦 Auto-loaded ${flowRegistry.size} flows`)
 }

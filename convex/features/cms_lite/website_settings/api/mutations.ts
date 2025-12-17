@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CMS Lite Website Settings Mutations
  * 
  * Write operations for website settings. Protected by RBAC.
@@ -187,7 +187,6 @@ async function mockDnsVerification(domain: string): Promise<boolean> {
   // - Use DNS lookup service (e.g., Google DNS API)
   // - Check A record: domain -> 76.76.21.21
   // - Check CNAME record: domain -> cname.superspace.app
-  console.log(`[MOCK] Verifying domain: ${domain}`);
 
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 100));

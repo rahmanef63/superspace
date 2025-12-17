@@ -34,13 +34,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body 
+      <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased overscroll-none theme-${activeTheme}`}
       >
-        <ThemeProvider 
-          attribute="class" 
-          defaultTheme="system" 
-          enableSystem 
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
           enableColorScheme
         >

@@ -93,7 +93,7 @@ export function KnowledgeViewTabs({
         onValueChange={(v) => setActiveTab(v as KnowledgeTab)}
         className="flex-1 flex flex-col min-h-0"
       >
-        <div className="flex-shrink-0 border-b bg-muted/30">
+        <div className="flex-shrink-0 border-b bg-muted/30 w-full">
           <TabsList className="w-full justify-start h-auto p-0 bg-transparent rounded-none px-4">
             <TabsTrigger
               value="articles"

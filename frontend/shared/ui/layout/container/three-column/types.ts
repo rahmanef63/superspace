@@ -140,3 +140,116 @@ export interface PanelProps {
   children: ReactNode
   className?: string
 }
+
+// ---------------------------------------------------------------------------
+// Mobile Navigation Types
+// ---------------------------------------------------------------------------
+
+/** Mobile navigation level for stack-based navigation */
+export type MobileNavigationLevel = "sidebar" | "center" | "right"
+
+/** Mobile navigation configuration */
+export interface MobileNavigation {
+  /** Enable mobile-specific navigation behavior */
+  enabled: boolean
+  /** Default navigation level to show */
+  defaultLevel?: MobileNavigationLevel
+  /** Show back button in mobile header */
+  showBackButton?: boolean
+  /** Enable swipe gesture navigation */
+  gestureNavigation?: boolean
+}
+
+/** Props for mobile header component */
+export interface MobileHeaderProps {
+  title: string
+  subtitle?: string
+  icon?: React.ComponentType<{ className?: string }>
+  onBack?: () => void
+  actions?: ReactNode
+  showBackButton?: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Right Panel Configuration Types
+// ---------------------------------------------------------------------------
+
+/** Available right panel modes */
+export type RightPanelMode = "inspector" | "ai" | "settings" | "custom"
+
+/** Right panel configuration */
+export interface RightPanelConfig {
+  /** Available modes for the right panel */
+  modes?: RightPanelMode[]
+  /** Default mode when panel opens */
+  defaultMode?: RightPanelMode
+  /** Show tabs for mode switching */
+  tabs?: boolean
+  /** Allow panel to be collapsed */
+  collapsible?: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Empty State Types
+// ---------------------------------------------------------------------------
+
+/** Empty state configuration */
+export interface EmptyStateConfig {
+  /** Icon component to display */
+  icon?: React.ComponentType<{ className?: string }>
+  /** Title text */
+  title?: string
+  /** Description text */
+  description?: string
+  /** Optional action button */
+  action?: {
+    label: string
+    onClick: () => void
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading State Types
+// ---------------------------------------------------------------------------
+
+/** Loading state configuration for panels */
+export interface LoadingStateConfig {
+  /** Show loading in sidebar */
+  sidebar?: boolean
+  /** Show loading in center panel */
+  center?: boolean
+  /** Show loading in right panel */
+  right?: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Header Actions Configuration
+// ---------------------------------------------------------------------------
+
+/** AI assistant action configuration */
+export interface AIActionConfig {
+  /** Enable AI assistant button */
+  enabled: boolean
+  /** Feature ID for AI context */
+  featureId?: string
+  /** Context data for AI */
+  context?: any
+}
+
+/** Settings action configuration */
+export interface SettingsActionConfig {
+  /** Enable settings button */
+  enabled: boolean
+  /** Settings click handler */
+  onClick?: () => void
+}
+
+/** Header actions configuration */
+export interface HeaderActionsConfig {
+  /** AI assistant configuration */
+  ai?: AIActionConfig
+  /** Settings configuration */
+  settings?: SettingsActionConfig
+  /** Custom action buttons */
+  custom?: ReactNode
+}

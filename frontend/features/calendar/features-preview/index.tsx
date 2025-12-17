@@ -137,7 +137,7 @@ function CalendarPreview({ mockData, compact, interactive }: FeaturePreviewProps
             {/* Left Sidebar - Mini Calendar & Filters */}
             <div className="w-64 border-r bg-muted/30 p-4 space-y-4 hidden md:block">
                 {/* Mini Calendar */}
-                <Card className="border-none shadow-sm">
+                <Card className="border-none mx-auto shadow-sm">
                     <CardContent className="p-2">
                         <CalendarComponent
                             mode="single"

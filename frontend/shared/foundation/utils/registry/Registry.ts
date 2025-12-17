@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Core Registry Implementation
  * Manages registration and lookup of all node types
  */

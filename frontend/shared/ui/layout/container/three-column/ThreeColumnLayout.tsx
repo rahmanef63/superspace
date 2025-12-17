@@ -15,12 +15,13 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Info } from "lucide-react"
 import { ResizeHandle } from "../ResizeHandle"
 import { ThreeColumnContext } from "./context"
 import { usePersistedState, useResponsiveCollapse, useStackedLayout } from "./hooks"
 import { PanelHeader } from "./PanelHeader"
 import { CollapsedPanel } from "./CollapsedPanel"
+import { MobileInspectorDrawer } from "./mobile/MobileInspectorDrawer"
 import type { ThreeColumnLayoutAdvancedProps } from "./types"
 import { resolveThreeColumnPreset } from "./presets"
 
@@ -96,16 +97,19 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
   const isStacked = useStackedLayout(stackAt)
 
   // Mobile navigation state (separate from desktop collapse state)
-  // On mobile: 'left' = show list, 'center' = show main content, 'right' = show detail
-  const [mobileView, setMobileView] = React.useState<'left' | 'center' | 'right'>(() =>
+  // On mobile: 'left' = show list, 'center' = show main content
+  // Right panel is shown as drawer instead of fullscreen
+  const [mobileView, setMobileView] = React.useState<'left' | 'center'>(() =>
     hideLeft ? "center" : "left"
   )
+
+  // Mobile inspector drawer state
+  const [mobileInspectorOpen, setMobileInspectorOpen] = React.useState(false)
 
   // Keep mobile view valid if panels become hidden
   React.useEffect(() => {
     if (hideLeft && mobileView === "left") setMobileView("center")
-    if (hideRight && mobileView === "right") setMobileView("center")
-  }, [hideLeft, hideRight, mobileView])
+  }, [hideLeft, mobileView])
 
   // Persisted state
   const [persistedState, setPersistedState] = usePersistedState(
@@ -221,7 +225,7 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
     toggleRight,
   }), [leftCollapsed, rightCollapsed, toggleLeft, toggleRight])
 
-  // Mobile stacked layout - full screen navigation with back/forward
+  // Mobile stacked layout - full screen navigation with inspector drawer
   if (isStacked) {
     const canShowLeft = !hideLeft
     const canShowRight = !hideRight
@@ -231,16 +235,16 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
     const goToLeft = () => {
       if (canShowLeft) setMobileView("left")
     }
-    const goToRight = () => {
-      if (canShowRight) setMobileView("right")
+    const toggleInspectorDrawer = () => {
+      if (canShowRight) setMobileInspectorOpen((prev: boolean) => !prev)
     }
 
-    // Also update context for external components that might use toggleLeft/toggleRight
+    // Context for mobile
     const mobileContextValue = {
       leftCollapsed: !canShowLeft || mobileView !== "left",
-      rightCollapsed: !canShowRight || mobileView !== "right",
+      rightCollapsed: !canShowRight || !mobileInspectorOpen,
       toggleLeft: !canShowLeft ? () => { } : (mobileView === "left" ? goToCenter : goToLeft),
-      toggleRight: !canShowRight ? () => { } : (mobileView === "right" ? goToCenter : goToRight),
+      toggleRight: toggleInspectorDrawer,
     }
 
     return (
@@ -260,7 +264,7 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
             </div>
           )}
 
-          {/* CENTER PANEL - Full screen main content with back/forward */}
+          {/* CENTER PANEL - Full screen main content with back/inspector buttons */}
           {mobileView === "center" && (
             <div className="absolute inset-0 flex flex-col bg-background z-20">
               <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
@@ -277,12 +281,12 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
                 <span className="text-base font-semibold flex-1">{centerLabel}</span>
                 {canShowRight && (
                   <Button
-                    variant="ghost"
+                    variant={mobileInspectorOpen ? "secondary" : "ghost"}
                     size="icon"
-                    onClick={goToRight}
+                    onClick={toggleInspectorDrawer}
                     className="h-9 w-9"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <Info className="h-5 w-5" />
                   </Button>
                 )}
               </div>
@@ -291,23 +295,15 @@ export function ThreeColumnLayoutAdvanced(rawProps: ThreeColumnLayoutAdvancedPro
             </div>
           )}
 
-          {/* RIGHT PANEL - Full screen detail view with back button */}
-          {canShowRight && mobileView === "right" && (
-            <div className="absolute inset-0 flex flex-col bg-background z-30">
-              <div className="flex items-center gap-3 px-2 py-2 border-b bg-muted/30 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToCenter}
-                  className="h-9 w-9"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <span className="text-base font-semibold flex-1">{rightLabel}</span>
-              </div>
-              {rightHeader && <div className="flex-shrink-0">{rightHeader}</div>}
-              <div className="flex-1 overflow-auto">{right}</div>
-            </div>
+          {/* INSPECTOR DRAWER - Bottom drawer for inspector/right panel */}
+          {canShowRight && (
+            <MobileInspectorDrawer
+              open={mobileInspectorOpen}
+              onClose={() => setMobileInspectorOpen(false)}
+              title={rightLabel}
+            >
+              {right}
+            </MobileInspectorDrawer>
           )}
         </div>
       </ThreeColumnContext.Provider>

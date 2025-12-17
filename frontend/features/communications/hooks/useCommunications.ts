@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Communications Hook
  * 
  * Main hook for the Communications feature integrating with Convex.
@@ -35,44 +35,44 @@ export function useCommunications(workspaceId: Id<"workspaces"> | null | undefin
   // Mutations for conversations
   const createConversation = useMutation(api.features.chat.conversations.createConversation)
   const updateConversation = useMutation(api.features.chat.conversations.updateConversation)
-  
+
   // Mutations for messages
   const sendMessage = useMutation(api.features.chat.messages.sendMessage)
   const deleteMessage = useMutation(api.features.chat.messages.deleteMessage)
   const editMessage = useMutation(api.features.chat.messages.editMessage)
-  
+
   // Mutations for calls - using actual API names
   const createCall = useMutation(api.features.calls.mutations.createCall)
   const updateCallStatus = useMutation(api.features.calls.mutations.updateCallStatus)
 
   return {
     // Loading state
-    isLoading: (conversations === undefined || calls === undefined) && 
-               workspaceId !== null && workspaceId !== undefined,
-    
+    isLoading: (conversations === undefined || calls === undefined) &&
+      workspaceId !== null && workspaceId !== undefined,
+
     // Data
     conversations: conversations ?? [],
     calls: calls ?? [],
-    
+
     // Conversation actions
     createConversation,
     updateConversation,
-    
+
     // Message actions
     sendMessage,
     deleteMessage,
     editMessage,
-    
+
     // Call actions - mapped to correct API
     createCall,
     updateCallStatus,
     // Convenience wrappers
     startCall: createCall,
-    endCall: async (args: { callId: Id<"calls"> }) => 
+    endCall: async (args: { callId: Id<"calls"> }) =>
       updateCallStatus({ callId: args.callId, status: "ended" }),
-    declineCall: async (args: { callId: Id<"calls"> }) => 
+    declineCall: async (args: { callId: Id<"calls"> }) =>
       updateCallStatus({ callId: args.callId, status: "declined" }),
-    answerCall: async (args: { callId: Id<"calls"> }) => 
+    answerCall: async (args: { callId: Id<"calls"> }) =>
       updateCallStatus({ callId: args.callId, status: "ongoing" }),
   }
 }
@@ -96,8 +96,8 @@ export function useConversation(
   )
 
   return {
-    isLoading: (conversation === undefined || messages === undefined) && 
-               conversationId !== null && conversationId !== undefined,
+    isLoading: (conversation === undefined || messages === undefined) &&
+      conversationId !== null && conversationId !== undefined,
     conversation,
     messages: messages ?? [],
   }
@@ -124,26 +124,8 @@ export function useCall(callId: Id<"calls"> | null | undefined) {
     },
     muteToggle: async () => {
       // Note: mute/video toggle would need a separate participant update mutation
-      console.log("Mute toggle - needs updateParticipant mutation")
-    },
-  }
-}
-
-/**
- * Hook for call history
- */
-export function useCallHistory(
-  workspaceId: Id<"workspaces"> | null | undefined,
-  limit?: number
-) {
-  const history = useQuery(
-    api.features.calls.queries.getMyCallHistory,
-    workspaceId ? { workspaceId, limit } : "skip"
-  )
-
-  return {
-    isLoading: history === undefined && workspaceId !== null && workspaceId !== undefined,
-    history: history ?? [],
+      // implementation pending
+    }
   }
 }
 

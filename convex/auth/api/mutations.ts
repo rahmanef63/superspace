@@ -1,4 +1,4 @@
-import { internalMutation } from "../../_generated/server";
+﻿import { internalMutation } from "../../_generated/server";
 import { internal } from "../../_generated/api";
 import { ConvexError } from "convex/values";
 import { v } from "convex/values";
@@ -242,7 +242,6 @@ export const initializeCurrentUserAsAdmin = internalMutation({
 
     // If user doesn't exist, create it
     if (!user) {
-      console.log(`[initializeCurrentUserAsAdmin] Creating user record for ${identity.subject}`);
       const email = (identity.email ?? identity.emailVerified ?? "no-email@example.com") as string;
       const name = (identity.name ?? identity.nickname ?? "User") as string;
       
@@ -292,9 +291,7 @@ export const initializeCurrentUserAsAdmin = internalMutation({
     // If user has no workspace or is not an owner, create Main Workspace
     if (!ownerMembership || !isOwner) {
       if (ownerMembership && !isOwner) {
-        console.log(`[initializeCurrentUserAsAdmin] User has workspace but is not owner, creating Main Workspace`);
       } else {
-        console.log(`[initializeCurrentUserAsAdmin] Creating Main Workspace for user ${guaranteedUser.email}`);
       }
       
       const name = (identity.name ?? identity.nickname ?? guaranteedUser.name ?? "User") as string;
@@ -309,8 +306,6 @@ export const initializeCurrentUserAsAdmin = internalMutation({
           userName,
         }
       );
-
-      console.log(`[initializeCurrentUserAsAdmin] Created workspace ${workspaceId} for user ${guaranteedUser.email}`);
       
       // Mark as owner since we just created the workspace
       isOwner = true;
@@ -353,8 +348,6 @@ export const initializeCurrentUserAsAdmin = internalMutation({
       createdBy: identity.subject,
       updatedBy: identity.subject,
     });
-
-    console.log(`[initializeCurrentUserAsAdmin] Created admin user ${adminUserId} for workspace owner ${email}`);
 
     return { userId: adminUserId, created: true };
   },

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * POS Feature Initialization
  * Registers feature settings and agent surface.
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("pos", () => [
 registerPosAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ POS feature settings & agent registered", { icon: ShoppingCart })
 }

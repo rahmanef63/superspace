@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useBackend } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Form";
@@ -186,7 +186,6 @@ export default function AdminServices() {
       a.click();
       URL.revokeObjectURL(url);
       logger.exported("services", res.data.length);
-      console.log(`📁 File tersimpan sebagai: ${fileName}`);
       toast({ title: `Exported ${res.data.length} service(s) to JSON` });
     } catch (err: any) {
       logger.error("ekspor", "services", err);

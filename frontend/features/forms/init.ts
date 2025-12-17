@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Forms Feature Initialization
  */
 
@@ -46,5 +46,4 @@ registerFeatureSettings("forms", () => [
 registerFormsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Forms feature settings registered")
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Shared Search Implementation
  * Provides unified search functionality across all ERP modules
  */
@@ -137,7 +137,6 @@ export const rebuildSearchIndex = action({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, { entity, workspaceId }) => {
-    console.log(`Rebuilding search index for entity: ${entity}`);
 
     // Implementation would rebuild the search index
     return { success: true, entity, updatedAt: Date.now() };

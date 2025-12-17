@@ -49,6 +49,8 @@ import { DynamicSettingsView } from "@/frontend/shared/settings/components/Dynam
 import { FeatureSettingsSync } from "@/frontend/shared/settings/components/FeatureSettingsSync"
 import { FeatureSettingsListPanel } from "@/frontend/shared/settings/components/FeatureSettingsListPanel"
 import { FeatureSettingsPanel } from "@/frontend/shared/settings/components/FeatureSettingsPanel"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { MobileHeader } from "@/frontend/shared/ui/layout/header"
 
 // ============================================================================
 // Available Features Section
@@ -309,6 +311,7 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
 
   const { menuItems, availableFeatures, isLoading } = useMenuStoreData(workspaceId)
   const mutations = useMenuStoreMutations()
+  const isMobile = useIsMobile()
 
   // Feature preview state (for right panel)
   const [selectedFeatureId, setSelectedFeatureId] = React.useState<string | null>(null)
@@ -899,6 +902,117 @@ export function MenuStorePage({ workspaceId }: MenuStorePageProps) {
     </div>
   )
 
+  // Mobile View - 3 Level Hierarchical Navigation
+  if (isMobile) {
+    // Level 3: Preview
+    if (previewVisible) {
+      return (
+        <div className="flex flex-col h-full bg-background">
+          <MobileHeader
+            title="Preview"
+            onBack={() => {
+              setPreviewVisible(false)
+              setRightPanelCollapsed(true)
+            }}
+            icon={Eye}
+          />
+          <div className="flex-1 overflow-hidden">
+            <PreviewPanel
+              featureId={selectedFeatureId}
+              visible={true}
+              onClose={() => {
+                setPreviewVisible(false)
+                setRightPanelCollapsed(true)
+              }}
+              className="h-full border-0"
+              hideHeader
+            />
+          </div>
+        </div>
+      )
+    }
+
+    // Level 2: Inspector/Settings/Available
+    if (state.selectedItemId) {
+      return (
+        <div className="flex flex-col h-full bg-background">
+          <MobileHeader
+            title={selectedMenuItem?.name || "Menu"}
+            onBack={() => {
+              setSelectedItemId(undefined)
+              setCenterPanelMode("inspector")
+            }}
+            icon={Menu}
+            actions={
+              <div className="flex items-center gap-1">
+                <Button
+                  variant={centerPanelMode === "inspector" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCenterPanelMode("inspector")}
+                >
+                  <Info className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={centerPanelMode === "settings" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCenterPanelMode("settings")}
+                >
+                  <Sliders className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={centerPanelMode === "available" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCenterPanelMode("available")}
+                >
+                  <Package className="h-4 w-4" />
+                </Button>
+              </div>
+            }
+          />
+          {centerPanelContent}
+        </div>
+      )
+    }
+
+    // Level 1: Menu List
+    return (
+      <div className="flex flex-col h-full bg-background">
+        <MobileHeader
+          title="Menus"
+          icon={Menu}
+          actions={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleSyncDefaults}
+              disabled={state.syncingDefaults}
+            >
+              <RefreshCw className={`h-4 w-4 ${state.syncingDefaults ? "animate-spin" : ""}`} />
+            </Button>
+          }
+        />
+        {leftPanelContent}
+
+        {/* Dialogs */}
+        <RenameDialog
+          state={state.renameDialog}
+          onClose={closeRenameDialog}
+          onNameChange={setRenameDialogName}
+          onConfirm={handleRenameConfirm}
+        />
+        <ShareDialog
+          state={state.shareDialog}
+          onClose={closeShareDialog}
+        />
+      </div>
+    )
+  }
+
+  // Desktop View
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
       {/* Page Header */}

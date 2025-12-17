@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -55,7 +55,6 @@ export const CurrencyProvider: React.FC<{
 
   const convertPrice = (amount: number, fromCurrency: string): number => {
     // TODO: Use actual exchange rates from Convex
-    console.log("TODO: Implement Convex currency conversion", { workspaceId, amount, fromCurrency, selectedCurrency });
     return amount; // Placeholder
   };
 

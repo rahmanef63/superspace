@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation"
 import { useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { useUser } from "@clerk/nextjs"
-import { ArrowRight, ArrowLeft, Check, Loader2, Rocket } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check, Loader2, Rocket, RefreshCw, Home } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 import { OnboardingProgress } from "./OnboardingProgress"
 import { BundleSelector } from "./BundleSelector"
@@ -25,18 +26,13 @@ interface RobustOnboardingFlowProps {
   initialType?: WorkspaceType
 }
 
+// Condensed to 3 steps: Welcome+Details combined, Bundle, Features
 const ONBOARDING_STEPS: OnboardingStepDef[] = [
   {
-    id: "welcome",
-    title: "Welcome to Your Workspace",
-    description: "Let's set up your workspace to get started",
-    icon: "Rocket",
-  },
-  {
     id: "details",
-    title: "Workspace Details",
-    description: "Tell us about your workspace",
-    icon: "FileText",
+    title: "Welcome! Let's Set Up Your Workspace",
+    description: "Tell us about your workspace to get started",
+    icon: "Rocket",
   },
   {
     id: "bundle",
@@ -87,7 +83,6 @@ export function RobustOnboardingFlow({
 
   // Update enabled features when bundle changes
   const handleBundleSelect = useCallback((bundleId: string) => {
-    // Just set the bundle ID - features will be derived from the hook
     setData(prev => ({
       ...prev,
       selectedBundleId: bundleId,
@@ -100,7 +95,6 @@ export function RobustOnboardingFlow({
     if (selectedBundle) {
       const enabledFeatures = getMergedBundleEnabledFeatures(selectedBundle)
       setData(prev => {
-        // Only update if features actually differ
         const prevSorted = [...prev.enabledFeatures].sort().join(',')
         const newSorted = [...enabledFeatures].sort().join(',')
         if (prevSorted === newSorted) {
@@ -116,7 +110,6 @@ export function RobustOnboardingFlow({
 
   // Toggle individual feature
   const handleToggleFeature = useCallback((featureId: AvailableFeatureId) => {
-    // Cannot toggle core features
     if (CORE_FEATURES.includes(featureId)) return
 
     setData(prev => {
@@ -151,15 +144,26 @@ export function RobustOnboardingFlow({
     }
   }, [currentStep, isSubmitting])
 
+  const handleStartOver = useCallback(() => {
+    setCurrentStep(0)
+    setSubmitError(null)
+    setData({
+      name: "",
+      type: initialType,
+      description: "",
+      selectedBundleId: null,
+      enabledFeatures: [],
+      disabledFeatures: [],
+    })
+  }, [initialType])
+
   const canProceed = useMemo(() => {
     switch (currentStep) {
-      case 0: // Welcome
-        return true
-      case 1: // Details
+      case 0: // Details (combined Welcome+Details)
         return data.name.trim().length > 0
-      case 2: // Bundle
+      case 1: // Bundle
         return data.selectedBundleId !== null
-      case 3: // Features
+      case 2: // Features
         return data.enabledFeatures.length > 0
       default:
         return false
@@ -196,10 +200,8 @@ export function RobustOnboardingFlow({
           type: data.type,
           description: data.description,
           isPublic: false,
-          // Pass bundle and features to workspace
           bundleId: data.selectedBundleId || undefined,
           enabledFeatures: data.enabledFeatures,
-          // Use enabled features as selected menu slugs for menu system
           selectedMenuSlugs: data.enabledFeatures,
         })
 
@@ -224,7 +226,6 @@ export function RobustOnboardingFlow({
           }
         })
 
-        // Bundle and features are saved with the workspace creation
         onComplete(workspaceId, data.enabledFeatures)
         setIsSubmitting(false)
         return
@@ -250,31 +251,24 @@ export function RobustOnboardingFlow({
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 0: // Welcome
-        return (
-          <div className="text-center py-8 sm:py-12">
-            <div className="mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-primary/10">
-              <Rocket className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
-            </div>
-            <h2 className="mb-3 text-xl sm:text-2xl font-bold">{ONBOARDING_STEPS[0].title}</h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              We'll help you set up your workspace in just a few steps.
-              You can always customize everything later.
-            </p>
-          </div>
-        )
-
-      case 1: // Details
+      case 0: // Combined Welcome + Details
         return (
           <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">{ONBOARDING_STEPS[1].title}</h2>
-              <p className="text-muted-foreground">{ONBOARDING_STEPS[1].description}</p>
+            {/* Welcome Header - Compact */}
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <Rocket className="h-7 w-7 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold">{ONBOARDING_STEPS[0].title}</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                We'll help you set up in just a few steps.
+              </p>
             </div>
 
-            <div className="space-y-4 max-w-lg mx-auto">
+            {/* Form Fields */}
+            <div className="space-y-4 max-w-md mx-auto">
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-1.5 block text-sm font-medium">
                   Workspace Name *
                 </label>
                 <input
@@ -282,44 +276,45 @@ export function RobustOnboardingFlow({
                   value={data.name}
                   onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="My Awesome Workspace"
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 focus:border-ring focus:ring-2 focus:ring-ring"
+                  autoFocus
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:ring-2 focus:ring-ring"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Workspace Type
+                <label className="mb-1.5 block text-sm font-medium">
+                  Type
                 </label>
                 <select
                   value={data.type}
                   onChange={(e) => setData(prev => ({ ...prev, type: e.target.value as WorkspaceType }))}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 focus:border-ring focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:ring-2 focus:ring-ring"
                 >
-                  <option value="personal">Personal - For individual use</option>
-                  <option value="family">Family - For family members</option>
-                  <option value="group">Group - For small teams</option>
-                  <option value="organization">Organization - For companies</option>
-                  <option value="institution">Institution - For schools, etc.</option>
+                  <option value="personal">Personal</option>
+                  <option value="family">Family</option>
+                  <option value="group">Team / Group</option>
+                  <option value="organization">Organization</option>
+                  <option value="institution">Institution</option>
                 </select>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Description (Optional)
+                <label className="mb-1.5 block text-sm font-medium">
+                  Description <span className="text-muted-foreground">(Optional)</span>
                 </label>
                 <textarea
                   value={data.description}
                   onChange={(e) => setData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="What will you use this workspace for?"
-                  rows={3}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 focus:border-ring focus:ring-2 focus:ring-ring resize-none"
+                  rows={2}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:ring-2 focus:ring-ring resize-none"
                 />
               </div>
             </div>
           </div>
         )
 
-      case 2: // Bundle
+      case 1: // Bundle
         return (
           <BundleSelector
             workspaceType={data.type}
@@ -328,7 +323,7 @@ export function RobustOnboardingFlow({
           />
         )
 
-      case 3: // Features
+      case 2: // Features
         return (
           <FeatureCustomizer
             selectedBundleId={data.selectedBundleId}
@@ -349,22 +344,47 @@ export function RobustOnboardingFlow({
     <div className="w-full max-w-4xl mx-auto">
       <OnboardingProgress currentStep={currentStep} totalSteps={ONBOARDING_STEPS.length} />
 
-      <div className="mt-6 rounded-lg border border-border bg-background p-4 sm:p-6 md:p-8">
-        {renderStepContent()}
+      <div className="mt-4 rounded-lg border border-border bg-background p-4 sm:p-6">
+        {/* Step content with max-height for containment */}
+        <div className="max-h-[60vh] overflow-y-auto pr-1">
+          {renderStepContent()}
+        </div>
 
+        {/* Error State with Recovery Options */}
         {submitError && (
-          <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {submitError}
+          <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+            <p className="text-sm text-destructive mb-3">{submitError}</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleComplete}
+                disabled={isSubmitting}
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Retry
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleStartOver}
+                disabled={isSubmitting}
+              >
+                <Home className="h-4 w-4 mr-1" />
+                Start Over
+              </Button>
+            </div>
           </div>
         )}
 
-        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-0 border-t border-border pt-4 sm:pt-6">
+        {/* Navigation Buttons */}
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
           <button
             onClick={handleBack}
             disabled={isFirstStep || isSubmitting}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 ${isFirstStep || isSubmitting
-                ? "cursor-not-allowed text-muted-foreground"
-                : "text-foreground hover:bg-muted"
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${isFirstStep || isSubmitting
+              ? "cursor-not-allowed text-muted-foreground"
+              : "text-foreground hover:bg-muted"
               }`}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -372,10 +392,10 @@ export function RobustOnboardingFlow({
           </button>
 
           {isLastStep ? (
-            <button
+            <Button
               onClick={handleComplete}
               disabled={!canProceed || isSubmitting}
-              className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="gap-2"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -383,16 +403,16 @@ export function RobustOnboardingFlow({
                 <Check className="h-4 w-4" />
               )}
               {isSubmitting ? "Creating..." : "Create Workspace"}
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={handleNext}
               disabled={!canProceed || isSubmitting}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="gap-2"
             >
               Next
               <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -403,10 +423,10 @@ export function RobustOnboardingFlow({
     return content
   }
 
-  // Page variant - fills the dashboard content area with proper scrolling
+  // Page variant - fills the dashboard content area
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="py-4 sm:py-8 px-3 sm:px-4 md:px-8">
+      <div className="py-4 px-4 md:px-8">
         {content}
       </div>
     </div>

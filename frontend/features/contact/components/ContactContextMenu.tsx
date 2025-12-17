@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import {
@@ -41,42 +41,26 @@ export function ContactContextMenu({
         if (onMessage) {
             onMessage();
         } else {
-            // Fallback or just log
-            console.log("Start chat with", contactId)
+
         }
     }
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger asChild>
-                {children}
-            </ContextMenuTrigger>
-            <ContextMenuContent className="w-64">
+            <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+            <ContextMenuContent>
                 <ContextMenuItem onClick={handleMessage}>
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Message
-                    <ContextMenuShortcut>⌘M</ContextMenuShortcut>
                 </ContextMenuItem>
-
                 <ContextMenuItem onClick={onViewProfile}>
                     <User className="mr-2 h-4 w-4" />
                     View Profile
                 </ContextMenuItem>
-
                 <ContextMenuSeparator />
-
-                <ContextMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={onRemove}
-                >
+                <ContextMenuItem onClick={onRemove} className="text-red-600">
                     <UserMinus className="mr-2 h-4 w-4" />
                     Remove Contact
-                    <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-                </ContextMenuItem>
-
-                <ContextMenuItem disabled className="text-destructive focus:text-destructive">
-                    <Ban className="mr-2 h-4 w-4" />
-                    Block
                 </ContextMenuItem>
             </ContextMenuContent>
         </ContextMenu>

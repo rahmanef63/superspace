@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Property Registry - Core Implementation
  *
  * Central singleton registry for all database property types.
@@ -102,7 +102,6 @@ class PropertyRegistry implements IPropertyRegistry {
     this.properties.set(config.type, config);
 
     if (process.env.NODE_ENV === "development") {
-      console.log(`✅ Registered property type: ${config.type} (${config.category})`);
     }
   }
 
@@ -133,7 +132,7 @@ class PropertyRegistry implements IPropertyRegistry {
    * @example
    * ```typescript
    * const allProperties = propertyRegistry.getAll();
-   * console.log(`Registered ${allProperties.length} property types`);
+   *
    * ```
    */
   getAll(): PropertyConfig[] {
@@ -149,7 +148,7 @@ class PropertyRegistry implements IPropertyRegistry {
    * @example
    * ```typescript
    * if (propertyRegistry.has("title")) {
-   *   console.log("Title property is available");
+   *
    * }
    * ```
    */

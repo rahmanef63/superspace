@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Presence and typing indicator hook
  * @module shared/chat/hooks/useChatPresence
  */
@@ -47,7 +47,6 @@ export function useChatPresence(
 
       if (isTyping) {
         // TODO: Send typing event to backend
-        console.log(`User ${userId} is typing in room ${roomId}`);
 
         // Set timeout to automatically stop typing
         typingTimeoutRef.current = setTimeout(() => {
@@ -55,7 +54,6 @@ export function useChatPresence(
         }, CHAT_CONSTANTS.TYPING_INDICATOR_TIMEOUT_MS);
       } else {
         // TODO: Send stop typing event to backend
-        console.log(`User ${userId} stopped typing in room ${roomId}`);
       }
     },
     [enabled, roomId, userId]
@@ -69,7 +67,6 @@ export function useChatPresence(
       if (!enabled) return;
 
       // TODO: Send presence update to backend
-      console.log(`User ${userId} presence: ${status} in room ${roomId}`);
 
       // Update local presence
       setPresence((prev) =>

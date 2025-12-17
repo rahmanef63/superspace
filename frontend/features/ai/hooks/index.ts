@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useQuery, useMutation, useConvex } from "convex/react"
@@ -350,7 +350,6 @@ export const useAIActions = () => {
 
       // Handle Native Tool Calls (Response from Provider)
       if (toolCalls && toolCalls.length > 0) {
-        console.log("[AI] Native tool calls detected:", toolCalls);
         const { executeToolCall } = await import("../agents/router");
 
         // Execute all tool calls
@@ -388,7 +387,6 @@ export const useAIActions = () => {
           try {
             const toolCallJson = JSON.parse(toolCallMatch[1].trim());
             if (toolCallJson.tool && toolCallJson.params) {
-              console.log("[AI] Regex tool call detected:", toolCallJson.tool);
               // Execute the tool
               const { executeTool } = await import("../agents/router");
               const context = {

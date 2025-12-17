@@ -473,8 +473,8 @@ interface DangerZoneProps {
 
 function DangerZone({ workspaceId, workspaceName }: DangerZoneProps) {
   const router = useRouter()
-  const deleteWorkspace = useMutation(api.workspace.workspaces.deleteWorkspace as any)
-  const resetWorkspace = useMutation(api.workspace.workspaces.resetWorkspace as any)
+  const deleteWorkspace = useMutation((api.workspace.workspaces as any).deleteWorkspace)
+  const resetWorkspace = useMutation((api.workspace.workspaces as any).resetWorkspace)
 
   const [showResetDialog, setShowResetDialog] = React.useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)

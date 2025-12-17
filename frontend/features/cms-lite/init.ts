@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CMS Lite Feature Initialization
  * Registers cms-lite settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("cms-lite", () => [
 registerCmsLiteAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ CMS Lite feature settings registered")
 }

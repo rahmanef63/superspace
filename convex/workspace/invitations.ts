@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+﻿import { v } from "convex/values";
 import { query, mutation, internalMutation } from "../_generated/server";
 import { ensureUser, requireActiveMembership, hasPermission, canPermission } from "../auth/helpers";
 import { PERMS } from "./permissions";
@@ -759,7 +759,6 @@ export const cleanupExpiredInvitations = mutation({
 export const cleanupExpiredInvitationsInternal = internalMutation({
   args: {},
   handler: async (ctx) => {
-    console.log("[cleanupExpiredInvitationsInternal] Starting cleanup...");
 
     const now = Date.now();
     const invitations = await ctx.db
@@ -774,8 +773,6 @@ export const cleanupExpiredInvitationsInternal = internalMutation({
         cleanedCount++;
       }
     }
-
-    console.log(`[cleanupExpiredInvitationsInternal] Cleaned up ${cleanedCount} expired invitations`);
     return { cleanedCount };
   },
 });

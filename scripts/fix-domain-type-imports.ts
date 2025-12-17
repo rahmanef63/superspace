@@ -66,7 +66,7 @@ const typeImportFixes: TypeImportFix[] = [
 ]
 
 async function fixDomainTypeImports() {
-  console.log('🔧 Fixing cross-domain type imports...\n')
+
 
   let totalReplacements = 0
   let filesModified = 0
@@ -78,7 +78,7 @@ async function fixDomainTypeImports() {
         ignore: ['**/*.test.ts', '**/*.test.tsx']
       })
 
-      console.log(`📁 Checking ${domain}/ (${files.length} files)`)
+
 
       for (const file of files) {
         try {
@@ -90,7 +90,7 @@ async function fixDomainTypeImports() {
             writeFileSync(file, content, 'utf-8')
             filesModified++
             totalReplacements += matches.length
-            console.log(`  ✅ ${file} (${matches.length} replacements)`)
+
           }
         } catch (error) {
           console.error(`  ❌ Error processing ${file}:`, error)
@@ -99,12 +99,7 @@ async function fixDomainTypeImports() {
     }
   }
 
-  console.log('\n' + '='.repeat(60))
-  console.log(`\n✨ Type Import Fix Complete!\n`)
-  console.log(`📊 Statistics:`)
-  console.log(`   - Files modified: ${filesModified}`)
-  console.log(`   - Total replacements: ${totalReplacements}`)
-  console.log('')
+
 }
 
 fixDomainTypeImports().catch(error => {

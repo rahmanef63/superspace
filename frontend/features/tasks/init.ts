@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tasks Feature Initialization
  * Registers tasks-related settings with the settings registry
  */
@@ -49,6 +49,5 @@ registerFeatureSettings("tasks", () => [
 registerTasksAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Tasks feature settings registered")
 }
 

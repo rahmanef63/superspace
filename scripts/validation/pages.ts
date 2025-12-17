@@ -80,47 +80,36 @@ function validateFeaturePages(): ValidationResult[] {
 }
 
 function generateReport(results: ValidationResult[]) {
-  console.log("\n Feature Pages Validation Report")
-  console.log("=" .repeat(80))
+
 
   const missing = results.filter(r => !r.exists)
   const existing = results.filter(r => r.exists)
   const missingOptional = missing.filter(r => r.featureType === "optional")
   const missingDefault = missing.filter(r => r.featureType === "default" || r.featureType === "system")
 
-  console.log(`\n✅ Existing Pages: ${existing.length}/${results.length}`)
-  console.log(`❌ Missing Pages: ${missing.length}/${results.length}`)
+
 
   if (missingDefault.length > 0) {
-    console.log("\n⚠️  CRITICAL: Missing Default/System Feature Pages:")
-    console.log("-".repeat(80))
+
     missingDefault.forEach(r => {
-      console.log(`  ❌ ${r.name} (${r.slug})`)
-      console.log(`     Component: ${r.component}`)
-      console.log(`     Expected: ${r.expectedPath}`)
-      console.log()
+
     })
   }
 
   if (missingOptional.length > 0) {
-    console.log("\n⚠️  Missing Optional Feature Pages:")
-    console.log("-".repeat(80))
+
     missingOptional.forEach(r => {
       const status = r.isReady ? "❌ READY but missing" : "⚠️  In development"
-      console.log(`  ${status}: ${r.name} (${r.slug})`)
-      console.log(`     Component: ${r.component}`)
-      console.log(`     Expected: ${r.expectedPath}`)
-      console.log()
+
     })
   }
 
   if (missing.length === 0) {
-    console.log("\n All feature pages exist!")
+
   }
 
   // Group by feature type
-  console.log("\n📁 Pages by Feature Type:")
-  console.log("-".repeat(80))
+
   const byType = results.reduce((acc, r) => {
     if (!acc[r.featureType]) acc[r.featureType] = { total: 0, existing: 0 }
     acc[r.featureType].total++
@@ -130,31 +119,26 @@ function generateReport(results: ValidationResult[]) {
 
   Object.entries(byType).forEach(([type, stats]) => {
     const emoji = stats.existing === stats.total ? "✅" : "⚠️ "
-    console.log(`  ${emoji} ${type}: ${stats.existing}/${stats.total}`)
+
   })
 
   return missing.length === 0
 }
 
 function main() {
-  console.log("🔍 Validating feature pages...\n")
+
 
   const results = validateFeaturePages()
   const allValid = generateReport(results)
 
-  console.log("\n" + "=".repeat(80))
+
 
   if (!allValid) {
-    console.log("\n❌ Validation failed: Some feature pages are missing")
-    console.log("\nTo fix:")
-    console.log("  1. Create missing page files at the expected paths")
-    console.log("  2. Or update features.config.ts to mark features as not ready")
-    console.log("  3. Run 'pnpm run generate:manifest' to update manifest")
-    console.log("  4. Run this validation again\n")
+
     process.exit(1)
   }
 
-  console.log("\n✅ All feature pages validated successfully!\n")
+
 }
 
 main()

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Platform Admin Feature Initialization
  * Registers platform admin settings with the shared settings registry
  */
@@ -21,5 +21,4 @@ registerFeatureSettings("platform-admin", () => [
 registerPlatformAdminAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Platform Admin feature settings registered")
 }

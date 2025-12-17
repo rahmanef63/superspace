@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Automation Engine Implementation
  * Provides workflow automation functionality across all ERP modules
  */
@@ -532,7 +532,6 @@ export const processAutomationRule = action({
     entityId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    console.log(`Processing automation rule: ${args.ruleId}`);
 
     // In a real implementation, this would:
     // 1. Get the rule and check conditions

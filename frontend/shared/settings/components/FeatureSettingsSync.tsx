@@ -76,8 +76,7 @@ export function FeatureSettingsSync({
     // Debug: log available builders and menu items
     if (process.env.NODE_ENV === "development") {
       const registeredFeatures = getAllRegisteredFeatures()
-      console.log("[FeatureSettingsSync] Registered feature builders:", registeredFeatures)
-      console.log("[FeatureSettingsSync] Menu items:", featureMenuItems.map(m => m.slug))
+
     }
 
     const registeredThisRun = new Set<string>()
@@ -90,7 +89,7 @@ export function FeatureSettingsSync({
       const categories = builder ? builder({ menuItem }) : []
 
       if (process.env.NODE_ENV === "development") {
-        console.log(`[FeatureSettingsSync] ${menuItem.slug}: builder=${!!registryBuilder}, categories=${categories.length}`)
+
       }
 
       if (categories.length > 0) {

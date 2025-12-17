@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Document Agent
  * 
  * A sub-agent specialized in document management.
@@ -63,7 +63,6 @@ Lorem ipsum dolor sit amet, **consectetur adipiscing elit**. Sed do eiusmod temp
 function greet(name) {
   return \`Hello, \${name}!\`;
 }
-console.log(greet("World"));
 \`\`\`
 
 ## Important Note

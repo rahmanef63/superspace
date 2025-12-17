@@ -438,22 +438,59 @@ function SignedInNavUserContent({
 }
 
 function SignedOutNavUserContent() {
+  const { theme, setTheme } = useTheme()
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor
+
   return (
-    <SidebarMenuItem>
-      <SignInButton mode="modal">
-        <SidebarMenuButton size="lg" className="justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg border">
-              <User className="size-4" />
+    <>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg border">
+                  <ThemeIcon className="size-4" />
+                </div>
+                <div className="grid text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Appearance</span>
+                  <span className="truncate text-xs text-muted-foreground capitalize">{theme} mode</span>
+                </div>
+              </div>
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-48">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Color Mode</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <Sun className="mr-2 h-4 w-4" />
+              Light
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <Moon className="mr-2 h-4 w-4" />
+              Dark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              <Monitor className="mr-2 h-4 w-4" />
+              System
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+      <SidebarMenuItem>
+        <SignInButton mode="modal">
+          <SidebarMenuButton size="lg" className="justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg border">
+                <User className="size-4" />
+              </div>
+              <div className="grid text-left text-sm leading-tight">
+                <span className="truncate font-semibold">Sign in</span>
+                <span className="truncate text-xs text-muted-foreground">Access your workspace</span>
+              </div>
             </div>
-            <div className="grid text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Sign in</span>
-              <span className="truncate text-xs text-muted-foreground">Access your workspace</span>
-            </div>
-          </div>
-        </SidebarMenuButton>
-      </SignInButton>
-    </SidebarMenuItem>
+          </SidebarMenuButton>
+        </SignInButton>
+      </SidebarMenuItem>
+    </>
   )
 }
 

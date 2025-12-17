@@ -1,7 +1,7 @@
 
 import { z } from 'zod'
 
-console.log('Testing Zod schema with z.any()...');
+
 
 try {
     const S = z.object({
@@ -13,7 +13,7 @@ try {
     }
 
     S.parse(data)
-    console.log('Schema valid')
+
 } catch (e) {
     console.error('Schema error:', e)
 }

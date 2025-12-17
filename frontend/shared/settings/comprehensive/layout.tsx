@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { ChevronLeft, ChevronDown, X } from "lucide-react"
 import {
     User,
     Shield,
@@ -26,6 +28,13 @@ import {
     Building2,
     Puzzle
 } from "lucide-react"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 // ============================================================
 // Types
@@ -139,6 +148,89 @@ interface TwoTabSettingsLayoutProps {
 }
 
 // ============================================================
+// Mobile Menu Sheet Component
+// ============================================================
+function MobileMenuSheet({
+    currentMenu,
+    activeId,
+    onNavigate,
+    activeLabel,
+}: {
+    currentMenu: SettingsMenuSection[]
+    activeId: SettingsId
+    onNavigate: (id: SettingsId) => void
+    activeLabel: string
+}) {
+    const [open, setOpen] = React.useState(false)
+
+    const handleNavigate = (id: SettingsId) => {
+        onNavigate(id)
+        setOpen(false)
+    }
+
+    return (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button
+                    variant="outline"
+                    className="w-full justify-between h-12 px-4"
+                >
+                    <div className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        <span className="font-medium">{activeLabel}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[70vh]">
+                <SheetHeader className="pb-4">
+                    <SheetTitle>Select Setting</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-full pb-8">
+                    <div className="space-y-4">
+                        {currentMenu.map((section) => (
+                            <div key={section.label}>
+                                <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    {section.label}
+                                </h3>
+                                <div className="space-y-1">
+                                    {section.items.map((item) => {
+                                        const Icon = item.icon
+                                        const isActive = activeId === item.id
+                                        return (
+                                            <Button
+                                                key={item.id}
+                                                variant={isActive ? "secondary" : "ghost"}
+                                                size="lg"
+                                                className={cn(
+                                                    "w-full justify-start h-12 px-3",
+                                                    isActive && "bg-secondary font-medium"
+                                                )}
+                                                onClick={() => handleNavigate(item.id)}
+                                            >
+                                                {Icon && <Icon className="mr-3 h-5 w-5 text-muted-foreground" />}
+                                                <div className="flex flex-col items-start">
+                                                    <span>{item.label}</span>
+                                                    {item.description && (
+                                                        <span className="text-xs text-muted-foreground font-normal">
+                                                            {item.description}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </Button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
+// ============================================================
 // Two-Tab Settings Layout Component
 // ============================================================
 export function TwoTabSettingsLayout({
@@ -151,12 +243,84 @@ export function TwoTabSettingsLayout({
     className,
     featuresMenu
 }: TwoTabSettingsLayoutProps) {
+    const isMobile = useIsMobile()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     const currentMenu = activeTab === "workspace"
         ? WORKSPACE_SETTINGS_MENU
         : activeTab === "features"
             ? (featuresMenu || FEATURES_SETTINGS_MENU)
             : GLOBAL_SETTINGS_MENU
 
+    // Find active item label for mobile header
+    const activeItem = currentMenu
+        .flatMap(section => section.items)
+        .find(item => item.id === activeId)
+    const activeLabel = activeItem?.label || "Settings"
+
+    // Show loading state while checking for mobile
+    if (!mounted) {
+        return (
+            <div className={cn("flex h-full w-full bg-background items-center justify-center", className)}>
+                <div className="animate-pulse text-muted-foreground">Loading settings...</div>
+            </div>
+        )
+    }
+
+    // Mobile Layout
+    if (isMobile) {
+        return (
+            <div className={cn("flex flex-col h-full w-full bg-background", className)}>
+                {/* Mobile Header with Tabs */}
+                <div className="flex-shrink-0 border-b bg-background">
+                    <div className="p-3 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-bold">Settings</h2>
+                        </div>
+
+                        {/* Tab Switcher */}
+                        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as SettingsTabType)} className="w-full">
+                            <TabsList className="grid w-full grid-cols-3 h-10">
+                                <TabsTrigger value="workspace" className="text-xs px-2 gap-1">
+                                    <Building2 className="h-4 w-4" />
+                                    <span className="hidden xs:inline">Workspace</span>
+                                </TabsTrigger>
+                                <TabsTrigger value="features" className="text-xs px-2 gap-1">
+                                    <Puzzle className="h-4 w-4" />
+                                    <span className="hidden xs:inline">Features</span>
+                                </TabsTrigger>
+                                <TabsTrigger value="global" className="text-xs px-2 gap-1">
+                                    <Globe className="h-4 w-4" />
+                                    <span className="hidden xs:inline">Global</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {/* Menu Selector Sheet */}
+                        <MobileMenuSheet
+                            currentMenu={currentMenu}
+                            activeId={activeId}
+                            onNavigate={onNavigate}
+                            activeLabel={activeLabel}
+                        />
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <ScrollArea className="flex-1">
+                    <div className="p-4">
+                        {children}
+                    </div>
+                </ScrollArea>
+            </div>
+        )
+    }
+
+    // Desktop Layout
     return (
         <div className={cn("flex h-full w-full bg-background", className)}>
             {/* Sidebar */}
@@ -251,3 +415,4 @@ export function TwoTabSettingsLayout({
 export const COMPREHENSIVE_SETTINGS_MENU = GLOBAL_SETTINGS_MENU
 export type { TwoTabSettingsLayoutProps as ComprehensiveSettingsLayoutProps }
 export { TwoTabSettingsLayout as ComprehensiveSettingsLayout }
+

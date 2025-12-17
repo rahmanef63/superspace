@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DatabaseViewRenderer Component
  * Renders the appropriate view based on the active view type
  */
@@ -119,7 +119,6 @@ export function DatabaseViewRenderer({
             }
           }}
           onRecordClick={(row) => {
-            console.log("Record clicked", row);
           }}
           onAddRecord={(date, propertyKey) => {
             if (propertyKey) {

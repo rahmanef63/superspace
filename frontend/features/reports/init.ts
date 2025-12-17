@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Reports Feature Initialization
  * Registers reports-related settings with the settings registry
  */
@@ -49,6 +49,5 @@ registerFeatureSettings("reports", () => [
 registerReportsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  console.log("✅ Reports feature settings registered")
 }
 

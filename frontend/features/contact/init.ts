@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Contacts Feature Initialization
  * Registers contacts settings with the shared settings registry
  *
@@ -27,5 +27,4 @@ registerFeatureSettings("contacts", () => [
 registerContactsAgent()
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("✅ Contacts feature settings registered")
 }

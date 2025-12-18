@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play, Pause, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -151,10 +152,12 @@ export function StatusDetailView({ statusId }: StatusDetailViewProps) {
       {/* Media Content */}
       <div className="flex-1 flex items-center justify-center relative">
         {currentMedia.type === 'photo' ? (
-          <img
+          <Image
             src={currentMedia.url}
             alt="Status"
-            className="max-w-full max-h-full object-contain"
+            fill
+            className="object-contain"
+            sizes="100vw"
           />
         ) : (
           <div className="relative">

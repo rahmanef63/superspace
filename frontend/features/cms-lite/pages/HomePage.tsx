@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Chatbot from "../components/Chatbot";
@@ -96,7 +97,13 @@ export default function HomePage() {
         <section className="bg-gradient-to-b from-muted/50 to-background py-20 md:py-32 relative overflow-hidden">
           {heroContent?.image && (
             <div className="absolute inset-0 opacity-20">
-              <img src={heroContent.image} alt="" className="w-full h-full object-cover" />
+              <Image
+                src={heroContent.image}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
             </div>
           )}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -147,7 +154,14 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 {aboutContent.image && (
                   <div className="rounded-lg overflow-hidden">
-                    <img src={aboutContent.image} alt={aboutContent.title} className="w-full h-full object-cover" />
+                    <Image
+                      src={aboutContent.image}
+                      alt={aboutContent.title}
+                      width={800}
+                      height={600}
+                      className="w-full h-auto object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                   </div>
                 )}
                 <div>
@@ -201,11 +215,13 @@ export default function HomePage() {
                   className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-background"
                 >
                   {product.coverImage && (
-                    <div className="aspect-video bg-muted overflow-hidden">
-                      <img
+                    <div className="relative aspect-video bg-muted overflow-hidden">
+                      <Image
                         src={product.coverImage}
                         alt={locale === "id" ? product.titleId : locale === "en" ? product.titleEn : product.titleAr}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </div>
                   )}

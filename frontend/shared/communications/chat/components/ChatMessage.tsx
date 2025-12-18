@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import Image from "next/image";
 import type { Message, UserMeta } from "../types/message";
 import type { RoomMeta } from "../types/chat";
 import type { ChatConfig } from "../types/config";
@@ -81,7 +82,14 @@ export function ChatMessage({
       {!isGrouped && (
         <div className="chat-message-avatar">
           {message.author.avatarUrl ? (
-            <img src={message.author.avatarUrl} alt={formatUserName(message.author)} />
+            <Image
+              src={message.author.avatarUrl}
+              alt={formatUserName(message.author)}
+              width={32}
+              height={32}
+              className="h-full w-full rounded-full object-cover"
+              sizes="32px"
+            />
           ) : (
             <div className="chat-message-avatar-placeholder">
               {formatUserName(message.author)[0]}
@@ -135,7 +143,14 @@ export function ChatMessage({
                     {message.content.attachments.map((att) => (
                       <div key={att.id} className="chat-message-attachment">
                         {att.kind === "image" && config.imagePreview ? (
-                          <img src={att.url} alt={att.name || "Image"} />
+                          <Image
+                            src={att.url}
+                            alt={att.name || "Image"}
+                            width={600}
+                            height={400}
+                            className="max-w-full h-auto"
+                            sizes="100vw"
+                          />
                         ) : (
                           <a href={att.url} target="_blank" rel="noopener noreferrer">
                             {att.name || "File"}

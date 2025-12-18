@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface ImageProps {
@@ -19,16 +20,21 @@ export const ImageWidget: React.FC<ImageProps> = ({
   rounded = true,
   className = "w-full h-auto",
   objectFit = "cover"
-}) => (
-  <img 
-    src={src} 
-    alt={alt} 
-    width={Number(width) || undefined} 
-    height={Number(height) || undefined} 
-    className={cn(
-      className, 
-      rounded && "rounded-2xl",
-      `object-${objectFit}`
-    )} 
-  />
-);
+}) => {
+  const numericWidth = Number(width) || 640;
+  const numericHeight = Number(height) || 420;
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={numericWidth}
+      height={numericHeight}
+      className={cn(
+        className,
+        rounded && "rounded-2xl",
+        `object-${objectFit}`
+      )}
+    />
+  );
+};

@@ -2,7 +2,7 @@
  * ERP Inventory Module Configuration
  */
 
-import { defineFeature } from "@/lib/features/defineFeature"
+import { defineFeature } from "@/frontend/shared/lib/features/defineFeature"
 
 export default defineFeature({
   id: 'inventory',

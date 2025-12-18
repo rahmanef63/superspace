@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import Image from "next/image";
 import type { UserMeta } from "../types/message";
 import { formatUserName } from "../util/formatMessage";
 
@@ -37,7 +38,14 @@ export function ReadReceipts({
             title={`Read by ${formatUserName(user)}`}
           >
             {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={formatUserName(user)} />
+              <Image
+                src={user.avatarUrl}
+                alt={formatUserName(user)}
+                width={16}
+                height={16}
+                className="h-full w-full rounded-full object-cover"
+                sizes="16px"
+              />
             ) : (
               <span>{formatUserName(user)[0]}</span>
             )}

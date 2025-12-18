@@ -145,6 +145,15 @@ export async function ensureUser(ctx: any): Promise<Id<"users">> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Not authenticated");
 
+  const clerkId = identity.subject;
+
+  // Try to find existing user by clerkId first (most reliable)
+  const byClerkId = await ctx.db
+    .query("users")
+    .withIndex("by_clerk_id", (q: any) => q.eq("clerkId", clerkId))
+    .first();
+  if (byClerkId) return byClerkId._id as Id<"users">;
+
   // Try to find existing user by linked account, email, or phone
   try {
     const account = await ctx.db
@@ -155,7 +164,13 @@ export async function ensureUser(ctx: any): Promise<Id<"users">> {
       .unique();
     if (account) {
       const userDoc = await ctx.db.get(account.userId);
-      if (userDoc) return userDoc._id as Id<"users">;
+      if (userDoc) {
+        // Update clerkId if missing
+        if (!userDoc.clerkId) {
+          await ctx.db.patch(userDoc._id, { clerkId });
+        }
+        return userDoc._id as Id<"users">;
+      }
     }
   } catch (_err) {}
 
@@ -164,7 +179,13 @@ export async function ensureUser(ctx: any): Promise<Id<"users">> {
       .query("users")
       .withIndex("by_email", (q: any) => q.eq("email", identity.email!))
       .first();
-    if (byEmail) return byEmail._id as Id<"users">;
+    if (byEmail) {
+      // Update clerkId if missing
+      if (!byEmail.clerkId) {
+        await ctx.db.patch(byEmail._id, { clerkId });
+      }
+      return byEmail._id as Id<"users">;
+    }
   }
   const phone = (identity as any).phone as string | undefined;
   if (phone) {
@@ -172,15 +193,22 @@ export async function ensureUser(ctx: any): Promise<Id<"users">> {
       .query("users")
       .withIndex("phone", (q: any) => q.eq("phone", phone))
       .first();
-    if (byPhone) return byPhone._id as Id<"users">;
+    if (byPhone) {
+      // Update clerkId if missing
+      if (!byPhone.clerkId) {
+        await ctx.db.patch(byPhone._id, { clerkId });
+      }
+      return byPhone._id as Id<"users">;
+    }
   }
 
-  // Create a minimal users record
+  // Create a minimal users record with clerkId
   const newUserId = (await ctx.db.insert("users", {
     name: identity.name ?? undefined,
     image: ((identity as any).pictureUrl ?? (identity as any).imageUrl) ?? undefined,
     email: identity.email ?? undefined,
     phone: (identity as any).phone ?? undefined,
+    clerkId: clerkId,
     isAnonymous: false,
   } as any)) as Id<"users">;
 

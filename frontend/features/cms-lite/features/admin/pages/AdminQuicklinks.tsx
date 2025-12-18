@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useBackend, useQuery, api } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Form";
@@ -191,7 +192,14 @@ export default function AdminQuicklinks() {
                 <tr key={quicklink.id} className="border-t hover:bg-muted/50">
                   <td className="p-4">
                     {quicklink.icon && (
-                      <img src={quicklink.icon} alt="" className="w-8 h-8 object-cover rounded" />
+                      <Image
+                        src={quicklink.icon}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 object-cover rounded"
+                        sizes="32px"
+                      />
                     )}
                   </td>
                   <td className="p-4">

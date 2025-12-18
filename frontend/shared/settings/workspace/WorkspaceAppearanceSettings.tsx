@@ -16,6 +16,7 @@ import { IconPicker } from "@/frontend/shared/ui/icons/components/icon-picker"
  */
 
 import React, { useState, useMemo } from "react"
+import Image from "next/image"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
@@ -306,9 +307,11 @@ export function WorkspaceAppearanceSettings({ workspaceId }: WorkspaceAppearance
                     {/* Current Logo Preview */}
                     {logoUrl && (
                         <div className="flex items-center gap-4">
-                            <img
+                            <Image
                                 src={logoUrl}
                                 alt="Current logo"
+                                width={64}
+                                height={64}
                                 className="size-16 rounded-lg object-cover border"
                             />
                             <Button
@@ -368,13 +371,15 @@ export function WorkspaceAppearanceSettings({ workspaceId }: WorkspaceAppearance
                                     <button
                                         key={img._id}
                                         onClick={() => img.storageId && handleSelectFromLibrary(img.storageId)}
-                                        className="aspect-square rounded-lg border-2 overflow-hidden hover:border-primary transition-colors"
+                                        className="relative aspect-square rounded-lg border-2 overflow-hidden hover:border-primary transition-colors"
                                     >
                                         {img.fileUrl ? (
-                                            <img
+                                            <Image
                                                 src={img.fileUrl}
                                                 alt={img.name}
-                                                className="w-full h-full object-cover"
+                                                fill
+                                                className="object-cover"
+                                                sizes="(max-width: 768px) 20vw, 64px"
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-muted flex items-center justify-center">

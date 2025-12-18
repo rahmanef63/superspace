@@ -302,3 +302,12 @@ export const migrateAllBrokenWorkspaces = mutation({
   }),
   handler: async (ctx) => {
     // This is a dangerous operation - require manual confirmation
+    console.log("migrateAllBrokenWorkspaces called - implementation pending manual confirmation logic")
+    return {
+      total: 0,
+      fixed: 0,
+      failed: 0,
+      details: []
+    }
+  },
+})

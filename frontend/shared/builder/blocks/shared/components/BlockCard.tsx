@@ -12,25 +12,32 @@ import { EmptyState } from "./EmptyState"
 import { ListSkeleton } from "./LoadingSkeleton"
 import type { BlockHeaderProps, EmptyStateProps } from "../types"
 
+
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface BlockCardProps {
-    /** Header configuration */
-    header?: BlockHeaderProps
-    /** Show loading skeleton */
+    header?: {
+        title?: string
+        description?: string
+        action?: React.ReactNode
+        icon?: React.ElementType
+    }
+    footer?: React.ReactNode
+    children?: React.ReactNode
+    className?: string
     loading?: boolean
-    /** Empty state configuration */
-    emptyState?: EmptyStateProps
-    /** Is the content empty */
     isEmpty?: boolean
     /** Content max height for scroll */
     maxHeight?: string
-    /** Additional className */
-    className?: string
-    /** Children content */
-    children?: React.ReactNode
+    emptyState?: {
+        title: string
+        description: string
+        icon?: React.ElementType
+        action?: React.ReactNode
+    }
+    noPadding?: boolean
 }
 
 // ============================================================================
@@ -39,50 +46,55 @@ export interface BlockCardProps {
 
 export function BlockCard({
     header,
-    loading = false,
-    emptyState,
-    isEmpty = false,
-    maxHeight,
-    className,
+    footer,
     children,
+    className,
+    loading,
+    isEmpty,
+    emptyState,
+    maxHeight,
+    noPadding,
 }: BlockCardProps) {
-    const HeaderIcon = header?.icon
-
     return (
-        <Card className={cn("flex flex-col", className)}>
-            {header && (
-                <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                {HeaderIcon && <HeaderIcon className="h-5 w-5" />}
+        <Card className={cn("flex flex-col h-full", className)}>
+            {(header?.title || header?.icon) && (
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="flex flex-col space-y-1.5">
+                        {header.title && (
+                            <CardTitle className="text-base font-semibold flex items-center gap-2">
+                                {header.icon && <header.icon className="h-4 w-4 text-muted-foreground" />}
                                 {header.title}
                             </CardTitle>
-                            {header.description && (
-                                <CardDescription>{header.description}</CardDescription>
-                            )}
-                        </div>
-                        {header.action}
+                        )}
+                        {header.description && (
+                            <CardDescription>{header.description}</CardDescription>
+                        )}
                     </div>
+                    {header.action && <div>{header.action}</div>}
                 </CardHeader>
             )}
-
-            <CardContent className={cn("p-0", !header && "pt-4")}>
+            <CardContent className={cn("flex-1 min-h-0", noPadding ? "p-0" : "")}>
                 {loading ? (
-                    <div className="px-4 pb-4">
+                    <div className="p-4">
                         <ListSkeleton rows={3} />
                     </div>
                 ) : isEmpty && emptyState ? (
-                    <EmptyState {...emptyState} className="px-4 pb-4" />
+                    <EmptyState
+                        title={emptyState.title}
+                        description={emptyState.description}
+                        icon={emptyState.icon as any}
+                        action={emptyState.action}
+                        className="p-4"
+                    />
                 ) : (
                     <div
-                        className="px-4 pb-4"
                         style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
                     >
                         {children}
                     </div>
                 )}
             </CardContent>
+            {footer && <div className="border-t p-4">{footer}</div>}
         </Card>
     )
 }

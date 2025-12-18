@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,12 +86,14 @@ export function AssetGallery({ onSelectAsset, limit }: AssetGalleryProps) {
               onClick={() => setSelectedAsset(asset)}
             >
               <CardContent className="p-0">
-                <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden">
                   {isImage ? (
-                    <img
+                    <Image
                       src={asset.url}
                       alt={asset.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     />
                   ) : (
                     <div className="text-4xl text-muted-foreground">
@@ -121,10 +124,13 @@ export function AssetGallery({ onSelectAsset, limit }: AssetGalleryProps) {
             <div className="space-y-4">
               {selectedAsset.mimeType.startsWith('image/') && (
                 <div className="rounded-lg overflow-hidden border">
-                  <img
+                  <Image
                     src={selectedAsset.url}
                     alt={selectedAsset.name}
+                    width={1200}
+                    height={800}
                     className="w-full h-auto"
+                    sizes="(max-width: 768px) 100vw, 672px"
                   />
                 </div>
               )}

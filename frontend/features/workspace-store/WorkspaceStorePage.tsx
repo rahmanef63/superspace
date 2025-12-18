@@ -281,7 +281,8 @@ export function WorkspaceStorePage() {
       <ThreeColumnLayoutAdvanced
         left={
           <WorkspaceLeftPanel
-            workspaces={filteredWorkspaces}
+            workspaces={workspacesArray}
+            filteredWorkspaces={filteredWorkspaces}
             selectedId={storeState.selectedId}
             onSelect={(ws) => storeState.setSelectedId(ws.id)}
             onEdit={handleEdit}
@@ -294,7 +295,7 @@ export function WorkspaceStorePage() {
             onUnlink={handleUnlink}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
-            search={workspaceSearch}
+            searchValue={workspaceSearch}
             onSearchChange={setWorkspaceSearch}
             typeOptions={WORKSPACE_TYPE_OPTIONS}
             filters={filters}

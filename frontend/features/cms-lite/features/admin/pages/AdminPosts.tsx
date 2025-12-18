@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useBackend, useQuery, api } from "../../../shared/hooks/useBackend";
+import Image from "next/image";
 import { Button } from "../../../shared/components/Button";
 import { EmptyState } from "../../../shared/components/Loading";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -396,10 +397,13 @@ export default function AdminPosts() {
               render: (post: any) => (
                 <div className="flex items-center gap-3">
                   {post.coverImage && (
-                    <img
+                    <Image
                       src={post.coverImage}
                       alt={post.title}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded object-cover"
+                      sizes="48px"
                     />
                   )}
                   <div>

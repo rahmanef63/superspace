@@ -35,6 +35,7 @@ import type * as features_analytics_agents_mutations from "../features/analytics
 import type * as features_analytics_agents_queries from "../features/analytics/agents/queries.js";
 import type * as features_analytics_mutations from "../features/analytics/mutations.js";
 import type * as features_analytics_queries from "../features/analytics/queries.js";
+import type * as features_analytics_types from "../features/analytics/types.js";
 import type * as features_approvals_agents_mutations from "../features/approvals/agents/mutations.js";
 import type * as features_approvals_agents_queries from "../features/approvals/agents/queries.js";
 import type * as features_approvals_mutations from "../features/approvals/mutations.js";
@@ -378,6 +379,7 @@ declare const fullApi: ApiFromModules<{
   "features/analytics/agents/queries": typeof features_analytics_agents_queries;
   "features/analytics/mutations": typeof features_analytics_mutations;
   "features/analytics/queries": typeof features_analytics_queries;
+  "features/analytics/types": typeof features_analytics_types;
   "features/approvals/agents/mutations": typeof features_approvals_agents_mutations;
   "features/approvals/agents/queries": typeof features_approvals_agents_queries;
   "features/approvals/mutations": typeof features_approvals_mutations;

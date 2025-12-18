@@ -2,7 +2,7 @@
  * Automation Feature Configuration
  */
 
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   id: 'automation',

@@ -15,7 +15,7 @@
 
 import { existsSync } from "fs"
 import { join } from "path"
-import { getAllFeatures, getFeatureMeta, validateRegistry } from "../../lib/features/registry.server"
+import { getAllFeatures, getFeatureMeta, validateRegistry } from "../../frontend/shared/lib/features/registry.server"
 
 const FEATURES_REGISTRY = getAllFeatures()
 
@@ -227,9 +227,9 @@ function validateFeatureFolders() {
   const toConvexSlug = (slug: string) =>
     slug.includes("-")
       ? slug
-          .split("-")
-          .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
-          .join("")
+        .split("-")
+        .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+        .join("")
       : slug
 
   const toConvexSlugCandidates = (slug: string) => {

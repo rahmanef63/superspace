@@ -15,6 +15,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Check, Copy, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -447,10 +448,13 @@ function BlockRenderer({ block, onMentionClick }: BlockRendererProps) {
     case 'image':
       return (
         <figure className="my-2">
-          <img 
-            src={block.src} 
-            alt={block.alt || 'Image'} 
-            className="max-w-full rounded-lg border"
+          <Image
+            src={block.src}
+            alt={block.alt || 'Image'}
+            width={800}
+            height={600}
+            className="max-w-full h-auto rounded-lg border"
+            sizes="100vw"
           />
           {block.alt && (
             <figcaption className="text-xs text-muted-foreground mt-1 text-center">

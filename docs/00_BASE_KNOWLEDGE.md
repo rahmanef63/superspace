@@ -199,7 +199,7 @@ await logAuditEvent(ctx, {
 
 ```typescript
 // frontend/features/{slug}/config.ts
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   id: 'analytics',
@@ -486,7 +486,7 @@ import AnalyticsPage from '@/features/analytics/page'
 **✅ REQUIRED:**
 ```typescript
 // DO use auto-discovery
-import { FEATURES } from '@/lib/features/registry'
+import { FEATURES } from '@/frontend/shared/lib/features/registry'
 
 // DO use dynamic resolution
 const feature = FEATURES.find(f => f.id === slug)
@@ -644,7 +644,7 @@ import { Id } from '@/convex/_generated/dataModel'
 ### Feature Config Template
 
 ```typescript
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   id: '{slug}',

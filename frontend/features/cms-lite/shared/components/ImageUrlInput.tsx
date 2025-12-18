@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { Input } from "./Form";
 import { Button } from "./Button";
 import { Upload, Loader } from "lucide-react";
@@ -88,10 +89,13 @@ export function ImageUrlInput({
       </div>
       {value && (
         <div className="mt-2">
-          <img
+          <Image
             src={value}
             alt="Preview"
+            width={80}
+            height={80}
             className="h-20 w-20 object-cover rounded border"
+            sizes="80px"
           />
         </div>
       )}

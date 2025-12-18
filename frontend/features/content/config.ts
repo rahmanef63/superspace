@@ -1,4 +1,4 @@
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 /**
  * Content Feature Configuration
@@ -53,5 +53,5 @@ export default defineFeature({
   tags: [
     "content",
     "creativity"
-],
+  ],
 })

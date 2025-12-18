@@ -18,7 +18,7 @@ interface BundleSelectorProps {
 }
 
 export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: BundleSelectorProps) {
-  const [hoveredBundle, setHoveredBundle] = useState<string | null>(null)
+
 
   // Use the new hook that fetches from database with static fallback
   const { bundles, isLoading } = useBundlesForWorkspaceType(workspaceType)
@@ -57,8 +57,6 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
               key={bundle.id}
               type="button"
               onClick={() => onSelect(bundle.id)}
-              onMouseEnter={() => setHoveredBundle(bundle.id)}
-              onMouseLeave={() => setHoveredBundle(null)}
               className={cn(
                 "relative flex flex-col items-start p-3 rounded-lg border-2 transition-all duration-200 text-left",
                 isSelected
@@ -129,18 +127,16 @@ export function BundleSelector({ workspaceType, selectedBundleId, onSelect }: Bu
               </div>
 
               {/* Tags */}
-              {(hoveredBundle === bundle.id || isSelected) && (
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {bundle.tags.slice(0, 4).map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="inline-flex px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-1 mt-3">
+                {bundle.tags.slice(0, 4).map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="inline-flex px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </button>
           )
         })}

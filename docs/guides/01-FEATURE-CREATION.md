@@ -85,7 +85,7 @@ Available Options:
 ### 1. config.ts (SSOT)
 
 ```typescript
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 /**
  * {Feature Name} Feature Configuration

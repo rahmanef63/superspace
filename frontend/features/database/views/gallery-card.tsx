@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import Image from 'next/image';
 import { ImageIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +49,12 @@ export const GalleryCard: React.FC<GalleryCardProps> = ({
   onClick,
   className,
 }) => {
+  const [coverImageError, setCoverImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setCoverImageError(false);
+  }, [coverImage]);
+
   // Calculate image height based on card size
   const imageHeight = React.useMemo(() => {
     switch (cardSize) {
@@ -181,25 +188,17 @@ export const GalleryCard: React.FC<GalleryCardProps> = ({
     >
       {/* Cover Image */}
       <div className={cn(
-        'w-full bg-muted flex items-center justify-center overflow-hidden',
+        'relative w-full bg-muted flex items-center justify-center overflow-hidden',
         imageHeight
       )}>
-        {coverImage ? (
-          <img 
-            src={coverImage} 
+        {coverImage && !coverImageError ? (
+          <Image
+            src={coverImage}
             alt={title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback to placeholder on image error
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = `
-                <div class="flex items-center justify-center w-full h-full">
-                  <svg class="h-12 w-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              `;
-            }}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 33vw"
+            onError={() => setCoverImageError(true)}
           />
         ) : (
           <ImageIcon className="h-12 w-12 text-muted-foreground" />

@@ -5,7 +5,7 @@
  * System feature - visible only to users with MANAGE_MEMBERS permission.
  */
 
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   id: 'user-management',

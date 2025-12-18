@@ -13,7 +13,7 @@
  *   pnpm run list:features --status development
  */
 
-import { getAllFeatures, getFeaturesByType, getFeaturesByCategory } from "../../lib/features/registry.server"
+import { getAllFeatures, getFeaturesByType, getFeaturesByCategory } from "../../frontend/shared/lib/features/registry.server"
 
 interface ListOptions {
   type?: "default" | "optional" | "experimental" | "system"
@@ -89,7 +89,7 @@ function main() {
 
   // Pretty print
   console.log("\n📦 Feature Registry\n")
-  console.log("=" .repeat(80))
+  console.log("=".repeat(80))
   console.log(`Total Features: ${features.length}\n`)
 
   // Group by type

@@ -159,9 +159,10 @@ A variant defines:
 - **Params Schema**: Zod schema for type-safe parameters
 - **Render Function**: How to display the item
 
-```tsx
-import { z } from "zod";
-import { createVariant } from "@/frontend/shared/ui/layout/sidebar/secondary";
+ ```tsx
+ import { z } from "zod";
+ import Image from "next/image";
+ import { createVariant } from "@/frontend/shared/ui/layout/sidebar/secondary";
 
 const ChatParams = z.object({
   lastMessage: z.string(),
@@ -169,24 +170,24 @@ const ChatParams = z.object({
   unread: z.number().optional(),
 });
 
-const chatVariant = createVariant({
-  id: "chat",
-  title: "Chat Conversation",
-  paramsSchema: ChatParams,
-  render: ({ item, params, utils }) => (
-    <div className="flex items-center gap-3 px-3 py-2">
-      <img src={item.avatarUrl} className="size-10 rounded-full" />
-      <div className="flex-1">
-        <div className="font-medium">{item.label}</div>
-        <div className="text-xs text-muted-foreground truncate">
-          {params.lastMessage}
-        </div>
-      </div>
-      <time className="text-xs">{utils.formatTime(params.lastAt)}</time>
-    </div>
-  ),
-});
-```
+   const chatVariant = createVariant({
+     id: "chat",
+     title: "Chat Conversation",
+     paramsSchema: ChatParams,
+     render: ({ item, params, utils }) => (
+       <div className="flex items-center gap-3 px-3 py-2">
+      <Image src={item.avatarUrl} alt="" width={40} height={40} className="size-10 rounded-full" />
+         <div className="flex-1">
+           <div className="font-medium">{item.label}</div>
+           <div className="text-xs text-muted-foreground truncate">
+             {params.lastMessage}
+           </div>
+         </div>
+         <time className="text-xs">{utils.formatTime(params.lastAt)}</time>
+       </div>
+     ),
+   });
+ ```
 
 #### 2. **Registration**
 

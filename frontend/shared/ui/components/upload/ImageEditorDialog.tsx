@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import React, { useState, useCallback, useRef, useEffect } from "react"
+import NextImage from "next/image"
 import {
   RotateCw,
   RotateCcw,
@@ -373,6 +374,8 @@ export function ImageEditorDialog({
     return croppedImageSrc || imageSrc
   }, [croppedImageSrc, imageSrc])
 
+  const currentPreviewUrl = getCurrentPreviewUrl()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[98vw] w-[98vw] h-[95vh] max-h-[95vh] sm:max-w-[98vw] overflow-hidden flex flex-col p-4 md:p-6">
@@ -432,12 +435,17 @@ export function ImageEditorDialog({
               )
             ) : activeMode === "preview" ? (
               <ImageZoom>
-                <img
-                  src={getCurrentPreviewUrl()}
-                  alt="Preview"
-                  className="max-w-full max-h-full object-contain rounded"
-                  style={{ maxHeight: "calc(95vh - 200px)" }}
-                />
+                {currentPreviewUrl ? (
+                  <NextImage
+                    src={currentPreviewUrl}
+                    alt="Preview"
+                    width={1200}
+                    height={800}
+                    className="max-w-full max-h-full object-contain rounded"
+                    style={{ maxHeight: "calc(95vh - 200px)" }}
+                    sizes="100vw"
+                  />
+                ) : null}
               </ImageZoom>
             ) : (
               <canvas

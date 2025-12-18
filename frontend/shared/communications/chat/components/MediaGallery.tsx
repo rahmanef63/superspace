@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import Image from "next/image";
 import type { Message, Attachment } from "../types/message";
 
 export type MediaGalleryProps = {
@@ -82,7 +83,14 @@ export function MediaGallery({ messages, onAttachmentClick }: MediaGalleryProps)
               onClick={() => onAttachmentClick?.(att)}
             >
               {att.kind === "image" ? (
-                <img src={att.url} alt={att.name || "Image"} />
+                <Image
+                  src={att.url}
+                  alt={att.name || "Image"}
+                  width={320}
+                  height={320}
+                  className="h-full w-full object-cover"
+                  sizes="320px"
+                />
               ) : att.kind === "video" ? (
                 <video src={att.url} />
               ) : (

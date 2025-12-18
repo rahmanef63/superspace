@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { useWebsiteSettings, useWorkspaceId } from "../../../shared/hooks/useWebsiteSettings";
+import Image from "next/image";
 import { Button } from "../../../shared/components/Button";
 import { Input, Select } from "../../../shared/components/Form";
 import { Save, Globe, Search, BarChart, CheckCircle, XCircle, Copy, ExternalLink, AlertCircle } from "lucide-react";
@@ -670,13 +671,17 @@ export default function AdminWebsiteSettings() {
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-sm font-medium mb-2">Preview: Social Share</p>
                 <div className="bg-white dark:bg-gray-800 border rounded-lg overflow-hidden max-w-md">
-                  <img 
-                    src={form.ogImage} 
-                    alt="OG Preview" 
+                  <Image
+                    src={form.ogImage}
+                    alt="OG Preview"
+                    width={1200}
+                    height={630}
                     className="w-full h-40 object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/1200x630?text=Invalid+Image";
+                      e.currentTarget.src =
+                        "https://via.placeholder.com/1200x630?text=Invalid+Image";
                     }}
+                    sizes="448px"
                   />
                   <div className="p-3">
                     <p className="font-medium text-sm">{form.siteTitle || "Your Site Title"}</p>

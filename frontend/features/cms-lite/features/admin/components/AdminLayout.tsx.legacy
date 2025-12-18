@@ -15,6 +15,7 @@
 "use client";
 
 import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
+import NextImage from "next/image";
 import { LayoutDashboard, Package, FileText, Image, Settings, Layout, Star, Link as LinkIcon, Menu as MenuIcon, Bot, Briefcase, Users, LogOut } from "lucide-react";
 import { LoadingSpinner } from "../../../shared/components/Loading";
 import { Button } from "../../../shared/components/Button";
@@ -66,7 +67,14 @@ export default function AdminLayout() {
         <aside className="w-64 border-r min-h-screen p-6">
           <Link to="/" className="flex items-center gap-3 mb-8">
             {siteSettings?.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.brandName} className="h-8" />
+              <NextImage
+                src={siteSettings.logoUrl}
+                alt={siteSettings.brandName || "Logo"}
+                width={128}
+                height={32}
+                className="h-8 w-auto"
+                sizes="128px"
+              />
             ) : (
               <span className="text-2xl font-bold">{siteSettings?.brandName || "Admin"}</span>
             )}

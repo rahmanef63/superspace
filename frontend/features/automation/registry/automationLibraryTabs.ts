@@ -39,6 +39,12 @@ export const registerAutomationLibraryTabs = (registerFeatureTabs: (feature: str
       categories: ['AI', 'LLM'],
     },
     {
+      id: 'blocks',
+      label: 'Blocks',
+      feature: 'automation',
+      categories: ['Blocks'],
+    },
+    {
       id: 'error',
       label: 'Error',
       feature: 'automation',

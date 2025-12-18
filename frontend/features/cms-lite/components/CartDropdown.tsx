@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart, X, Trash2 } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -64,13 +65,16 @@ export default function CartDropdown() {
             ) : (
               <>
                 <div className="p-4 space-y-4">
-                  {(Array.isArray(cart) ? cart : []).map((item: any) => (
+                      {(Array.isArray(cart) ? cart : []).map((item: any) => (
                     <div key={item.id} className="flex gap-3">
                       {item.productImage && (
-                        <img
+                        <Image
                           src={item.productImage}
                           alt={item.productName}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 object-cover rounded"
+                          sizes="64px"
                         />
                       )}
                       <div className="flex-1">

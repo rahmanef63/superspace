@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import Image from "next/image";
 import type { RoomMeta, PresenceInfo } from "../types/chat";
 import type { UserMeta } from "../types/message";
 import type { ChatConfig } from "../types/config";
@@ -77,7 +78,14 @@ export function ChatSidebar({
                   {/* Avatar */}
                   <div className="chat-sidebar-participant-avatar">
                     {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={formatUserName(user)} />
+                      <Image
+                        src={user.avatarUrl}
+                        alt={formatUserName(user)}
+                        width={32}
+                        height={32}
+                        className="h-full w-full rounded-full object-cover"
+                        sizes="32px"
+                      />
                     ) : (
                       <div className="chat-sidebar-participant-avatar-placeholder">
                         {formatUserName(user)[0]}

@@ -31,7 +31,7 @@ export const buttonManifest: WidgetConfig = {
     textTransform: "none",
     letterSpacing: "normal"
   },
-  render: (p) => p.href ? (<a href={p.href} className="inline-block"><ButtonWidget {...p} /></a>) : (<ButtonWidget {...p} />),
+  render: (p) => <ButtonWidget {...p} />,
   inspector: {
     fields: combineFields(
       [

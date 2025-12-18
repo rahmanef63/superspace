@@ -10,7 +10,7 @@
 
 import { existsSync } from "fs"
 import { join } from "path"
-import { getAllFeatures } from "../../lib/features/registry.server"
+import { getAllFeatures } from "../../frontend/shared/lib/features/registry.server"
 
 const FEATURES_REGISTRY = getAllFeatures()
 

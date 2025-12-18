@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, Image as ImageIcon, Loader } from 'lucide-react';
 import { Button } from './Button';
 import { useImageUpload } from '../hooks/useImageUpload';
@@ -199,10 +200,12 @@ export function BulkImageUpload({
               key={index}
               className="relative aspect-square rounded-lg overflow-hidden border group"
             >
-              <img
+              <Image
                 src={image.url}
                 alt={image.altText || `Image ${index + 1}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 20vw"
               />
               <button
                 onClick={() => handleRemove(index)}

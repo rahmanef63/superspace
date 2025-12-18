@@ -27,11 +27,13 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatRelativeTime } from "@/frontend/shared/foundation/utils/core/format"
-import { getWorkspaceTypeIcon } from "@/frontend/shared/foundation/utils/core/icons"
+import { getWorkspaceTypeIcon } from "@/frontend/shared/foundation/utils/core/icons" // Fixed import path
+import { PendingInvitationsSection } from "./components"
 
 interface MainWorkspaceOverviewProps {
   workspaceId: Id<"workspaces">
 }
+
 
 /**
  * Main Workspace Overview Component
@@ -97,6 +99,9 @@ export function MainWorkspaceOverview({ workspaceId }: MainWorkspaceOverviewProp
           Main Workspace
         </Badge>
       </div>
+
+      {/* Pending Invitations */}
+      <PendingInvitationsSection />
 
       {/* Quick Stats */}
       {quickStats && (

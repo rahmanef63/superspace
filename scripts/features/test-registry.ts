@@ -13,7 +13,7 @@ import {
   getFeaturesByType,
   validateRegistry,
   DISCOVERED_FEATURES,
-} from '../../lib/features/registry.server'
+} from '../../frontend/shared/lib/features/registry.server'
 
 // Bundle IDs (should match lib/features/defineFeature.ts)
 const BUNDLE_IDS = [
@@ -130,12 +130,12 @@ DISCOVERED_FEATURES.forEach(feature => {
   console.log(`  Path: ${feature.ui.path}`)
   console.log(`  Permissions: ${feature.permissions?.length || 0}`)
   console.log(`  Tags: ${feature.tags?.join(', ') || 'none'}`)
-  
+
   // Show bundle membership
   if (feature.bundles) {
-    const totalBundles = (feature.bundles.core?.length || 0) + 
-                        (feature.bundles.recommended?.length || 0) + 
-                        (feature.bundles.optional?.length || 0)
+    const totalBundles = (feature.bundles.core?.length || 0) +
+      (feature.bundles.recommended?.length || 0) +
+      (feature.bundles.optional?.length || 0)
     console.log(`  Bundles: ${totalBundles} total`)
     if (feature.bundles.core?.length) {
       console.log(`    Core: ${feature.bundles.core.join(', ')}`)
@@ -166,19 +166,19 @@ BUNDLE_IDS.forEach(id => {
 
 DISCOVERED_FEATURES.forEach(feature => {
   if (!feature.bundles) return
-  
+
   feature.bundles.core?.forEach(bundleId => {
     if (bundleFeatures[bundleId]) {
       bundleFeatures[bundleId].core.push(feature.id)
     }
   })
-  
+
   feature.bundles.recommended?.forEach(bundleId => {
     if (bundleFeatures[bundleId]) {
       bundleFeatures[bundleId].recommended.push(feature.id)
     }
   })
-  
+
   feature.bundles.optional?.forEach(bundleId => {
     if (bundleFeatures[bundleId]) {
       bundleFeatures[bundleId].optional.push(feature.id)
@@ -191,7 +191,7 @@ console.log('\nBundle Feature Breakdown:')
 BUNDLE_IDS.forEach(bundleId => {
   const features = bundleFeatures[bundleId]
   const total = features.core.length + features.recommended.length + features.optional.length
-  
+
   console.log(`\n📦 ${bundleId} (${total} features):`)
   if (features.core.length > 0) {
     console.log(`  🔒 Core (${features.core.length}): ${features.core.join(', ')}`)
@@ -213,25 +213,25 @@ let bundleErrors = 0
 
 DISCOVERED_FEATURES.forEach(feature => {
   if (feature.technical.featureType === 'system') return
-  
+
   if (!feature.bundles) {
     console.log(`  ⚠️  ${feature.id}: Missing bundle configuration`)
     bundleErrors++
     return
   }
-  
+
   const allBundles = [
     ...(feature.bundles.core || []),
     ...(feature.bundles.recommended || []),
     ...(feature.bundles.optional || []),
   ]
-  
+
   if (allBundles.length === 0) {
     console.log(`  ⚠️  ${feature.id}: No bundles specified`)
     bundleErrors++
     return
   }
-  
+
   // Check for invalid bundle IDs
   allBundles.forEach(bundleId => {
     if (!BUNDLE_IDS.includes(bundleId as BundleId)) {
@@ -239,7 +239,7 @@ DISCOVERED_FEATURES.forEach(feature => {
       bundleErrors++
     }
   })
-  
+
   // Check for duplicates across categories
   const seen = new Set<string>()
   allBundles.forEach(bundleId => {
@@ -272,8 +272,8 @@ const totalChildren = DISCOVERED_FEATURES.reduce(
 )
 const featuresWithBundles = DISCOVERED_FEATURES.filter(
   f => f.bundles && (
-    (f.bundles.core?.length || 0) + 
-    (f.bundles.recommended?.length || 0) + 
+    (f.bundles.core?.length || 0) +
+    (f.bundles.recommended?.length || 0) +
     (f.bundles.optional?.length || 0) > 0
   )
 ).length

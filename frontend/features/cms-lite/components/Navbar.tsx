@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { Menu, X, Globe, Sun, Moon } from "lucide-react";
@@ -47,7 +48,14 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center gap-2">
             {settings?.logoUrl ? (
-              <img src={settings.logoUrl} alt={settings.brandName} className="h-8" />
+              <Image
+                src={settings.logoUrl}
+                alt={settings.brandName || "Logo"}
+                width={128}
+                height={32}
+                className="h-8 w-auto"
+                sizes="128px"
+              />
             ) : (
               <span className="text-2xl font-bold text-foreground">{settings?.brandName || "Your Brand"}</span>
             )}

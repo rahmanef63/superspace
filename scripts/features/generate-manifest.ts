@@ -9,8 +9,8 @@
  *   pnpm run generate:manifest
  */
 
-import { getAllFeatures, getFeatureSlug } from "../../lib/features/registry.server"
-import type { FeatureConfig } from "../../lib/features/defineFeature"
+import { getAllFeatures, getFeatureSlug } from "../../frontend/shared/lib/features/registry.server"
+import type { FeatureConfig } from "../../frontend/shared/lib/features/defineFeature"
 import fs from "fs"
 import path from "path"
 

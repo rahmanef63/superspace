@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import NextImage from "next/image"
 import {
   Library,
   Upload,
@@ -785,11 +786,21 @@ export default function ContentPage({ workspaceId }: ContentPageProps) {
               )
             ) : activeMode === "preview" ? (
               <ImageZoom>
-                <img
-                  src={getCurrentPreviewUrl()}
-                  alt={selectedContent.name}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                />
+                {(() => {
+                  const previewUrl = getCurrentPreviewUrl()
+                  if (!previewUrl) return null
+
+                  return (
+                    <NextImage
+                      src={previewUrl}
+                      alt={selectedContent.name}
+                      width={1200}
+                      height={800}
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                      sizes="100vw"
+                    />
+                  )
+                })()}
               </ImageZoom>
             ) : (
               <canvas

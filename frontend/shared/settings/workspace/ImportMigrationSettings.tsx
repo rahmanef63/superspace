@@ -77,7 +77,7 @@ export function ImportMigrationSettings({ workspaceId }: ImportMigrationSettings
                         <IntegrationCard
                             icon={Layout}
                             label="Asana"
-                            subLabel="Rahmanef63@gmail.com"
+                            subLabel="fulan@gmail.com"
                             connected
                         />
                         <IntegrationCard

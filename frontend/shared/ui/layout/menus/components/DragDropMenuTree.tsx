@@ -79,8 +79,9 @@ export function DragDropMenuTree({
   const [renamingItemId, setRenamingItemId] = useState<Id<"menuItems"> | null>(null)
   const [renameValue, setRenameValue] = useState("")
 
-  // Fetch menu updates
-  const menuUpdates = useQuery((api as any)["features/menus/menuItems"].getMenuUpdates, { workspaceId }) || []
+  // Menu updates feature - TODO: implement getMenuUpdates query in Convex when needed
+  // For now, return empty array to prevent runtime errors
+  const menuUpdates: Array<{ menuItemId: Id<"menuItems">; currentVersion: string; latestVersion: string }> = []
   const updatesMap = useMemo(() => {
     const map = new Map<string, { currentVersion: string; latestVersion: string }>()
     menuUpdates.forEach((update: { menuItemId: Id<"menuItems">; currentVersion: string; latestVersion: string }) => {

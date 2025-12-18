@@ -14,6 +14,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
@@ -138,11 +139,12 @@ function GifPicker({ open, onClose, onSelect }: GifPickerProps) {
                   }}
                   className="relative aspect-video rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all"
                 >
-                  <img
+                  <Image
                     src={gif.preview}
                     alt="GIF"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 240px"
                   />
                 </button>
               ))}

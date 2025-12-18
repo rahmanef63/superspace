@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 interface CardWidgetProps {
@@ -20,11 +21,13 @@ export const CardWidget: React.FC<CardWidgetProps> = ({
 }) => (
   <Card className={className}>
     {showImage && (
-      <div className="aspect-video w-full overflow-hidden rounded-t-2xl">
-        <img 
-          src={imageUrl} 
-          alt="Card image" 
-          className="w-full h-full object-cover"
+      <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl">
+        <Image
+          src={imageUrl}
+          alt="Card image"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>
     )}

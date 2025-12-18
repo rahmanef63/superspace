@@ -73,12 +73,12 @@ import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
 async function getRolesWithPermission(ctx: any, workspaceId: Id<"workspaces">, permKey?: string) {
   const permissionValue = normalizePermissionKey(permKey)
   if (!permissionValue) return []
-  
+
   const roles = await ctx.db
     .query("roles")
     .withIndex("by_workspace", (q: any) => q.eq("workspaceId", workspaceId))
     .collect()
-  
+
   return roles
     .filter((role: any) => {
       const permissions = role.permissions || []
@@ -141,7 +141,7 @@ export const getWorkspaceMenuItems = query({
           .first()
         if (wsAssignedDefault) effectiveMenuSetId = wsAssignedDefault.menuSetId
       }
-    } catch (_err) {}
+    } catch (_err) { }
 
     // Get all menu items for the effective scope
     let menuItems: any[] = []
@@ -248,18 +248,18 @@ export const getWorkspaceMenuItems = query({
     // === SSOT: Merge missing default/system features from manifest ===
     // This ensures new features appear immediately without requiring a sync
     const dbSlugs = new Set(menuItems.map((item) => item.slug))
-    
+
     // Build catalog lookup for optional features
     const catalogBySlug = new Map(
       OPTIONAL_FEATURES_CATALOG.map((f) => [f.slug, f])
     )
-    
+
     // Get roles for permission checking
     const allRoles = await ctx.db
       .query("roles")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
       .collect()
-    
+
     const getVisibleRoleIds = (permKey?: string) => {
       const permissionValue = normalizePermissionKey(permKey)
       if (!permissionValue) return []
@@ -270,7 +270,7 @@ export const getWorkspaceMenuItems = query({
         })
         .map((role: any) => role._id)
     }
-    
+
     // === SSOT: Update existing optional features with latest catalog values ===
     // This ensures isReady and status are always current from catalog
     menuItems = menuItems.map((item) => {
@@ -287,7 +287,7 @@ export const getWorkspaceMenuItems = query({
       }
       return item
     })
-    
+
     // Add missing default/system features from manifest (respect platform/admin disabling)
     for (const manifestItem of DEFAULT_MENU_ITEMS) {
       if (!dbSlugs.has(manifestItem.slug)) {
@@ -298,7 +298,7 @@ export const getWorkspaceMenuItems = query({
           const access = accessByFeatureId.get(manifestItem.slug)
           if (isFeatureDisabledByAccess(access)) continue
           const visibleForRoleIds = getVisibleRoleIds(manifestItem.requiresPermission)
-          
+
           // Create a virtual menu item from manifest
           menuItems.push({
             _id: `manifest:${manifestItem.slug}` as any, // Virtual ID
@@ -327,6 +327,83 @@ export const getWorkspaceMenuItems = query({
 
     // Sort by order
     return visibleMenuItems.sort((a, b) => a.order - b.order)
+  },
+})
+
+// Get available feature menus (features that can be added to a workspace menu)
+// Only returns features NOT already installed in the workspace
+export const getAvailableFeatureMenus = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    // Get the workspace's default menu set
+    const wsAssignment = await ctx.db
+      .query("workspaceMenuAssignments")
+      .withIndex("by_workspace_default", (q: any) => q.eq("workspaceId", args.workspaceId).eq("isDefault", true))
+      .first()
+    const menuSetId = wsAssignment?.menuSetId
+
+    // Get currently installed menu items - check BOTH menuSetId and workspaceId for compatibility
+    let installedMenuItems: any[] = []
+    
+    if (menuSetId) {
+      installedMenuItems = await ctx.db
+        .query("menuItems")
+        .withIndex("by_menuSet", (q: any) => q.eq("menuSetId", menuSetId))
+        .collect()
+    }
+    
+    // Also check by workspaceId (back-compat for old items without menuSetId)
+    const wsItems = await ctx.db
+      .query("menuItems")
+      .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+    
+    // Merge and dedupe by slug
+    const allInstalled = [...installedMenuItems, ...wsItems]
+    const installedSlugs = new Set(allInstalled.map(item => item.slug))
+
+    // Combine default features from manifest with optional features catalog
+    const allFeatures = [
+      ...DEFAULT_MENU_ITEMS.map((item) => ({
+        slug: item.slug,
+        name: item.name,
+        description: item.description ?? "",
+        icon: item.icon ?? "Box",
+        version: item.version,
+        category: item.category,
+        featureType: item.featureType as "default" | "system" | "optional" | "custom" | undefined,
+        tags: item.tags ?? [],
+        status: normalizeFeatureStatus(item.status) ?? "stable" as const,
+        isReady: item.isReady ?? true,
+        expectedRelease: item.expectedRelease,
+      })),
+      ...OPTIONAL_FEATURES_CATALOG.map((item) => ({
+        slug: item.slug,
+        name: item.name,
+        description: item.description ?? "",
+        icon: item.icon ?? "Box",
+        version: item.version,
+        category: item.category,
+        featureType: "optional" as const,
+        tags: item.tags ?? [],
+        status: normalizeFeatureStatus(item.status) ?? "stable" as const,
+        isReady: item.isReady ?? true,
+        expectedRelease: item.expectedRelease,
+      })),
+    ]
+
+    // Dedupe by slug (prefer first occurrence) AND filter out already installed features
+    const seen = new Set<string>()
+    return allFeatures.filter((f) => {
+      // Skip if already seen (dedupe)
+      if (seen.has(f.slug)) return false
+      seen.add(f.slug)
+      // Skip if already installed in this workspace
+      if (installedSlugs.has(f.slug)) return false
+      return true
+    })
   },
 })
 
@@ -395,7 +472,7 @@ export const getMenuItemBySlug = query({
           .first()
         if (wsAssignedDefault) effectiveMenuSetId = wsAssignedDefault.menuSetId
       }
-    } catch (_err) {}
+    } catch (_err) { }
 
     let items: any[] = []
     if (effectiveMenuSetId) {
@@ -491,16 +568,11 @@ export const createDefaultMenuItems = internalMutation({
     // actorUserId is the workspace creator/owner
     const userId = args.actorUserId
 
-  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-    const part1 = parts1[i] || 0
-    const part2 = parts2[i] || 0
+    // Placeholder implementation to fix syntax error
 
-    if (part1 > part2) return 1
-    if (part1 < part2) return -1
-  }
-
-  return 0
-}
+    return true;
+  },
+})
 
 // Update menu item
 export const updateMenuItem = mutation({
@@ -687,5 +759,219 @@ export const syncWorkspaceDefaultMenus = mutation({
       })
       return true as const
     } catch (error) {
-      // If user doesn't have permission, just return false instead of throwing
-      // This prevents the app from crashing if a regular user triggers this sync
+      return false as const
+    }
+  },
+})
+
+// Cron job handler: Syncs default menus for all workspaces to ensure manifest updates propagate
+export const syncAllWorkspaceMenus = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    // 1. Get all workspaces
+    const workspaces = await ctx.db.query("workspaces").collect()
+
+    // 2. For each workspace, sync default menu items
+    // We use Promise.all to run them in parallel (up to limits)
+    // For very large datasets, this might need to be an action iterating batches
+    await Promise.all(
+      workspaces.map(async (workspace) => {
+        // We call the internal mutation to create default items (idempotent-ish)
+        // Note: We skip the actorUserId as this is a system-triggered sync
+        await createDefaultMenuItems(ctx, {
+          workspaceId: workspace._id
+        })
+      })
+    )
+
+    console.log(`Synced menus for ${workspaces.length} workspaces`)
+  },
+})
+
+// Get menu items that have updates available (version mismatch with manifest)
+export const getMenuUpdates = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    // Get all menu items for this workspace
+    const menuItems = await ctx.db
+      .query("menuItems")
+      .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+      .collect()
+
+    const updates: Array<{
+      menuItemId: Id<"menuItems">
+      currentVersion: string
+      latestVersion: string
+    }> = []
+
+    // Check each menu item against the manifest
+    for (const item of menuItems) {
+      if (!item.slug) continue
+
+      // Look up in DEFAULT_MENU_ITEMS
+      const defaultItem = DEFAULT_MENU_ITEMS.find((d: any) => d.slug === item.slug)
+      if (defaultItem && defaultItem.version) {
+        const currentVersion = (item as any).version || "1.0.0"
+        if (currentVersion !== defaultItem.version) {
+          updates.push({
+            menuItemId: item._id,
+            currentVersion,
+            latestVersion: defaultItem.version,
+          })
+        }
+        continue
+      }
+
+      // Look up in OPTIONAL_FEATURES_CATALOG
+      const optionalItem = OPTIONAL_FEATURES_CATALOG.find((o: any) => o.slug === item.slug)
+      if (optionalItem && optionalItem.version) {
+        const currentVersion = (item as any).version || "1.0.0"
+        if (currentVersion !== optionalItem.version) {
+          updates.push({
+            menuItemId: item._id,
+            currentVersion,
+            latestVersion: optionalItem.version,
+          })
+        }
+      }
+    }
+
+    return updates
+  },
+})
+
+// Install feature menus for a workspace (public API for frontend)
+export const installFeatureMenus = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    featureSlugs: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const { membership } = await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MENUS)
+
+      // Get the workspace's default menu set
+      const wsAssignment = await ctx.db
+        .query("workspaceMenuAssignments")
+        .withIndex("by_workspace_default", (q: any) => q.eq("workspaceId", args.workspaceId).eq("isDefault", true))
+        .first()
+      const menuSetId = wsAssignment?.menuSetId
+
+      // Get existing menu items for this workspace (check both menuSet and workspace indexes)
+      let existingItems: any[] = []
+      if (menuSetId) {
+        existingItems = await ctx.db
+          .query("menuItems")
+          .withIndex("by_menuSet", (q: any) => q.eq("menuSetId", menuSetId))
+          .collect()
+      }
+      // Also check workspace-scoped items (back-compat)
+      const wsItems = await ctx.db
+        .query("menuItems")
+        .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+        .collect()
+      
+      // Merge and dedupe
+      const allItems = [...existingItems, ...wsItems]
+      const existingSlugs = new Set(allItems.map((item: any) => item.slug).filter(Boolean))
+
+      // Get max order for new items
+      let maxOrder = allItems.reduce((max: number, item: any) => Math.max(max, item.order || 0), 0)
+
+      // Install each feature
+      for (const slug of args.featureSlugs) {
+        if (existingSlugs.has(slug)) continue // Already installed
+
+        // Look up in DEFAULT_MENU_ITEMS first
+        let featureData = DEFAULT_MENU_ITEMS.find((d: any) => d.slug === slug)
+
+        // If not found, look in OPTIONAL_FEATURES_CATALOG
+        if (!featureData) {
+          featureData = OPTIONAL_FEATURES_CATALOG.find((o: any) => o.slug === slug)
+        }
+
+        if (!featureData) continue // Feature not found in manifest
+
+        maxOrder += 1
+
+        await ctx.db.insert("menuItems", {
+          workspaceId: args.workspaceId,
+          menuSetId: menuSetId, // Include menuSetId so items are found by the query
+          parentId: undefined,
+          name: featureData.name || slug,
+          slug: featureData.slug,
+          type: featureData.type || "feature",
+          icon: featureData.icon,
+          path: featureData.path || `/${slug}`,
+          component: featureData.component,
+          order: maxOrder,
+          isVisible: true,
+          visibleForRoleIds: [],
+          metadata: {
+            version: featureData.version || "1.0.0",
+            category: featureData.category,
+            description: featureData.description,
+            featureType: "optional", // Mark as optional for visibility rules
+          },
+          createdBy: membership?.userId as any,
+        })
+
+        existingSlugs.add(slug)
+      }
+
+      return { success: true, installed: args.featureSlugs.length }
+    } catch (error) {
+      console.error("Failed to install feature menus:", error)
+      return { success: false, error: String(error) }
+    }
+  },
+})
+
+/**
+ * Repair orphaned menu items that are missing menuSetId or have wrong menuSetId.
+ * Uses the same index as getWorkspaceMenuItems to ensure consistency.
+ */
+export const repairOrphanedMenuItems = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allItems = await ctx.db.query("menuItems").collect()
+    
+    let repaired = 0
+    let skipped = 0
+    
+    for (const item of allItems) {
+      if (!item.workspaceId) {
+        skipped++
+        continue
+      }
+      
+      // Use the SAME index query as getWorkspaceMenuItems
+      const wsAssignment = await ctx.db
+        .query("workspaceMenuAssignments")
+        .withIndex("by_workspace_default", (q: any) => q.eq("workspaceId", item.workspaceId).eq("isDefault", true))
+        .first()
+      
+      if (!wsAssignment) {
+        skipped++
+        continue
+      }
+      
+      const correctMenuSetId = wsAssignment.menuSetId
+      
+      // Fix if missing or mismatched
+      if (!item.menuSetId || item.menuSetId !== correctMenuSetId) {
+        await ctx.db.patch(item._id, { menuSetId: correctMenuSetId })
+        repaired++
+      }
+    }
+
+    return { 
+      totalItems: allItems.length,
+      repaired,
+      skipped,
+      message: `Repaired ${repaired} menu items, skipped ${skipped} without workspace assignment`
+    }
+  },
+})

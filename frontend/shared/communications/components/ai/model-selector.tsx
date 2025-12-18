@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { ComponentProps, ReactNode } from "react";
+import NextImage, { type ImageProps as NextImageProps } from "next/image";
 
 export type ModelSelectorProps = ComponentProps<typeof Dialog>;
 
@@ -153,8 +154,8 @@ export type ProviderName =
   | (string & {});
 
 export type ModelSelectorLogoProps = Omit<
-  ComponentProps<"img">,
-  "src" | "alt"
+  NextImageProps,
+  "src" | "alt" | "width" | "height"
 > & {
   provider: ProviderName;
 };
@@ -164,7 +165,7 @@ export const ModelSelectorLogo = ({
   className,
   ...props
 }: ModelSelectorLogoProps) => (
-  <img
+  <NextImage
     {...props}
     alt={`${provider} logo`}
     className={cn("size-3 dark:invert", className)}

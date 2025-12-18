@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Link from "next/link"
 import type { Id } from "@convex/_generated/dataModel"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -341,10 +342,10 @@ export default function NotificationsPage({ workspaceId }: NotificationsPageProp
                           )}
                           {notification.actionUrl && (
                             <DropdownMenuItem asChild>
-                              <a href={notification.actionUrl}>
+                              <Link href={notification.actionUrl}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 View details
-                              </a>
+                              </Link>
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />

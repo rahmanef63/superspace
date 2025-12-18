@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface UserProfileProps {
@@ -26,6 +27,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     lg: 'w-12 h-12 text-base'
   };
 
+  const sizePx = {
+    sm: 32,
+    md: 40,
+    lg: 48,
+  }[size];
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -42,9 +49,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({
         sizeClasses[size]
       )}>
         {avatar ? (
-          <img 
-            src={avatar} 
+          <Image
+            src={avatar}
             alt={name}
+            width={sizePx}
+            height={sizePx}
             className="w-full h-full rounded-full object-cover"
           />
         ) : (

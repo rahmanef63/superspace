@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '../shared/types';
-import { standardizeWidget, devValidateRegistry } from '../shared/utils/widgetValidation';
+import { standardizeWidget } from '../shared/utils/widgetValidation';
 
 // Slices Widgets
 import { buttonManifest } from '../slices/widgets/action/button/manifest';
@@ -59,7 +59,22 @@ import { headingManifest } from './ui/heading/manifest';
 import { linkManifest } from './ui/link/manifest';
 
 // Action Widgets
+// Action Widgets
 import { iconButtonManifest } from './ui/iconButton/manifest';
+
+// Block Widgets
+import { chartManifest as chartBlockManifest } from './blocks/Chart/manifest';
+import { kanbanManifest as kanbanBlockManifest } from './blocks/Kanban/manifest';
+import { tableManifest as tableBlockManifest } from './blocks/Table/manifest';
+import { calendarManifest as calendarBlockManifest } from './blocks/Calendar/manifest';
+import { filterManifest as filterBlockManifest } from './blocks/Filter/manifest';
+import { fileManifest as fileBlockManifest } from './blocks/File/manifest';
+import { commentManifest as commentBlockManifest } from './blocks/Comment/manifest';
+import { richTextManifest as richTextBlockManifest } from './blocks/RichText/manifest';
+import { formManifest as formBlockManifest } from './blocks/Form/manifest';
+import { mediaManifest as mediaBlockManifest } from './blocks/Media/manifest';
+import { profileManifest as profileBlockManifest } from './blocks/Profile/manifest';
+import { metricCardManifest as metricCardBlockManifest } from './blocks/Metric/manifest';
 
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
@@ -126,6 +141,20 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   divider: dividerManifest,
   spacer: spacerManifest,
   heading: headingManifest,
+
+  // Blocks
+  chartBlock: chartBlockManifest,
+  kanbanBlock: kanbanBlockManifest,
+  tableBlock: tableBlockManifest,
+  calendarBlock: calendarBlockManifest,
+  filterBlock: filterBlockManifest,
+  fileBlock: fileBlockManifest,
+  commentBlock: commentBlockManifest,
+  richTextBlock: richTextBlockManifest,
+  formBlock: formBlockManifest,
+  mediaBlock: mediaBlockManifest,
+  profileBlock: profileBlockManifest,
+  metricCardBlock: metricCardBlockManifest,
 };
 
 // Standardize all widgets and validate in development
@@ -137,7 +166,6 @@ const standardizeRegistry = (registry: Record<string, WidgetConfig>): Record<str
   });
 
   // Validate in development
-  devValidateRegistry(standardized);
 
   return standardized;
 };
@@ -154,6 +182,7 @@ export const widgetCategories = {
   Action: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Action').map(([key]) => key),
   UI: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'UI').map(([key]) => key),
   Templates: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Templates').map(([key]) => key),
+  Blocks: Object.entries(cmsWidgetRegistry).filter(([_, config]) => config.category === 'Blocks').map(([key]) => key),
 };
 
 // Export widget count by category

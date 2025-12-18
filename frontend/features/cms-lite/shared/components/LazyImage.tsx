@@ -1,6 +1,15 @@
-import { useState, useEffect, useRef, ImgHTMLAttributes } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import NextImage, { type ImageProps as NextImageProps } from 'next/image';
+import { cn } from '@/lib/utils';
 
-interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+const TRANSPARENT_PIXEL =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+interface LazyImageProps
+  extends Omit<
+    NextImageProps,
+    'src' | 'alt' | 'fill' | 'width' | 'height' | 'onLoad' | 'onError'
+  > {
   src: string;
   alt: string;
   placeholderSrc?: string;
@@ -8,7 +17,6 @@ interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'
   rootMargin?: string;
   onLoad?: () => void;
   onError?: () => void;
-  srcSet?: string;
   sizes?: string;
 }
 
@@ -20,28 +28,24 @@ export function LazyImage({
   rootMargin = '50px',
   onLoad,
   onError,
-  srcSet,
   sizes,
   className = '',
   ...props
 }: LazyImageProps) {
-  const [imageSrc, setImageSrc] = useState<string | undefined>(placeholderSrc);
-  const [imageSrcSet, setImageSrcSet] = useState<string | undefined>(undefined);
+  const [imageSrc, setImageSrc] = useState<string>(placeholderSrc || TRANSPARENT_PIXEL);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!imgRef.current) return;
+    const node = containerRef.current;
+    if (!node) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setImageSrc(src);
-            if (srcSet) {
-              setImageSrcSet(srcSet);
-            }
             observer.unobserve(entry.target);
           }
         });
@@ -52,53 +56,51 @@ export function LazyImage({
       }
     );
 
-    observer.observe(imgRef.current);
+    observer.observe(node);
 
     return () => {
-      if (imgRef.current) {
-        observer.unobserve(imgRef.current);
-      }
+      observer.disconnect();
     };
-  }, [src, srcSet, threshold, rootMargin]);
+  }, [src, threshold, rootMargin]);
 
   const handleLoad = () => {
     setIsLoaded(true);
-    if (onLoad) {
-      onLoad();
-    }
+    onLoad?.();
   };
 
   const handleError = () => {
     setHasError(true);
-    if (onError) {
-      onError();
-    }
+    onError?.();
   };
 
   return (
-    <img
-      ref={imgRef}
-      src={imageSrc}
-      srcSet={imageSrcSet}
-      sizes={sizes}
-      alt={alt}
-      loading="lazy"
-      decoding="async"
-      onLoad={handleLoad}
-      onError={handleError}
-      className={`transition-opacity duration-300 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      } ${hasError ? 'bg-muted' : ''} ${className}`}
-      {...props}
-    />
+    <span ref={containerRef} className="relative block h-full w-full">
+      <NextImage
+        {...props}
+        src={imageSrc}
+        alt={alt}
+        fill
+        sizes={sizes}
+        onLoad={handleLoad}
+        onError={handleError}
+        className={cn(
+          'transition-opacity duration-300',
+          isLoaded ? 'opacity-100' : 'opacity-0',
+          hasError && 'bg-muted',
+          className
+        )}
+      />
+    </span>
   );
 }
 
-interface ProgressiveImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+interface ProgressiveImageProps
+  extends Omit<NextImageProps, 'src' | 'alt' | 'fill' | 'width' | 'height'> {
   src: string;
   alt: string;
   placeholderSrc?: string;
   blur?: boolean;
+  sizes?: string;
 }
 
 export function ProgressiveImage({
@@ -106,6 +108,7 @@ export function ProgressiveImage({
   alt,
   placeholderSrc,
   blur = true,
+  sizes,
   className = '',
   ...props
 }: ProgressiveImageProps) {
@@ -113,9 +116,9 @@ export function ProgressiveImage({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const img = new Image();
+    const img = new window.Image();
     img.src = src;
-    
+
     img.onload = () => {
       setCurrentSrc(src);
       setIsLoading(false);
@@ -132,22 +135,28 @@ export function ProgressiveImage({
   }, [src]);
 
   return (
-    <img
-      src={currentSrc}
-      alt={alt}
-      className={`transition-all duration-300 ${
-        isLoading && blur ? 'blur-sm scale-105' : 'blur-0 scale-100'
-      } ${className}`}
-      {...props}
-    />
+    <span className="relative block h-full w-full">
+      <NextImage
+        {...props}
+        src={currentSrc}
+        alt={alt}
+        fill
+        sizes={sizes}
+        className={cn(
+          'transition-all duration-300',
+          isLoading && blur ? 'blur-sm scale-105' : 'blur-0 scale-100',
+          className
+        )}
+      />
+    </span>
   );
 }
 
-interface ResponsiveImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+interface ResponsiveImageProps
+  extends Omit<NextImageProps, 'src' | 'alt' | 'fill' | 'width' | 'height'> {
   src: string;
   alt: string;
   sizes?: string;
-  srcSet?: string;
   loading?: 'lazy' | 'eager';
 }
 
@@ -155,21 +164,21 @@ export function ResponsiveImage({
   src,
   alt,
   sizes,
-  srcSet,
   loading = 'lazy',
   className = '',
   ...props
 }: ResponsiveImageProps) {
   return (
-    <img
-      src={src}
-      alt={alt}
-      sizes={sizes}
-      srcSet={srcSet}
-      loading={loading}
-      decoding="async"
-      className={className}
-      {...props}
-    />
+    <span className="relative block h-full w-full">
+      <NextImage
+        {...props}
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        loading={loading}
+        className={className}
+      />
+    </span>
   );
 }

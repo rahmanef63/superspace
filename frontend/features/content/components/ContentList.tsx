@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useEffect } from "react"
+import Image from "next/image"
 import {
   Image as ImageIcon,
   Video,
@@ -112,10 +113,13 @@ function ThumbnailWithZoom({
       )}
     >
       {hasImage ? (
-        <img
+        <Image
           src={imageSrc}
           alt={item.name}
+          width={40}
+          height={40}
           className="h-full w-full object-cover"
+          sizes="40px"
         />
       ) : (
         <Icon className="h-5 w-5" />
@@ -136,10 +140,13 @@ function ThumbnailWithZoom({
           className="w-auto p-2"
         >
           <div className="overflow-hidden rounded-md">
-            <img
+            <Image
               src={imageSrc}
               alt={item.name}
+              width={200}
+              height={200}
               className="max-w-[200px] max-h-[200px] object-contain"
+              sizes="200px"
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center truncate max-w-[200px]">

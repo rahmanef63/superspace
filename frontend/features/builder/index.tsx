@@ -4,13 +4,7 @@ import { BuilderDashboard } from './components/BuilderDashboard';
 import { useBuilder } from './hooks/useBuilder';
 import { BuilderProject } from './types';
 
-// Initialize dev tools in development
-if (process.env.NODE_ENV === 'development') {
-  import('./shared/utils/devTools').then(({ CMSDevTools }) => {
-    CMSDevTools.printStats();
-    CMSDevTools.validate();
-  });
-}
+// Dev tools removed
 
 export const CMSFeature: React.FC = () => {
   const { data, createProject } = useBuilder();

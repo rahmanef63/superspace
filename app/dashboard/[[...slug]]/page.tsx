@@ -61,6 +61,8 @@ export default function CatchAllPage() {
   }, [parts.length, isAuthenticated, router])
 
   // If authenticated and no workspace after data loads, redirect to onboarding page as fallback
+  // REMOVED: Handled by OnboardingGuard to avoid race conditions
+  /*
   useEffect(() => {
     if (isLoading) return
     if (!workspacesLoaded) return
@@ -68,6 +70,7 @@ export default function CatchAllPage() {
       router.replace("/dashboard/workspace")
     }
   }, [isLoading, isAuthenticated, workspacesLoaded, workspaces, router])
+  */
 
   const breadcrumbs: SidebarBreadcrumbItem[] = useMemo(() => {
     const base: SidebarBreadcrumbItem[] = [{ label: "Dashboard", href: "/dashboard" }]

@@ -5,7 +5,7 @@
  * Build apps, content, CMS interfaces, and more with visual tools.
  */
 
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   // ============================================================================

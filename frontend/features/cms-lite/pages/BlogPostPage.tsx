@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -77,10 +78,13 @@ export default function BlogPostPage({ slug: slugProp }: BlogPostPageProps = {})
 
         <article>
           {post.coverImage && (
-            <img
+            <Image
               src={post.coverImage}
               alt={post.title}
-              className="w-full rounded-lg shadow-lg mb-8"
+              width={1200}
+              height={800}
+              className="w-full h-auto rounded-lg shadow-lg mb-8"
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           )}
           

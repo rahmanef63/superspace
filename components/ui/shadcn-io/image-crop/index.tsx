@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { CropIcon, RotateCcwIcon } from 'lucide-react';
+import Image from 'next/image';
 import { Slot } from '@radix-ui/react-slot';
 import {
   type ComponentProps,
@@ -182,6 +183,7 @@ type ImageCropContextType = {
   file: File;
   maxImageSize: number;
   imgSrc: string;
+  imgSize: { width: number; height: number } | null;
   crop: PercentCrop | undefined;
   completedCrop: PixelCrop | null;
   imgRef: RefObject<HTMLImageElement | null>;
@@ -227,16 +229,40 @@ export const ImageCrop = ({
 }: ImageCropProps) => {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imgSrc, setImgSrc] = useState<string>('');
+  const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
   const [crop, setCrop] = useState<PercentCrop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
   const [initialCrop, setInitialCrop] = useState<PercentCrop>();
 
   useEffect(() => {
+    let cancelled = false;
     const reader = new FileReader();
-    reader.addEventListener('load', () =>
-      setImgSrc(reader.result?.toString() || '')
-    );
+    reader.addEventListener('load', () => {
+      const result = reader.result?.toString() || '';
+      if (cancelled) return;
+
+      setImgSrc(result);
+      setImgSize(null);
+
+      if (!result) return;
+
+      const img = new window.Image();
+      img.onload = () => {
+        if (cancelled) return;
+        setImgSize({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = () => {
+        if (cancelled) return;
+        setImgSize(null);
+      };
+      img.src = result;
+    });
     reader.readAsDataURL(file);
+
+    return () => {
+      cancelled = true;
+      reader.abort();
+    };
   }, [file]);
 
   const onImageLoad = useCallback(
@@ -289,6 +315,7 @@ export const ImageCrop = ({
     file,
     maxImageSize,
     imgSrc,
+    imgSize,
     crop,
     completedCrop,
     imgRef,
@@ -319,6 +346,7 @@ export const ImageCropContent = ({
 }: ImageCropContentProps) => {
   const {
     imgSrc,
+    imgSize,
     crop,
     handleChange,
     handleComplete,
@@ -341,13 +369,15 @@ export const ImageCropContent = ({
       style={{ ...shadcnStyle, ...style }}
       {...reactCropProps}
     >
-      {imgSrc && (
-        <img
+      {imgSrc && imgSize && (
+        <Image
           alt="crop"
           className="size-full"
+          height={imgSize.height}
           onLoad={onImageLoad}
           ref={imgRef}
           src={imgSrc}
+          width={imgSize.width}
         />
       )}
     </ReactCrop>

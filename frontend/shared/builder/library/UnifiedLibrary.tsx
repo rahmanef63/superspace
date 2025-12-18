@@ -6,8 +6,11 @@ import { DraggableLibraryItem } from './DraggableLibraryItem';
 import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui';
 import type { LucideIcon } from 'lucide-react';
 
+// Studio tab icons
+import { STUDIO_TAB_ICONS } from '@/frontend/features/studio/registry/studioLibraryTabs';
+
 interface UnifiedLibraryProps {
-  currentFeature: 'cms' | 'automation' | 'database';
+  currentFeature: 'cms' | 'automation' | 'database' | 'studio';
   onAdd?: (componentKey: string, category: string) => void;
 }
 
@@ -97,13 +100,17 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
       <Tabs defaultValue={currentTabs[0]?.id || 'layout'} className="flex-1 flex flex-col">
         <TabsList className="px-2 pt-2 flex flex-wrap gap-1 h-auto justify-start bg-transparent">
           {currentTabs.map((tab: FeatureTab) => {
-            const Icon = getFeatureIcon(tab.feature);
+            // Get icon for studio tabs, otherwise use feature icon
+            const TabIcon = tab.feature === 'studio'
+              ? STUDIO_TAB_ICONS[tab.id as keyof typeof STUDIO_TAB_ICONS]
+              : getFeatureIcon(tab.feature);
             return (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex items-center gap-1 text-xs px-2 py-1.5 h-auto data-[state=active]:bg-muted"
+                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 h-auto data-[state=active]:bg-muted"
               >
+                {TabIcon && <TabIcon size={14} />}
                 {tab.label}
               </TabsTrigger>
             );

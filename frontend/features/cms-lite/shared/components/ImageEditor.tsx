@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { Upload, X, ZoomIn, ZoomOut, RotateCw, Loader2, Info } from "lucide-react";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
@@ -82,11 +83,13 @@ export function ImageEditor({
       />
 
       {value ? (
-        <div className="relative border rounded-lg overflow-hidden group">
-          <img
+        <div className="relative h-48 border rounded-lg overflow-hidden group">
+          <Image
             src={value}
             alt="Preview"
-            className="w-full h-48 object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 600px"
           />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <Button
@@ -123,16 +126,21 @@ export function ImageEditor({
       >
         <div className="space-y-4">
           <div className="flex items-center justify-center bg-muted rounded-lg p-4 min-h-[400px]">
-            <img
-              src={tempImage}
-              alt="Edit preview"
-              style={{
-                transform: `scale(${scale}) rotate(${rotation}deg)`,
-                transition: "transform 0.2s",
-                maxWidth: "100%",
-                maxHeight: "400px",
-              }}
-            />
+            {tempImage ? (
+              <Image
+                src={tempImage}
+                alt="Edit preview"
+                width={metadata?.width ?? 800}
+                height={metadata?.height ?? 400}
+                style={{
+                  transform: `scale(${scale}) rotate(${rotation}deg)`,
+                  transition: "transform 0.2s",
+                  maxWidth: "100%",
+                  maxHeight: "400px",
+                }}
+                sizes="100vw"
+              />
+            ) : null}
           </div>
 
           <div className="space-y-2">

@@ -13,7 +13,7 @@
 
 import { rmSync, existsSync, renameSync } from "fs"
 import { join } from "path"
-import { getAllFeatures } from "../../lib/features/registry.server"
+import { getAllFeatures } from "../../frontend/shared/lib/features/registry.server"
 
 interface DeleteOptions {
   slug: string

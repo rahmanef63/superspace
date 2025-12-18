@@ -11,6 +11,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Status",
     "description": "Share status updates with your team",
     "icon": "Camera",
+    "component": "StatusPage",
+    "path": "/dashboard/status",
+    "type": "route",
     "version": "2.0.0",
     "category": "communication",
     "tags": [
@@ -28,6 +31,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Documents",
     "description": "Collaborative document editor with real-time sync (Deprecated - use Knowledge > Docs)",
     "icon": "FileText",
+    "component": "DocumentsPage",
+    "path": "/dashboard/documents",
+    "type": "route",
     "version": "1.2.0",
     "category": "productivity",
     "tags": [
@@ -46,6 +52,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Calendar",
     "description": "Team calendar with event management and scheduling",
     "icon": "Calendar",
+    "component": "CalendarPage",
+    "path": "/dashboard/calendar",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -64,6 +73,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Reports",
     "description": "Analytics and reporting dashboard",
     "icon": "BarChart",
+    "component": "ReportsPage",
+    "path": "/dashboard/reports",
+    "type": "route",
     "version": "1.0.0",
     "category": "analytics",
     "tags": [
@@ -82,6 +94,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Tasks",
     "description": "Task management and tracking",
     "icon": "CheckSquare",
+    "component": "TasksPage",
+    "path": "/dashboard/tasks",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -97,6 +112,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Forms",
     "description": "Build custom forms for data collection",
     "icon": "FileText",
+    "component": "FormsPage",
+    "path": "/dashboard/forms",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -115,6 +133,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Approvals",
     "description": "Approval workflows and request management",
     "icon": "CheckCircle",
+    "component": "ApprovalsPage",
+    "path": "/dashboard/approvals",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -133,6 +154,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Support",
     "description": "Customer support and helpdesk ticketing system",
     "icon": "Headphones",
+    "component": "SupportPage",
+    "path": "/dashboard/support",
+    "type": "route",
     "version": "1.0.0",
     "category": "communication",
     "tags": [
@@ -149,6 +173,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Projects",
     "description": "Project management with team discussions",
     "icon": "FolderKanban",
+    "component": "ProjectsPage",
+    "path": "/dashboard/projects",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -165,6 +192,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Audit Log",
     "description": "View activity logs and audit trail",
     "icon": "History",
+    "component": "AuditLogPage",
+    "path": "/dashboard/audit-log",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -184,6 +214,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Import/Export",
     "description": "Import and export data across workspace",
     "icon": "ArrowUpDown",
+    "component": "ImportExportPage",
+    "path": "/dashboard/import-export",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -203,6 +236,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Integrations",
     "description": "Connect with third-party services and APIs",
     "icon": "Plug",
+    "component": "IntegrationsPage",
+    "path": "/dashboard/integrations",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -222,6 +258,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "POS",
     "description": "Point of Sale and retail management",
     "icon": "ShoppingCart",
+    "component": "PosPage",
+    "path": "/dashboard/pos",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -241,6 +280,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Builder",
     "description": "Build apps, content, and interfaces with visual builder tools",
     "icon": "Hammer",
+    "component": "BuilderPage",
+    "path": "/dashboard/builder",
+    "type": "route",
     "version": "1.0.0",
     "category": "creativity",
     "tags": [
@@ -256,10 +298,37 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
+    "slug": "studio",
+    "name": "Studio",
+    "description": "Unified visual builder combining UI design and workflow automation in a single canvas",
+    "icon": "Layers3",
+    "component": "StudioPage",
+    "path": "/dashboard/studio",
+    "type": "route",
+    "version": "1.0.0",
+    "category": "creativity",
+    "tags": [
+      "builder",
+      "automation",
+      "visual",
+      "canvas",
+      "workflow",
+      "ui"
+    ],
+    "requiresPermission": "studio.view",
+    "originalRequiresPermission": "studio.view",
+    "status": "beta",
+    "isReady": true,
+    "featureType": "optional"
+  },
+  {
     "slug": "marketing",
     "name": "Marketing",
     "description": "Marketing automation and campaign management",
     "icon": "Megaphone",
+    "component": "MarketingPage",
+    "path": "/dashboard/marketing",
+    "type": "route",
     "version": "1.0.0",
     "category": "content",
     "tags": [
@@ -279,6 +348,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Analytics",
     "description": "Monitor your business performance with real-time analytics",
     "icon": "BarChart3",
+    "component": "AnalyticsPage",
+    "path": "/dashboard/analytics",
+    "type": "route",
     "version": "1.0.0",
     "category": "analytics",
     "tags": [
@@ -298,6 +370,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Business Intelligence",
     "description": "Advanced analytics and business intelligence",
     "icon": "LineChart",
+    "component": "BiPage",
+    "path": "/dashboard/bi",
+    "type": "route",
     "version": "1.0.0",
     "category": "analytics",
     "tags": [
@@ -317,6 +392,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Automation",
     "description": "Automate workflows and processes with visual builders",
     "icon": "Workflow",
+    "component": "AutomationPage",
+    "path": "/dashboard/automation",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -336,6 +414,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Sales",
     "description": "Sales management and pipeline tracking",
     "icon": "DollarSign",
+    "component": "SalesPage",
+    "path": "/dashboard/sales",
+    "type": "route",
     "version": "1.0.0",
     "category": "productivity",
     "tags": [
@@ -355,6 +436,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "HR Management",
     "description": "Human Resources Management",
     "icon": "Users",
+    "component": "hrPage",
+    "path": "/dashboard/hr",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -370,6 +454,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Accounting",
     "description": "Financial Management and Accounting",
     "icon": "Calculator",
+    "component": "accountingPage",
+    "path": "/dashboard/accounting",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -385,6 +472,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "Inventory Management",
     "description": "Comprehensive inventory management with multi-warehouse support, stock tracking, and demand forecasting",
     "icon": "Package",
+    "component": "InventoryPage",
+    "path": "/dashboard/erp/inventory",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [
@@ -404,6 +494,9 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "name": "CRM",
     "description": "Customer Relationship Management with contacts, leads, opportunities, and sales pipeline",
     "icon": "Users",
+    "component": "CrmPage",
+    "path": "/dashboard/erp/crm",
+    "type": "route",
     "version": "1.0.0",
     "category": "administration",
     "tags": [

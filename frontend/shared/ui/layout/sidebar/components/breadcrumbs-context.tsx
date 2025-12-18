@@ -2,8 +2,8 @@
 
 import React from "react"
 import { usePathname } from "next/navigation"
-import { DISCOVERED_FEATURES, getFeatureById } from "@/lib/features/registry"
-import type { FeatureConfig } from "@/lib/features/defineFeature"
+import { DISCOVERED_FEATURES, getFeatureById } from "@/frontend/shared/lib/features/registry"
+import type { FeatureConfig } from "@/frontend/shared/lib/features/defineFeature"
 
 export type SidebarBreadcrumbItem = {
   label: string

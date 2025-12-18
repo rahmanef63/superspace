@@ -8,6 +8,7 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
+import Image from "next/image"
 import { ImageIcon, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
@@ -165,11 +166,12 @@ export function GalleryView<T extends GalleryItem>({
               {/* Image */}
               <div className="aspect-square bg-muted relative">
                 {imageUrl ? (
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -254,12 +256,16 @@ export function GalleryView<T extends GalleryItem>({
               </Button>
 
               {/* Image */}
-              <div className="flex items-center justify-center min-h-[60vh] bg-black/95">
-                <img
-                  src={getImageUrl(filteredData[lightboxIndex]) || ""}
-                  alt={getImageTitle(filteredData[lightboxIndex])}
-                  className="max-w-full max-h-[80vh] object-contain"
-                />
+              <div className="relative flex items-center justify-center min-h-[60vh] h-[80vh] bg-black/95">
+                {getImageUrl(filteredData[lightboxIndex]) ? (
+                  <Image
+                    src={getImageUrl(filteredData[lightboxIndex])!}
+                    alt={getImageTitle(filteredData[lightboxIndex])}
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
+                  />
+                ) : null}
               </div>
 
               {/* Info bar */}

@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import Image from "next/image";
 import type { Message } from "../types/message";
 import { formatTimestamp } from "../util/formatMessage";
 
@@ -35,9 +36,13 @@ export function ActivityFeed({ activities, onActivityClick }: ActivityFeedProps)
               {/* Icon or avatar */}
               <div className="chat-activity-icon">
                 {activity.author.avatarUrl ? (
-                  <img
+                  <Image
                     src={activity.author.avatarUrl}
                     alt={activity.author.name || "User"}
+                    width={32}
+                    height={32}
+                    className="h-full w-full rounded-full object-cover"
+                    sizes="32px"
                   />
                 ) : (
                   <div className="chat-activity-icon-placeholder">

@@ -39,7 +39,7 @@ export function SafeClerkProvider({ children, publishableKey, afterSignOutUrl = 
 
       // Log but don't crash on Clerk infinite redirect in development
       if (message.includes('infinite redirect loop') && process.env.NODE_ENV === 'development') {
-        originalError('[v0] Suppressed Clerk infinite redirect loop')
+        originalError('Suppressed Clerk infinite redirect loop')
         return
       }
 

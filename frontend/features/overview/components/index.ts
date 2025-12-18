@@ -37,3 +37,6 @@ export type { TeamCompositionSectionProps } from "./TeamCompositionSection"
 
 export { OverviewSkeleton } from "./OverviewSkeleton"
 
+export { PendingInvitationsSection } from "./PendingInvitationsSection"
+
+

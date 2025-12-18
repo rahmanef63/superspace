@@ -4,6 +4,7 @@
  */
 
 import { FileText, Image, Tag } from "lucide-react";
+import NextImage from "next/image";
 import { Input } from "../../../../../shared/components/Form";
 import { cn } from "@/lib/utils";
 import type { WebsiteSettings, ValidationErrors } from "../types";
@@ -155,13 +156,15 @@ export function SEOStep({ form, setForm, errors }: SEOStepProps) {
           <div className="mt-3 p-3 bg-muted/50 border border-border rounded-lg">
             <p className="text-xs font-semibold text-muted-foreground mb-2">Preview:</p>
             <div className="relative aspect-[1.91/1] rounded overflow-hidden bg-background">
-              <img
+              <NextImage
                 src={form.ogImage}
                 alt="OG Preview"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.style.display = "none";
                 }}
+                sizes="(max-width: 768px) 100vw, 600px"
               />
             </div>
           </div>

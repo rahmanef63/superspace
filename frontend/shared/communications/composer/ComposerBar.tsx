@@ -7,6 +7,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -187,10 +188,12 @@ export function ComposerBar({
               className="relative flex-shrink-0 w-16 h-16 rounded-lg bg-muted overflow-hidden group"
             >
               {attachment.thumbnail ? (
-                <img 
-                  src={attachment.thumbnail} 
+                <Image
+                  src={attachment.thumbnail}
                   alt={attachment.name}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="64px"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">

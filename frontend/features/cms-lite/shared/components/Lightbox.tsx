@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from './Button';
 
@@ -143,11 +144,14 @@ export function Lightbox({ images, initialIndex = 0, isOpen, onClose, captions }
         className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
+        <Image
           src={images[currentIndex]}
           alt={captions?.[currentIndex] || `Image ${currentIndex + 1}`}
+          width={1600}
+          height={900}
           className="max-w-full max-h-[90vh] object-contain transition-transform duration-200"
           style={{ transform: `scale(${scale})` }}
+          sizes="90vw"
         />
         {captions?.[currentIndex] && (
           <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-4 text-center">
@@ -193,9 +197,11 @@ export function ImageWithLightbox({ src, alt, className, images, captions }: Ima
 
   return (
     <>
-      <img
+      <Image
         src={src}
         alt={alt}
+        width={800}
+        height={600}
         className={`cursor-pointer hover:opacity-90 transition-opacity ${className || ''}`}
         onClick={() => setIsOpen(true)}
         role="button"
@@ -206,6 +212,7 @@ export function ImageWithLightbox({ src, alt, className, images, captions }: Ima
             setIsOpen(true);
           }
         }}
+        sizes="100vw"
       />
       <Lightbox
         images={allImages}

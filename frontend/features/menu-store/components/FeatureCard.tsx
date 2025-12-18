@@ -10,8 +10,8 @@ import { STATUS_BADGE_VARIANTS } from "../constants";
 
 interface FeatureCardProps {
   feature: AvailableFeatureMenu;
-  isInstalling: boolean;
-  onInstall: (slug: string) => void;
+  isInstalling?: boolean;
+  onInstall?: (slug: string) => void;
   onPreview?: (slug: string) => void;
   onSettings?: (slug: string) => void;
   onAction?: (slug: string) => void;
@@ -182,7 +182,7 @@ export function FeatureCard({
               </p>
             )}
 
-            {!isLocked && (
+            {!isLocked && onInstall && (
               <Button
                 onClick={() => onInstall(feature.slug)}
                 disabled={isInstalling}

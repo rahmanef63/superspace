@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync } from "fs"
 import { join, relative } from "path"
-import { getAllFeatures } from "../../lib/features/registry.server"
+import { getAllFeatures } from "../../frontend/shared/lib/features/registry.server"
 
 const rootDir = process.cwd()
 

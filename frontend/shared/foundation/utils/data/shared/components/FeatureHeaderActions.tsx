@@ -62,10 +62,8 @@ export function FeatureExportImport({
   useEffect(() => {
     const initializeRegistry = async () => {
       try {
-        console.log(`Initializing export/import registry for feature: ${featureId}`)
         const { initializeDataExportRegistry } = await import("@/frontend/shared/foundation/utils/data/shared/config/data-export-registry")
         await initializeDataExportRegistry()
-        console.log(`Registry initialized successfully for feature: ${featureId}`)
         setIsInitialized(true)
       } catch (error) {
         console.error("Failed to initialize export/import registry:", error)
@@ -83,18 +81,14 @@ export function FeatureExportImport({
     if (!isInitialized) {
       return null // Don't show anything while initializing
     }
-    console.warn(`Feature ${featureId} does not support export/import`)
-    console.log('Registered features:', getSupportedExportFeatures())
     return null
   }
 
   const handleExportClick = () => {
-    console.log("Export button clicked")
     setExportOpen(true)
   }
 
   const handleImportClick = () => {
-    console.log("Import button clicked")
     setImportOpen(true)
   }
 

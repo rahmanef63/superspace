@@ -2,6 +2,7 @@
 
 import type { ReactNode, HTMLAttributes } from "react";
 import { createContext, useContext, useMemo, useState } from "react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -159,10 +160,12 @@ export const GalleryCard = ({
             {/* Cover Image */}
             <div className={cn("relative bg-muted", aspectClass)}>
                 {coverImage ? (
-                    <img
+                    <Image
                         src={coverImage}
                         alt={name}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center">

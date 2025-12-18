@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 export interface ImageComponentProps {
@@ -24,18 +25,23 @@ export const ImageComponent: React.FC<ImageComponentProps> = ({
   rounded = true,
   objectFit = "cover",
   className = "w-full h-auto"
-}) => (
-  <img
-    src={src}
-    alt={alt}
-    width={Number(width) || undefined}
-    height={Number(height) || undefined}
-    className={cn(
-      className,
-      rounded && "rounded-2xl",
-      objectFit && `object-${objectFit}`
-    )}
-  />
-);
+}) => {
+  const numericWidth = Number(width) || 640;
+  const numericHeight = Number(height) || 420;
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={numericWidth}
+      height={numericHeight}
+      className={cn(
+        className,
+        rounded && "rounded-2xl",
+        objectFit && `object-${objectFit}`
+      )}
+    />
+  );
+};
 
 export default ImageComponent;

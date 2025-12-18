@@ -44,11 +44,13 @@ import {
     Loader2,
     ArrowUpDown,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Send,
+    X
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMembers, useRoles, useRemoveMember, useUpdateMemberRole } from "../api";
+import { useMembers, useRoles, useRemoveMember, useUpdateMemberRole, useWorkspaceInvitations, useCancelInvitation, useResendInvitation } from "../api";
 import { useToast } from "@/hooks/use-toast";
 import { QuickInvitePanel } from "./QuickInvitePanel";
 import {
@@ -73,13 +75,43 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
     const [isInviteOpen, setIsInviteOpen] = React.useState(false);
     const [sortField, setSortField] = React.useState<SortField>("name");
     const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
+    const [showPending, setShowPending] = React.useState(true);
 
     // Data Hooks
-    const members = useMembers(workspaceId, { includeInactive: false });
+    // Cast to any to handle enriched return type not yet in generated types
+    const membersRaw = useMembers(workspaceId, { includeInactive: false });
+
+    interface EnrichedMember {
+        _id: Id<"workspaceMemberships">;
+        _creationTime: number;
+        userId: Id<"users">;
+        roleId: Id<"roles">;
+        workspaceId: Id<"workspaces">;
+        status: string; // "active" | "inactive" | "invited"
+        user?: {
+            _id: Id<"users">;
+            name?: string;
+            email?: string;
+            avatarUrl?: string;
+        };
+        role?: {
+            _id: Id<"roles">;
+            name: string;
+            color?: string;
+            level?: number;
+        };
+    }
+
+    const members = membersRaw as unknown as EnrichedMember[] | undefined;
     const roles = useRoles(workspaceId);
     const removeMember = useRemoveMember();
     const updateMemberRole = useUpdateMemberRole();
     const { toast } = useToast();
+
+    // Invitation Hooks
+    const pendingInvitations = useWorkspaceInvitations(workspaceId, "pending");
+    const cancelInvitation = useCancelInvitation();
+    const resendInvitation = useResendInvitation();
 
     // Derived State
     const filteredMembers = React.useMemo(() => {
@@ -147,14 +179,45 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
         }
     };
 
-    const handleRoleChange = async (memberId: Id<"workspaceMemberships">, userId: Id<"users">, roleId: Id<"roles">) => {
+    const handleMemberRoleUpdate = async (userId: Id<"users">, roleId: Id<"roles">) => {
         try {
-            await updateMemberRole({ workspaceId, userId, roleId });
+            await updateMemberRole({
+                workspaceId,
+                userId,
+                roleId,
+            });
             toast({ title: "Role updated", description: "Member role has been updated." });
         } catch (error) {
             toast({
                 title: "Error",
                 description: "Failed to update role.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleCancelInvitation = async (invitationId: Id<"invitations">) => {
+        if (!confirm("Are you sure you want to cancel this invitation?")) return;
+        try {
+            await cancelInvitation({ invitationId });
+            toast({ title: "Invitation cancelled", description: "The invitation has been cancelled." });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to cancel invitation.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleResendInvitation = async (invitationId: Id<"invitations">) => {
+        try {
+            await resendInvitation({ invitationId });
+            toast({ title: "Invitation resent", description: "Values token refreshed and date extended." });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to resend invitation.",
                 variant: "destructive",
             });
         }
@@ -202,7 +265,7 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
                                 <Filter className="w-3.5 h-3.5" />
                                 {roleFilter === "all"
                                     ? "All Roles"
-                                    : roles.find((r) => r._id === roleFilter)?.name || "Role"}
+                                    : roles.find((r: any) => r._id === roleFilter)?.name || "Role"}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
@@ -250,120 +313,184 @@ export function MembersListPanel({ workspaceId, className }: MembersListPanelPro
             </div>
 
             {/* List */}
-            <div className="flex-1 border rounded-md overflow-hidden bg-card overflow-x-auto">
-                <Table className="min-w-full">
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent bg-muted/50">
-                            <TableHead className="min-w-[150px] cursor-pointer" onClick={() => handleSort("name")}>
-                                <div className="flex items-center">Member <SortIcon field="name" /></div>
-                            </TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort("role")}>
-                                <div className="flex items-center">Role <SortIcon field="role" /></div>
-                            </TableHead>
-                            <TableHead className="hidden md:table-cell cursor-pointer" onClick={() => handleSort("joined")}>
-                                <div className="flex items-center">Joined <SortIcon field="joined" /></div>
-                            </TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredMembers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                    No members found.
-                                </TableCell>
+            <div className="flex-1 border rounded-md bg-card overflow-hidden flex flex-col">
+                <div className="overflow-x-auto">
+                    <Table className="min-w-full">
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent bg-muted/50">
+                                <TableHead className="min-w-[150px] cursor-pointer" onClick={() => handleSort("name")}>
+                                    <div className="flex items-center">Member <SortIcon field="name" /></div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort("role")}>
+                                    <div className="flex items-center">Role <SortIcon field="role" /></div>
+                                </TableHead>
+                                <TableHead className="hidden md:table-cell cursor-pointer" onClick={() => handleSort("joined")}>
+                                    <div className="flex items-center">Joined <SortIcon field="joined" /></div>
+                                </TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ) : (
-                            filteredMembers.map((member) => (
-                                <TableRow key={member._id} className="group">
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarImage src={member.user?.avatarUrl} />
-                                                <AvatarFallback>{getInitials(member.user?.name)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-sm">
-                                                    {member.user?.name || "Unknown User"}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">
-                                                    {member.user?.email}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant="outline"
-                                            className="bg-opacity-10 border-opacity-20 flex w-fit items-center gap-1.5"
-                                            style={{
-                                                backgroundColor: (member.role?.color ?? "#6366f1") + "20",
-                                                borderColor: member.role?.color ?? "#6366f1",
-                                                color: member.role?.color ?? "#6366f1",
-                                            }}
-                                        >
-                                            <Shield className="w-3 h-3" />
-                                            {member.role?.name || "No Role"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
-                                        <div className="flex items-center gap-1.5">
-                                            <Calendar className="w-3.5 h-3.5 opacity-70" />
-                                            {member._creationTime
-                                                ? format(new Date(member._creationTime), "MMM d, yyyy")
-                                                : "-"}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                                    <MoreVertical className="w-4 h-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    onClick={() => window.location.href = `mailto:${member.user?.email}`}
-                                                >
-                                                    <Mail className="w-4 h-4 mr-2" />
-                                                    Email member
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="focus:bg-transparent">
-                                                    <span className="text-xs text-muted-foreground font-medium mb-1 ml-1">Change Role</span>
-                                                </DropdownMenuItem>
-                                                {roles.map((role) => (
-                                                    <DropdownMenuItem
-                                                        key={role._id}
-                                                        onClick={() => handleRoleChange(member._id, member.user!._id, role._id)}
-                                                        disabled={member.role?._id === role._id}
-                                                    >
-                                                        <div className="flex items-center gap-2">
-                                                            <div
-                                                                className="w-2 h-2 rounded-full"
-                                                                style={{ backgroundColor: role.color ?? "#6366f1" }}
-                                                            />
-                                                            {role.name}
-                                                            {member.role?._id === role._id && <span className="ml-auto text-xs opacity-50">(Current)</span>}
-                                                        </div>
-                                                    </DropdownMenuItem>
-                                                ))}
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={() => handleRemoveMember(member.user!._id, member._id)}
-                                                >
-                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                    Remove from workspace
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredMembers.length === 0 && (!pendingInvitations?.length) ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                        No members found.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : (
+                                filteredMembers.map((member) => (
+                                    <TableRow key={member._id} className="group">
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9">
+                                                    <AvatarImage src={member.user?.avatarUrl} />
+                                                    <AvatarFallback>{getInitials(member.user?.name)}</AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-sm">
+                                                        {member.user?.name || "Unknown User"}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">
+                                                        {member.user?.email}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant="outline"
+                                                className="bg-opacity-10 border-opacity-20 flex w-fit items-center gap-1.5"
+                                                style={{
+                                                    backgroundColor: (member.role?.color ?? "#6366f1") + "20",
+                                                    borderColor: member.role?.color ?? "#6366f1",
+                                                    color: member.role?.color ?? "#6366f1",
+                                                }}
+                                            >
+                                                <Shield className="w-3 h-3" />
+                                                {member.role?.name || "No Role"}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="w-3.5 h-3.5 opacity-70" />
+                                                {member._creationTime
+                                                    ? format(new Date(member._creationTime), "MMM d, yyyy")
+                                                    : "-"}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={() => window.location.href = `mailto:${member.user?.email}`}
+                                                    >
+                                                        <Mail className="w-4 h-4 mr-2" />
+                                                        Email member
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="focus:bg-transparent">
+                                                        <span className="text-xs text-muted-foreground font-medium mb-1 ml-1">Change Role</span>
+                                                    </DropdownMenuItem>
+                                                    {roles?.map((r: any) => (
+                                                        <DropdownMenuItem
+                                                            key={r._id}
+                                                            onClick={() => handleMemberRoleUpdate(member.user!._id, r._id)}
+                                                            disabled={member.role?._id === r._id}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <div
+                                                                    className="w-2 h-2 rounded-full"
+                                                                    style={{ backgroundColor: r.color ?? "#6366f1" }}
+                                                                />
+                                                                {r.name}
+                                                                {member.role?._id === r._id && <span className="ml-auto text-xs opacity-50">(Current)</span>}
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={() => handleRemoveMember(member.user!._id, member._id)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                        Remove from workspace
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+
+                            {/* Pending Invitations Section */}
+                            {pendingInvitations && pendingInvitations.length > 0 && (
+                                <>
+                                    <TableRow className="bg-muted/30">
+                                        <TableCell colSpan={4} className="py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                            Pending Invitations ({pendingInvitations.length})
+                                        </TableCell>
+                                    </TableRow>
+                                    {pendingInvitations.map((inv: any) => (
+                                        <TableRow key={inv._id} className="group bg-muted/5">
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center border border-dashed">
+                                                        <Mail className="h-4 w-4 text-muted-foreground/50" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-sm text-foreground/80 italic">
+                                                            {inv.inviteeEmail}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Invitation pending
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {inv.roleId && (
+                                                    <Badge variant="outline" className="opacity-70">
+                                                        {roles.find((r: any) => r._id === inv.roleId)?.name ?? "Role"}
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                                                {format(new Date(inv._creationTime), "MMM d, yyyy")}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => handleResendInvitation(inv._id)}>
+                                                            <Send className="w-4 h-4 mr-2" />
+                                                            Resend Invitation
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleCancelInvitation(inv._id)}
+                                                            className="text-destructive"
+                                                        >
+                                                            <X className="w-4 h-4 mr-2" />
+                                                            Cancel Invitation
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );

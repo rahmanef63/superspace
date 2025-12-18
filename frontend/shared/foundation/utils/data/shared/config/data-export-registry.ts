@@ -62,7 +62,7 @@ class DataExportRegistry {
 
       // 2) Auto-register top-level features that declare export/import in the feature registry
       try {
-        const { getAllFeatures } = await import("@/lib/features/registry")
+        const { getAllFeatures } = await import("@/frontend/shared/lib/features/registry")
         type FeatureNode = {
           id: string
           name: string
@@ -97,9 +97,7 @@ class DataExportRegistry {
       }
 
       this.initialized = true
-      console.log(`DataExportRegistry initialized with ${this.configs.size} features`)
     } catch (error) {
-      console.error("Failed to initialize DataExportRegistry:", error)
     }
   }
 

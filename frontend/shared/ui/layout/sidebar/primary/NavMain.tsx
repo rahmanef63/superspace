@@ -59,8 +59,6 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
   }))
   const navItems: NavItem[] = items && items.length > 0 ? items : fallback
 
-  console.log("[v0] NavMain received items:", items)
-  console.log("[v0] NavMain using navItems:", navItems)
 
   // Handler to close mobile sidebar when menu is clicked
   const handleMenuClick = (viewId: string) => {

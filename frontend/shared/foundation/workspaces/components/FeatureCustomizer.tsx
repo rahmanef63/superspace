@@ -6,8 +6,8 @@ import * as Icons from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CORE_FEATURES, type AvailableFeatureId } from "../constants"
 import { useBundleWithFeatures, getMergedBundleAllFeatures } from "../hooks/useBundles"
-import { getAllFeatures } from "@/lib/features/registry"
-import type { FeatureConfig } from "@/lib/features/defineFeature"
+import { getAllFeatures } from "@/frontend/shared/lib/features/registry"
+import type { FeatureConfig } from "@/frontend/shared/lib/features/defineFeature"
 
 interface FeatureCustomizerProps {
   selectedBundleId: string | null
@@ -24,15 +24,15 @@ interface FeatureItemProps {
   onToggle: () => void
 }
 
-function FeatureItem({ 
-  featureId, 
-  featureConfig, 
-  isEnabled, 
-  isCore, 
+function FeatureItem({
+  featureId,
+  featureConfig,
+  isEnabled,
+  isCore,
   isRecommended,
-  onToggle 
+  onToggle
 }: FeatureItemProps) {
-  const IconComponent = featureConfig 
+  const IconComponent = featureConfig
     ? (Icons as any)[featureConfig.ui.icon] || Icons.HelpCircle
     : Icons.HelpCircle
 
@@ -46,7 +46,7 @@ function FeatureItem({
       disabled={isCore}
       className={cn(
         "flex items-start gap-3 p-3 rounded-lg border transition-all duration-150 text-left w-full",
-        isCore 
+        isCore
           ? "border-primary/30 bg-primary/5 cursor-not-allowed"
           : isEnabled
             ? "border-primary bg-primary/5 hover:bg-primary/10"
@@ -56,7 +56,7 @@ function FeatureItem({
       {/* Toggle Indicator */}
       <div className={cn(
         "h-5 w-5 rounded flex items-center justify-center shrink-0 mt-0.5",
-        isCore 
+        isCore
           ? "bg-primary/20"
           : isEnabled
             ? "bg-primary"
@@ -110,10 +110,10 @@ function FeatureItem({
   )
 }
 
-export function FeatureCustomizer({ 
-  selectedBundleId, 
-  enabledFeatures, 
-  onToggleFeature 
+export function FeatureCustomizer({
+  selectedBundleId,
+  enabledFeatures,
+  onToggleFeature
 }: FeatureCustomizerProps) {
   // Use the new hook that fetches from database with static fallback
   const { bundle, isLoading } = useBundleWithFeatures(selectedBundleId)

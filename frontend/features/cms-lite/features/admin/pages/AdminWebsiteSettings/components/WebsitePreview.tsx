@@ -5,6 +5,7 @@
  */
 
 import { ExternalLink, Globe, TrendingUp } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { WebsiteSettings, SEOScore } from "../types";
 import { getSEOGrade } from "../utils/seoAnalyzer";
@@ -91,15 +92,19 @@ export function WebsitePreview({ settings, seoScore, className }: WebsitePreview
       {/* Preview Content */}
       <div className="p-8 space-y-6 bg-gradient-to-br from-background via-background to-muted/20 min-h-[400px]">
         {/* Favicon + Title */}
-        <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3">
           {settings.favicon ? (
-            <img
+            <Image
               src={settings.favicon}
               alt="Favicon"
+              width={32}
+              height={32}
               className="w-8 h-8 rounded"
               onError={(e) => {
-                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E";
+                e.currentTarget.src =
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E";
               }}
+              sizes="32px"
             />
           ) : (
             <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
@@ -144,13 +149,15 @@ export function WebsitePreview({ settings, seoScore, className }: WebsitePreview
               Open Graph Image
             </p>
             <div className="relative aspect-[1.91/1] rounded-lg overflow-hidden border border-border bg-muted">
-              <img
+              <Image
                 src={settings.ogImage}
                 alt="OG Preview"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.style.display = "none";
                 }}
+                sizes="(max-width: 768px) 100vw, 600px"
               />
             </div>
           </div>

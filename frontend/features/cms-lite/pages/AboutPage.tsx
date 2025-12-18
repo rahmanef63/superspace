@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -37,10 +38,13 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 {content?.image && (
                   <div className="rounded-lg overflow-hidden">
-                    <img 
-                      src={content.image} 
-                      alt={content.title} 
-                      className="w-full h-full object-cover"
+                    <Image
+                      src={content.image}
+                      alt={content.title}
+                      width={800}
+                      height={600}
+                      className="w-full h-auto object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   </div>
                 )}

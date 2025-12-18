@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import Image from "next/image";
 import type { CommonGroup } from "../types";
 
 type GroupsSectionProps = {
@@ -53,15 +54,17 @@ export function GroupsSection({ isMobile, groups, isLoading }: GroupsSectionProp
           >
             <div
               className={[
-                "flex-shrink-0 overflow-hidden rounded-full bg-wa-muted",
+                "relative flex-shrink-0 overflow-hidden rounded-full bg-wa-muted",
                 isMobile ? "h-10 w-10" : "h-12 w-12",
               ].join(" ")}
             >
               {group.avatar ? (
-                <img
+                <Image
                   src={group.avatar}
                   alt={group.name}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes={isMobile ? "40px" : "48px"}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">

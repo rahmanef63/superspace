@@ -51,10 +51,16 @@ export const registerCMSLibraryTabs = (registerFeatureTabs: (feature: string, ta
       categories: ['Templates'],
     },
     {
+      id: 'blocks',
+      label: 'Blocks',
+      feature: 'cms',
+      categories: ['Blocks'],
+    },
+    {
       id: 'all',
       label: 'All',
       feature: 'cms',
-      categories: ['Layout', 'Content', 'Media', 'Form', 'Forms', 'Input', 'Navigation', 'Action', 'UI', 'Components', 'Templates'],
+      categories: ['Layout', 'Content', 'Media', 'Form', 'Forms', 'Input', 'Navigation', 'Action', 'UI', 'Components', 'Templates', 'Blocks'],
     },
   ];
 

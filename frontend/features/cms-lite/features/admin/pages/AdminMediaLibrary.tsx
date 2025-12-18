@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Image as ImageIcon, Upload, Trash2, Search, Grid, List, Download, ExternalLink, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '../components/SearchBar';
@@ -223,10 +224,12 @@ export default function AdminMediaLibrary() {
                   setIsDetailModalOpen(true);
                 }}
               >
-                <img
+                <Image
                   src={item.url}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 20vw"
                 />
                 
                 <div className="absolute top-2 left-2">
@@ -297,10 +300,13 @@ export default function AdminMediaLibrary() {
                       />
                     </td>
                     <td className="p-4">
-                      <img
+                      <Image
                         src={item.url}
                         alt={item.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 object-cover rounded"
+                        sizes="48px"
                       />
                     </td>
                     <td className="p-4">
@@ -374,10 +380,13 @@ export default function AdminMediaLibrary() {
           >
             <div className="space-y-4">
               <div className="border rounded-lg overflow-hidden">
-                <img
+                <Image
                   src={selectedItem.url}
                   alt={selectedItem.name}
+                  width={1200}
+                  height={800}
                   className="w-full h-auto"
+                  sizes="(max-width: 768px) 100vw, 672px"
                 />
               </div>
 

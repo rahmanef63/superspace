@@ -134,8 +134,8 @@ const fromSchema = (schema: Schema): { nodes: CMSNode[], edges: CMSEdge[] } => {
 };
 
 interface SharedCanvasContextType {
-  canvasMode: 'cms' | 'automation' | 'database';
-  setCanvasMode: (mode: 'cms' | 'automation' | 'database') => void;
+  canvasMode: 'cms' | 'automation' | 'database' | 'studio';
+  setCanvasMode: (mode: 'cms' | 'automation' | 'database' | 'studio') => void;
   nodes: Node<any>[];
   setNodes: React.Dispatch<React.SetStateAction<Node<any>[]>>;
   edges: Edge[];
@@ -207,7 +207,7 @@ const newNode = (comp: string, pos = { x: 0, y: 0 }): CMSNode => {
 
 export const SharedCanvasProvider: React.FC<{
   children: React.ReactNode;
-  initialMode?: 'cms' | 'automation' | 'database';
+  initialMode?: 'cms' | 'automation' | 'database' | 'studio';
 }> = ({ children, initialMode = 'cms' }) => {
   const [canvasMode, setCanvasMode] = useState(initialMode);
   // Use proper generic types for React Flow state

@@ -9,6 +9,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import {
     Smile,
@@ -377,11 +378,13 @@ function AttachmentPreview({ attachment }: AttachmentPreviewProps) {
 
     if (isImage && attachment.url) {
         return (
-            <div className="max-w-md rounded-lg overflow-hidden border">
-                <img
+            <div className="relative max-w-md h-[300px] rounded-lg overflow-hidden border bg-muted">
+                <Image
                     src={attachment.url}
                     alt={attachment.name}
-                    className="max-h-[300px] object-contain"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 448px"
                 />
             </div>
         )

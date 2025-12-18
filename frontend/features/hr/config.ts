@@ -1,4 +1,4 @@
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 /**
  * HR Management Feature Configuration
@@ -52,5 +52,5 @@ export default defineFeature({
   tags: [
     "hr",
     "administration"
-],
+  ],
 })

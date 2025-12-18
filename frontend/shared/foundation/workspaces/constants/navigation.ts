@@ -8,7 +8,7 @@
  * To add/edit navigation items, update the feature's config.ts file.
  */
 
-import { getAllFeatures } from "@/lib/features/registry"
+import { getAllFeatures } from "@/frontend/shared/lib/features/registry"
 import * as Icons from "lucide-react"
 import { WorkspaceNavigationItem } from "../types"
 

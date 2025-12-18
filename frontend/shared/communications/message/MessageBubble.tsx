@@ -7,6 +7,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import Image from "next/image";
 import { 
   Check, 
   CheckCheck, 
@@ -328,10 +329,13 @@ export function MessageBubble({
                 {message.content.attachments.map((attachment) => (
                   <div key={attachment.id} className="rounded-lg overflow-hidden">
                     {attachment.type === 'image' && (
-                      <img 
-                        src={attachment.url} 
+                      <Image
+                        src={attachment.url}
                         alt={attachment.name}
-                        className="max-w-full rounded"
+                        width={800}
+                        height={600}
+                        className="max-w-full h-auto rounded"
+                        sizes="100vw"
                       />
                     )}
                     {attachment.type === 'file' && (

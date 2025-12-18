@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -520,7 +521,7 @@ function WorkspaceMenuItem({
         onSelect()
       }}
     >
-      <WorkspaceIcon workspace={workspace} className="size-6 rounded-sm" iconClassName="size-3.5" />
+      <WorkspaceIcon workspace={workspace} className="size-6 rounded-sm" iconClassName="size-3.5" size={24} />
       <div className="flex-1 text-left">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium">{workspace.name}</span>
@@ -561,11 +562,13 @@ interface ChildWorkspacePlaceholderProps {
 function WorkspaceIcon({
   workspace,
   className,
-  iconClassName
+  iconClassName,
+  size = 32,
 }: {
   workspace: Doc<"workspaces">
   className?: string
   iconClassName?: string
+  size?: number
 }) {
   const Icon = WORKSPACE_TYPE_ICONS[workspace.type ?? "personal"] ?? Briefcase
   const color = (workspace as any).color ?? "#6366f1"
@@ -578,9 +581,11 @@ function WorkspaceIcon({
 
   if (logoUrl) {
     return (
-      <img
+      <Image
         src={logoUrl}
         alt={workspace.name}
+        width={size}
+        height={size}
         className={cn("object-cover rounded-md bg-transparent", className)}
       />
     )

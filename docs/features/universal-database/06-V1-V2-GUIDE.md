@@ -248,7 +248,7 @@ import { mapFieldType } from "../shared/utils/mappings";
 ```typescript
 // frontend/features/database/page.tsx
 
-import { useFeatureFlag } from "@/lib/features/flags";
+import { useFeatureFlag } from "@/frontend/shared/lib/features/flags";
 
 // V1 and V2 imports are ISOLATED
 import DatabasePageV1 from "./v1/views/DatabasePage";

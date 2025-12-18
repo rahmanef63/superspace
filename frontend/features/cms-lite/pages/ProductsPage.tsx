@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -113,11 +114,13 @@ export default function ProductsPage() {
                 className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-background"
               >
                 {product.coverImage && (
-                  <div className="aspect-video bg-muted overflow-hidden">
-                    <img
+                  <div className="relative aspect-video bg-muted overflow-hidden">
+                    <Image
                       src={product.coverImage}
                       alt={locale === "id" ? product.titleId : locale === "en" ? product.titleEn : product.titleAr}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   </div>
                 )}

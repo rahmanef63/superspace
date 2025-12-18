@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface ButtonWidgetProps {
@@ -226,9 +227,9 @@ export const ButtonWidget: React.FC<ButtonWidgetProps> = ({
 
   if (href && !disabled) {
     return (
-      <a href={href} className={buttonClasses}>
+      <Link href={href} className={buttonClasses}>
         {renderContent()}
-      </a>
+      </Link>
     );
   }
 

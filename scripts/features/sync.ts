@@ -18,7 +18,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from "fs"
 import { join } from "path"
-import { getAllFeatures, getFeatureSlug, getFeaturesByType } from "../../lib/features/registry.server"
+import { getAllFeatures, getFeatureSlug, getFeaturesByType } from "../../frontend/shared/lib/features/registry.server"
 
 // Bundle IDs (should match lib/features/defineFeature.ts)
 const BUNDLE_IDS = [
@@ -79,6 +79,9 @@ function getOptionalFeaturesCatalog() {
     name: f.name,
     description: f.description,
     icon: f.ui.icon,
+    component: f.ui.component,
+    path: f.ui.path,
+    type: 'route',
     version: f.technical.version,
     category: f.ui.category,
     tags: f.tags,
@@ -105,28 +108,28 @@ interface BundleError {
 
 function validateBundles(): BundleError[] {
   console.log("\n🎯 Validating bundle configurations...")
-  
+
   const errors: BundleError[] = []
 
   // Only validate top-level features.
   // Child features (feature.children) inherit their parent's bundle membership and are not
   // required to declare bundle configuration themselves.
   const allFeatures = FEATURES_REGISTRY
-  
+
   // Track features per bundle for reporting
   const bundleFeatures: Record<string, { core: string[], recommended: string[], optional: string[] }> = {}
   BUNDLE_IDS.forEach(id => {
     bundleFeatures[id] = { core: [], recommended: [], optional: [] }
   })
-  
+
   allFeatures.forEach(feature => {
     const bundles = feature.bundles
-    
+
     // System features don't need bundle configuration
     if (feature.technical?.featureType === 'system') {
       return
     }
-    
+
     // Check if feature has any bundle configuration
     if (!bundles || (bundles.core?.length === 0 && bundles.recommended?.length === 0 && bundles.optional?.length === 0)) {
       errors.push({
@@ -135,14 +138,14 @@ function validateBundles(): BundleError[] {
       })
       return
     }
-    
+
     // Validate bundle IDs
     const allBundleIds = [
       ...(bundles.core || []),
       ...(bundles.recommended || []),
       ...(bundles.optional || []),
     ]
-    
+
     allBundleIds.forEach((bundleId: string) => {
       if (!BUNDLE_IDS.includes(bundleId as BundleId)) {
         errors.push({
@@ -152,7 +155,7 @@ function validateBundles(): BundleError[] {
         })
       }
     })
-    
+
     // Check for bundle conflicts (same bundle in multiple categories)
     const bundleSet = new Set<string>()
     bundles.core?.forEach((id: string) => {
@@ -168,7 +171,7 @@ function validateBundles(): BundleError[] {
         bundleFeatures[id].core.push(feature.id)
       }
     })
-    
+
     bundles.recommended?.forEach((id: string) => {
       if (bundleSet.has(id)) {
         errors.push({
@@ -182,7 +185,7 @@ function validateBundles(): BundleError[] {
         bundleFeatures[id].recommended.push(feature.id)
       }
     })
-    
+
     bundles.optional?.forEach((id: string) => {
       if (bundleSet.has(id)) {
         errors.push({
@@ -197,7 +200,7 @@ function validateBundles(): BundleError[] {
       }
     })
   })
-  
+
   // Report bundle coverage
   console.log("\n  Bundle Coverage Report:")
   BUNDLE_IDS.forEach(bundleId => {
@@ -205,11 +208,11 @@ function validateBundles(): BundleError[] {
     const total = features.core.length + features.recommended.length + features.optional.length
     console.log(`  📦 ${bundleId}: ${total} features (${features.core.length} core, ${features.recommended.length} recommended, ${features.optional.length} optional)`)
   })
-  
+
   if (errors.length === 0) {
     console.log(`\n  ✓ All bundle configurations are valid`)
   }
-  
+
   return errors
 }
 
@@ -231,8 +234,8 @@ function syncDefaultMenuItems() {
 // Update via: pnpm run sync:features
 
 export const DEFAULT_MENU_ITEMS = ${JSON.stringify(menuItems, null, 2)
-    .replace(/"([^"]+)":/g, "$1:")
-    .replace(/: "([a-z]+)"/gi, ': "$1" as const')}
+      .replace(/"([^"]+)":/g, "$1:")
+      .replace(/: "([a-z]+)"/gi, ': "$1" as const')}
 `
 
   writeFileSync(manifestPath, content)
@@ -514,24 +517,24 @@ function generateReport() {
   console.log("\n  Bundle membership summary:")
   const bundleCounts: Record<string, number> = {}
   BUNDLE_IDS.forEach(id => { bundleCounts[id] = 0 })
-  
+
   FEATURES_REGISTRY.forEach(f => {
     const bundles = f.bundles
     if (!bundles) return
-    
+
     const allBundles = new Set([
       ...(bundles.core || []),
       ...(bundles.recommended || []),
       ...(bundles.optional || []),
     ])
-    
+
     allBundles.forEach(bundleId => {
       if (bundleCounts[bundleId] !== undefined) {
         bundleCounts[bundleId]++
       }
     })
   })
-  
+
   Object.entries(bundleCounts)
     .sort((a, b) => b[1] - a[1])
     .forEach(([bundleId, count]) => {

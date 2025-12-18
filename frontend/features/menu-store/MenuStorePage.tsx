@@ -58,8 +58,8 @@ import { MobileHeader } from "@/frontend/shared/ui/layout/header"
 
 interface AvailableFeaturesContentProps {
   features: AvailableFeatureMenu[] | undefined
-  installingFeatures: Set<string>
-  onInstall: (slug: string) => void
+  installingFeatures?: Set<string>
+  onInstall?: (slug: string) => void
   onPreview?: (slug: string) => void
   onSettings?: (slug: string) => void
   onAction?: (slug: string) => void
@@ -93,7 +93,7 @@ function AvailableFeaturesContent({
         <FeatureCard
           key={feature.slug}
           feature={feature}
-          isInstalling={installingFeatures.has(feature.slug)}
+          isInstalling={installingFeatures?.has(feature.slug)}
           onInstall={onInstall}
           onPreview={onPreview}
           onSettings={onSettings}

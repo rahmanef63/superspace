@@ -16,10 +16,10 @@ import path from "path"
 import { pathToFileURL } from "url"
 import { globSync } from "glob"
 
-import type { FeatureConfig } from "../../lib/features/defineFeature"
+import type { FeatureConfig } from "../../frontend/shared/lib/features/defineFeature"
 
 const ROOT_DIR = process.cwd()
-const OUTPUT_PATH = path.join(ROOT_DIR, "lib/features/registry.ts")
+const OUTPUT_PATH = path.join(ROOT_DIR, "frontend/shared/lib/features/registry.ts")
 const CONFIG_GLOB = "frontend/features/*/config.ts"
 
 interface FeatureEntry {
@@ -330,7 +330,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 async function main() {
-  console.log("Generating lib/features/registry.ts from feature configs...")
+  console.log("Generating frontend/shared/lib/features/registry.ts from feature configs...")
 
   const entries = await loadFeatureEntries()
 

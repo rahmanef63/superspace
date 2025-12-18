@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertTriangle, Construction, ExternalLink, Info } from "lucide-react"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -125,10 +126,10 @@ export function FeatureNotReady({
 
             {docsUrl && (
               <Button variant="outline" asChild>
-                <a href={docsUrl} target="_blank" rel="noopener noreferrer">
+                <Link href={docsUrl} target="_blank" rel="noopener noreferrer">
                   View Documentation
                   <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
+                </Link>
               </Button>
             )}
 

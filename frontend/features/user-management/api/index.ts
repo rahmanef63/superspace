@@ -10,14 +10,17 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
 // ============================================================================
-// Members API (previously from archives-features/members)
+// Members & Roles API (Core)
 // ============================================================================
+import {
+  useCreateRole,
+  useUpdateRole,
+  useDeleteRole
+} from "./memberHooks";
 
-export const useMembers = (
-  workspaceId: Id<"workspaces">,
-  options?: { includeInactive?: boolean }
-) => useQuery(api.workspace.workspaces.getWorkspaceMembers, { workspaceId, includeInactive: options?.includeInactive });
+export * from "./memberHooks";
 
+// Placeholder for search members if backend function doesn't exist
 export const useSearchMembers = (
   workspaceId: Id<"workspaces">,
   query: string,
@@ -26,33 +29,7 @@ export const useSearchMembers = (
     roleId?: Id<"roles">;
     limit?: number;
   }
-) => useQuery(api.workspace.workspaces.searchWorkspaceMembers, {
-  workspaceId,
-  query,
-  status: options?.status,
-  roleId: options?.roleId,
-  limit: options?.limit,
-});
-
-export const useMember = (
-  workspaceId: Id<"workspaces">,
-  userId: Id<"users">
-) => useQuery(api.workspace.workspaces.getWorkspaceMember, { workspaceId, userId });
-
-export const useRoles = (workspaceId: Id<"workspaces">) =>
-  useQuery(api.workspace.roles.getAllRoles, { workspaceId });
-
-export const useAddMember = () => useMutation(api.workspace.workspaces.addMember);
-export const useRemoveMember = () => useMutation(api.workspace.workspaces.removeMember);
-export const useUpdateMemberRole = () => useMutation(api.workspace.workspaces.updateMemberRole);
-export const useCreateRole = () => useMutation(api.workspace.roles.createRole);
-export const useUpdateRole = () => useMutation(api.workspace.roles.updateRole);
-export const useDeleteRole = () => useMutation(api.workspace.roles.deleteRole);
-
-export const useHasPermission = (
-  workspaceId: Id<"workspaces">,
-  permission: string
-) => useQuery(api.workspace.roles.hasPermission, { workspaceId, permission });
+) => undefined;
 
 // ============================================================================
 // Contacts API (re-exported from contact feature)
@@ -76,7 +53,7 @@ export {
 export const useInvitationsApi = () => {
   const receivedInvitations = useQuery(api.workspace.invitations.getUserInvitations, { type: "received" });
   const sentInvitations = useQuery(api.workspace.invitations.getUserInvitations, { type: "sent" });
-  
+
   const sendInvitation = useMutation(api.workspace.invitations.sendWorkspaceInvitation);
   const acceptInvitation = useMutation(api.workspace.invitations.acceptInvitation);
   const declineInvitation = useMutation(api.workspace.invitations.declineInvitation);

@@ -34,7 +34,7 @@
  */
 export function getPlatformAdminEmails(): string[] {
   const envEmails = process.env.PLATFORM_ADMIN_EMAILS ?? "";
-  
+
   return envEmails
     .split(",")
     .map(e => e.trim().toLowerCase())
@@ -45,7 +45,7 @@ export function getPlatformAdminEmails(): string[] {
 // TYPE DEFINITIONS
 // ============================================================================
 
-export type AccessLevel = 
+export type AccessLevel =
   | "platform_admin"   // Full access to everything
   | "feature_owner"    // Admin for features they created
   | "workspace_owner"  // Owner of the workspace
@@ -75,16 +75,11 @@ export interface PlatformAdminContext {
  */
 export function isPlatformAdmin(email: string | undefined | null): boolean {
   if (!email) return false;
-  
+
   const adminEmails = getPlatformAdminEmails();
   const normalizedEmail = email.toLowerCase().trim();
-  
-  const isAdmin = adminEmails.includes(normalizedEmail);
-  
-  if (isAdmin) {
-  }
-  
-  return isAdmin;
+
+  return adminEmails.includes(normalizedEmail);
 }
 
 /**
@@ -106,24 +101,24 @@ export function getAccessLevel(
   if (isPlatformAdmin(userEmail)) {
     return "platform_admin";
   }
-  
+
   // Feature owner for custom features created via Builder
   if (options.isFeatureOwner) {
     return "feature_owner";
   }
-  
+
   // Workspace hierarchy
   if (options.isWorkspaceOwner) {
     return "workspace_owner";
   }
-  
+
   // Role-based access within workspace
   if (options.roleLevel !== undefined) {
     if (options.roleLevel <= 10) return "workspace_admin";
     if (options.roleLevel <= 70) return "workspace_member";
     return "guest";
   }
-  
+
   return "none";
 }
 
@@ -144,10 +139,10 @@ export function hasAccessLevel(current: AccessLevel, required: AccessLevel): boo
     "guest",
     "none",
   ];
-  
+
   const currentIndex = hierarchy.indexOf(current);
   const requiredIndex = hierarchy.indexOf(required);
-  
+
   // Lower index = higher access
   return currentIndex <= requiredIndex;
 }
@@ -186,7 +181,7 @@ export function matchesPlatformAdminPermission(
   if (userPermissions.includes("*")) {
     return true;
   }
-  
+
   return userPermissions.includes(requiredPermission);
 }
 

@@ -18,7 +18,7 @@ import prompts from 'prompts'
 import { glob } from 'glob'
 import path from 'path'
 import fs from 'fs'
-import { getAllFeatures, getFeatureById, getFeatureSourceDir } from '../../lib/features/registry.server'
+import { getAllFeatures, getFeatureById, getFeatureSourceDir } from '../../frontend/shared/lib/features/registry.server'
 
 interface FeatureAnalysis {
   basic: {

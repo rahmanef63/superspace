@@ -59,7 +59,7 @@ npx convex dev
 Create `frontend/features/analytics/config.ts`:
 
 ```typescript
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   // Basic Info

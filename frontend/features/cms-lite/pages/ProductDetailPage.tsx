@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -83,10 +84,13 @@ export default function ProductDetailPage({ slug: slugProp }: ProductDetailPageP
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             {product.coverImage ? (
-              <img
+              <Image
                 src={product.coverImage}
-                alt={title ?? 'Product'}
-                className="w-full rounded-lg shadow-lg"
+                alt={title ?? "Product"}
+                width={1200}
+                height={900}
+                className="w-full h-auto rounded-lg shadow-lg"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             ) : (
               <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">

@@ -66,6 +66,10 @@ export function WorkspaceLeftPanel({
     onUnlink,
     onShowFeatures
 }: WorkspaceLeftPanelProps) {
+    // Ensure we have valid arrays
+    const safeWorkspaces = workspaces ?? []
+    const safeFilteredWorkspaces = filteredWorkspaces ?? safeWorkspaces
+    
     const filterChips = createFilterChips(filters, typeOptions)
 
     const handleRemoveChip = (key: string) => {
@@ -79,9 +83,9 @@ export function WorkspaceLeftPanel({
             <div className="flex-shrink-0 border-b bg-muted/30">
                 <div className="flex items-center justify-between px-3 py-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">{filteredWorkspaces.length}</span>
-                        {filteredWorkspaces.length !== workspaces.length && (
-                            <span>of {workspaces.length}</span>
+                        <span className="font-medium text-foreground">{safeFilteredWorkspaces.length}</span>
+                        {safeFilteredWorkspaces.length !== safeWorkspaces.length && (
+                            <span>of {safeWorkspaces.length}</span>
                         )}
                         <span>workspaces</span>
                     </div>
@@ -146,7 +150,7 @@ export function WorkspaceLeftPanel({
             {/* Tree Content with ScrollArea */}
             <ScrollArea className="flex-1 min-h-0">
                 <WorkspaceDnDTree
-                    workspaces={filteredWorkspaces as WorkspaceDnDItem[]}
+                    workspaces={safeFilteredWorkspaces as WorkspaceDnDItem[]}
                     selectedId={selectedId}
                     isLoading={isLoading}
                     onSelect={(ws) => onSelect(ws as WorkspaceStoreItem)}

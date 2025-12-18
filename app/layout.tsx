@@ -25,7 +25,7 @@ export default async function RootLayout({
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
   if (!publishableKey) {
-    console.error("[v0] Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY environment variable")
+    console.error("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY environment variable")
   }
 
   // Read theme from cookie for SSR

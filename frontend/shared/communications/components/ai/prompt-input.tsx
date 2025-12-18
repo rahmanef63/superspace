@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -414,9 +415,11 @@ function PromptInputAttachments({ className, ...props }: PromptInputAttachmentsP
           className="relative group flex items-center gap-2 bg-muted rounded-md p-2 pr-8 text-sm"
         >
           {attachment.type === 'image' && attachment.preview ? (
-            <img
+            <Image
               src={attachment.preview}
               alt={attachment.file.name}
+              width={32}
+              height={32}
               className="h-8 w-8 object-cover rounded"
             />
           ) : attachment.type === 'image' ? (

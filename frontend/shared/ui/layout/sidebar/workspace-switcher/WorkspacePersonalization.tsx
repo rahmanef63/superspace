@@ -11,6 +11,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
+import Image from "next/image"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
@@ -333,22 +334,24 @@ export function WorkspacePersonalization({
                                         </div>
                                     ) : (
                                         filteredImages.map((img: any) => (
-                                            <button
-                                                key={img._id}
-                                                onClick={() => img.storageId && handleSelectFromLibrary(img.storageId)}
-                                                className="aspect-square rounded-lg border-2 overflow-hidden hover:border-primary transition-colors"
-                                            >
-                                                {img.fileUrl ? (
-                                                    <img
-                                                        src={img.fileUrl}
-                                                        alt={img.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                                                        <ImageIcon className="size-6 text-muted-foreground" />
-                                                    </div>
-                                                )}
+                                         <button
+                                             key={img._id}
+                                             onClick={() => img.storageId && handleSelectFromLibrary(img.storageId)}
+                                             className="relative aspect-square rounded-lg border-2 overflow-hidden hover:border-primary transition-colors"
+                                         >
+                                             {img.fileUrl ? (
+                                                 <Image
+                                                     src={img.fileUrl}
+                                                     alt={img.name}
+                                                     fill
+                                                     className="object-cover"
+                                                     sizes="(max-width: 768px) 25vw, 96px"
+                                                 />
+                                             ) : (
+                                                 <div className="w-full h-full bg-muted flex items-center justify-center">
+                                                     <ImageIcon className="size-6 text-muted-foreground" />
+                                                 </div>
+                                             )}
                                             </button>
                                         ))
                                     )}

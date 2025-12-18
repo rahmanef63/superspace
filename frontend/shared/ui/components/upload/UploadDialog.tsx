@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useRef } from "react"
+import Image from "next/image"
 import {
   Upload,
   X,
@@ -414,9 +415,11 @@ export function UploadDialog({
                       className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
                     >
                       {file.preview ? (
-                        <img
+                        <Image
                           src={file.preview}
                           alt={file.file.name}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 object-cover rounded"
                         />
                       ) : (

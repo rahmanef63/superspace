@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
+import Image from "next/image"
 import {
   Image as ImageIcon,
   Video,
@@ -334,14 +335,16 @@ export function ContentInspector({
               <TabsTrigger value="edit">Edit Image</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info" className="space-y-6 mt-0">
-              {/* Preview */}
-              <div className="aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+              <TabsContent value="info" className="space-y-6 mt-0">
+                {/* Preview */}
+              <div className="relative aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
                 {content.type === "image" && (content.fileUrl || content.thumbnailUrl) ? (
-                  <img
+                  <Image
                     src={content.fileUrl || content.thumbnailUrl || ""}
                     alt={content.name}
-                    className="w-full h-full object-contain"
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
                   />
                 ) : content.type === "video" && content.fileUrl ? (
                   <video
@@ -376,13 +379,26 @@ export function ContentInspector({
 
             <TabsContent value="edit" className="space-y-6 mt-0">
               {/* Live Preview */}
-              <div className="aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
-                <img
-                  src={imageEditor?.previewUrlForCrop || content.fileUrl || content.thumbnailUrl || ""}
-                  alt={content.name}
-                  className="w-full h-full object-contain"
-                  style={editPreviewStyle}
-                />
+              <div className="relative aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                {(() => {
+                  const previewSrc =
+                    imageEditor?.previewUrlForCrop ||
+                    content.fileUrl ||
+                    content.thumbnailUrl
+
+                  if (!previewSrc) return null
+
+                  return (
+                    <Image
+                      src={previewSrc}
+                      alt={content.name}
+                      fill
+                      className="object-contain"
+                      style={editPreviewStyle}
+                      sizes="100vw"
+                    />
+                  )
+                })()}
               </div>
 
               {/* Inline Image Editor */}
@@ -709,12 +725,14 @@ export function ContentInspector({
         ) : (
           <>
             {/* Preview */}
-            <div className="aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+            <div className="relative aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center">
               {content.type === "image" && (content.fileUrl || content.thumbnailUrl) ? (
-                <img
+                <Image
                   src={content.fileUrl || content.thumbnailUrl || ""}
                   alt={content.name}
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
                 />
               ) : content.type === "video" && content.fileUrl ? (
                 <video

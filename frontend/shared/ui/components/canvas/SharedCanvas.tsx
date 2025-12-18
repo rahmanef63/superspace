@@ -12,6 +12,7 @@ import { CanvasToolbar } from './CanvasToolbar';
 
 interface SharedCanvasProps {
   nodeTypes: Record<string, React.ComponentType<any>>;
+  edgeTypes?: Record<string, React.ComponentType<any>>;
   onNodeSelect?: (nodeId: string | null) => void;
   showLayoutControls?: boolean;
   className?: string;
@@ -21,6 +22,7 @@ interface SharedCanvasProps {
 
 const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
   nodeTypes,
+  edgeTypes,
   onNodeSelect,
   showLayoutControls = true,
   className = "",
@@ -117,6 +119,7 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         className="bg-muted/30"
       >

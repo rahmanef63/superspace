@@ -5,7 +5,7 @@ import { Input, Label, Select, Switch, Button } from '@/components/ui';
 import { DynamicInspector } from './DynamicInspector';
 
 interface UnifiedInspectorProps {
-  feature?: 'cms' | 'automation' | 'database';
+  feature?: 'cms' | 'automation' | 'database' | 'studio';
   customRenderers?: Record<string, React.ComponentType<any>>;
   selectedNode?: any;
 }
@@ -23,8 +23,12 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
 
   if (!selectedNode) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
-        Select a node to edit its properties.
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>
+        </div>
+        <p className="text-sm font-medium text-foreground">No Selection</p>
+        <p className="text-xs text-muted-foreground mt-1">Click on a node in the canvas to edit its properties</p>
       </div>
     );
   }

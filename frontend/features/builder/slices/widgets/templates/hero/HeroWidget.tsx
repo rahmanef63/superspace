@@ -1,4 +1,6 @@
 import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui';
 
@@ -34,16 +36,18 @@ export const HeroWidget: React.FC<HeroProps> = ({
           {subtitle}
         </p>
         <div className="pt-2">
-          <a href={ctaHref}>
-            <Button size="lg">{ctaText}</Button>
-          </a>
+          <Button size="lg" asChild>
+            <Link href={ctaHref}>{ctaText}</Link>
+          </Button>
         </div>
       </div>
       <div>
-        <img 
-          src={imageUrl} 
-          alt="hero" 
-          className="w-full h-auto rounded-2xl shadow-sm" 
+        <Image
+          src={imageUrl}
+          alt="hero"
+          width={800}
+          height={600}
+          className="w-full h-auto rounded-2xl shadow-sm"
         />
       </div>
     </div>

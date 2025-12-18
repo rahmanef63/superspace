@@ -40,6 +40,7 @@ import {
     TimeRangeBlock,
     TeamBlock,
     AgentBlock,
+    ChartBlock,
     // Types
     type TimeRange,
     type ActivityItem,
@@ -49,7 +50,7 @@ import {
 } from "@/frontend/shared/builder/blocks"
 
 // Local components
-import { OverviewSkeleton } from "./components"
+import { OverviewSkeleton, PendingInvitationsSection } from "./components"
 
 // Types
 import type { OverviewData } from "./types"
@@ -281,6 +282,26 @@ export function OverviewViewBlocks({ workspaceId, mockData }: OverviewViewBlocks
                                     onChange={(v) => setTimeRange(v as AnalyticsTimeRange)}
                                     options={["today", "7d", "30d", "90d"]}
                                     lastUpdated={lastUpdated}
+                                />
+
+                                <PendingInvitationsSection />
+
+                                {/* Trends Chart */}
+                                <ChartBlock
+                                    type="area"
+                                    title="Activity Trends"
+                                    description="User activity over time"
+                                    data={[
+                                        { name: "Mon", value: 12 },
+                                        { name: "Tue", value: 19 },
+                                        { name: "Wed", value: 15 },
+                                        { name: "Thu", value: 25 },
+                                        { name: "Fri", value: 32 },
+                                        { name: "Sat", value: 20 },
+                                        { name: "Sun", value: 28 },
+                                    ]}
+                                    color="#3b82f6"
+                                    height={300}
                                 />
 
                                 {/* Stats Grid */}

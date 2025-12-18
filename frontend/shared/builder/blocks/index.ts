@@ -44,6 +44,42 @@ export { TimeRangeBlock, type TimeRangeBlockProps, type TimeRange } from "./Time
 // Agent Block
 export { AgentBlock, type AgentBlockProps } from "./Agent"
 
+// Chart Block
+export { ChartBlock, type ChartBlockProps, type ChartDataPoint, type ChartType } from "./Chart"
+
+// Kanban Block
+export { KanbanBlock, type KanbanBlockProps, type KanbanColumn, type KanbanItem } from "./Kanban"
+
+// Table Block
+export { TableBlock, type TableBlockProps } from "./Table"
+
+// Calendar Block
+export { CalendarBlock, type CalendarBlockProps } from "./Calendar"
+
+// Filter Block
+export { FilterBlock, type FilterBlockProps, type FilterField } from "./Filter"
+
+// File Block
+export { FileBlock, type FileBlockProps, type FileItem } from "./File"
+
+// Comment Block
+export { CommentBlock, type CommentBlockProps, type CommentItem } from "./Comment"
+
+// RichText Block
+export { RichTextBlock, type RichTextBlockProps } from "./RichText"
+
+// Form Block
+export { FormBlock, type FormBlockProps, type FormField } from "./Form"
+
+// Media Block
+export { MediaBlock, type MediaBlockProps } from "./Media"
+
+// Profile Block
+export { ProfileBlock, type ProfileBlockProps, type ProfileAction } from "./Profile"
+
+// Metric Card Block
+export { MetricCardBlock, type MetricCardBlockProps } from "./Metric"
+
 // ============================================================================
 // Registry & Utils
 // ============================================================================

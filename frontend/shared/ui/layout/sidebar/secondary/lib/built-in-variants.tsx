@@ -14,6 +14,7 @@
  */
 
 import { z } from "zod";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -60,9 +61,11 @@ export const chatVariant = createVariant({
       >
         {slots?.leading}
         <div className="relative">
-          <img
+          <Image
             src={params.avatarUrl ?? item.avatarUrl ?? "/default-avatar.png"}
             alt=""
+            width={40}
+            height={40}
             className="size-10 rounded-full object-cover"
           />
           {params.online && (
@@ -339,9 +342,11 @@ export const statusVariant = createVariant({
           "relative size-12 rounded-full",
           !params.seen && "ring-2 ring-primary"
         )}>
-          <img
+          <Image
             src={params.imageUrl ?? item.avatarUrl ?? "/default-avatar.png"}
             alt=""
+            width={48}
+            height={48}
             className="size-12 rounded-full object-cover"
           />
         </div>

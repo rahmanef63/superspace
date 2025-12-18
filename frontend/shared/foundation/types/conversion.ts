@@ -169,13 +169,13 @@ export interface ITypeScriptConverter {
 }
 
 export interface ISchemaConverter {
-  // CMS Schema (v0.4) -> New Schema (v1.0)
+  
   convertCMSSchema(schema: any, options?: ConversionOptions): ConversionResult<ExportSchemaV1Type>
 
-  // Documents blocks -> Schema
+  
   convertDocumentsToSchema(blocks: any, options?: ConversionOptions): ConversionResult<ExportSchemaV1Type>
 
-  // Schema -> Documents blocks
+  
   convertSchemaToDocuments(schema: ExportSchemaV1Type, options?: ConversionOptions): ConversionResult<any>
 }
 

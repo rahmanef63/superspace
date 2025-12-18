@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useBackend, useQuery, api } from "../../../shared/hooks/useBackend";
+import Image from "next/image";
 import { Button } from "../../../shared/components/Button";
 import { EmptyState } from "../../../shared/components/Loading";
 import { ErrorState } from "../../../shared/components/ErrorState";
@@ -146,10 +147,12 @@ export default function AdminPortfolio() {
             <div key={item.id} className="border rounded-lg overflow-hidden group">
               <div className="aspect-video bg-muted relative overflow-hidden">
                 {images[0] ? (
-                  <img
+                  <Image
                     src={images[0].imageUrl}
                     alt={images[0].altText || item.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

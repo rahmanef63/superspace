@@ -52,13 +52,13 @@ interface CreateFeatureOptions {
   description?: string
   featureType: "default" | "optional" | "experimental" | "system"
   category:
-    | "communication"
-    | "productivity"
-    | "collaboration"
-    | "administration"
-    | "social"
-    | "creativity"
-    | "analytics"
+  | "communication"
+  | "productivity"
+  | "collaboration"
+  | "administration"
+  | "social"
+  | "creativity"
+  | "analytics"
   icon?: string
   hasUI: boolean
   hasConvex: boolean
@@ -259,7 +259,7 @@ function generateFeatureConfig(options: CreateFeatureOptions): string {
 
   const permissionsStr = permissions ? JSON.stringify(permissions, null, 4) : undefined
   const tagsStr = tags ? JSON.stringify(tags, null, 4) : JSON.stringify([slug, category], null, 4)
-  
+
   // Format bundles configuration
   const bundlesStr = bundles ? `{
     core: ${JSON.stringify(bundles.core)},
@@ -271,7 +271,7 @@ function generateFeatureConfig(options: CreateFeatureOptions): string {
     optional: ['custom'], // Default: available in custom bundle only
   }`
 
-  return `import { defineFeature } from '@/lib/features/defineFeature'
+  return `import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 /**
  * ${name} Feature Configuration
@@ -279,8 +279,8 @@ function generateFeatureConfig(options: CreateFeatureOptions): string {
  * This is the single source of truth for the ${slug} feature.
  * Auto-discovered by the feature registry system.
  *
- * @see lib/features/registry.ts for auto-discovery
- * @see lib/features/defineFeature.ts for schema
+ * @see frontend/shared/lib/features/registry.ts for auto-discovery
+ * @see frontend/shared/lib/features/defineFeature.ts for schema
  */
 export default defineFeature({
   // Basic Info
@@ -822,7 +822,7 @@ async function main() {
 
     // Create the main page component in views/
     writeFileSync(join(viewsDir, `${componentName}Page.tsx`), generateFrontendPage(slug, name!, options.icon!))
-    
+
     // Create page.tsx as the consistent entry point (re-exports from views/)
     const pageEntryContent = `/**
  * ${name} Feature - Page Entry Point
@@ -843,7 +843,7 @@ export { default } from './views/${componentName}Page'
 
     // Create init.ts (register settings + agents)
     writeFileSync(join(featureDir, "init.ts"), generateFeatureInit(slug, name!))
-    
+
     writeFileSync(join(hooksDir, `use${componentName}.ts`), generateHook(slug, name!))
     writeFileSync(join(typesDir, "index.ts"), generateTypes(slug))
 
@@ -860,7 +860,7 @@ export { default } from './views/${componentName}Page'
   if (hasConvex) {
     console.log("\n3️⃣  Generating Convex handlers...")
     // Convex does not support dashes in folder names, convert to camelCase
-    const convexSlug = slug.includes('-') 
+    const convexSlug = slug.includes('-')
       ? slug.split('-').map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('')
       : slug
     const convexDir = join(rootDir, "convex", "features", convexSlug)

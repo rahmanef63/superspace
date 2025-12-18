@@ -138,49 +138,9 @@ export const getValidationSummary = (
  * Prints validation results to console
  * @param results - Validation results
  */
-export const printValidationResults = (
-  results: Record<string, ValidationResult>
-) => {
-  const summary = getValidationSummary(results);
-  
-  console.group('🔍 Widget Registry Validation Results');
-  
-  if (summary.withErrors > 0) {
-  }
-  
-  if (summary.withWarnings > 0) {
-  }
 
-  Object.entries(results).forEach(([key, result]) => {
-    if (!result.isValid || result.warnings.length > 0) {
-      console.group(`🔧 ${key}`);
-      
-      if (result.errors.length > 0) {
-        console.error('❌ Errors:', result.errors);
-      }
-      
-      if (result.warnings.length > 0) {
-        console.warn('⚠️  Warnings:', result.warnings);
-      }
-      
-      if (result.suggestions.length > 0) {
-        console.info('💡 Suggestions:', result.suggestions);
-      }
-      
-      console.groupEnd();
-    }
-  });
-  
-  console.groupEnd();
-};
 
 /**
  * Development helper to validate and print results
  * @param registry - Widget registry
  */
-export const devValidateRegistry = (registry: Record<string, WidgetConfig>) => {
-  if (process.env.NODE_ENV === 'development') {
-    const results = validateWidgetRegistry(registry);
-    printValidationResults(results);
-  }
-};

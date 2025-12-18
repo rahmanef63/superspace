@@ -8,9 +8,9 @@
  * @see frontend/features/[feature]/config.ts for feature bundle declarations
  */
 
-import { getAllFeatures } from "@/lib/features/registry"
-import type { FeatureConfig } from "@/lib/features/defineFeature"
-import { BUNDLE_IDS, type BundleId } from "@/lib/features/defineFeature"
+import { getAllFeatures } from "@/frontend/shared/lib/features/registry"
+import type { FeatureConfig } from "@/frontend/shared/lib/features/defineFeature"
+import { BUNDLE_IDS, type BundleId } from "@/frontend/shared/lib/features/defineFeature"
 import type { WorkspaceType } from "../types"
 
 // Re-export types
@@ -195,7 +195,7 @@ const BUNDLE_METADATA: Record<BundleId, Omit<WorkspaceBundleTemplate, 'id' | 'fe
  */
 function buildBundleFromFeatures(bundleId: BundleId, features: FeatureConfig[]): WorkspaceBundleTemplate {
   const metadata = BUNDLE_METADATA[bundleId]
-  
+
   const coreFeatures: string[] = []
   const recommendedFeatures: string[] = []
   const optionalFeatures: string[] = []
@@ -219,13 +219,13 @@ function buildBundleFromFeatures(bundleId: BundleId, features: FeatureConfig[]):
       if (!feature.bundles) return
       if (coreFeatures.includes(feature.id)) return
       if (optionalFeatures.includes(feature.id)) return
-      
+
       // Check if feature has any bundle membership
-      const hasAnyBundleMembership = 
+      const hasAnyBundleMembership =
         (feature.bundles.core?.length || 0) > 0 ||
         (feature.bundles.recommended?.length || 0) > 0 ||
         (feature.bundles.optional?.length || 0) > 0
-      
+
       if (hasAnyBundleMembership) {
         optionalFeatures.push(feature.id)
       }
@@ -322,12 +322,12 @@ export function isFeatureInBundle(featureId: string, bundleId: BundleId | string
  * Get the role of a feature in a bundle
  */
 export function getFeatureRoleInBundle(
-  featureId: string, 
+  featureId: string,
   bundleId: BundleId | string
 ): 'core' | 'recommended' | 'optional' | null {
   const bundle = getBundleById(bundleId)
   if (!bundle) return null
-  
+
   if (bundle.features.core.includes(featureId)) return 'core'
   if (bundle.features.recommended.includes(featureId)) return 'recommended'
   if (bundle.features.optional.includes(featureId)) return 'optional'
@@ -365,13 +365,13 @@ export function validateBundles(): { valid: boolean; errors: string[]; warnings:
   // Check for features without bundle membership
   features.forEach(feature => {
     if (feature.technical.featureType === 'system') return // System features are exempt
-    
+
     const hasBundle = feature.bundles && (
       (feature.bundles.core?.length || 0) > 0 ||
       (feature.bundles.recommended?.length || 0) > 0 ||
       (feature.bundles.optional?.length || 0) > 0
     )
-    
+
     if (!hasBundle) {
       warnings.push(`Feature "${feature.id}" has no bundle membership - won't appear in workspace templates`)
     }

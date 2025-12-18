@@ -1,4 +1,5 @@
 import { Film, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import type { SharedMediaItem } from "../types";
 
 type MediaSectionProps = {
@@ -43,10 +44,12 @@ export function MediaSection({ isMobile, items, isLoading }: MediaSectionProps) 
           className="relative aspect-square overflow-hidden rounded-wa-md border border-wa-border bg-muted transition-opacity hover:opacity-80"
         >
           {item.url ? (
-            <img
+            <Image
               src={item.url}
               alt={item.fileName || "Shared media item"}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 50vw, 33vw"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-wa-muted">

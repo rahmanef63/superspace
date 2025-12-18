@@ -86,7 +86,7 @@ convex/features/{feature-slug}/
 **Location:** `frontend/features/{feature-slug}/config.ts`
 
 ```typescript
-import { defineFeature } from '@/lib/features/defineFeature'
+import { defineFeature } from '@/frontend/shared/lib/features/defineFeature'
 
 export default defineFeature({
   // Basic Info
@@ -187,7 +187,7 @@ technical: {
 ### Frontend: Get Features
 
 ```typescript
-import { FEATURES } from '@/lib/features/registry'
+import { FEATURES } from '@/frontend/shared/lib/features/registry'
 
 // Get all features
 const allFeatures = FEATURES
@@ -209,7 +209,7 @@ const optionalFeatures = FEATURES.filter(
 ### Node.js: Get Features
 
 ```typescript
-import { getFeatures } from '@/lib/features/registry.server'
+import { getFeatures } from '@/frontend/shared/lib/features/registry.server'
 
 // Get all features
 const features = await getFeatures()

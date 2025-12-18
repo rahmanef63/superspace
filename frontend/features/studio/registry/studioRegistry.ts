@@ -7,12 +7,12 @@
 
 import type { ComponentConfig } from '@/frontend/shared/foundation';
 
-// Import from Builder (CMS widgets)
-import { cmsWidgetRegistry } from '../../builder/widgets/registry';
-import { registerCMSComponents } from '../../builder/registry/cmsRegistry';
+// Import from the actual registries
+import { cmsWidgetRegistry } from '../ui/widgets/registry';
+import { registerAutomationNodes } from '../workflow/nodes/registry';
 
-// Import from Automation (workflow nodes)
-import { registerAutomationNodes } from '../../automation/nodes/registry';
+// Re-export the CMS widget registry
+export { cmsWidgetRegistry };
 
 // ============================================================================
 // Unified Registry
@@ -22,6 +22,24 @@ import { registerAutomationNodes } from '../../automation/nodes/registry';
  * Combines all component configs from both Builder and Automation
  */
 export const studioComponentRegistry: Record<string, ComponentConfig> = {};
+
+/**
+ * Register CMS components to the cross-feature registry
+ */
+function registerCMSComponents(registerComponent: (config: ComponentConfig) => void): void {
+    Object.entries(cmsWidgetRegistry).forEach(([key, config]) => {
+        registerComponent({
+            key,
+            label: config.label,
+            category: config.category,
+            feature: 'builder',
+            description: config.description,
+            icon: config.icon,
+            defaults: config.defaults,
+            inspector: config.inspector as any,
+        });
+    });
+}
 
 /**
  * Register all studio components to the cross-feature registry

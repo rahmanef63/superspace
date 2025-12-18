@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Feature Settings Initialization
  *
  * This file imports all feature init files to register their settings
@@ -35,7 +35,7 @@ import "@/frontend/features/analytics/init"
 import "@/frontend/features/contact/init"
 import "@/frontend/features/forms/init"
 import "@/frontend/features/marketing/init"
-import "@/frontend/features/automation/init"
+import "@/frontend/features/studio/init"
 import "@/frontend/features/sales/init"
 import "@/frontend/features/bi/init"
 import "@/frontend/features/content/init"
@@ -54,7 +54,6 @@ import "@/frontend/features/import-export/init"
 import "@/frontend/features/approvals/init"
 import "@/frontend/features/integrations/init"
 import "@/frontend/features/pos/init"
-import "@/frontend/features/builder/init"
 
 // System features
 import "@/frontend/shared/foundation/utils/notifications/init"

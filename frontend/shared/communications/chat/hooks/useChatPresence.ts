@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Presence and typing indicator hook
  * @module shared/chat/hooks/useChatPresence
  */

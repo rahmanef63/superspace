@@ -23,17 +23,14 @@ import UserManagementPreview from '@/frontend/features/user-management/features-
 import CommunicationsPreview from '@/frontend/features/communications/features-preview/index'
 import InventoryPreview from '@/frontend/features/inventory/features-preview/index'
 import FormsPreview from '@/frontend/features/forms/features-preview/index'
-import AutomationPreview from '@/frontend/features/automation/features-preview/index'
 import SalesPreview from '@/frontend/features/sales/features-preview/index'
 import ReportsPreview from '@/frontend/features/reports/features-preview/index'
 import SupportPreview from '@/frontend/features/support/features-preview/index'
 import StatusPreview from '@/frontend/features/status/features-preview/index'
-// Additional feature previews - Phase 2
 import AccountingPreview from '@/frontend/features/accounting/features-preview/index'
 import ApprovalsPreview from '@/frontend/features/approvals/features-preview/index'
 import AuditLogPreview from '@/frontend/features/audit-log/features-preview/index'
 import BiPreview from '@/frontend/features/bi/features-preview/index'
-import BuilderPreview from '@/frontend/features/builder/features-preview/index'
 import ContentPreview from '@/frontend/features/content/features-preview/index'
 import HrPreview from '@/frontend/features/hr/features-preview/index'
 import ImportExportPreview from '@/frontend/features/import-export/features-preview/index'
@@ -63,7 +60,6 @@ const allPreviews: FeaturePreviewDefinition[] = [
   CommunicationsPreview,
   InventoryPreview,
   FormsPreview,
-  AutomationPreview,
   SalesPreview,
   ReportsPreview,
   SupportPreview,
@@ -73,7 +69,6 @@ const allPreviews: FeaturePreviewDefinition[] = [
   ApprovalsPreview,
   AuditLogPreview,
   BiPreview,
-  BuilderPreview,
   ContentPreview,
   HrPreview,
   ImportExportPreview,
@@ -113,7 +108,6 @@ export {
   CommunicationsPreview,
   InventoryPreview,
   FormsPreview,
-  AutomationPreview,
   SalesPreview,
   ReportsPreview,
   SupportPreview,
@@ -123,7 +117,6 @@ export {
   ApprovalsPreview,
   AuditLogPreview,
   BiPreview,
-  BuilderPreview,
   ContentPreview,
   HrPreview,
   ImportExportPreview,

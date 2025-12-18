@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Elements Registry
  * Level 2 - Composite elements
  * Auto-loads all element wrappers from subdirectories
@@ -27,7 +27,7 @@ for (const [path, module] of Object.entries(registryModules)) {
   if (wrapper && wrapper.id) {
     elementRegistry.set(wrapper.id, wrapper)
   } else {
-    console.warn(`⚠️ Invalid element wrapper at ${path}`)
+    console.warn(`?? Invalid element wrapper at ${path}`)
   }
 }
 

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Comments/Threads Panel
  * Side-panel discussion for any entity (page, document, task, etc.)
  */
@@ -83,7 +83,7 @@ export function CommentsPanel({
             className="text-muted-foreground hover:text-foreground"
             aria-label="Close comments"
           >
-            ✕
+            ?
           </button>
         )}
       </div>

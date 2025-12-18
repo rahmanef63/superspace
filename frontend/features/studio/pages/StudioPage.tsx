@@ -54,16 +54,16 @@ import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { registerStudioComponents, registerStudioLibraryTabs, type StudioMode } from '../registry';
 
 // Node types from both features
-import { ShadcnNode } from '@/frontend/features/builder/slices/canvas/components/ShadcnNode';
-import { AutomationNode } from '@/frontend/features/automation/components/AutomationNode';
-import { AutomationInspector } from '@/frontend/features/automation/components/AutomationInspector';
-import { CMSInspectorRenderer } from '@/frontend/features/builder/components/CMSInspectorRenderer';
-import { Renderer } from '@/frontend/features/builder/slices/renderer/components/Renderer';
-import { toSchema } from '@/frontend/features/builder/shared/hooks/useSchema';
-import { useAutomationExecution } from '@/frontend/features/automation/hooks/useAutomationExecution';
+import { ShadcnNode } from '@/frontend/features/studio/ui/slices/canvas/components/ShadcnNode';
+import { AutomationNode } from '@/frontend/features/studio/components/AutomationNode';
+import { AutomationInspector } from '@/frontend/features/studio/components/AutomationInspector';
+import { CMSInspectorRenderer } from '@/frontend/features/studio/components/CMSInspectorRenderer';
+import { Renderer } from '@/frontend/features/studio/ui/slices/renderer/components/Renderer';
+import { toSchema } from '@/frontend/features/studio/ui/hooks/useSchema';
+import { useAutomationExecution } from '@/frontend/features/studio/hooks/useAutomationExecution';
 import { TemplateLibrary } from '@/frontend/shared/builder';
-import { cmsTemplateProvider } from '@/frontend/features/builder/state/templateProvider';
-import { TemplatesGallery } from '@/frontend/features/automation/components/TemplatesGallery';
+import { cmsTemplateProvider } from '@/frontend/features/studio/ui/state/templateProvider';
+import { TemplatesGallery } from '@/frontend/features/studio/components/TemplatesGallery';
 import type { NodeTypes, EdgeTypes } from 'reactflow';
 
 // Custom edge types for data/event binding
@@ -244,49 +244,45 @@ const RightPanel: React.FC<RightPanelProps> = ({
 }) => {
     return (
         <Card className="h-full flex flex-col border-0 rounded-none">
-            <div className="p-3 border-b flex items-center justify-between">
-                <CardTitle className="text-sm">Inspector</CardTitle>
-                <div className="flex gap-1">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                            selectedNodeId &&
-                            (isPinned(selectedNodeId) ? unpin(selectedNodeId) : pin(selectedNodeId))
-                        }
-                        disabled={!selectedNodeId}
-                        className="h-7 w-7 p-0"
-                        title={selectedNodeId && isPinned(selectedNodeId) ? 'Unpin' : 'Pin'}
-                    >
-                        {selectedNodeId && isPinned(selectedNodeId) ? (
-                            <PinOff size={14} />
-                        ) : (
-                            <Pin size={14} />
-                        )}
-                    </Button>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={removeSelectedNode}
-                        disabled={!selectedNodeId}
-                        className="h-7 w-7 p-0"
-                        title="Delete"
-                    >
-                        <Trash2 size={14} />
-                    </Button>
+            {/* Compact action bar only when node is selected */}
+            {selectedNodeId && (
+                <div className="px-2 py-1.5 border-b flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Properties</span>
+                    <div className="flex gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => isPinned(selectedNodeId) ? unpin(selectedNodeId) : pin(selectedNodeId)}
+                            className="h-6 w-6 p-0"
+                            title={isPinned(selectedNodeId) ? 'Unpin' : 'Pin'}
+                        >
+                            {isPinned(selectedNodeId) ? <PinOff size={12} /> : <Pin size={12} />}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeSelectedNode}
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            title="Delete"
+                        >
+                            <Trash2 size={12} />
+                        </Button>
+                    </div>
                 </div>
-            </div>
-            {mode === 'workflow' ? (
-                <AutomationInspector />
-            ) : (
-                <UnifiedInspector
-                    feature="studio"
-                    customRenderers={{
-                        navNode: CMSInspectorRenderer,
-                        card: CMSInspectorRenderer,
-                    }}
-                />
             )}
+            <div className="flex-1 overflow-auto">
+                {mode === 'workflow' ? (
+                    <AutomationInspector />
+                ) : (
+                    <UnifiedInspector
+                        feature="studio"
+                        customRenderers={{
+                            navNode: CMSInspectorRenderer,
+                            card: CMSInspectorRenderer,
+                        }}
+                    />
+                )}
+            </div>
         </Card>
     );
 };
@@ -443,9 +439,9 @@ const TopBar: React.FC<TopBarProps> = ({
                         <div className="w-px h-5 bg-border" />
                         <div className="flex items-center gap-1.5">
                             <div className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${status === 'success' ? 'bg-green-500/10 text-green-600' :
-                                    status === 'failed' ? 'bg-red-500/10 text-red-600' :
-                                        status === 'running' ? 'bg-blue-500/10 text-blue-600' :
-                                            'bg-muted text-muted-foreground'
+                                status === 'failed' ? 'bg-red-500/10 text-red-600' :
+                                    status === 'running' ? 'bg-blue-500/10 text-blue-600' :
+                                        'bg-muted text-muted-foreground'
                                 }`}>
                                 {status === 'idle' ? 'Draft' : status.charAt(0).toUpperCase() + status.slice(1)}
                             </div>
@@ -717,59 +713,77 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     };
 
     return (
-        <div className="h-full w-full bg-muted flex flex-col">
-            <TopBar
-                mode={mode}
-                setMode={setMode}
-                layoutTab={layoutTab}
-                setLayoutTab={setLayoutTab}
-                contentTab={contentTab}
-                setContentTab={setContentTab}
-                status={status}
-                onValidate={validate}
-                onRun={run}
-                onStop={stop}
-                onExport={handleExport}
-                onImport={handleImport}
-                onClear={handleClear}
-                canUndo={canUndo}
-                canRedo={canRedo}
-                onUndo={undo}
-                onRedo={redo}
-            />
-
-            <div className="flex-1 overflow-hidden">
-                <ThreeColumnLayoutAdvanced
-                    preset="ide"
-                    left={
-                        <LeftPanel
-                            mode={mode}
-                            leftTab={leftTab}
-                            setLeftTab={setLeftTab}
-                            onAddComponent={handleAddComponent}
-                            onImportTemplate={handleImportTemplate}
-                        />
-                    }
-                    center={renderCenter()}
-                    right={
-                        <RightPanel
-                            mode={mode}
-                            selectedNodeId={selectedNodeId}
-                            isPinned={isPinned}
-                            pin={pin}
-                            unpin={unpin}
-                            removeSelectedNode={removeSelectedNode}
-                        />
-                    }
-                    rightWidth={320}
-                    persistState={true}
-                    storageKey="studio-layout"
-                    leftLabel="Components"
-                    centerLabel="Canvas"
-                    rightLabel="Inspector"
+        <ThreeColumnLayoutAdvanced
+            preset="ide"
+            leftHeader={
+                <div className="flex items-center gap-2 px-2">
+                    <Layers3 className="w-4 h-4 text-primary" />
+                    <span className="font-semibold text-sm">Studio</span>
+                    <ModeToggle mode={mode} setMode={setMode} />
+                </div>
+            }
+            centerHeader={
+                <div className="flex items-center gap-2">
+                    {/* Layout Toggle */}
+                    {(mode === 'ui' || mode === 'unified') && (
+                        <div className="flex items-center bg-muted rounded-md p-0.5">
+                            <Button variant={layoutTab === 'split' ? 'secondary' : 'ghost'} size="sm" onClick={() => setLayoutTab('split')} className="h-7 w-7 p-0" title="Split View">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 12h18" /></svg>
+                            </Button>
+                            <Button variant={layoutTab === 'canvas' ? 'secondary' : 'ghost'} size="sm" onClick={() => setLayoutTab('canvas')} className="h-7 w-7 p-0" title="Canvas Only">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /></svg>
+                            </Button>
+                            <Button variant={layoutTab === 'preview' ? 'secondary' : 'ghost'} size="sm" onClick={() => setLayoutTab('preview')} className="h-7 w-7 p-0" title="Preview Only">
+                                <Eye size={14} />
+                            </Button>
+                        </div>
+                    )}
+                    {/* Preview/JSON Toggle */}
+                    <div className="flex items-center bg-muted rounded-md p-0.5">
+                        <Button variant={contentTab === 'preview' ? 'secondary' : 'ghost'} size="sm" onClick={() => setContentTab('preview')} className="h-7 w-7 p-0" title="Visual Preview">
+                            <Eye size={14} />
+                        </Button>
+                        <Button variant={contentTab === 'json' ? 'secondary' : 'ghost'} size="sm" onClick={() => setContentTab('json')} className="h-7 w-7 p-0" title="JSON View">
+                            <Code size={14} />
+                        </Button>
+                    </div>
+                </div>
+            }
+            rightHeader={
+                <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={undo} disabled={!canUndo} className="h-7 w-7 p-0" title="Undo"><Undo2 size={14} /></Button>
+                    <Button variant="ghost" size="sm" onClick={redo} disabled={!canRedo} className="h-7 w-7 p-0" title="Redo"><Redo2 size={14} /></Button>
+                    <div className="w-px h-5 bg-border mx-1" />
+                    <Button variant="ghost" size="sm" onClick={handleExport} className="h-7 w-7 p-0" title="Export"><Download size={14} /></Button>
+                    <Button variant="ghost" size="sm" onClick={handleImport} className="h-7 w-7 p-0" title="Import"><Upload size={14} /></Button>
+                    <Button variant="ghost" size="sm" onClick={handleClear} className="h-7 w-7 p-0" title="Clear"><Eraser size={14} /></Button>
+                </div>
+            }
+            left={
+                <LeftPanel
+                    mode={mode}
+                    leftTab={leftTab}
+                    setLeftTab={setLeftTab}
+                    onAddComponent={handleAddComponent}
+                    onImportTemplate={handleImportTemplate}
                 />
-            </div>
-        </div>
+            }
+            center={renderCenter()}
+            right={
+                <RightPanel
+                    mode={mode}
+                    selectedNodeId={selectedNodeId}
+                    isPinned={isPinned}
+                    pin={pin}
+                    unpin={unpin}
+                    removeSelectedNode={removeSelectedNode}
+                />
+            }
+            rightWidth={280}
+            persistState={true}
+            storageKey="studio-layout"
+            showCollapseButtons={false}
+        />
     );
 };
 

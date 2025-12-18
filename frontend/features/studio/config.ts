@@ -45,7 +45,7 @@ export const studioConfig = defineFeature({
 
     tags: ['builder', 'automation', 'visual', 'canvas', 'workflow', 'ui'],
     permissions: ['studio.view', 'studio.edit', 'studio.publish', 'studio.manage-templates'],
-    dependencies: ['builder', 'automation'],
+    dependencies: [],
 });
 
 export default studioConfig;

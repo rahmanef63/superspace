@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Performance Utilities
  * Helper functions for performance optimization
  */

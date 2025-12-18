@@ -1,4 +1,4 @@
-﻿/**
+/**
  * OpenGraph link preview utilities
  * @module shared/chat/lib/ogPreview
  */

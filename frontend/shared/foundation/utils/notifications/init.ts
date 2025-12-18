@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Notifications Feature Initialization
  * Registers notifications-related settings with the settings registry
  */

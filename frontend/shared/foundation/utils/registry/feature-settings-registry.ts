@@ -1,4 +1,4 @@
-﻿// Feature settings registry - works on both client and server
+// Feature settings registry - works on both client and server
 
 /**
  * Feature Settings Registry
@@ -39,7 +39,7 @@ export function registerFeatureSettings(
   builder: FeatureSettingsBuilder
 ): void {
   if (featureSettingsBuilders.has(featureSlug)) {
-    console.warn(`⚠️ Feature settings for "${featureSlug}" already registered, overwriting...`)
+    console.warn(`?? Feature settings for "${featureSlug}" already registered, overwriting...`)
   }
 
   featureSettingsBuilders.set(featureSlug, builder)

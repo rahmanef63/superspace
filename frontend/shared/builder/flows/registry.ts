@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Flows Registry (Level 6)
  * Auto-loads all flow wrappers from subdirectories
  */
@@ -26,7 +26,7 @@ for (const [path, module] of Object.entries(registryModules)) {
   if (wrapper && wrapper.id) {
     flowRegistry.set(wrapper.id, wrapper)
   } else {
-    console.warn(`⚠️ Invalid flow wrapper at ${path}`)
+    console.warn(`?? Invalid flow wrapper at ${path}`)
   }
 }
 

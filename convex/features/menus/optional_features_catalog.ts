@@ -276,28 +276,6 @@ export const OPTIONAL_FEATURES_CATALOG = [
     "featureType": "optional"
   },
   {
-    "slug": "builder",
-    "name": "Builder",
-    "description": "Build apps, content, and interfaces with visual builder tools",
-    "icon": "Hammer",
-    "component": "BuilderPage",
-    "path": "/dashboard/builder",
-    "type": "route",
-    "version": "1.0.0",
-    "category": "creativity",
-    "tags": [
-      "cms",
-      "content",
-      "builder",
-      "visual"
-    ],
-    "requiresPermission": "schemas.create",
-    "originalRequiresPermission": "schemas.create",
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
     "slug": "studio",
     "name": "Studio",
     "description": "Unified visual builder combining UI design and workflow automation in a single canvas",
@@ -383,28 +361,6 @@ export const OPTIONAL_FEATURES_CATALOG = [
     ],
     "requiresPermission": "bi.view",
     "originalRequiresPermission": "bi.view",
-    "status": "stable",
-    "isReady": true,
-    "featureType": "optional"
-  },
-  {
-    "slug": "automation",
-    "name": "Automation",
-    "description": "Automate workflows and processes with visual builders",
-    "icon": "Workflow",
-    "component": "AutomationPage",
-    "path": "/dashboard/automation",
-    "type": "route",
-    "version": "1.0.0",
-    "category": "productivity",
-    "tags": [
-      "automation",
-      "workflows",
-      "visual-builder",
-      "no-code"
-    ],
-    "requiresPermission": "automation.create",
-    "originalRequiresPermission": "automation.create",
     "status": "stable",
     "isReady": true,
     "featureType": "optional"

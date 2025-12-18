@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Components Registry
  * Auto-loads all component wrappers from subdirectories
  */
@@ -44,7 +44,7 @@ for (const [path, module] of Object.entries(registryModules)) {
   if (wrapper && wrapper.id) {
     componentRegistry.set(wrapper.id, wrapper)
   } else {
-    console.warn(`⚠️ Invalid component wrapper at ${path}`)
+    console.warn(`?? Invalid component wrapper at ${path}`)
   }
 }
 

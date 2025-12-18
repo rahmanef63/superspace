@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Templates Registry (Level 5)
  * Auto-loads all template wrappers from subdirectories
  */
@@ -26,7 +26,7 @@ for (const [path, module] of Object.entries(registryModules)) {
   if (wrapper && wrapper.id) {
     templateRegistry.set(wrapper.id, wrapper)
   } else {
-    console.warn(`⚠️ Invalid template wrapper at ${path}`)
+    console.warn(`?? Invalid template wrapper at ${path}`)
   }
 }
 

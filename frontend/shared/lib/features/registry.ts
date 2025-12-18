@@ -32,12 +32,10 @@ import auditLogConfig from '@/frontend/features/audit-log/config'
 import importExportConfig from '@/frontend/features/import-export/config'
 import integrationsConfig from '@/frontend/features/integrations/config'
 import posConfig from '@/frontend/features/pos/config'
-import builderConfig from '@/frontend/features/builder/config'
 import studioConfig from '@/frontend/features/studio/config'
 import marketingConfig from '@/frontend/features/marketing/config'
 import analyticsConfig from '@/frontend/features/analytics/config'
 import biConfig from '@/frontend/features/bi/config'
-import automationConfig from '@/frontend/features/automation/config'
 import salesConfig from '@/frontend/features/sales/config'
 import hrConfig from '@/frontend/features/hr/config'
 import contentConfig from '@/frontend/features/content/config'
@@ -70,12 +68,10 @@ const featureConfigs: FeatureConfig[] = [
   importExportConfig,
   integrationsConfig,
   posConfig,
-  builderConfig,
   studioConfig,
   marketingConfig,
   analyticsConfig,
   biConfig,
-  automationConfig,
   salesConfig,
   hrConfig,
   contentConfig,

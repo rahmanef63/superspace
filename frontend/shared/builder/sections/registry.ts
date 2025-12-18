@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Sections Registry (Level 4)
  * Auto-loads all section wrappers from subdirectories
  */
@@ -26,7 +26,7 @@ for (const [path, module] of Object.entries(registryModules)) {
   if (wrapper && wrapper.id) {
     sectionRegistry.set(wrapper.id, wrapper)
   } else {
-    console.warn(`⚠️ Invalid section wrapper at ${path}`)
+    console.warn(`?? Invalid section wrapper at ${path}`)
   }
 }
 

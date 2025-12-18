@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Example: Using Universal Toolbar System
  * 
  * This file demonstrates various toolbar configurations from basic to advanced.

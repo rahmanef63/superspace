@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tabs System
  * 
  * Standardized tabs component for consistent UI across the application.

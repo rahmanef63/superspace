@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Universal Data Transfer Sheet Component
  * 
  * A highly dynamic, reusable component for export/import functionality

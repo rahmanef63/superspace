@@ -33,54 +33,35 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
   };
 
   const renderComponentGrid = (components: ComponentConfig[]) => {
-    const groupedByCategory = components.reduce((acc: Record<string, ComponentConfig[]>, comp: ComponentConfig) => {
-      if (!acc[comp.category]) acc[comp.category] = [];
-      acc[comp.category].push(comp);
-      return acc;
-    }, {} as Record<string, ComponentConfig[]>);
-
+    // Flat grid - no category grouping (tabs already filter by category)
     return (
-      <div className="space-y-4">
-        {Object.entries(groupedByCategory).map(([category, categoryComponents]) => {
-          const CatIcon = getCategoryIcon(category);
+      <div className="grid grid-cols-2 gap-2">
+        {components.map((component: ComponentConfig) => {
+          const FeatureIcon = getFeatureIcon(component.feature);
+          const CatIconI = (component.icon as LucideIcon) || getCategoryIcon(component.category);
           return (
-            <div key={category}>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2">
-                {CatIcon && <CatIcon size={14} />}
-                <span>{category}</span>
+            <DraggableLibraryItem
+              key={component.key}
+              componentKey={component.key}
+              label={component.label}
+              description={component.description}
+              icon={CatIconI}
+              category={component.category}
+              feature={component.feature}
+            >
+              <div
+                onClick={() => onAdd?.(component.key, component.category)}
+                className="h-16 rounded-lg border border-border bg-card/50 p-2 text-left hover:border-primary/50 hover:bg-card transition-all group cursor-pointer"
+              >
+                <div className="text-xs font-medium truncate flex items-center gap-1.5">
+                  {CatIconI && <CatIconI size={14} className="text-primary/70" />}
+                  <span className="truncate">{component.label}</span>
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
+                  {component.description || component.key}
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {categoryComponents.map((component: ComponentConfig) => {
-                  const FeatureIcon = getFeatureIcon(component.feature);
-                  const CatIconI = (component.icon as LucideIcon) || getCategoryIcon(component.category);
-                  return (
-                    <DraggableLibraryItem
-                      key={component.key}
-                      componentKey={component.key}
-                      label={component.label}
-                      description={component.description}
-                      icon={CatIconI}
-                      category={component.category}
-                      feature={component.feature}
-                    >
-                      <div
-                        onClick={() => onAdd?.(component.key, component.category)}
-                        className="h-20 border border-border bg-card p-2 text-left hover:border-primary transition group cursor-pointer"
-                      >
-                        <div className="text-xs font-semibold truncate flex items-center gap-1">
-                          {FeatureIcon && <FeatureIcon size={12} className="text-muted-foreground" />}
-                          {CatIconI && <CatIconI size={14} className="text-foreground" />}
-                          <span className="truncate">{component.label}</span>
-                        </div>
-                        <div className="text-[10px] text-muted-foreground mt-1 truncate">
-                          {component.description || component.key}
-                        </div>
-                      </div>
-                    </DraggableLibraryItem>
-                  );
-                })}
-              </div>
-            </div>
+            </DraggableLibraryItem>
           );
         })}
       </div>

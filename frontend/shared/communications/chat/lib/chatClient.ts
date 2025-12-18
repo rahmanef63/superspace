@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Chat client - Convex integration adapter
  * @module shared/chat/lib/chatClient
  */

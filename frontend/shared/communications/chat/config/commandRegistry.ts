@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Command registry for slash commands
  * @module shared/chat/config/commandRegistry
  */

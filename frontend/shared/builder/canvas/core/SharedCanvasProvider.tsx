@@ -61,17 +61,17 @@ import {
   useBuilderHistory,
   useBuilderKeyboardShortcuts,
   type HistorySnapshot,
-} from '@/frontend/features/builder/shared/hooks/useBuilderHistory';
+} from '@/frontend/features/studio/ui/hooks/useBuilderHistory';
 import {
   useBuilderClipboard,
   useBuilderClipboardShortcuts,
-} from '@/frontend/features/builder/shared/hooks/useBuilderClipboard';
+} from '@/frontend/features/studio/ui/hooks/useBuilderClipboard';
 
 // Import from builder feature (restored from archived CMS)
 import { uid, clamp } from '@/lib/utils';
-import type { CMSNode, CMSEdge, Schema, Workspace } from '@/frontend/features/builder/shared/types';
-import { getWidgetConfig } from '@/frontend/features/builder/shared/registry';
-import { INITIAL_CMS_SCHEMA } from '@/frontend/features/builder/mockdata';
+import type { CMSNode, CMSEdge, Schema, Workspace } from '@/frontend/features/studio/ui/types/index';
+import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
+import { INITIAL_CMS_SCHEMA } from '@/frontend/features/studio/mockdata';
 
 interface ChildInfo {
   id: string;

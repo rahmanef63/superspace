@@ -1,4 +1,4 @@
-import type { InspectorField } from '../types';
+import type { InspectorField } from '../types/index';
 
 /**
  * Standard inspector field configurations for common widget properties
@@ -371,3 +371,108 @@ export const filterFields = (fields: InspectorField[], keys: string[]): Inspecto
 export const combineFields = (...fieldGroups: InspectorField[][]): InspectorField[] => {
   return fieldGroups.flat();
 };
+
+// ============================================================================
+// Props-Based Configuration Helpers (Single Source of Truth)
+// ============================================================================
+
+import type { PropDefinition, PropsConfig } from '@/frontend/features/studio/workflow/nodes/types';
+
+/**
+ * Convert a prop key to a human-readable label
+ * e.g., "workspaceId" -> "Workspace Id"
+ */
+export const keyToLabel = (key: string): string => {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+};
+
+/**
+ * Extract default values from a PropsConfig
+ * Use this to generate the `defaults` object from `props`
+ */
+export const getDefaultsFromProps = (props: PropsConfig): Record<string, any> => {
+  const defaults: Record<string, any> = {};
+  for (const [key, def] of Object.entries(props)) {
+    defaults[key] = def.default;
+  }
+  return defaults;
+};
+
+/**
+ * Generate inspector fields from a PropsConfig
+ * Use this to generate the `inspector.fields` array from `props`
+ */
+export const getInspectorFieldsFromProps = (props: PropsConfig): InspectorField[] => {
+  const fields: InspectorField[] = [];
+
+  for (const [key, def] of Object.entries(props)) {
+    if (def.hidden) continue;
+
+    fields.push({
+      key,
+      label: def.label || keyToLabel(key),
+      type: def.type as InspectorField['type'],
+      placeholder: def.placeholder,
+      options: def.options,
+      min: def.min,
+      max: def.max,
+      step: def.step,
+    });
+  }
+
+  return fields;
+};
+
+/**
+ * Create a complete inspector config from PropsConfig
+ * Separates basic and advanced fields into sections
+ */
+export const getInspectorFromProps = (props: PropsConfig, title = 'Configuration'): {
+  fields?: InspectorField[];
+  sections?: { title: string; fields: InspectorField[]; collapsed?: boolean }[];
+} => {
+  const basicFields: InspectorField[] = [];
+  const advancedFields: InspectorField[] = [];
+
+  for (const [key, def] of Object.entries(props)) {
+    if (def.hidden) continue;
+
+    const field: InspectorField = {
+      key,
+      label: def.label || keyToLabel(key),
+      type: def.type as InspectorField['type'],
+      placeholder: def.placeholder,
+      options: def.options,
+      min: def.min,
+      max: def.max,
+      step: def.step,
+    };
+
+    if (def.advanced) {
+      advancedFields.push(field);
+    } else {
+      basicFields.push(field);
+    }
+  }
+
+  // If no advanced fields, return simple fields array
+  if (advancedFields.length === 0) {
+    return { fields: basicFields };
+  }
+
+  // Otherwise return sections
+  return {
+    sections: [
+      { title, fields: basicFields },
+      { title: 'Advanced', fields: advancedFields, collapsed: true },
+    ],
+  };
+};
+
+/**
+ * Helper to define a prop with type inference
+ */
+export const defineProp = <T extends PropDefinition>(def: T): T => def;

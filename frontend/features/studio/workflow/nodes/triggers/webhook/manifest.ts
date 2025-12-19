@@ -5,8 +5,38 @@
  */
 
 import { Webhook } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { authSection } from '../../../inspectors';
+
+const props: PropsConfig = {
+    path: {
+        type: 'text',
+        default: '/webhook/my-workflow',
+        label: 'Webhook Path',
+        placeholder: '/webhook/my-workflow',
+    },
+    method: {
+        type: 'select',
+        default: 'POST',
+        label: 'HTTP Method',
+        options: ['GET', 'POST', 'PUT', 'DELETE'],
+    },
+    responseMode: {
+        type: 'select',
+        default: 'onReceived',
+        label: 'Response Mode',
+        description: '"onReceived" responds immediately, "lastNode" waits for workflow completion',
+        options: ['onReceived', 'lastNode'],
+    },
+    authType: {
+        type: 'select',
+        default: 'none',
+        label: 'Authentication',
+        options: ['none', 'basic', 'bearer', 'apiKey'],
+        advanced: true,
+    },
+};
 
 export const webhookTriggerManifest: NodeManifest = {
     key: 'trigger.webhook',
@@ -15,40 +45,12 @@ export const webhookTriggerManifest: NodeManifest = {
     description: 'Receive HTTP requests to trigger workflow',
     icon: Webhook,
 
-    defaults: {
-        path: '/webhook/my-workflow',
-        method: 'POST',
-        responseMode: 'onReceived',
-        authType: 'none',
-    },
-
+    props,
+    defaults: getDefaultsFromProps(props),
     inspector: {
         sections: [
-            {
-                title: 'Webhook Configuration',
-                fields: [
-                    {
-                        key: 'path',
-                        label: 'Webhook Path',
-                        type: 'text',
-                        placeholder: '/webhook/my-workflow',
-                        required: true,
-                    },
-                    {
-                        key: 'method',
-                        label: 'HTTP Method',
-                        type: 'select',
-                        options: ['GET', 'POST', 'PUT', 'DELETE'],
-                    },
-                    {
-                        key: 'responseMode',
-                        label: 'Response Mode',
-                        type: 'select',
-                        options: ['onReceived', 'lastNode'],
-                        description: '"onReceived" responds immediately, "lastNode" waits for workflow completion',
-                    },
-                ],
-            },
+            { title: 'Webhook Configuration', fields: [] },
+            ...getInspectorFromProps(props, 'Webhook Configuration').sections || [],
             authSection,
         ],
     },

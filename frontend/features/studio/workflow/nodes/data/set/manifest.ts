@@ -5,8 +5,36 @@
  */
 
 import { Variable } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { variableNameField, valueField, valueTypeField } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    variableName: {
+        type: 'text',
+        default: 'myVariable',
+        label: 'Variable Name',
+        placeholder: 'myVariable',
+    },
+    valueType: {
+        type: 'select',
+        default: 'string',
+        label: 'Value Type',
+        options: ['string', 'number', 'boolean', 'object', 'array'],
+    },
+    value: {
+        type: 'textarea',
+        default: '',
+        label: 'Value',
+        placeholder: '{{ $node.prev.data.result }}',
+    },
+    keepOnlySet: {
+        type: 'switch',
+        default: false,
+        label: 'Keep Only This Value',
+        description: 'Remove other data and keep only this variable',
+        advanced: true,
+    },
+};
 
 export const setVariableManifest: NodeManifest = {
     key: 'data.set',
@@ -15,24 +43,7 @@ export const setVariableManifest: NodeManifest = {
     description: 'Set or create a variable in workflow context',
     icon: Variable,
 
-    defaults: {
-        variableName: 'myVariable',
-        value: '',
-        valueType: 'string',
-        keepOnlySet: false,
-    },
-
-    inspector: {
-        fields: [
-            variableNameField,
-            valueTypeField,
-            valueField,
-            {
-                key: 'keepOnlySet',
-                label: 'Keep Only This Value',
-                type: 'switch',
-                description: 'Remove other data and keep only this variable',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Variable Configuration'),
 };

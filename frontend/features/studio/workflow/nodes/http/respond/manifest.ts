@@ -5,7 +5,36 @@
  */
 
 import { Send } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    statusCode: {
+        type: 'number',
+        default: 200,
+        label: 'Status Code',
+        placeholder: '200',
+    },
+    respondWith: {
+        type: 'select',
+        default: 'json',
+        label: 'Response Type',
+        options: ['json', 'text', 'binary', 'lastNodeData'],
+        description: '"lastNodeData" uses output from previous node',
+    },
+    headers: {
+        type: 'textarea',
+        default: '{}',
+        label: 'Response Headers (JSON)',
+        placeholder: '{}',
+    },
+    body: {
+        type: 'textarea',
+        default: '{"success": true}',
+        label: 'Response Body',
+        placeholder: '{"success": true, "data": ...}',
+    },
+};
 
 export const httpRespondManifest: NodeManifest = {
     key: 'http.respond',
@@ -14,41 +43,7 @@ export const httpRespondManifest: NodeManifest = {
     description: 'Send response back to webhook caller',
     icon: Send,
 
-    defaults: {
-        statusCode: 200,
-        headers: '{}',
-        body: '{"success": true}',
-        respondWith: 'json',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'statusCode',
-                label: 'Status Code',
-                type: 'number',
-                placeholder: '200',
-                defaultValue: 200,
-            },
-            {
-                key: 'respondWith',
-                label: 'Response Type',
-                type: 'select',
-                options: ['json', 'text', 'binary', 'lastNodeData'],
-                description: '"lastNodeData" uses output from previous node',
-            },
-            {
-                key: 'headers',
-                label: 'Response Headers (JSON)',
-                type: 'textarea',
-                placeholder: '{}',
-            },
-            {
-                key: 'body',
-                label: 'Response Body',
-                type: 'textarea',
-                placeholder: '{"success": true, "data": ...}',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Response Configuration'),
 };

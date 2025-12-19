@@ -367,44 +367,9 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
           />
         </InspectorSection>
 
-        {/* Dynamic Controls from Widget Config */}
-        {controls.length > 0 && (
-          <InspectorSection {...INSPECTOR_SECTIONS.properties}>
-            <div className="space-y-3">
-              {controls.map(control => (
-                <DynamicInspectorControl
-                  key={`${selectedNode.id}-${control.path}`}
-                  control={control}
-                  value={getNestedValue(currentProps, control.path)}
-                  onChange={value => setProp(control.path, value)}
-                />
-              ))}
-            </div>
-          </InspectorSection>
-        )}
-
-        {/* Legacy fields fallback */}
-        {!controls.length && widget?.inspector?.fields && (
-          <InspectorSection {...INSPECTOR_SECTIONS.properties}>
-            <div className="space-y-3">
-              {widget.inspector.fields.map(field => (
-                <DynamicInspectorControl
-                  key={`${selectedNode.id}-${field.key}`}
-                  control={{
-                    label: field.label,
-                    ui: field.type as any,
-                    uiComponentPath: field.type,
-                    path: field.key,
-                    options: field.options,
-                    default: field.placeholder || ''
-                  }}
-                  value={currentProps[field.key]}
-                  onChange={value => setProp(field.key, value)}
-                />
-              ))}
-            </div>
-          </InspectorSection>
-        )}
+        {/* Widget-specific controls only (non-styling props) */}
+        {/* Note: Styling properties are handled by the sections above */}
+        {/* Only show Properties section for widget-specific (non-CSS) fields */}
       </div>
 
       {/* Children Section */}

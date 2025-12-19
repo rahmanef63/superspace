@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { KanbanBlock } from '@/frontend/shared/builder/blocks/Kanban';
+import { KanbanBlock } from '@/frontend/features/studio/ui/widgets/blocks/Kanban';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { KanbanSquare } from 'lucide-react';
 

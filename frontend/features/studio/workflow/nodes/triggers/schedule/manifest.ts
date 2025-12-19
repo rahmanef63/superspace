@@ -5,7 +5,29 @@
  */
 
 import { Clock } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    cronExpression: {
+        type: 'text',
+        default: '0 * * * *',
+        label: 'Cron Expression',
+        placeholder: '0 * * * *',
+        description: 'Example: 0 * * * * (every hour), */5 * * * * (every 5 min)',
+    },
+    timezone: {
+        type: 'select',
+        default: 'UTC',
+        label: 'Timezone',
+        options: ['UTC', 'Asia/Jakarta', 'Asia/Singapore', 'America/New_York', 'Europe/London', 'Asia/Tokyo'],
+    },
+    enabled: {
+        type: 'switch',
+        default: true,
+        label: 'Enabled',
+    },
+};
 
 export const scheduleTriggerManifest: NodeManifest = {
     key: 'trigger.schedule',
@@ -14,33 +36,7 @@ export const scheduleTriggerManifest: NodeManifest = {
     description: 'Run workflow on a schedule (cron expression)',
     icon: Clock,
 
-    defaults: {
-        cronExpression: '0 * * * *',
-        timezone: 'UTC',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'cronExpression',
-                label: 'Cron Expression',
-                type: 'text',
-                placeholder: '0 * * * *',
-                description: 'Example: 0 * * * * (every hour), */5 * * * * (every 5 min)',
-                required: true,
-            },
-            {
-                key: 'timezone',
-                label: 'Timezone',
-                type: 'select',
-                options: ['UTC', 'Asia/Jakarta', 'Asia/Singapore', 'America/New_York', 'Europe/London', 'Asia/Tokyo'],
-            },
-            {
-                key: 'enabled',
-                label: 'Enabled',
-                type: 'switch',
-                defaultValue: true,
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Schedule Configuration'),
 };

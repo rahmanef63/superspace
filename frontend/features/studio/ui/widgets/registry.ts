@@ -76,6 +76,10 @@ import { formManifest as formBlockManifest } from './blocks/Form/manifest';
 import { mediaManifest as mediaBlockManifest } from './blocks/Media/manifest';
 import { profileManifest as profileBlockManifest } from './blocks/Profile/manifest';
 import { metricCardManifest as metricCardBlockManifest } from './blocks/Metric/manifest';
+import { activityManifest as activityBlockManifest } from './blocks/Activity/manifest';
+import { listManifest as listBlockManifest } from './blocks/List/manifest';
+import { eventsManifest as eventsBlockManifest } from './blocks/Events/manifest';
+import { statsManifest as statsBlockManifest } from './blocks/Stats/manifest';
 
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
@@ -156,6 +160,10 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   mediaBlock: mediaBlockManifest,
   profileBlock: profileBlockManifest,
   metricCardBlock: metricCardBlockManifest,
+  activityBlock: activityBlockManifest,
+  listBlock: listBlockManifest,
+  eventsBlock: eventsBlockManifest,
+  statsBlock: statsBlockManifest,
 };
 
 // Standardize all widgets and validate in development

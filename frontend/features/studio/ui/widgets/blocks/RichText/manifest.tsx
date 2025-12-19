@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { RichTextBlock } from '@/frontend/shared/builder/blocks/RichText';
+import { RichTextBlock } from '@/frontend/features/studio/ui/widgets/blocks/RichText';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { FileText } from 'lucide-react';
 

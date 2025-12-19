@@ -53,8 +53,8 @@ export function MetricCardBlock({
                     <div className="flex items-center gap-2 mt-1">
                         {trend && (
                             <span className={`text-xs flex items-center gap-0.5 font-medium ${trend.direction === "up" ? "text-green-500" :
-                                    trend.direction === "down" ? "text-red-500" :
-                                        "text-muted-foreground"
+                                trend.direction === "down" ? "text-red-500" :
+                                    "text-muted-foreground"
                                 }`}>
                                 {trend.direction === "up" && <ArrowUpRight className="h-3 w-3" />}
                                 {trend.direction === "down" && <ArrowDownRight className="h-3 w-3" />}

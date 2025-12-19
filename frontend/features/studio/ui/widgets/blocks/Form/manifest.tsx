@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { FormBlock } from '@/frontend/shared/builder/blocks/Form';
+import { FormBlock } from '@/frontend/features/studio/ui/widgets/blocks/Form';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { ClipboardList } from 'lucide-react';
 

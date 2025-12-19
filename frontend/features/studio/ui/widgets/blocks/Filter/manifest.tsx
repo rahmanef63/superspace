@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { FilterBlock } from '@/frontend/shared/builder/blocks/Filter';
+import { FilterBlock } from '@/frontend/features/studio/ui/widgets/blocks/Filter';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Filter } from 'lucide-react';
 

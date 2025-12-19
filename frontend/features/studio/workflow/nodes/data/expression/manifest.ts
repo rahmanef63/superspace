@@ -5,8 +5,25 @@
  */
 
 import { Braces } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { expressionField } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    expression: {
+        type: 'textarea',
+        default: '{{ $node["Previous"].data.field }}',
+        label: 'Expression',
+        placeholder: '{{ $node["HTTP Request"].data.response.id }}',
+        description: 'Use {{ }} for expressions. Access node data with $node["NodeName"]',
+    },
+    outputName: {
+        type: 'text',
+        default: 'result',
+        label: 'Output Variable',
+        placeholder: 'result',
+        description: 'Name for the output variable',
+    },
+};
 
 export const expressionManifest: NodeManifest = {
     key: 'data.expression',
@@ -15,27 +32,7 @@ export const expressionManifest: NodeManifest = {
     description: 'Evaluate expressions and template strings',
     icon: Braces,
 
-    defaults: {
-        expression: '{{ $node["Previous"].data.field }}',
-        outputName: 'result',
-    },
-
-    inspector: {
-        fields: [
-            {
-                ...expressionField,
-                key: 'expression',
-                label: 'Expression',
-                placeholder: '{{ $node["HTTP Request"].data.response.id }}',
-                description: 'Use {{ }} for expressions. Access node data with $node["NodeName"]',
-            },
-            {
-                key: 'outputName',
-                label: 'Output Variable',
-                type: 'text',
-                placeholder: 'result',
-                description: 'Name for the output variable',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Expression Configuration'),
 };

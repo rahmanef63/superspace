@@ -5,7 +5,49 @@
  */
 
 import { ArrowRightLeft } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    mode: {
+        type: 'select',
+        default: 'value',
+        label: 'Mode',
+        options: ['value', 'expression', 'regex'],
+    },
+    dataToSwitch: {
+        type: 'textarea',
+        default: '',
+        label: 'Data to Evaluate',
+        placeholder: '{{ $node.prev.data.type }}',
+    },
+    case1Value: {
+        type: 'text',
+        default: '',
+        label: 'Case 1: Value',
+        placeholder: 'typeA',
+    },
+    case2Value: {
+        type: 'text',
+        default: '',
+        label: 'Case 2: Value',
+        placeholder: 'typeB',
+    },
+    case3Value: {
+        type: 'text',
+        default: '',
+        label: 'Case 3: Value',
+        placeholder: 'typeC',
+        advanced: true,
+    },
+    fallbackOutput: {
+        type: 'select',
+        default: 'default',
+        label: 'Fallback',
+        options: ['default', 'none', 'error'],
+        advanced: true,
+    },
+};
 
 export const switchManifest: NodeManifest = {
     key: 'flow.switch',
@@ -14,50 +56,7 @@ export const switchManifest: NodeManifest = {
     description: 'Route to different branches based on value',
     icon: ArrowRightLeft,
 
-    defaults: {
-        mode: 'value',
-        dataToSwitch: '',
-        fallbackOutput: 'default',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'mode',
-                label: 'Mode',
-                type: 'select',
-                options: ['value', 'expression', 'regex'],
-            },
-            {
-                key: 'dataToSwitch',
-                label: 'Data to Evaluate',
-                type: 'textarea',
-                placeholder: '{{ $node.prev.data.type }}',
-            },
-            {
-                key: 'case1Value',
-                label: 'Case 1: Value',
-                type: 'text',
-                placeholder: 'typeA',
-            },
-            {
-                key: 'case2Value',
-                label: 'Case 2: Value',
-                type: 'text',
-                placeholder: 'typeB',
-            },
-            {
-                key: 'case3Value',
-                label: 'Case 3: Value',
-                type: 'text',
-                placeholder: 'typeC',
-            },
-            {
-                key: 'fallbackOutput',
-                label: 'Fallback',
-                type: 'select',
-                options: ['default', 'none', 'error'],
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Switch Configuration'),
 };

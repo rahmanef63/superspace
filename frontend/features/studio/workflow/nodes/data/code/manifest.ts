@@ -5,7 +5,31 @@
  */
 
 import { Code } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    mode: {
+        type: 'select',
+        default: 'runOnceForAllItems',
+        label: 'Run Mode',
+        options: ['runOnceForAllItems', 'runOnceForEachItem'],
+        description: '"runOnceForAllItems" processes all data together, "runOnceForEachItem" runs for each item',
+    },
+    language: {
+        type: 'select',
+        default: 'javascript',
+        label: 'Language',
+        options: ['javascript'],
+    },
+    code: {
+        type: 'code',
+        default: '// Access input data with $input\n// Return data to pass to next node\nreturn $input.all();',
+        label: 'Code',
+        placeholder: '// Your JavaScript code here\nreturn items;',
+        description: 'Available: $input, $node, $env, $json',
+    },
+};
 
 export const codeManifest: NodeManifest = {
     key: 'data.code',
@@ -14,34 +38,7 @@ export const codeManifest: NodeManifest = {
     description: 'Execute custom JavaScript code',
     icon: Code,
 
-    defaults: {
-        mode: 'runOnceForAllItems',
-        language: 'javascript',
-        code: '// Access input data with $input\n// Return data to pass to next node\nreturn $input.all();',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'mode',
-                label: 'Run Mode',
-                type: 'select',
-                options: ['runOnceForAllItems', 'runOnceForEachItem'],
-                description: '"runOnceForAllItems" processes all data together, "runOnceForEachItem" runs for each item',
-            },
-            {
-                key: 'language',
-                label: 'Language',
-                type: 'select',
-                options: ['javascript'],
-            },
-            {
-                key: 'code',
-                label: 'Code',
-                type: 'textarea',
-                placeholder: '// Your JavaScript code here\nreturn items;',
-                description: 'Available: $input, $node, $env, $json',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Code Configuration'),
 };

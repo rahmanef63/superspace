@@ -5,7 +5,30 @@
  */
 
 import { Timer } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    amount: {
+        type: 'number',
+        default: 1,
+        label: 'Wait Time',
+        placeholder: '5',
+    },
+    unit: {
+        type: 'select',
+        default: 'seconds',
+        label: 'Unit',
+        options: ['milliseconds', 'seconds', 'minutes', 'hours'],
+    },
+    resumeType: {
+        type: 'select',
+        default: 'afterDelay',
+        label: 'Resume On',
+        options: ['afterDelay', 'webhook', 'specificTime'],
+        advanced: true,
+    },
+};
 
 export const waitManifest: NodeManifest = {
     key: 'flow.wait',
@@ -14,33 +37,7 @@ export const waitManifest: NodeManifest = {
     description: 'Pause workflow execution',
     icon: Timer,
 
-    defaults: {
-        amount: 1,
-        unit: 'seconds',
-        resumeType: 'afterDelay',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'amount',
-                label: 'Wait Time',
-                type: 'number',
-                placeholder: '5',
-                required: true,
-            },
-            {
-                key: 'unit',
-                label: 'Unit',
-                type: 'select',
-                options: ['milliseconds', 'seconds', 'minutes', 'hours'],
-            },
-            {
-                key: 'resumeType',
-                label: 'Resume On',
-                type: 'select',
-                options: ['afterDelay', 'webhook', 'specificTime'],
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Wait Configuration'),
 };

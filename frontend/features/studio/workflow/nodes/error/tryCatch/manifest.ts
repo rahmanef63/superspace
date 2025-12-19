@@ -5,7 +5,24 @@
  */
 
 import { ShieldAlert } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    continueOnFail: {
+        type: 'switch',
+        default: false,
+        label: 'Continue On Fail',
+        description: 'Continue workflow even if this node fails',
+    },
+    errorOutput: {
+        type: 'select',
+        default: 'errorBranch',
+        label: 'Error Output',
+        options: ['errorBranch', 'errorWorkflow', 'stop'],
+        description: 'What to do when an error occurs',
+    },
+};
 
 export const tryCatchManifest: NodeManifest = {
     key: 'error.tryCatch',
@@ -14,26 +31,7 @@ export const tryCatchManifest: NodeManifest = {
     description: 'Handle errors in workflow execution',
     icon: ShieldAlert,
 
-    defaults: {
-        continueOnFail: false,
-        errorOutput: 'errorBranch',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'continueOnFail',
-                label: 'Continue On Fail',
-                type: 'switch',
-                description: 'Continue workflow even if this node fails',
-            },
-            {
-                key: 'errorOutput',
-                label: 'Error Output',
-                type: 'select',
-                options: ['errorBranch', 'errorWorkflow', 'stop'],
-                description: 'What to do when an error occurs',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Error Handling'),
 };

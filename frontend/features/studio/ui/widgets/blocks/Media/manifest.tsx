@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { MediaBlock } from '@/frontend/shared/builder/blocks/Media';
+import { MediaBlock } from '@/frontend/features/studio/ui/widgets/blocks/Media';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Image } from 'lucide-react';
 

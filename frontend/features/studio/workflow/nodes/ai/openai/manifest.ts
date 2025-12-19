@@ -5,8 +5,50 @@
  */
 
 import { Bot } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { aiSystemPromptField, aiUserPromptField, aiTemperatureField, aiMaxTokensField } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    operation: {
+        type: 'select',
+        default: 'chat',
+        label: 'Operation',
+        options: ['chat', 'complete', 'embedding', 'image'],
+    },
+    model: {
+        type: 'select',
+        default: 'gpt-4',
+        label: 'Model',
+        options: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o', 'gpt-4o-mini'],
+    },
+    systemPrompt: {
+        type: 'textarea',
+        default: 'You are a helpful assistant.',
+        label: 'System Prompt',
+        placeholder: 'You are a helpful assistant.',
+    },
+    userPrompt: {
+        type: 'textarea',
+        default: '',
+        label: 'User Prompt',
+        placeholder: '{{ $node.prev.data.message }}',
+    },
+    temperature: {
+        type: 'slider',
+        default: 0.7,
+        label: 'Temperature',
+        min: 0,
+        max: 2,
+        step: 0.1,
+        advanced: true,
+    },
+    maxTokens: {
+        type: 'number',
+        default: 1000,
+        label: 'Max Tokens',
+        advanced: true,
+    },
+};
 
 export const openaiManifest: NodeManifest = {
     key: 'ai.openai',
@@ -15,49 +57,7 @@ export const openaiManifest: NodeManifest = {
     description: 'Use OpenAI GPT models for text generation',
     icon: Bot,
 
-    defaults: {
-        model: 'gpt-4',
-        operation: 'chat',
-        systemPrompt: 'You are a helpful assistant.',
-        userPrompt: '',
-        temperature: 0.7,
-        maxTokens: 1000,
-    },
-
-    inspector: {
-        sections: [
-            {
-                title: 'Model',
-                fields: [
-                    {
-                        key: 'operation',
-                        label: 'Operation',
-                        type: 'select',
-                        options: ['chat', 'complete', 'embedding', 'image'],
-                    },
-                    {
-                        key: 'model',
-                        label: 'Model',
-                        type: 'select',
-                        options: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o', 'gpt-4o-mini'],
-                    },
-                ],
-            },
-            {
-                title: 'Prompt',
-                fields: [
-                    aiSystemPromptField,
-                    aiUserPromptField,
-                ],
-            },
-            {
-                title: 'Parameters',
-                fields: [
-                    aiTemperatureField,
-                    aiMaxTokensField,
-                ],
-                collapsed: true,
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'OpenAI Configuration'),
 };

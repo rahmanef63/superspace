@@ -5,7 +5,24 @@
  */
 
 import { Play } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    name: {
+        type: 'text',
+        default: 'Manual Run',
+        label: 'Trigger Name',
+        placeholder: 'My Trigger',
+    },
+    inputData: {
+        type: 'textarea',
+        default: '{}',
+        label: 'Input Data (JSON)',
+        placeholder: '{"key": "value"}',
+        description: 'Initial data passed to the workflow',
+    },
+};
 
 export const manualTriggerManifest: NodeManifest = {
     key: 'trigger.manual',
@@ -14,26 +31,7 @@ export const manualTriggerManifest: NodeManifest = {
     description: 'Start workflow manually with custom input data',
     icon: Play,
 
-    defaults: {
-        name: 'Manual Run',
-        inputData: '{}',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'name',
-                label: 'Trigger Name',
-                type: 'text',
-                placeholder: 'My Trigger',
-            },
-            {
-                key: 'inputData',
-                label: 'Input Data (JSON)',
-                type: 'textarea',
-                placeholder: '{"key": "value"}',
-                description: 'Initial data passed to the workflow',
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Manual Trigger'),
 };

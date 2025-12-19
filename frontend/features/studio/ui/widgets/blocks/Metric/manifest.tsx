@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { MetricCardBlock } from '@/frontend/shared/builder/blocks/Metric';
+import { MetricCardBlock } from '@/frontend/features/studio/ui/widgets/blocks/Metric';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Sigma } from 'lucide-react';
 

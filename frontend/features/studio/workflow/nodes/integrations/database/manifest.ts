@@ -5,8 +5,37 @@
  */
 
 import { Database } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { authSection } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    operation: {
+        type: 'select',
+        default: 'select',
+        label: 'Operation',
+        options: ['select', 'insert', 'update', 'delete', 'rawQuery'],
+    },
+    table: {
+        type: 'text',
+        default: '',
+        label: 'Table/Collection',
+        placeholder: 'users',
+    },
+    query: {
+        type: 'textarea',
+        default: '',
+        label: 'Query / Filter',
+        placeholder: 'SELECT * FROM users WHERE id = ?',
+        description: 'SQL query or NoSQL filter',
+    },
+    parameters: {
+        type: 'textarea',
+        default: '[]',
+        label: 'Parameters (JSON)',
+        placeholder: '["value1", "value2"]',
+        advanced: true,
+    },
+};
 
 export const databaseManifest: NodeManifest = {
     key: 'integration.database',
@@ -15,51 +44,7 @@ export const databaseManifest: NodeManifest = {
     description: 'Query databases (SQL/NoSQL)',
     icon: Database,
 
-    defaults: {
-        operation: 'select',
-        table: '',
-        query: '',
-        parameters: '[]',
-    },
-
-    inspector: {
-        sections: [
-            {
-                title: 'Operation',
-                fields: [
-                    {
-                        key: 'operation',
-                        label: 'Operation',
-                        type: 'select',
-                        options: ['select', 'insert', 'update', 'delete', 'rawQuery'],
-                    },
-                    {
-                        key: 'table',
-                        label: 'Table/Collection',
-                        type: 'text',
-                        placeholder: 'users',
-                    },
-                ],
-            },
-            {
-                title: 'Query',
-                fields: [
-                    {
-                        key: 'query',
-                        label: 'Query / Filter',
-                        type: 'textarea',
-                        placeholder: 'SELECT * FROM users WHERE id = ?',
-                        description: 'SQL query or NoSQL filter',
-                    },
-                    {
-                        key: 'parameters',
-                        label: 'Parameters (JSON)',
-                        type: 'textarea',
-                        placeholder: '["value1", "value2"]',
-                    },
-                ],
-            },
-            authSection,
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Database Query'),
 };

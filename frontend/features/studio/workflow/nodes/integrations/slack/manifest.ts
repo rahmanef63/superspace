@@ -5,8 +5,36 @@
  */
 
 import { MessageSquare } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { authSection } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    operation: {
+        type: 'select',
+        default: 'sendMessage',
+        label: 'Operation',
+        options: ['sendMessage', 'uploadFile', 'getChannel', 'listChannels', 'updateMessage'],
+    },
+    channel: {
+        type: 'text',
+        default: '',
+        label: 'Channel',
+        placeholder: '#general or channel ID',
+    },
+    text: {
+        type: 'textarea',
+        default: '',
+        label: 'Message Text',
+        placeholder: 'Hello from automation!',
+    },
+    attachments: {
+        type: 'textarea',
+        default: '[]',
+        label: 'Attachments (JSON)',
+        placeholder: '[]',
+        advanced: true,
+    },
+};
 
 export const slackManifest: NodeManifest = {
     key: 'integration.slack',
@@ -15,50 +43,7 @@ export const slackManifest: NodeManifest = {
     description: 'Send messages to Slack channels',
     icon: MessageSquare,
 
-    defaults: {
-        operation: 'sendMessage',
-        channel: '',
-        text: '',
-        attachments: '[]',
-    },
-
-    inspector: {
-        sections: [
-            {
-                title: 'Operation',
-                fields: [
-                    {
-                        key: 'operation',
-                        label: 'Operation',
-                        type: 'select',
-                        options: ['sendMessage', 'uploadFile', 'getChannel', 'listChannels', 'updateMessage'],
-                    },
-                ],
-            },
-            {
-                title: 'Message',
-                fields: [
-                    {
-                        key: 'channel',
-                        label: 'Channel',
-                        type: 'text',
-                        placeholder: '#general or channel ID',
-                    },
-                    {
-                        key: 'text',
-                        label: 'Message Text',
-                        type: 'textarea',
-                        placeholder: 'Hello from automation!',
-                    },
-                    {
-                        key: 'attachments',
-                        label: 'Attachments (JSON)',
-                        type: 'textarea',
-                        placeholder: '[]',
-                    },
-                ],
-            },
-            authSection,
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Slack Configuration'),
 };

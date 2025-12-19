@@ -54,6 +54,39 @@ export interface InspectorConfig {
 }
 
 // ============================================================================
+// Prop Definition (Single Source of Truth for node properties)
+// ============================================================================
+
+export type PropType = 'text' | 'number' | 'switch' | 'select' | 'textarea' | 'code' | 'color' | 'slider';
+
+export interface PropDefinition {
+    /** Field type for inspector UI */
+    type: PropType;
+    /** Default value for this prop */
+    default: any;
+    /** Display label (auto-generated from key if not provided) */
+    label?: string;
+    /** Help text shown in inspector */
+    description?: string;
+    /** Placeholder text for input fields */
+    placeholder?: string;
+    /** Options for 'select' type */
+    options?: string[];
+    /** Hide from inspector UI */
+    hidden?: boolean;
+    /** Show in "Advanced" section */
+    advanced?: boolean;
+    /** Min value for number/slider */
+    min?: number;
+    /** Max value for number/slider */
+    max?: number;
+    /** Step for number/slider */
+    step?: number;
+}
+
+export type PropsConfig = Record<string, PropDefinition>;
+
+// ============================================================================
 // Node Manifest
 // ============================================================================
 
@@ -65,11 +98,12 @@ export interface NodeManifest {
     description: string;
     icon?: LucideIcon;
 
-    // Defaults & Config
-    defaults: Record<string, any>;
+    // NEW: Single source of truth for props (replaces defaults + inspector)
+    props?: PropsConfig;
 
-    // Inspector Configuration
-    inspector: InspectorConfig;
+    // LEGACY: Keep for backward compatibility
+    defaults?: Record<string, any>;
+    inspector?: InspectorConfig;
 
     // Optional Rendering
     render?: (props: NodeRenderProps) => ReactNode;

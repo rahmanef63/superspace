@@ -5,8 +5,35 @@
  */
 
 import { Brain } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { aiSystemPromptField, aiUserPromptField, aiMaxTokensField } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    model: {
+        type: 'select',
+        default: 'claude-3-sonnet',
+        label: 'Model',
+        options: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku', 'claude-3.5-sonnet', 'claude-3.5-haiku'],
+    },
+    systemPrompt: {
+        type: 'textarea',
+        default: 'You are a helpful assistant.',
+        label: 'System Prompt',
+        placeholder: 'You are a helpful assistant.',
+    },
+    userPrompt: {
+        type: 'textarea',
+        default: '',
+        label: 'User Prompt',
+        placeholder: '{{ $node.prev.data.message }}',
+    },
+    maxTokens: {
+        type: 'number',
+        default: 1000,
+        label: 'Max Tokens',
+        advanced: true,
+    },
+};
 
 export const claudeManifest: NodeManifest = {
     key: 'ai.claude',
@@ -15,40 +42,7 @@ export const claudeManifest: NodeManifest = {
     description: 'Use Anthropic Claude models for text generation',
     icon: Brain,
 
-    defaults: {
-        model: 'claude-3-sonnet',
-        systemPrompt: 'You are a helpful assistant.',
-        userPrompt: '',
-        maxTokens: 1000,
-    },
-
-    inspector: {
-        sections: [
-            {
-                title: 'Model',
-                fields: [
-                    {
-                        key: 'model',
-                        label: 'Model',
-                        type: 'select',
-                        options: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku', 'claude-3.5-sonnet', 'claude-3.5-haiku'],
-                    },
-                ],
-            },
-            {
-                title: 'Prompt',
-                fields: [
-                    aiSystemPromptField,
-                    aiUserPromptField,
-                ],
-            },
-            {
-                title: 'Parameters',
-                fields: [
-                    aiMaxTokensField,
-                ],
-                collapsed: true,
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Claude Configuration'),
 };

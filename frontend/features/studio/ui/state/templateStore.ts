@@ -22,6 +22,20 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'card-about': { type: 'card', props: { title: 'About', description: 'Company profile' }, children: [] }
     }
   }),
+  'Overview Dashboard': () => ({
+    version: '0.5',
+    root: ['section-main'],
+    nodes: {
+      'data-overview': { type: 'feature.overview.get', props: {}, children: [] },
+      'section-main': { type: 'section', props: { className: 'p-6 space-y-6 flex flex-col' }, children: ['stats-grid', 'content-grid'] },
+      'stats-grid': { type: 'statsBlock', props: { stats: '{{ $node.data-overview.data.stats }}', columns: 4 }, children: [] },
+      'content-grid': { type: 'grid', props: { columns: 2, gap: 'md' }, children: ['activity-feed', 'side-column'] },
+      'activity-feed': { type: 'activityBlock', props: { title: 'Recent Activity', activities: '{{ $node.data-overview.data.recentActivity }}' }, children: [] },
+      'side-column': { type: 'flex', props: { direction: 'column', gap: 'md' }, children: ['recent-list', 'events-list'] },
+      'recent-list': { type: 'listBlock', props: { title: 'Recent Items', items: '{{ $node.data-overview.data.recentItems }}' }, children: [] },
+      'events-list': { type: 'eventsBlock', props: { title: 'Upcoming Events', events: '{{ $node.data-overview.data.upcomingEvents }}' }, children: [] }
+    }
+  }),
 };
 
 const ASSET_KEY = 'cms-asset-templates';

@@ -6,7 +6,33 @@
  */
 
 import { BarChart3, Activity, TrendingUp } from 'lucide-react';
-import type { NodeManifest } from '../../types';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+// ============================================================================
+// Get Metrics
+// ============================================================================
+
+const getMetricsProps: PropsConfig = {
+    metric: {
+        type: 'select',
+        default: '',
+        label: 'Metric',
+        options: ['pageViews', 'sessions', 'users', 'conversions', 'revenue', 'custom'],
+    },
+    dateRange: {
+        type: 'select',
+        default: 'last7days',
+        label: 'Date Range',
+        options: ['today', 'yesterday', 'last7days', 'last30days', 'thisMonth', 'custom'],
+    },
+    groupBy: {
+        type: 'select',
+        default: 'day',
+        label: 'Group By',
+        options: ['hour', 'day', 'week', 'month'],
+    },
+};
 
 export const analyticsGetMetricsManifest: NodeManifest = {
     key: 'feature.analytics.getMetrics',
@@ -14,34 +40,33 @@ export const analyticsGetMetricsManifest: NodeManifest = {
     category: 'Integration',
     description: 'Retrieve analytics metrics',
     icon: BarChart3,
+    props: getMetricsProps,
+    defaults: getDefaultsFromProps(getMetricsProps),
+    inspector: getInspectorFromProps(getMetricsProps, 'Metrics Configuration'),
+};
 
-    defaults: {
-        metric: '',
-        dateRange: 'last7days',
-        groupBy: 'day',
+// ============================================================================
+// Track Event
+// ============================================================================
+
+const trackEventProps: PropsConfig = {
+    eventName: {
+        type: 'text',
+        default: '',
+        label: 'Event Name',
+        placeholder: 'user_signup',
     },
-
-    inspector: {
-        fields: [
-            {
-                key: 'metric',
-                label: 'Metric',
-                type: 'select',
-                options: ['pageViews', 'sessions', 'users', 'conversions', 'revenue', 'custom'],
-            },
-            {
-                key: 'dateRange',
-                label: 'Date Range',
-                type: 'select',
-                options: ['today', 'yesterday', 'last7days', 'last30days', 'thisMonth', 'custom'],
-            },
-            {
-                key: 'groupBy',
-                label: 'Group By',
-                type: 'select',
-                options: ['hour', 'day', 'week', 'month'],
-            },
-        ],
+    properties: {
+        type: 'textarea',
+        default: '{}',
+        label: 'Properties (JSON)',
+        placeholder: '{"plan": "premium", "source": "automation"}',
+    },
+    userId: {
+        type: 'text',
+        default: '',
+        label: 'User ID',
+        placeholder: '{{ $node.prev.data.userId }}',
     },
 };
 
@@ -51,35 +76,33 @@ export const analyticsTrackEventManifest: NodeManifest = {
     category: 'Integration',
     description: 'Track a custom analytics event',
     icon: Activity,
+    props: trackEventProps,
+    defaults: getDefaultsFromProps(trackEventProps),
+    inspector: getInspectorFromProps(trackEventProps, 'Event Configuration'),
+};
 
-    defaults: {
-        eventName: '',
-        properties: '{}',
-        userId: '',
+// ============================================================================
+// Generate Report
+// ============================================================================
+
+const generateReportProps: PropsConfig = {
+    reportType: {
+        type: 'select',
+        default: 'summary',
+        label: 'Report Type',
+        options: ['summary', 'detailed', 'comparison', 'funnel', 'cohort'],
     },
-
-    inspector: {
-        fields: [
-            {
-                key: 'eventName',
-                label: 'Event Name',
-                type: 'text',
-                placeholder: 'user_signup',
-                required: true,
-            },
-            {
-                key: 'properties',
-                label: 'Properties (JSON)',
-                type: 'textarea',
-                placeholder: '{"plan": "premium", "source": "automation"}',
-            },
-            {
-                key: 'userId',
-                label: 'User ID',
-                type: 'text',
-                placeholder: '{{ $node.prev.data.userId }}',
-            },
-        ],
+    format: {
+        type: 'select',
+        default: 'json',
+        label: 'Output Format',
+        options: ['json', 'csv', 'pdf'],
+    },
+    dateRange: {
+        type: 'select',
+        default: 'last30days',
+        label: 'Date Range',
+        options: ['last7days', 'last30days', 'lastQuarter', 'lastYear'],
     },
 };
 
@@ -89,33 +112,7 @@ export const analyticsGenerateReportManifest: NodeManifest = {
     category: 'Integration',
     description: 'Generate an analytics report',
     icon: TrendingUp,
-
-    defaults: {
-        reportType: 'summary',
-        format: 'json',
-        dateRange: 'last30days',
-    },
-
-    inspector: {
-        fields: [
-            {
-                key: 'reportType',
-                label: 'Report Type',
-                type: 'select',
-                options: ['summary', 'detailed', 'comparison', 'funnel', 'cohort'],
-            },
-            {
-                key: 'format',
-                label: 'Output Format',
-                type: 'select',
-                options: ['json', 'csv', 'pdf'],
-            },
-            {
-                key: 'dateRange',
-                label: 'Date Range',
-                type: 'select',
-                options: ['last7days', 'last30days', 'lastQuarter', 'lastYear'],
-            },
-        ],
-    },
+    props: generateReportProps,
+    defaults: getDefaultsFromProps(generateReportProps),
+    inspector: getInspectorFromProps(generateReportProps, 'Report Configuration'),
 };

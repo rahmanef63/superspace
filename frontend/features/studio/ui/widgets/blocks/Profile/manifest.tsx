@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { ProfileBlock } from '@/frontend/shared/builder/blocks/Profile';
+import { ProfileBlock } from '@/frontend/features/studio/ui/widgets/blocks/Profile';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { UserCircle } from 'lucide-react';
 

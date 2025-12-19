@@ -230,6 +230,40 @@ export const createWorkspace = mutation({
   },
 })
 
+export const updateWorkspace = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    name: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    description: v.optional(v.string()),
+    type: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isPublic: v.optional(v.boolean()),
+    themePreset: v.optional(v.string()),
+    shareDataToParent: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx)
+    if (!userId) throw new Error("Unauthenticated")
+
+    // Check permissions
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_WORKSPACE)
+
+    const { workspaceId, ...updates } = args
+
+    // Filter out undefined values
+    const patch: any = {}
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined) {
+        patch[key] = value
+      }
+    }
+
+    await ctx.db.patch(workspaceId, patch)
+  },
+})
+
 export const backfillMembershipsForCurrentUser = mutation({
   args: {},
   handler: async (ctx) => {

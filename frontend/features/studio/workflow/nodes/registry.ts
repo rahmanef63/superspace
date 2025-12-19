@@ -59,9 +59,11 @@ export const allNodeManifests: NodeManifest[] = [
 
     // Feature Nodes - Calendar (4)
     featureNodes.calendarCreateManifest,
-    featureNodes.calendarUpdateManifest,
     featureNodes.calendarDeleteManifest,
     featureNodes.calendarGetManifest,
+
+    // Feature Nodes - Overview (1)
+    featureNodes.overviewGetManifest,
 ];
 
 // ============================================================================

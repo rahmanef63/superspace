@@ -2,7 +2,9 @@ import React from 'react';
 export interface InspectorField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'switch' | 'textarea' | 'custom' | 'nodeSelector';
+  type: 'text' | 'number' | 'select' | 'switch' | 'textarea' | 'custom' | 'nodeSelector'
+  // Extended types for studio
+  | 'slider' | 'color' | 'checkbox' | 'button' | 'buttonGroup' | 'range' | 'code';
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;
@@ -10,6 +12,14 @@ export interface InspectorField {
   description?: string;
   required?: boolean;
   defaultValue?: any;
+  // Additional properties for extended field types
+  min?: number;
+  max?: number;
+  step?: number;
+  buttonLabel?: string;
+  buttonVariant?: 'default' | 'outline' | 'ghost' | 'destructive';
+  onButtonClick?: () => void;
+  buttons?: Array<{ value: string; label: string; icon?: React.ComponentType<any> }>;
 }
 
 export interface ComponentConfig {

@@ -1,5 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
-import { TableBlock } from '@/frontend/shared/builder/blocks/Table';
+import { TableBlock } from '@/frontend/features/studio/ui/widgets/blocks/Table';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Table } from 'lucide-react';
 

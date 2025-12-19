@@ -5,8 +5,36 @@
  */
 
 import { GitBranch } from 'lucide-react';
-import type { NodeManifest } from '../../types';
-import { conditionSection } from '../../../inspectors';
+import type { NodeManifest, PropsConfig } from '../../types';
+import { getDefaultsFromProps, getInspectorFromProps } from '@/frontend/features/studio/ui/inspector/standardFields';
+
+const props: PropsConfig = {
+    leftValue: {
+        type: 'text',
+        default: '',
+        label: 'Left Value',
+        placeholder: '{{ $node.prev.data.value }}',
+    },
+    operator: {
+        type: 'select',
+        default: 'equals',
+        label: 'Operator',
+        options: ['equals', 'notEquals', 'contains', 'notContains', 'startsWith', 'endsWith', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty'],
+    },
+    rightValue: {
+        type: 'text',
+        default: '',
+        label: 'Right Value',
+        placeholder: 'expected value',
+    },
+    combineWith: {
+        type: 'select',
+        default: 'AND',
+        label: 'Combine Multiple Conditions',
+        options: ['AND', 'OR'],
+        advanced: true,
+    },
+};
 
 export const ifConditionManifest: NodeManifest = {
     key: 'flow.if',
@@ -15,28 +43,7 @@ export const ifConditionManifest: NodeManifest = {
     description: 'Branch workflow based on conditions',
     icon: GitBranch,
 
-    defaults: {
-        leftValue: '',
-        operator: 'equals',
-        rightValue: '',
-        combineWith: 'AND',
-    },
-
-    inspector: {
-        sections: [
-            conditionSection,
-            {
-                title: 'Options',
-                fields: [
-                    {
-                        key: 'combineWith',
-                        label: 'Combine Multiple Conditions',
-                        type: 'select',
-                        options: ['AND', 'OR'],
-                    },
-                ],
-                collapsed: true,
-            },
-        ],
-    },
+    props,
+    defaults: getDefaultsFromProps(props),
+    inspector: getInspectorFromProps(props, 'Condition'),
 };

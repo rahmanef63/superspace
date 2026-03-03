@@ -17,6 +17,7 @@ export const updateSettings = mutation({
     maxTokens: v.number(),
     systemPrompt: v.optional(v.string()),
     rateLimit: v.optional(v.number()),
+    requiresApproval: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // STEP 1: Permission check
@@ -50,6 +51,30 @@ export const updateSettings = mutation({
       });
     }
 
+    // Handle Prompt Versioning
+    if (args.systemPrompt && (!existing || existing.systemPrompt !== args.systemPrompt)) {
+      // Deactivate old versions
+      const oldVersions = await ctx.db
+        .query("aiPromptVersions")
+        .withIndex("by_workspace_active", (q) => q.eq("workspaceId", args.workspaceId).eq("isActive", true))
+        .collect();
+      
+      for (const v of oldVersions) {
+        await ctx.db.patch(v._id, { isActive: false });
+      }
+
+      // Create new version
+      const lastVersion = oldVersions.length > 0 ? Math.max(...oldVersions.map(v => v.version)) : 0;
+      await ctx.db.insert("aiPromptVersions", {
+        workspaceId: args.workspaceId,
+        prompt: args.systemPrompt,
+        version: lastVersion + 1,
+        isActive: true,
+        createdAt: Date.now(),
+        createdBy: userId,
+      });
+    }
+
     // STEP 4: Audit log
     await logAuditEvent(ctx, {
       workspaceId: args.workspaceId,
@@ -61,6 +86,89 @@ export const updateSettings = mutation({
     });
 
     return settingsId;
+  },
+});
+
+/**
+ * Create a new approval request
+ */
+export const createApprovalRequest = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    agentId: v.string(),
+    toolName: v.string(),
+    args: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    await requireActiveMembership(ctx, args.workspaceId);
+
+    const id = await ctx.db.insert("aiActionApprovals", {
+      workspaceId: args.workspaceId,
+      userId,
+      agentId: args.agentId,
+      toolName: args.toolName,
+      args: args.args,
+      status: "pending",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return id;
+  },
+});
+
+/**
+ * Review an approval request
+ */
+export const reviewApprovalRequest = mutation({
+  args: {
+    id: v.id("aiActionApprovals"),
+    status: v.union(v.literal("approved"), v.literal("rejected")),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    const request = await ctx.db.get(args.id);
+    if (!request) throw new Error("Request not found");
+
+    await requirePermission(ctx, request.workspaceId as any, PERMISSIONS.MANAGE_WORKSPACE);
+
+    await ctx.db.patch(args.id, {
+      status: args.status,
+      reason: args.reason,
+      reviewedBy: userId,
+      reviewedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return request;
+  },
+});
+
+/**
+ * Add a training example
+ */
+export const addTrainingExample = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    input: v.string(),
+    output: v.string(),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ensureUser(ctx);
+    await requirePermission(ctx, args.workspaceId, PERMISSIONS.MANAGE_WORKSPACE);
+
+    await ctx.db.insert("aiTrainingExamples", {
+      workspaceId: args.workspaceId,
+      input: args.input,
+      output: args.output,
+      category: args.category,
+      status: "active",
+      createdAt: Date.now(),
+      createdBy: userId,
+    });
   },
 });
 

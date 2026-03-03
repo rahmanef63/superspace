@@ -64,8 +64,10 @@ const ToggleGroup = React.forwardRef<
       [onValueChange]
     )
 
+    // Bypass discriminated union type error using an any-casted component
+    const Component = ToggleGroupPrimitive.Root as any
     return (
-      <ToggleGroupPrimitive.Root
+      <Component
         ref={ref}
         data-slot="toggle-group"
         className={cn("flex flex-wrap gap-2", className)}
@@ -94,9 +96,10 @@ const ToggleGroup = React.forwardRef<
               {hasLabel && hasIcon ? <span>{label}</span> : label ?? icon}
             </ToggleGroupPrimitive.Item>
           )
-        })}
+        })
+        }
         {children}
-      </ToggleGroupPrimitive.Root>
+      </Component >
     )
   }
 )

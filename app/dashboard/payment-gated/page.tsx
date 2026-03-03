@@ -1,4 +1,4 @@
-import { Protect } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import CustomClerkPricing from "@/components/custom-clerk-pricing";
 
 function UpgradeCard() {
@@ -25,28 +25,23 @@ function FeaturesCard() {
         </div>
         <div className="rounded-lg border bg-card p-6">
           <h2 className="text-lg font-semibold mb-4">Page with advanced features</h2>
-            <p className="text-muted-foreground">
-              Access to advanced features.
-            </p>
-          </div>
+          <p className="text-muted-foreground">
+            Access to advanced features.
+          </p>
         </div>
       </div>
-    )
+    </div>
+  )
 }
 
 
-export default function WorkspacePage() {
-  return (
-    <Protect
-    condition={(has) => {
-      // Check if user has any of the paid plans
-      // return has({ plan: "starter" }) || has({ plan: "hobby" }) || has({ plan: "pro" })
-      // Or alternatively, check if user doesn't have free plan (if free plan exists)
-      return !has({ plan: "free_user" })
-    }}
-      fallback={<UpgradeCard/>}
-    >
-      <FeaturesCard />
-    </Protect>
-  )
+export default async function WorkspacePage() {
+  const { has } = await auth()
+
+  // Check if user has free plan
+  if (has && has({ plan: "free_user" })) {
+    return <UpgradeCard />
+  }
+
+  return <FeaturesCard />
 }

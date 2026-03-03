@@ -1,5 +1,6 @@
 import { mutation } from "../../_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Industry Templates Mutations
@@ -227,7 +228,6 @@ export const installTemplate = mutation({
   args: {
     templateId: v.id("industryTemplates"),
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
     options: v.object({
       includeSampleData: v.boolean(),
       selectedFeatures: v.array(featureModule),
@@ -235,6 +235,9 @@ export const installTemplate = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
     const template = await ctx.db.get(args.templateId);
     if (!template) {
       throw new Error("Template not found");
@@ -244,7 +247,7 @@ export const installTemplate = mutation({
     const installationId = await ctx.db.insert("templateInstallations", {
       templateId: args.templateId,
       workspaceId: args.workspaceId,
-      installedBy: args.userId,
+      installedBy: userId,
       installedAt: Date.now(),
       options: args.options,
       status: "installing",

@@ -36,4 +36,27 @@ crons.daily(
   internal.workspace.invitations.cleanupExpiredInvitationsInternal
 );
 
+/**
+ * Check for SLA breaches in workflows
+ * 
+ * Runs every hour to check for running workflows that have exceeded their SLA duration.
+ */
+crons.interval(
+  "check-sla-breaches",
+  { hours: 1 },
+  internal.features.studio.sla.checkSLABreaches
+);
+
+/**
+ * Refresh expiring OAuth tokens
+ * 
+ * Runs every 15 minutes to check for OAuth tokens about to expire
+ * and automatically refresh them to maintain integrations.
+ */
+crons.interval(
+  "refresh-oauth-tokens",
+  { minutes: 15 },
+  internal.features.integrations.tokenRefresh.processTokenRefresh
+);
+
 export default crons;

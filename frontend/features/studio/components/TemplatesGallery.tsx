@@ -6,6 +6,8 @@
  */
 
 import React, { useState } from 'react';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button, Card, Input } from '@/components/ui';
 import {
     Webhook,
@@ -24,10 +26,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/frontend/shared/foundation';
 import { useDnD } from '@/frontend/shared/builder/canvas/core/DnDProvider';
-import { workflowTemplates, type WorkflowTemplate } from '../workflow/templates';
+// import { workflowTemplates, type WorkflowTemplate } from '../workflow/templates'; // Deprecated static templates
 
 interface TemplatesGalleryProps {
-    onImport: (template: WorkflowTemplate) => void;
+    onImport: (template: any) => void;
 }
 
 // Match actual template categories from types.ts
@@ -56,28 +58,31 @@ export const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onImport }) 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [, setDnDType] = useDnD();
 
+    // Fetch templates from backend
+    const templates = useQuery(api.features.studio.templates.listTemplates, {
+        category: selectedCategory || undefined
+    }) || [];
+
     const categories = ['calendar', 'data', 'integration', 'ai', 'crm', 'tasks', 'communications'];
 
-    const filteredTemplates = workflowTemplates.filter(t => {
+    const filteredTemplates = templates.filter((t: any) => {
         const matchesSearch = search === '' ||
             t.name.toLowerCase().includes(search.toLowerCase()) ||
-            t.description.toLowerCase().includes(search.toLowerCase()) ||
-            t.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
+            t.description.toLowerCase().includes(search.toLowerCase());
+            // t.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase())); // Tags might not be on backend template yet
 
-        const matchesCategory = !selectedCategory || t.category === selectedCategory;
-
-        return matchesSearch && matchesCategory;
+        return matchesSearch;
     });
 
-    const handleDragStart = (event: React.DragEvent, template: WorkflowTemplate) => {
+    const handleDragStart = (event: React.DragEvent, template: any) => {
         // Set DnD context
-        setDnDType(`template:${template.id}`);
+        setDnDType(`template:${template._id}`);
 
         // Set drag data
-        event.dataTransfer.setData('text/plain', `template:${template.id}`);
+        event.dataTransfer.setData('text/plain', `template:${template._id}`);
         event.dataTransfer.setData('application/json', JSON.stringify({
             type: 'template',
-            templateId: template.id,
+            templateId: template._id,
             template: template,
         }));
         event.dataTransfer.effectAllowed = 'copy';

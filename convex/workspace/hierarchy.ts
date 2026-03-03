@@ -254,7 +254,8 @@ export const getWorkspaceTree = query({
       }
     }
 
-    const tree = await buildTree(mainWorkspace._id, 0)
+    // Safely build tree - mainWorkspace is guaranteed to exist here due to early return above
+    const tree = mainWorkspace ? await buildTree(mainWorkspace._id, 0) : null
 
     // Also get all user's workspaces for flat list reference
     const allWorkspaces = await ctx.db

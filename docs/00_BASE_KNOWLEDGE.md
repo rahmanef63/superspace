@@ -1,7 +1,42 @@
 # 00. Base Knowledge - SuperSpace Development
 
 > **Essential knowledge base for developing features inside or outside this project**
-> **Last Updated:** 2025-11-04
+> **Last Updated:** 2025-12-22
+
+---
+
+## 🚀 TL;DR - The 5-Minute Summary
+
+**SuperSpace is a modular SaaS platform.** Here's what you need to know:
+
+### Core Principles
+1. **Zero Hardcoding** - Features auto-discovered from `config.ts` files
+2. **RBAC Required** - Every query/mutation checks permissions
+3. **Audit Required** - Every mutation logs an audit event
+4. **SSOT** - Single Source of Truth in `config.ts`
+
+### Quick Commands
+```bash
+pnpm dev                      # Start frontend
+npx convex dev                # Start backend
+pnpm run create:feature slug  # Create feature
+pnpm test                     # Run tests
+```
+
+### Feature Structure
+```
+frontend/features/{slug}/     →  convex/features/{slug}/
+├── config.ts (SSOT)              ├── queries.ts (+ RBAC)
+├── page.tsx                      ├── mutations.ts (+ RBAC + Audit)
+├── agents/ (required)            ├── schema.ts
+└── settings/ (required)          └── agents/
+```
+
+### New to SuperSpace?
+1. Read this document
+2. Check [QUICKSTART.md](QUICKSTART.md) for setup
+3. Study the [example feature](../frontend/features/example/)
+4. Read [GLOSSARY.md](GLOSSARY.md) for terms
 
 ---
 
@@ -568,12 +603,14 @@ frontend/features/{slug}/     ←→  convex/features/{slug}/
 | File | Purpose | When to Read |
 |------|---------|--------------|
 | **[docs/README.md](./README.md)** | Docs overview | Start here |
-| **[docs/1_SYSTEM_OVERVIEW.md](./1_SYSTEM_OVERVIEW.md)** | Architecture | Understanding system |
-| **[docs/2_DEVELOPER_GUIDE.md](./2_DEVELOPER_GUIDE.md)** | Development guide | Building features |
-| **[docs/3_MODULAR_ARCHITECTURE.md](./3_MODULAR_ARCHITECTURE.md)** | Code organization | Complex features |
-| **[docs/FEATURE_RULES.md](./FEATURE_RULES.md)** | **CRITICAL** rules | Before coding |
-| **[docs/5_FEATURE_REFERENCE.md](./5_FEATURE_REFERENCE.md)** | Feature catalog | Reference |
-| **[docs/MUTATION_TEMPLATE_GUIDE.md](./MUTATION_TEMPLATE_GUIDE.md)** | Mutation patterns | Writing mutations |
+| **[docs/QUICKSTART.md](./QUICKSTART.md)** | Quick setup | Getting started |
+| **[docs/GLOSSARY.md](./GLOSSARY.md)** | Key terms | Reference |
+| **[docs/core/01-SYSTEM-OVERVIEW.md](./core/01-SYSTEM-OVERVIEW.md)** | Architecture | Understanding system |
+| **[docs/core/02-DEVELOPER-GUIDE.md](./core/02-DEVELOPER-GUIDE.md)** | Development guide | Building features |
+| **[docs/core/03-ARCHITECTURE.md](./core/03-ARCHITECTURE.md)** | Code organization | Complex features |
+| **[docs/rules/01-FEATURE-RULES.md](./rules/01-FEATURE-RULES.md)** | **CRITICAL** rules | Before coding |
+| **[docs/core/05-FEATURE-REFERENCE.md](./core/05-FEATURE-REFERENCE.md)** | Feature catalog | Reference |
+| **[docs/rules/02-MUTATION-GUIDE.md](./rules/02-MUTATION-GUIDE.md)** | Mutation patterns | Writing mutations |
 
 ### Core Implementation Files
 
@@ -590,9 +627,9 @@ frontend/features/{slug}/     ←→  convex/features/{slug}/
 
 | Feature | Why Study It |
 |---------|--------------|
-| `frontend/features/chat/` | Simple feature example |
-| `frontend/features/cms-lite/` | Complex with sub-features |
-| `frontend/features/database/` | Advanced patterns |
+| `frontend/features/example/` | **Start here!** Minimal reference with detailed comments |
+| `frontend/features/crm/` | Full-featured example with agents, settings |
+| `frontend/features/calendar/` | UI-heavy feature with complex interactions |
 
 ---
 

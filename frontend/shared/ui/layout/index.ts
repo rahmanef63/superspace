@@ -233,3 +233,20 @@ export {
 // ============================================================================
 
 // export * from "./notifications"; // DEPRECATED - Use foundation/utils/notifications
+
+// ============================================================================
+// Floating Panels System
+// ============================================================================
+
+export * as Panels from "./panels";
+export {
+  FloatingPanel,
+  useFloatingPanels,
+  type FloatingPanelPosition,
+  type FloatingPanelSize,
+  type FloatingPanelConfig,
+  type FloatingPanelProps,
+  type FloatingPanelState,
+  type UseFloatingPanelsReturn,
+} from "./panels";
+

@@ -8,14 +8,14 @@
 "use client"
 
 import * as React from "react"
-import { useQuery } from "convex/react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import type { Id } from "@/convex/_generated/dataModel"
 import { useWorkspaceStoreData, useWorkspaceStoreFiltered } from "./hooks/useWorkspaceStoreData"
 import { useWorkspaceStoreMutations } from "./hooks/useWorkspaceStoreMutations"
 import { useWorkspaceStoreState, useWorkspaceStoreFilters } from "./hooks/useWorkspaceStoreState"
 import {
-  CreateWorkspaceDialog,
+  CreateWorkspaceAdvancedDialog,
   EditWorkspaceDialog,
   DeleteWorkspaceDialog,
   MoveWorkspaceDialog,
@@ -52,6 +52,7 @@ export function WorkspaceStorePage() {
 
   // Mutations
   const mutations = useWorkspaceStoreMutations()
+  const installTemplate = useMutation(api.features.industryTemplates.mutations.installTemplate)
   const isMobile = useIsMobile()
 
   // View mode state
@@ -194,16 +195,29 @@ export function WorkspaceStorePage() {
     icon?: string
     color?: string
     parentId?: string
+    templateId?: Id<"industryTemplates">
+    enabledFeatures?: string[]
   }) => {
-    await mutations.createWorkspace({
+    const workspaceId = await mutations.createWorkspace({
       name: data.name,
       description: data.description,
       type: data.type,
       icon: data.icon,
-      color: data.color || "#6366f1",
+      color: data.color ?? "#808080", // Default color if undefined
       parentId: data.parentId,
     })
-  }, [mutations])
+
+    if (workspaceId && data.templateId) {
+      await installTemplate({
+        templateId: data.templateId,
+        workspaceId: workspaceId as Id<"workspaces">,
+        options: {
+          includeSampleData: true,
+          selectedFeatures: [], // Template defaults
+        }
+      })
+    }
+  }, [mutations, installTemplate])
 
   const handleEditSubmit = React.useCallback(async (data: {
     name: string
@@ -272,8 +286,8 @@ export function WorkspaceStorePage() {
 
   // Calculate available move targets
   const moveTargets = React.useMemo(() => {
-    if (!workspaceToMove) return []
-    return getMoveTargets(workspacesArray, workspaceToMove.id)
+    if (!workspaceToMove) return [] as WorkspaceStoreItem[]
+    return getMoveTargets(workspaceToMove, workspacesArray)
   }, [workspacesArray, workspaceToMove])
 
   return (
@@ -289,9 +303,9 @@ export function WorkspaceStorePage() {
             onDelete={handleDelete}
             onMove={handleDnDMove}
             onCreate={handleCreateClick}
-            onCreateChild={handleCreateChild}
-            onSetColor={handleSetColor}
-            onSetIcon={handleSetIcon}
+            onAddChild={handleCreateChild}
+            onColorChange={handleSetColor}
+            onIconChange={handleSetIcon}
             onUnlink={handleUnlink}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
@@ -304,9 +318,6 @@ export function WorkspaceStorePage() {
             isLoading={isLoading}
             onRefresh={refetch}
             onShowFeatures={handleShowFeatures}
-            onIconChange={handleSetIcon}
-            onColorChange={handleSetColor}
-            onAddChild={handleCreateChild}
           />
         }
         center={
@@ -347,10 +358,10 @@ export function WorkspaceStorePage() {
         onRightCollapsedChange={setRightPanelCollapsed}
       />
 
-      <CreateWorkspaceDialog
+      <CreateWorkspaceAdvancedDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        parentWorkspace={parentForCreate}
+        parentWorkspaceId={parentForCreate?.id}
         onSubmit={handleCreateSubmit}
       />
 

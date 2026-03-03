@@ -56,7 +56,7 @@ export function ColorPickerSimple({
       isExternalUpdate.current = true
       setInternalColor(value || placeholder)
     }
-  }, [value, placeholder])
+  }, [value, placeholder, internalColor])
 
   const handleChange = useCallback(
     (colorValue: ColorValue) => {

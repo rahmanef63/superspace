@@ -36,10 +36,29 @@ export const AutomationInspector: React.FC<AutomationInspectorProps> = ({
         return selectedNode.data.props || {};
     }, [selectedNode?.data.props, selectedNode?.id]);
 
-    const setProp = useCallback((key: string, value: any) => {
+    const setNestedProp = useCallback((key: string, value: any) => {
         if (!selectedNode) return;
-        setNodeProps(selectedNode.id, { ...currentProps, [key]: value });
+        
+        const newProps = { ...currentProps };
+        const parts = key.split('.');
+        
+        if (parts.length === 1) {
+            newProps[key] = value;
+        } else {
+            let current = newProps;
+            for (let i = 0; i < parts.length - 1; i++) {
+                if (!current[parts[i]]) current[parts[i]] = {};
+                current = current[parts[i]];
+            }
+            current[parts[parts.length - 1]] = value;
+        }
+        
+        setNodeProps(selectedNode.id, newProps);
     }, [selectedNode, currentProps, setNodeProps]);
+
+    const getNestedProp = (obj: any, path: string) => {
+        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    };
 
     if (!selectedNode) {
         return (
@@ -61,6 +80,31 @@ export const AutomationInspector: React.FC<AutomationInspectorProps> = ({
     const sections = inspectorConfig?.sections || [];
     const fields = inspectorConfig?.fields || [];
 
+    // Add Retry Configuration Section if not present
+    const hasRetryConfig = sections.some((s: any) => s.title === 'Retry Policy');
+    const enhancedSections = hasRetryConfig ? sections : [
+        ...sections,
+        {
+            title: 'Retry Policy',
+            fields: [
+                {
+                    key: 'retryConfig.maxAttempts',
+                    label: 'Max Attempts',
+                    type: 'number',
+                    defaultValue: 1,
+                    description: 'Number of times to retry on failure'
+                },
+                {
+                    key: 'retryConfig.backoffMs',
+                    label: 'Backoff (ms)',
+                    type: 'number',
+                    defaultValue: 1000,
+                    description: 'Wait time between retries'
+                }
+            ]
+        }
+    ];
+
     return (
         <div className="h-full flex flex-col overflow-hidden">
             {/* Header */}
@@ -79,19 +123,19 @@ export const AutomationInspector: React.FC<AutomationInspectorProps> = ({
             {/* Properties - Scrollable */}
             <div className="flex-1 overflow-y-auto">
                 {/* Render Sections if available */}
-                {sections.length > 0 ? (
-                    sections.map((section: any, idx: number) => (
+                {enhancedSections.length > 0 ? (
+                    enhancedSections.map((section: any, idx: number) => (
                         <InspectorSectionComponent
                             key={section.title || idx}
                             title={section.title}
-                            defaultOpen={idx === 0}
+                            defaultOpen={idx === 0 || section.title === 'Retry Policy'}
                         >
                             {section.fields?.map((field: InspectorField) => (
                                 <FieldRenderer
                                     key={field.key}
                                     field={field}
-                                    value={currentProps[field.key] ?? field.defaultValue ?? ''}
-                                    onChange={(v) => setProp(field.key, v)}
+                                    value={getNestedProp(currentProps, field.key) ?? field.defaultValue ?? ''}
+                                    onChange={(v) => setNestedProp(field.key, v)}
                                 />
                             ))}
                         </InspectorSectionComponent>

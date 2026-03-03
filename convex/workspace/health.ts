@@ -1,4 +1,3 @@
-﻿// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { query, mutation } from "../_generated/server"
 import { v } from "convex/values"
 import { api } from "../_generated/api"

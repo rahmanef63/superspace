@@ -13,7 +13,7 @@
  *   pnpm run list:features --status development
  */
 
-import { getAllFeatures, getFeaturesByType, getFeaturesByCategory } from "../../frontend/shared/lib/features/registry.server"
+import { getAllFeatures, getFeatureMeta, getFeaturesByType, getFeaturesByCategory } from "../../frontend/shared/lib/features/registry.server"
 
 interface ListOptions {
   type?: "default" | "optional" | "experimental" | "system"
@@ -121,7 +121,8 @@ function main() {
       console.log(`   Category: ${f.ui.category}`)
       console.log(`   Path: ${f.ui.path}`)
       console.log(`   Version: ${f.technical.version}`)
-      console.log(`   Config: frontend/features/${f.id}/config.ts`)
+      const frontendSlug = getFeatureMeta(f.id)?.slug ?? f.id
+      console.log(`   Config: frontend/features/${frontendSlug}/config.ts`)
 
       if (f.permissions && f.permissions.length > 0) {
         console.log(`   Permissions: ${f.permissions.join(", ")}`)

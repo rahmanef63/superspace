@@ -261,6 +261,134 @@ export function hasPermission(role: any, perm: string) {
   return Boolean(role?.permissions?.includes("*") || role?.permissions?.includes(perm));
 }
 
+/**
+ * Check if user has permission, including additional permissions from membership
+ */
+export function hasPermissionWithAdditional(
+  role: any, 
+  membership: any, 
+  perm: string
+): boolean {
+  // Check role permissions first
+  if (role?.permissions?.includes("*") || role?.permissions?.includes(perm)) {
+    return true;
+  }
+  // Check additional permissions from membership
+  if (membership?.additionalPermissions?.includes(perm)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Resolve permissions with inheritance from parent workspaces
+ * This allows child workspaces to inherit permissions from parent workspace memberships
+ */
+export async function resolveInheritedPermissions(
+  ctx: any,
+  workspaceId: Id<"workspaces">,
+  userId: Id<"users">
+): Promise<{ permissions: string[]; inheritedFrom: Id<"workspaces">[] }> {
+  const permissions = new Set<string>();
+  const inheritedFrom: Id<"workspaces">[] = [];
+
+  // Get current workspace
+  const workspace = await ctx.db.get(workspaceId);
+  if (!workspace) {
+    return { permissions: [], inheritedFrom: [] };
+  }
+
+  // Get membership for current workspace
+  const membership = await ctx.db
+    .query("workspaceMemberships")
+    .withIndex("by_user_workspace", (q: any) =>
+      q.eq("userId", userId).eq("workspaceId", workspaceId)
+    )
+    .first();
+
+  if (membership) {
+    const role = await ctx.db.get(membership.roleId);
+    if (role?.permissions) {
+      for (const perm of role.permissions) {
+        permissions.add(perm);
+      }
+    }
+    if (membership.additionalPermissions) {
+      for (const perm of membership.additionalPermissions) {
+        permissions.add(perm);
+      }
+    }
+  }
+
+  // Traverse parent workspaces for inheritance
+  let currentWorkspaceId = workspace.parentWorkspaceId;
+  const visited = new Set<string>();
+  const MAX_DEPTH = 10;
+  let depth = 0;
+
+  while (currentWorkspaceId && depth < MAX_DEPTH && !visited.has(String(currentWorkspaceId))) {
+    visited.add(String(currentWorkspaceId));
+    depth++;
+
+    const parentWorkspace = await ctx.db.get(currentWorkspaceId);
+    if (!parentWorkspace) break;
+
+    // Check if parent shares permissions to children
+    // By default, parent permissions are inherited
+    const parentMembership = await ctx.db
+      .query("workspaceMemberships")
+      .withIndex("by_user_workspace", (q: any) =>
+        q.eq("userId", userId).eq("workspaceId", currentWorkspaceId)
+      )
+      .first();
+
+    if (parentMembership) {
+      const parentRole = await ctx.db.get(parentMembership.roleId);
+      if (parentRole?.permissions) {
+        for (const perm of parentRole.permissions) {
+          if (!permissions.has(perm)) {
+            permissions.add(perm);
+            if (!inheritedFrom.includes(currentWorkspaceId)) {
+              inheritedFrom.push(currentWorkspaceId);
+            }
+          }
+        }
+      }
+      if (parentMembership.additionalPermissions) {
+        for (const perm of parentMembership.additionalPermissions) {
+          if (!permissions.has(perm)) {
+            permissions.add(perm);
+            if (!inheritedFrom.includes(currentWorkspaceId)) {
+              inheritedFrom.push(currentWorkspaceId);
+            }
+          }
+        }
+      }
+    }
+
+    currentWorkspaceId = parentWorkspace.parentWorkspaceId;
+  }
+
+  return { 
+    permissions: Array.from(permissions), 
+    inheritedFrom 
+  };
+}
+
+/**
+ * Check permission with inheritance support
+ * First checks direct membership, then checks inherited permissions from parent workspaces
+ */
+export async function hasPermissionWithInheritance(
+  ctx: any,
+  workspaceId: Id<"workspaces">,
+  userId: Id<"users">,
+  perm: string
+): Promise<boolean> {
+  const { permissions } = await resolveInheritedPermissions(ctx, workspaceId, userId);
+  return permissions.includes("*") || permissions.includes(perm);
+}
+
 // Guard requiring a specific permission within a workspace.
 // Returns membership/role for convenience if authorized.
 export async function requirePermission(

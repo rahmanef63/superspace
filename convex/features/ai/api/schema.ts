@@ -9,6 +9,7 @@ export const aiSettings = defineTable({
   temperature: v.number(),
   maxTokens: v.number(),
   systemPrompt: v.optional(v.string()),
+  requiresApproval: v.optional(v.boolean()), // Global approval mode
   rateLimit: v.optional(v.number()),
   status: v.string(), // active, disabled
   updatedAt: v.number(),
@@ -28,8 +29,8 @@ export const knowledgeBaseDocuments = defineTable({
     description: v.optional(v.string()),
     category: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
-    embeddings: v.optional(v.array(v.number())),
   })),
+  embedding: v.optional(v.array(v.float64())),
   status: v.string(), // active, archived
   createdAt: v.number(),
   createdBy: v.optional(v.string()),
@@ -38,7 +39,12 @@ export const knowledgeBaseDocuments = defineTable({
 })
   .index("by_workspace", ["workspaceId"])
   .index("by_source", ["workspaceId", "sourceType", "sourceId"])
-  .index("by_status", ["workspaceId", "status"]);
+  .index("by_status", ["workspaceId", "status"])
+  .vectorIndex("by_embedding", {
+    vectorField: "embedding",
+    dimensions: 1536,
+    filterFields: ["workspaceId", "status"],
+  });
 
 export const aiChatSessions = defineTable({
   workspaceId: v.optional(v.string()), // Optional: null for global/private sessions
@@ -100,9 +106,49 @@ export const aiUsageStats = defineTable({
   .index("by_workspace_date", ["workspaceId", "date"])
   .index("by_provider", ["workspaceId", "provider", "date"]);
 
+export const aiActionApprovals = defineTable({
+  workspaceId: v.string(),
+  userId: v.string(),
+  agentId: v.string(),
+  toolName: v.string(),
+  args: v.string(), // JSON stringified args
+  status: v.string(), // pending, approved, rejected
+  reason: v.optional(v.string()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+  reviewedBy: v.optional(v.string()),
+  reviewedAt: v.optional(v.number()),
+})
+  .index("by_workspace_status", ["workspaceId", "status"]);
+
+export const aiTrainingExamples = defineTable({
+  workspaceId: v.string(),
+  input: v.string(),
+  output: v.string(),
+  category: v.optional(v.string()),
+  status: v.string(), // active, archived
+  createdAt: v.number(),
+  createdBy: v.string(),
+})
+  .index("by_workspace", ["workspaceId"]);
+
+export const aiPromptVersions = defineTable({
+  workspaceId: v.string(),
+  prompt: v.string(),
+  version: v.number(),
+  label: v.optional(v.string()), // e.g., "v1.0", "prod-candidate"
+  isActive: v.boolean(),
+  createdAt: v.number(),
+  createdBy: v.string(),
+})
+  .index("by_workspace_active", ["workspaceId", "isActive"]);
+
 export const aiTables = {
   aiSettings,
   knowledgeBaseDocuments,
   aiChatSessions,
   aiUsageStats,
+  aiActionApprovals,
+  aiTrainingExamples,
+  aiPromptVersions,
 };

@@ -1,7 +1,7 @@
 import { query } from "../../_generated/server";
 import { v } from "convex/values";
 import { Doc, Id } from "../../_generated/dataModel";
-import { requireActiveMembership } from "../../auth/helpers";
+import { requireActiveMembership, ensureUser } from "../../auth/helpers";
 
 /**
  * Verify access for Feature Agent Gateway
@@ -22,6 +22,7 @@ export const getSettings = query({
     workspaceId: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId as any);
     return await ctx.db
       .query("aiSettings")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
@@ -35,23 +36,62 @@ export const getSettings = query({
 export const searchKnowledgeBase = query({
   args: {
     workspaceId: v.string(),
-    query: v.string(),
+    query: v.optional(v.string()),
+    embedding: v.optional(v.array(v.float64())),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // TODO: Implement vector search using embeddings
-    // For now, return basic text search results
+    await requireActiveMembership(ctx, args.workspaceId as any);
+
+    // Vector search if embedding is provided
+    // Note: Vector search API not available in Convex 1.28.0, using in-memory similarity
+    if (args.embedding) {
+      // Get all active documents for the workspace
+      const docs = await ctx.db
+        .query("knowledgeBaseDocuments")
+        .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
+        .filter((q) => q.eq("status", "active"))
+        .collect();
+
+      // Calculate cosine similarity for documents with embeddings
+      const docsWithSimilarity = docs
+        .filter((doc) => doc.embedding && doc.embedding.length === args.embedding!.length)
+        .map((doc) => {
+          // Cosine similarity calculation
+          const embedding = doc.embedding!;
+          let dotProduct = 0;
+          let normA = 0;
+          let normB = 0;
+
+          for (let i = 0; i < embedding.length; i++) {
+            dotProduct += embedding[i] * args.embedding![i];
+            normA += embedding[i] * embedding[i];
+            normB += args.embedding![i] * args.embedding![i];
+          }
+
+          const similarity = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+          return { doc, similarity };
+        })
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, args.limit || 5)
+        .map((item) => item.doc);
+
+      return docsWithSimilarity;
+    }
+
+    // Fallback to basic text search
+    if (!args.query) return [];
+
     const docs = await ctx.db
       .query("knowledgeBaseDocuments")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
       .filter((q) => q.eq("status", "active"))
       .collect();
 
-    // Basic text search (replace with vector search)
     const results = docs
       .filter(doc =>
-        doc.title.toLowerCase().includes(args.query.toLowerCase()) ||
-        doc.content.toLowerCase().includes(args.query.toLowerCase())
+        doc.title.toLowerCase().includes(args.query!.toLowerCase()) ||
+        doc.content.toLowerCase().includes(args.query!.toLowerCase())
       )
       .slice(0, args.limit || 3);
 
@@ -69,6 +109,14 @@ export const getChatSession = query({
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId);
     if (!session) throw new Error("Chat session not found");
+
+    if (session.workspaceId) {
+      await requireActiveMembership(ctx, session.workspaceId);
+    } else {
+      const currentUserId = await ensureUser(ctx);
+      if (session.userId !== currentUserId) throw new Error("Unauthorized");
+    }
+
     return session;
   },
 });
@@ -84,6 +132,13 @@ export const listChatSessions = query({
     global: v.optional(v.boolean()), // true = global sessions, false/undefined = workspace sessions
   },
   handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (currentUserId !== args.userId) throw new Error("Unauthorized");
+
+    if (args.workspaceId && !args.global) {
+      await requireActiveMembership(ctx, args.workspaceId as any);
+    }
+
     let sessions: Doc<"aiChatSessions">[];
 
     if (args.global) {
@@ -130,6 +185,9 @@ export const listGlobalChatSessions = query({
     status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const currentUserId = await ensureUser(ctx);
+    if (currentUserId !== args.userId) throw new Error("Unauthorized");
+
     let sessions = await ctx.db
       .query("aiChatSessions")
       .withIndex("by_global", (q: any) =>
@@ -219,6 +277,8 @@ export const getUsageStats = query({
     provider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId as any);
+
     let q = ctx.db
       .query("aiUsageStats")
       .withIndex("by_workspace_date", (q: any) =>
@@ -570,6 +630,8 @@ export const getAggregatedKnowledgeContext = query({
     sourceTypes: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.mainWorkspaceId);
+
     const includeChildren = args.includeChildren ?? true;
     const documentLimit = args.documentLimit ?? 30;
 

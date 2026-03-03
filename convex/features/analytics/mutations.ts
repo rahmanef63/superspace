@@ -261,3 +261,81 @@ export const deleteReport = mutation({
     return { success: true }
   },
 })
+
+// Generate and save a report
+export const generateReport = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    title: v.string(),
+    rangeStart: v.number(),
+    rangeEnd: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, PERMS.ANALYTICS_MANAGE)
+
+    const candidateIds = await resolveCandidateUserIds(ctx)
+    if (candidateIds.length === 0) throw new Error("Not authenticated")
+
+    const userId = candidateIds[0] as Id<"users">
+
+    // Get events in the time range
+    const events = await ctx.db
+      .query("analyticsEvents")
+      .withIndex("by_workspace_timestamp", (q) =>
+        q.eq("workspaceId", args.workspaceId)
+         .gte("timestamp", args.rangeStart)
+         .lte("timestamp", args.rangeEnd)
+      )
+      .collect()
+
+    // Calculate summary statistics
+    const totalEvents = events.length
+    const uniqueUsers = new Set(events.map((e: any) => e.userId).filter(Boolean)).size
+    const eventTypes = events.reduce((acc: any, e: any) => {
+      acc[e.eventType] = (acc[e.eventType] || 0) + 1
+      return acc
+    }, {})
+
+    // Create report document
+    const reportId = await ctx.db.insert("analyticsReports", {
+      workspaceId: args.workspaceId,
+      name: args.title,
+      description: `Generated report for period ${new Date(args.rangeStart).toISOString()} to ${new Date(args.rangeEnd).toISOString()}`,
+      type: "summary",
+      config: {
+        dataSources: ["analyticsEvents"],
+        metrics: ["totalEvents", "uniqueUsers"],
+        timeRange: {
+          type: "custom",
+          start: args.rangeStart,
+          end: args.rangeEnd,
+        },
+      },
+      createdBy: userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    await logAuditEvent(ctx, {
+      workspaceId: args.workspaceId,
+      actorUserId: userId,
+      action: "analytics.report.generate",
+      resourceType: "analyticsReport",
+      resourceId: reportId,
+    })
+
+    return {
+      id: reportId,
+      success: true,
+      summary: {
+        totalEvents,
+        uniqueUsers,
+        eventTypes,
+        timeRange: {
+          start: args.rangeStart,
+          end: args.rangeEnd,
+        },
+      },
+    }
+  },
+})

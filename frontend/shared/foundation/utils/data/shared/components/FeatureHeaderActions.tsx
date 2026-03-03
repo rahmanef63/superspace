@@ -41,6 +41,16 @@ export interface FeatureExportImportProps {
   triggerIcon?: React.ReactNode
   /** Selected item IDs for export */
   selectedIds?: string[]
+  /** 
+   * Direct data to export (overrides registry) 
+   * @deprecated Not yet fully implemented - currently only used for type compatibility
+   */
+  data?: any[]
+  /** 
+   * Callback for import (overrides registry)
+   * @deprecated Not yet fully implemented - currently only used for type compatibility
+   */
+  onImport?: (data: any[]) => void
 }
 
 export function FeatureExportImport({
@@ -53,6 +63,8 @@ export function FeatureExportImport({
   disableImport = false,
   selectedIds = [],
   triggerIcon,
+  data,
+  onImport,
 }: FeatureExportImportProps) {
   const [exportOpen, setExportOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)

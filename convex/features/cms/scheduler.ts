@@ -1,4 +1,3 @@
-// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { cronJobs } from "convex/server"
 import { internal } from "../../_generated/api"
 

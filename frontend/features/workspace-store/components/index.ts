@@ -12,5 +12,6 @@ export {
   DeleteWorkspaceDialog,
   MoveWorkspaceDialog,
 } from "./WorkspaceDialogs"
+export { CreateWorkspaceAdvancedDialog } from "./CreateWorkspaceAdvancedDialog"
 export { WorkspaceToolbar } from "./WorkspaceToolbar"
 export { WorkspaceInspector } from "./WorkspaceInspector"

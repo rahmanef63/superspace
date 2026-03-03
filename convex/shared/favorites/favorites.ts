@@ -120,7 +120,7 @@ export const removeFromFavorites = mutation({
 
 export const getUserFavorites = query({
   args: {
-    workspaceId: v.id("workspaces"),
+    workspaceId: v.union(v.id("workspaces"), v.string()), // Accept both ID and string for compatibility
     folderId: v.optional(v.id("favoriteFolders")),
     entityType: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
@@ -137,7 +137,9 @@ export const getUserFavorites = query({
       .filter((q) => q.eq(q.field("userId"), user._id))
       .collect();
 
-    favorites = favorites.filter((f) => f.workspaceId === args.workspaceId);
+    // Convert string workspaceId to ID format for comparison, or compare as string
+    const workspaceIdStr = typeof args.workspaceId === "string" ? args.workspaceId : String(args.workspaceId);
+    favorites = favorites.filter((f) => String(f.workspaceId) === workspaceIdStr);
     if (args.folderId) favorites = favorites.filter((f) => f.folderId === args.folderId);
     if (args.entityType) favorites = favorites.filter((f) => f.entityType === args.entityType);
     if (args.tags && args.tags.length) {
@@ -227,5 +229,83 @@ export const createFavoriteFolder = mutation({
     });
 
     return { success: true, folderId };
+  },
+});
+
+/**
+ * Toggle sidebar pin status for a favorite
+ */
+export const toggleSidebarPin = mutation({
+  args: {
+    favoriteId: v.id("favorites"),
+    showInSidebar: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx);
+    const favorite = await ctx.db.get(args.favoriteId);
+    
+    if (!favorite) throw new Error("Favorite not found");
+    if (favorite.userId !== user._id) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.favoriteId, {
+      showInSidebar: args.showInSidebar,
+      isPinned: args.showInSidebar, // Also update isPinned for consistency
+      updatedAt: Date.now(),
+    });
+
+    return { success: true, showInSidebar: args.showInSidebar };
+  },
+});
+
+/**
+ * Get pinned sidebar items for a workspace
+ */
+export const getPinnedSidebarItems = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const user = await getUserByExternalId(ctx, identity.subject);
+    if (!user) throw new Error("User not found");
+
+    const favorites = await ctx.db
+      .query("favorites")
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .collect();
+
+    // Filter for sidebar-pinned items in this workspace
+    const pinnedItems = favorites
+      .filter((f) => f.workspaceId === args.workspaceId && (f.showInSidebar || f.isPinned))
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+
+    return args.limit ? pinnedItems.slice(0, args.limit) : pinnedItems;
+  },
+});
+
+/**
+ * Reorder pinned sidebar items
+ */
+export const reorderPinnedItems = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    itemIds: v.array(v.id("favorites")),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx);
+
+    for (let i = 0; i < args.itemIds.length; i++) {
+      const favorite = await ctx.db.get(args.itemIds[i]);
+      if (favorite && favorite.userId === user._id && favorite.workspaceId === args.workspaceId) {
+        await ctx.db.patch(args.itemIds[i], {
+          sortOrder: i,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    return { success: true };
   },
 });

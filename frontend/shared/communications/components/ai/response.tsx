@@ -8,20 +8,12 @@
  * - Proper handling of code blocks, tables, etc.
  * - Smooth cursor animations during streaming
  * 
- * Falls back to simple parser if Streamdown is not available.
+ * Falls back to simple parser when Streamdown usage is disabled.
  */
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-
-// Try to use Streamdown for better streaming support
-let Streamdown: React.ComponentType<{ children: string; className?: string }> | null = null
-try {
-  // Dynamic import check - in production, this will be bundled if available
-  Streamdown = require("streamdown").Streamdown
-} catch {
-  // Streamdown not available, will use fallback
-}
+import { Streamdown } from "streamdown"
 
 interface ResponseProps extends React.HTMLAttributes<HTMLDivElement> {
   children: string | React.ReactNode
@@ -279,8 +271,8 @@ function Response({
   // behavior that isn't available, which makes rendering non-deterministic.
   const isVitest = typeof process !== "undefined" && Boolean(process.env.VITEST)
 
-  // Use Streamdown if available and enabled
-  if (useStreamdown && Streamdown && !isVitest) {
+  // Use Streamdown when enabled (unless running in Vitest)
+  if (useStreamdown && !isVitest) {
     return (
       <div data-slot="response" className={cn("prose dark:prose-invert prose-sm max-w-none", className)} {...props}>
         <Streamdown>{children}</Streamdown>

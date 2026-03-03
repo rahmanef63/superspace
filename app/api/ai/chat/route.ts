@@ -1,4 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@clerk/nextjs/server"
 
 interface ChatMessage {
   role: "user" | "assistant" | "system"
@@ -35,6 +36,22 @@ function findInvalidHeaderValueChar(value: string): { index: number; code: numbe
     }
   }
   return null
+}
+
+const ALLOWED_DOMAINS = [
+  "api.groq.com", "api.openai.com", "api.anthropic.com", "api.together.xyz",
+  "api.fireworks.ai", "api.perplexity.ai", "api.deepseek.com", "api.mistral.ai",
+  "api.x.ai", "localhost", "127.0.0.1", "generativelanguage.googleapis.com",
+  "api.cohere.ai", "api.z.ai", "openrouter.ai"
+];
+
+function isUrlAllowed(urlStr: string): boolean {
+  try {
+    const url = new URL(urlStr);
+    return ALLOWED_DOMAINS.some(domain => url.hostname === domain || url.hostname.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -133,6 +150,11 @@ const PROVIDER_CONFIGS: Record<string, { baseUrl: string; headers?: Record<strin
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const startTime = Date.now()
   let provider = "unknown"
 
@@ -171,6 +193,9 @@ export async function POST(request: NextRequest) {
     }
 
     const apiBaseUrlRaw = baseUrl || providerConfig?.baseUrl
+    if (apiBaseUrlRaw && !isUrlAllowed(apiBaseUrlRaw)) {
+      return NextResponse.json({ error: "Invalid or unauthorized baseUrl provided for AI provider." }, { status: 400 })
+    }
     const apiBaseUrl = apiBaseUrlRaw ? normalizeBaseUrl(apiBaseUrlRaw) : apiBaseUrlRaw
 
     // Handle specific providers

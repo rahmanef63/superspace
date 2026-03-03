@@ -338,8 +338,9 @@ const components: Options['components'] = {
         code={code}
         language={language}
       >
-        <CodeBlockCopyButton
-          onCopy={() =>
+        <CodeBlockCopyButton />
+      </CodeBlock>
+    );
   },
 };
 

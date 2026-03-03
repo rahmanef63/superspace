@@ -16,7 +16,7 @@ const addressValidator = v.object({
   postalCode: v.string(),
 });
 
-export default defineSchema({
+export const hrTables = {
   // ============================================
   // EMPLOYEES
   // ============================================
@@ -947,4 +947,6 @@ export default defineSchema({
   })
     .index("by_workspace", ["workspaceId", "date"])
     .index("by_type", ["type"]),
-});
+};
+
+export default defineSchema(hrTables);

@@ -1,6 +1,7 @@
 import { coreTables } from "./core/api/schema";
 import { menuTables } from "./menus/api/schema";
 import { chatTables } from "./chat/api/schema";
+import { userIdentityTables } from "../user/schema";
 import { communicationsTables } from "./communications/api/schema";
 import { docsTables } from "./docs/api/schema";
 import { databaseTables } from "./database/api/schema";
@@ -8,7 +9,7 @@ import { projectTables } from "./projects/api/schema";
 import { crmTables } from "./crm/api/schema";
 import { supportTables } from "./support/api/schema";
 import { notificationTables } from "./notifications/api/schema";
-import { workflowTables } from "./workflows/api/schema";
+import { studioTables } from "./studio/api/schema";
 import { canvasTables } from "./canvas/api/schema";
 import { socialTables } from "./social/api/schema";
 import { activityTables } from "./activity/api/schema";
@@ -42,12 +43,13 @@ import { systemFeaturesTables } from "./system/schema";
 import { bundleTables } from "./bundles/schema";
 import { knowledgeTables } from "./knowledge/api/schema";
 import { userManagementTables } from "./userManagement/api/schema";
+import { exampleTables } from "./example/schema";
 
 // ERP Modules
 import salesTables from "./sales/schema";
 import inventoryTables from "./inventory/schema";
 import crmErpTables from "./crm/schema";
-import hrTables from "./hr/schema";
+import { hrTables } from "./hr/schema";
 import accountingTables from "./accounting/schema";
 
 // Feature Modules
@@ -79,6 +81,7 @@ export const featureTables = {
   ...tables(coreTables),
   ...tables(menuTables),
   ...tables(chatTables),
+  ...tables(userIdentityTables),
   ...tables(communicationsTables),
   ...tables(docsTables),
   ...tables(databaseTables),
@@ -86,7 +89,7 @@ export const featureTables = {
   ...tables(crmTables),
   ...tables(supportTables),
   ...tables(notificationTables),
-  ...tables(workflowTables),
+  ...tables(studioTables),
   ...tables(canvasTables),
   ...tables(socialTables),
   ...tables(activityTables),
@@ -149,4 +152,7 @@ export const featureTables = {
   ...tables(attachmentsTables),
   ...tables(activityFeedTables),
   ...tables(favoritesTables),
+
+  // Example Feature (for onboarding/learning)
+  ...tables(exampleTables),
 };

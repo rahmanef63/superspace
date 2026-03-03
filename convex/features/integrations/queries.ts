@@ -176,9 +176,10 @@ export const getEvents = query({
 
     let events
     if (args.integrationId) {
+      const integrationId = args.integrationId;
       events = await ctx.db
         .query("integrationEvents")
-        .withIndex("by_integration", (q) => q.eq("integrationId", args.integrationId))
+        .withIndex("by_integration", (q) => q.eq("integrationId", integrationId))
         .order("desc")
         .take(args.limit || 50)
     } else {

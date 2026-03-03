@@ -279,5 +279,14 @@ export function Example4_ToolbarWithBreadcrumb() {
           position: "left",
           params: {
             items: [
-              { label: "Home", icon: Home, onClick: () =>
+              { label: "Home", icon: Home, onClick: () => console.log("Home") },
+              { label: "Section", onClick: () => console.log("Section") },
+              { label: "Page", active: true }
+            ]
+          }
+        }
+      ]}
+      border="bottom"
+    />
+  )
 }

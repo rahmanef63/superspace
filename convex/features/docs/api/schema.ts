@@ -62,7 +62,7 @@ export const comments = defineTable({
   .index("by_author", ["authorId"])
   .index("by_parent", ["parentId"]);
 
-export const presence = defineTable({
+export const documentPresence = defineTable({
   documentId: v.id("documents"),
   userId: v.id("users"),
   cursor: v.optional(
@@ -77,5 +77,5 @@ export const presence = defineTable({
 export const docsTables = {
   documents,
   comments,
-  presence,
+  documentPresence,
 };

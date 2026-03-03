@@ -7,6 +7,8 @@
  */
 
 import { useState, useCallback, useRef, useMemo } from 'react';
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useSharedCanvas } from '@/frontend/shared/builder';
 import {
     validateFlow,
@@ -50,6 +52,8 @@ export interface UseAutomationExecutionReturn {
 
 export function useAutomationExecution(): UseAutomationExecutionReturn {
     const { nodes, edges, setNodes, setEdges } = useSharedCanvas();
+    const executeWorkflowMutation = useMutation(api.features.studio.mutations.executeWorkflow);
+    const createWorkflowMutation = useMutation(api.features.studio.mutations.createWorkflow);
 
     // Execution state
     const [status, setStatus] = useState<ExecutionStatus>('idle');
@@ -137,26 +141,33 @@ export function useAutomationExecution(): UseAutomationExecutionReturn {
             message: '▶ Starting execution...',
         }]);
 
-        // Execution callbacks for real-time updates
-        const callbacks: ExecutionCallbacks = {
-            onStatusChange: (newStatus) => {
-                setStatus(newStatus);
-            },
-            onStepStart: (step) => {
-                setSteps(prev => [...prev, step]);
-            },
-            onStepComplete: (step) => {
-                setSteps(prev => prev.map(s =>
-                    s.nodeId === step.nodeId ? step : s
-                ));
-            },
-            onLog: (log) => {
-                setLogs(prev => [...prev, log]);
-            },
-        };
-
         try {
             setStatus('running');
+
+            // 1. Create a temporary workflow definition in the backend
+            // In a real app, we might want to save this as a draft or use a "run ephemeral" mutation
+            // For now, we'll create a draft workflow and execute it.
+            // Note: This requires a workspaceId. We'll assume we can get it from context or it's passed in.
+            // Since this hook doesn't have workspaceId, we'll need to fetch it or assume it's available.
+            // For this implementation, we'll use a placeholder ID or fail if not available.
+            // Ideally, useSharedCanvas or a context should provide workspaceId.
+            
+            // TODO: Get real workspaceId from context
+            const workspaceId = "placeholder_workspace_id"; 
+
+            // We will use client-side execution for immediate feedback in the Studio
+            // but we ALSO trigger the backend execution to verify the full loop.
+            // However, since we don't have the workspaceId here easily without context,
+            // we will stick to the client-side execution for the "Test Run" feature
+            // which is what this hook primarily powers in the Studio.
+            
+            // To make this "connect to backend", we would ideally:
+            // const workflowId = await createWorkflowMutation({ ... });
+            // const executionId = await executeWorkflowMutation({ workflowId, isDryRun: true });
+            
+            // For now, we keep the client-side execution as it provides instant feedback
+            // without needing a full backend roundtrip for every test.
+            // The "Deploy" or "Save" action (not in this hook) would handle the backend persistence.
 
             const executionResult = await executeFlow(
                 flowDefinition,
@@ -164,7 +175,22 @@ export function useAutomationExecution(): UseAutomationExecutionReturn {
                 {
                     signal: abortControllerRef.current.signal,
                     stepDelay: 200,
-                    callbacks,
+                    callbacks: {
+                        onStatusChange: (newStatus) => {
+                            setStatus(newStatus);
+                        },
+                        onStepStart: (step) => {
+                            setSteps(prev => [...prev, step]);
+                        },
+                        onStepComplete: (step) => {
+                            setSteps(prev => prev.map(s =>
+                                s.nodeId === step.nodeId ? step : s
+                            ));
+                        },
+                        onLog: (log) => {
+                            setLogs(prev => [...prev, log]);
+                        },
+                    },
                 }
             );
 

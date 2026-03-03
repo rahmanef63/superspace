@@ -1,4 +1,3 @@
-﻿// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { v } from "convex/values"
 import { query, mutation, action, internalMutation } from "../../_generated/server"
 import { api, internal } from "../../_generated/api"
@@ -776,10 +775,12 @@ export const syncAllWorkspaceMenus = internalMutation({
     // For very large datasets, this might need to be an action iterating batches
     await Promise.all(
       workspaces.map(async (workspace) => {
-        // We call the internal mutation to create default items (idempotent-ish)
+        // Use ctx.runMutation to call the internal mutation (Convex best practice)
         // Note: We skip the actorUserId as this is a system-triggered sync
-        await createDefaultMenuItems(ctx, {
-          workspaceId: workspace._id
+        await ctx.runMutation(internal.features.menus.menuItems.createDefaultMenuItems, {
+          workspaceId: workspace._id,
+          actorUserId: undefined,
+          selectedSlugs: undefined,
         })
       })
     )

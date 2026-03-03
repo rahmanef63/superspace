@@ -705,7 +705,7 @@ export const directMessages = defineTable({
 /**
  * User presence in channels/calls
  */
-export const presence = defineTable({
+export const userPresence = defineTable({
   userId: v.id("users"),
   workspaceId: v.optional(v.id("workspaces")),
   
@@ -800,6 +800,6 @@ export const communicationsTables = {
   directMessages,
   
   // Presence
-  presence,
+  userPresence,
   typingIndicators,
 };

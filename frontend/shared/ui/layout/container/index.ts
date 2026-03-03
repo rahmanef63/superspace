@@ -84,3 +84,15 @@ export {
 export type {
   SingleColumnLayoutProps,
 } from "./single-column"
+
+// Split View Layout
+export {
+  SplitView,
+  useSplitView,
+} from "./split-view"
+export type {
+  SplitViewPane,
+  SplitViewProps,
+  SplitViewPaneHeaderProps,
+  UseSplitViewReturn,
+} from "./split-view"

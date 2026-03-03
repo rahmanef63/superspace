@@ -623,7 +623,7 @@ function FilterInput<T = unknown>({
 
 interface FilterRemoveButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof filterRemoveButtonVariants> {
+  VariantProps<typeof filterRemoveButtonVariants> {
   icon?: React.ReactNode;
 }
 
@@ -678,28 +678,28 @@ export interface FilterFieldGroup<T = unknown> {
 }
 
 // Union type for both flat and grouped field configurations
-export type FilterFieldsConfig<T = unknown> = FilterFieldConfig<T>[] | FilterFieldGroup<T>[];
+export type FilterFieldsConfig<T = unknown> = (FilterFieldConfig<T> | FilterFieldGroup<T>)[];
 
 export interface FilterFieldConfig<T = unknown> {
   key?: string;
   label?: string;
   icon?: React.ReactNode;
   type?:
-    | 'select'
-    | 'multiselect'
-    | 'date'
-    | 'daterange'
-    | 'text'
-    | 'number'
-    | 'numberrange'
-    | 'boolean'
-    | 'email'
-    | 'url'
-    | 'tel'
-    | 'time'
-    | 'datetime'
-    | 'custom'
-    | 'separator';
+  | 'select'
+  | 'multiselect'
+  | 'date'
+  | 'daterange'
+  | 'text'
+  | 'number'
+  | 'numberrange'
+  | 'boolean'
+  | 'email'
+  | 'url'
+  | 'tel'
+  | 'time'
+  | 'datetime'
+  | 'custom'
+  | 'separator';
   // Group-level configuration
   group?: string;
   fields?: FilterFieldConfig<T>[];

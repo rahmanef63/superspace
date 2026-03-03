@@ -44,6 +44,24 @@ export function useSampleData() {
     
     // Check if already has data (don't overwrite)
     if (store.channel.channels.length > 0) {
+      return
+    }
+
+    // Initialize with sample data
+    store.setCategories(SAMPLE_CATEGORIES)
+    store.setChannels(SAMPLE_CHANNELS)
+    
+    Object.entries(SAMPLE_MESSAGES).forEach(([channelId, messages]) => {
+      store.setChannelMessages(channelId, messages)
+    })
+
+    store.setDirectConversations(SAMPLE_DM_CONVERSATIONS)
+    store.setBots(SAMPLE_AI_BOTS)
+    
+    Object.values(SAMPLE_PRESENCE).forEach(presence => {
+      store.updatePresence(presence.userId, presence)
+    })
+  }, [])
 }
 
 export default useSampleData

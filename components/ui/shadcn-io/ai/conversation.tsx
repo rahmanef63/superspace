@@ -7,9 +7,13 @@ import type { ComponentProps } from 'react';
 import { useCallback } from 'react';
 import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom';
 
-export type ConversationProps = ComponentProps<typeof StickToBottom>;
+export type ConversationProps = React.HTMLAttributes<HTMLDivElement> & {
+  initial?: 'smooth' | 'auto';
+  resize?: 'smooth' | 'auto';
+};
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
+  // @ts-ignore - use-stick-to-bottom component returns ReactNode which fails NextJS 15 strict types
   <StickToBottom
     className={cn('relative flex-1 overflow-y-auto', className)}
     initial="smooth"
@@ -19,14 +23,13 @@ export const Conversation = ({ className, ...props }: ConversationProps) => (
   />
 );
 
-export type ConversationContentProps = ComponentProps<
-  typeof StickToBottom.Content
->;
+export type ConversationContentProps = React.HTMLAttributes<HTMLDivElement>;
 
 export const ConversationContent = ({
   className,
   ...props
 }: ConversationContentProps) => (
+  // @ts-ignore - use-stick-to-bottom component returns ReactNode which fails NextJS 15 strict types
   <StickToBottom.Content className={cn('p-4', className)} {...(props as any)} />
 );
 

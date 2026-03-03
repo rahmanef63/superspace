@@ -47,7 +47,7 @@ export const useCalendarMonth = () => useAtom(monthAtom);
 export const useCalendarYear = () => useAtom(yearAtom);
 
 type CalendarContextProps = {
-  locale: Intl.LocalesArgument;
+  locale: string | string[];
   startDay: number;
 };
 
@@ -86,7 +86,7 @@ type ComboboxProps = {
 };
 
 export const monthsForLocale = (
-  localeName: Intl.LocalesArgument,
+  localeName: string | string[],
   monthFormat: Intl.DateTimeFormatOptions["month"] = "long"
 ) => {
   const format = new Intl.DateTimeFormat(localeName, { month: monthFormat })
@@ -98,7 +98,7 @@ export const monthsForLocale = (
 };
 
 export const daysForLocale = (
-  locale: Intl.LocalesArgument,
+  locale: string | string[],
   startDay: number
 ) => {
   const weekdays: string[] = [];
@@ -250,7 +250,7 @@ export const CalendarBody = ({ features, children }: CalendarBodyProps) => {
   for (let i = 0; i < firstDay; i++) {
     const day =
       prevMonthData.prevMonthDaysArray[
-        prevMonthData.prevMonthDays - firstDay + i
+      prevMonthData.prevMonthDays - firstDay + i
       ];
 
     if (day) {
@@ -478,7 +478,7 @@ export const CalendarItem = memo(
 CalendarItem.displayName = "CalendarItem";
 
 export type CalendarProviderProps = {
-  locale?: Intl.LocalesArgument;
+  locale?: string | string[];
   startDay?: number;
   children: ReactNode;
   className?: string;

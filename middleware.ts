@@ -4,9 +4,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
-  // Simply protect routes - let Clerk handle everything else
-  // Don't do complex logic that might cause race conditions
-  
+  // Let Clerk handle pending/handshake auth states to avoid redirect loops.
   if (isProtectedRoute(req)) {
     await auth.protect()
   }

@@ -10,6 +10,7 @@ import { Building, BookOpen, Calendar } from "lucide-react"
 import { WorkspaceSwitcherStack } from "../workspace-switcher/WorkspaceSwitcherStack"
 import { WorkspaceSwitcher } from "../workspace-switcher/WorkspaceSwitcher"
 import { NavMain } from "./NavMain"
+import { NavPinned } from "./NavPinned"
 import { usePathname, useRouter } from "next/navigation"
 import { NavUser } from "./NavUser"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
@@ -291,13 +292,16 @@ export function AppSidebar({
         <SidebarContent className="flex justify-between">
           <div>
             {effectiveWorkspaceId ? (
-              <NavMain
-                workspaceId={effectiveWorkspaceId as Id<"workspaces">}
-                activeView={effectiveActiveView}
-                onViewChange={handleViewChange}
-                items={navItems}
-                workspaceColor={contextWorkspace?.color}
-              />
+              <>
+                {!isGuestMode && <NavPinned workspaceId={effectiveWorkspaceId as Id<"workspaces">} />}
+                <NavMain
+                  workspaceId={effectiveWorkspaceId as Id<"workspaces">}
+                  activeView={effectiveActiveView}
+                  onViewChange={handleViewChange}
+                  items={navItems}
+                  workspaceColor={contextWorkspace?.color}
+                />
+              </>
             ) : (
               <div className="space-y-2 p-4">
                 {Array.from({ length: 6 }).map((_, idx) => (

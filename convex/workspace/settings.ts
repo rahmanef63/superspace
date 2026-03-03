@@ -219,3 +219,191 @@ export const resetToDefaults = mutation({
     return args.workspaceId;
   },
 });
+
+// ============================================================================
+// Timezone & Language Settings
+// ============================================================================
+
+// Valid IANA timezones (common ones - full list would be much larger)
+const COMMON_TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Sao_Paulo",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Moscow",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Jakarta",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Australia/Sydney",
+  "Pacific/Auckland",
+];
+
+// Valid ISO 639-1 language codes
+const SUPPORTED_LANGUAGES = [
+  "en", // English
+  "es", // Spanish
+  "fr", // French
+  "de", // German
+  "pt", // Portuguese
+  "id", // Indonesian
+  "zh", // Chinese
+  "ja", // Japanese
+  "ko", // Korean
+  "ar", // Arabic
+  "hi", // Hindi
+  "ru", // Russian
+];
+
+/**
+ * Update workspace timezone
+ */
+export const updateTimezone = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    timezone: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_WORKSPACE);
+    const userId = await ensureUser(ctx);
+
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace) throw new Error("Workspace not found");
+
+    // Validate timezone (basic check - in production, use a proper timezone library)
+    // For now, we accept any string but log a warning for unknown timezones
+    const isKnownTimezone = COMMON_TIMEZONES.includes(args.timezone);
+    
+    const oldTimezone = workspace.timezone;
+
+    await ctx.db.patch(args.workspaceId, { timezone: args.timezone });
+
+    // Write audit event
+    await ctx.db.insert("activityEvents", {
+      actorUserId: userId,
+      workspaceId: args.workspaceId,
+      entityType: "workspace_settings",
+      entityId: String(args.workspaceId),
+      action: "workspace_timezone_updated",
+      diff: {
+        old: oldTimezone,
+        new: args.timezone,
+        isKnownTimezone,
+      },
+      createdAt: Date.now(),
+    });
+
+    return args.workspaceId;
+  },
+});
+
+/**
+ * Update workspace language
+ */
+export const updateLanguage = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    language: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_WORKSPACE);
+    const userId = await ensureUser(ctx);
+
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace) throw new Error("Workspace not found");
+
+    // Validate language code
+    if (!SUPPORTED_LANGUAGES.includes(args.language)) {
+      throw new Error(
+        `Unsupported language: ${args.language}. Supported: ${SUPPORTED_LANGUAGES.join(", ")}`
+      );
+    }
+
+    const oldLanguage = workspace.language;
+
+    await ctx.db.patch(args.workspaceId, { language: args.language });
+
+    // Write audit event
+    await ctx.db.insert("activityEvents", {
+      actorUserId: userId,
+      workspaceId: args.workspaceId,
+      entityType: "workspace_settings",
+      entityId: String(args.workspaceId),
+      action: "workspace_language_updated",
+      diff: {
+        old: oldLanguage,
+        new: args.language,
+      },
+      createdAt: Date.now(),
+    });
+
+    return args.workspaceId;
+  },
+});
+
+/**
+ * Get workspace localization settings (timezone + language)
+ */
+export const getLocalizationSettings = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, args) => {
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace) throw new Error("Workspace not found");
+
+    return {
+      timezone: workspace.timezone ?? "UTC",
+      language: workspace.language ?? "en",
+      supportedLanguages: SUPPORTED_LANGUAGES,
+      commonTimezones: COMMON_TIMEZONES,
+    };
+  },
+});
+
+/**
+ * Get list of supported timezones
+ */
+export const getSupportedTimezones = query({
+  args: {},
+  handler: async () => {
+    return COMMON_TIMEZONES;
+  },
+});
+
+/**
+ * Get list of supported languages
+ */
+export const getSupportedLanguages = query({
+  args: {},
+  handler: async () => {
+    return SUPPORTED_LANGUAGES.map((code) => ({
+      code,
+      name: getLanguageName(code),
+    }));
+  },
+});
+
+// Helper to get language name from code
+function getLanguageName(code: string): string {
+  const names: Record<string, string> = {
+    en: "English",
+    es: "Español",
+    fr: "Français",
+    de: "Deutsch",
+    pt: "Português",
+    id: "Bahasa Indonesia",
+    zh: "中文",
+    ja: "日本語",
+    ko: "한국어",
+    ar: "العربية",
+    hi: "हिन्दी",
+    ru: "Русский",
+  };
+  return names[code] ?? code;
+}

@@ -155,5 +155,67 @@ export function TasksPageWithExportImport() {
         primaryAction={{
           label: "Add Task",
           icon: Plus,
-          onClick: () =>
+          onClick: () => console.log("Add Task"),
+        }}
+      >
+        <FeatureExportImport
+          featureId="tasks"
+          data={tasks}
+          onImport={(data) => setTasks([...tasks, ...data as any])}
+        />
+      </FeatureHeader>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tasks List</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedTaskIds.length === tasks.length && tasks.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assignee</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTasks.map((task) => (
+                <TableRow key={task._id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedTaskIds.includes(task._id)}
+                      onCheckedChange={(checked) => handleSelectTask(task._id, !!checked)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{task.title}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                  </TableCell>
+                  <TableCell>{task.assignee}</TableCell>
+                  <TableCell>{task.dueDate}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

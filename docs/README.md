@@ -4,15 +4,26 @@
 
 ---
 
-## 🎯 Quick Start
+## 👋 New to SuperSpace?
 
-**START HERE:** [00_BASE_KNOWLEDGE.md](00_BASE_KNOWLEDGE.md)
-- Essential knowledge for developers
-- Core concepts, patterns, golden rules
+| Step | Document | Description |
+|------|----------|-------------|
+| 1️⃣ | [**QUICKSTART.md**](QUICKSTART.md) | Get running in 5 minutes |
+| 2️⃣ | [**00_BASE_KNOWLEDGE.md**](00_BASE_KNOWLEDGE.md) | Essential concepts |
+| 3️⃣ | [**GLOSSARY.md**](GLOSSARY.md) | Key terms & definitions |
+| 4️⃣ | [Example Feature](../frontend/features/example/) | Learn by example |
 
-**Project Status:** [PROJECT_STATUS.md](../PROJECT_STATUS.md)
-- Current status (19/19 Dynamic Menus ✅)
-- Getting started commands
+---
+
+## 🎯 Quick Reference
+
+| Document | Purpose |
+|----------|---------|
+| [QUICKSTART.md](QUICKSTART.md) | ⚡ Get running in 5 minutes |
+| [00_BASE_KNOWLEDGE.md](00_BASE_KNOWLEDGE.md) | 📚 Essential knowledge |
+| [GLOSSARY.md](GLOSSARY.md) | 📖 Key terms |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | 🤝 How to contribute |
+| [../PROJECT_STATUS.md](../PROJECT_STATUS.md) | 📊 Current status |
 
 ---
 
@@ -20,7 +31,9 @@
 
 ```
 docs/
+├── QUICKSTART.md           # ⚡ Get running in 5 minutes
 ├── 00_BASE_KNOWLEDGE.md    # 🌟 Essential developer knowledge
+├── GLOSSARY.md             # 📖 Key terms & definitions
 ├── README.md               # This file
 │
 ├── core/                   # System documentation
@@ -39,27 +52,13 @@ docs/
 ├── features/               # Feature docs
 │   ├── 00-ROADMAP.md       # Master feature list
 │   ├── universal-database/ # DB system docs
-│   ├── cms-lite/           # CMS Lite docs
-│   └── content/            # Content docs
+│   └── ...
 │
 └── guides/                 # How-to guides
     ├── 01-FEATURE-CREATION.md
     ├── 02-PROPERTY-TESTING.md
-    ├── 03-FILTER-SYSTEM.md
-    └── 04-THREE-COLUMN-LAYOUT.md
+    └── ...
 ```
-
----
-
-## 🔗 Quick Reference
-
-| Document | Purpose |
-|----------|---------|
-| [00_BASE_KNOWLEDGE.md](00_BASE_KNOWLEDGE.md) | Essential knowledge |
-| [features/00-ROADMAP.md](features/00-ROADMAP.md) | All 19 features |
-| [rules/01-FEATURE-RULES.md](rules/01-FEATURE-RULES.md) | Dev rules |
-| [rules/02-MUTATION-GUIDE.md](rules/02-MUTATION-GUIDE.md) | Convex patterns |
-| [guides/01-FEATURE-CREATION.md](guides/01-FEATURE-CREATION.md) | Create features |
 
 ---
 

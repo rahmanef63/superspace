@@ -1,0 +1,1 @@
+﻿.next/types/app/(cms)/[...slug]/page.ts(34,29): error TS2344: Type 'PageProps' does not satisfy the constraint 'import("C:/Users/rahma/00-project/code/v0-remix-of-superspace-app-aazian/.next/types/app/(cms)/[...slug]/page").PageProps'.

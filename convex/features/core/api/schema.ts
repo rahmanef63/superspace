@@ -87,6 +87,30 @@ export const workspaces = defineTable({
   // Whether this workspace shares data (knowledge, activity) to parent workspace
   shareDataToParent: v.optional(v.boolean()),
 
+  // === Localization ===
+  // Workspace timezone (IANA format, e.g., "America/New_York", "Asia/Jakarta")
+  timezone: v.optional(v.string()),
+  // Workspace language/locale (ISO 639-1, e.g., "en", "id", "es")
+  language: v.optional(v.string()),
+
+  // === Archive & Soft Delete ===
+  // Whether workspace is archived (hidden from active list but data preserved)
+  isArchived: v.optional(v.boolean()),
+  archivedAt: v.optional(v.number()),
+  archivedBy: v.optional(v.id("users")),
+  // Soft delete fields (for recovery mode)
+  isDeleted: v.optional(v.boolean()),
+  deletedAt: v.optional(v.number()),
+  deletedBy: v.optional(v.id("users")),
+  // Recovery expiration (after this, permanent delete is allowed)
+  recoveryExpiresAt: v.optional(v.number()),
+
+  // === Template Reference ===
+  // If created from a template, reference to the source template
+  sourceTemplateId: v.optional(v.id("workspaceTemplates")),
+  // If this workspace was cloned, reference to the source workspace
+  clonedFromId: v.optional(v.id("workspaces")),
+
   settings: v.optional(
     v.object({
       allowInvites: v.optional(v.boolean()),
@@ -113,7 +137,12 @@ export const workspaces = defineTable({
   .index("by_parent", ["parentWorkspaceId"])
   .index("by_main", ["isMainWorkspace"])
   .index("by_creator_main", ["createdBy", "isMainWorkspace"])
-  .index("by_depth", ["depth"]);
+  .index("by_depth", ["depth"])
+  // Archive & soft-delete indexes
+  .index("by_archived", ["isArchived"])
+  .index("by_deleted", ["isDeleted"])
+  .index("by_template", ["sourceTemplateId"])
+  .index("by_cloned_from", ["clonedFromId"]);
 
 export const roles = defineTable({
   name: v.string(),
@@ -210,12 +239,106 @@ export const workspaceLinks = defineTable({
   .index("by_parent_child", ["parentWorkspaceId", "childWorkspaceId"])
   .index("by_linked_by", ["linkedBy"]);
 
+/**
+ * Workspace Templates - Reusable workspace configurations
+ * Templates can be system-provided or user-created.
+ * Used for quick workspace creation with pre-configured settings, roles, and features.
+ */
+export const workspaceTemplates = defineTable({
+  // Template metadata
+  name: v.string(),
+  slug: v.string(),
+  description: v.optional(v.string()),
+  // Icon name (from lucide-react icon set)
+  icon: v.optional(v.string()),
+  // Cover image for template card
+  coverImageUrl: v.optional(v.string()),
+
+  // Template type
+  category: v.union(
+    v.literal("business"),
+    v.literal("personal"),
+    v.literal("team"),
+    v.literal("project"),
+    v.literal("industry"),
+    v.literal("custom"),
+  ),
+  // Industry tags for filtering (e.g., "consulting", "saas", "agency")
+  industryTags: v.optional(v.array(v.string())),
+
+  // === Workspace Configuration ===
+  // Default workspace type when created from this template
+  workspaceType: v.union(
+    v.literal("organization"),
+    v.literal("institution"),
+    v.literal("group"),
+    v.literal("family"),
+    v.literal("personal"),
+  ),
+  // Default settings to apply
+  defaultSettings: v.optional(
+    v.object({
+      allowInvites: v.optional(v.boolean()),
+      requireApproval: v.optional(v.boolean()),
+      allowPublicDocuments: v.optional(v.boolean()),
+      theme: v.optional(v.string()),
+      bundleId: v.optional(v.string()),
+      enabledFeatures: v.optional(v.array(v.string())),
+      allowGuestOnly: v.optional(v.boolean()),
+      guestAccessDuration: v.optional(v.number()),
+    }),
+  ),
+  // Default timezone for workspaces created from this template
+  defaultTimezone: v.optional(v.string()),
+  // Default language for workspaces created from this template
+  defaultLanguage: v.optional(v.string()),
+
+  // === Features & Roles ===
+  // List of feature slugs to enable by default
+  enabledFeatures: v.array(v.string()),
+  // Custom roles to create (beyond system roles)
+  customRoles: v.optional(
+    v.array(
+      v.object({
+        name: v.string(),
+        slug: v.string(),
+        description: v.optional(v.string()),
+        permissions: v.array(v.string()),
+        color: v.optional(v.string()),
+        level: v.number(),
+      }),
+    ),
+  ),
+
+  // === Access Control ===
+  // System templates are managed by platform, cannot be edited by users
+  isSystemTemplate: v.boolean(),
+  // Public templates are visible to all users
+  isPublic: v.boolean(),
+  // If not public, which workspaces can use this template
+  allowedWorkspaceIds: v.optional(v.array(v.id("workspaces"))),
+
+  // === Metadata ===
+  createdBy: v.id("users"),
+  updatedBy: v.optional(v.id("users")),
+  createdAt: v.number(),
+  updatedAt: v.optional(v.number()),
+  // Usage count for popularity sorting
+  usageCount: v.optional(v.number()),
+})
+  .index("by_slug", ["slug"])
+  .index("by_category", ["category"])
+  .index("by_creator", ["createdBy"])
+  .index("by_public", ["isPublic"])
+  .index("by_system", ["isSystemTemplate"]);
+
 export const coreTables = {
   userPrivacySettings,
   organizations,
   organizationMemberships,
   workspaces,
   workspaceLinks,
+  workspaceTemplates,
   roles,
   workspaceMemberships,
   invitations,

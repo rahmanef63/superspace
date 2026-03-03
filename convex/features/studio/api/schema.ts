@@ -22,8 +22,17 @@ export const workflows = defineTable({
         id: v.string(),
         type: v.string(),
         config: v.any(),
+        retryConfig: v.optional(v.object({
+          maxAttempts: v.number(),
+          backoffMs: v.number(),
+        })),
+        timeoutMs: v.optional(v.number()),
       }),
     ),
+    settings: v.optional(v.object({
+      slaDurationMs: v.optional(v.number()),
+      maxRetries: v.optional(v.number()),
+    })),
   }),
   createdBy: v.id("users"),
   metadata: v.optional(
@@ -38,6 +47,16 @@ export const workflows = defineTable({
   .index("by_status", ["status"])
   .index("by_creator", ["createdBy"]);
 
+export const workflowTemplates = defineTable({
+  name: v.string(),
+  description: v.string(),
+  category: v.string(),
+  definition: v.any(),
+  isPublic: v.boolean(),
+  createdBy: v.optional(v.id("users")),
+})
+  .index("by_category", ["category"]);
+
 export const workflowExecutions = defineTable({
   workflowId: v.id("workflows"),
   workspaceId: v.id("workspaces"),
@@ -47,6 +66,7 @@ export const workflowExecutions = defineTable({
     v.literal("failed"),
     v.literal("cancelled"),
   ),
+  isDryRun: v.optional(v.boolean()),
   startedAt: v.number(),
   completedAt: v.optional(v.number()),
   triggeredBy: v.id("users"),
@@ -66,7 +86,8 @@ export const workflowExecutions = defineTable({
   .index("by_workspace", ["workspaceId"])
   .index("by_status", ["status"]);
 
-export const workflowTables = {
+export const studioTables = {
   workflows,
+  workflowTemplates,
   workflowExecutions,
 };

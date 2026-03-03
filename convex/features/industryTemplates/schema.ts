@@ -48,7 +48,9 @@ const featureModule = v.union(
   v.literal("bookings"),
   v.literal("cms"),
   v.literal("analytics"),
-  v.literal("integrations")
+  v.literal("integrations"),
+  v.literal("notifications"),
+  v.literal("tasks")
 );
 
 // Template visibility

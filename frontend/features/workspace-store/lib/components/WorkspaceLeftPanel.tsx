@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Toggle } from "@/components/ui/toggle"
 import { HeaderControls } from "@/frontend/shared/ui/layout/header"
 import { WorkspaceDnDTree, type WorkspaceDnDItem } from "@/frontend/shared/ui/layout/dnd"
-import { RefreshCw, TreeDeciduous, List } from "lucide-react"
+import { RefreshCw, TreeDeciduous, List, Plus } from "lucide-react"
 import { createFilterChips, removeFilterChip } from "@/lib/utils/workspace-store"
 import { WorkspaceFilterPopover } from "./WorkspaceFilterPopover"
 import type { WorkspaceStoreItem, WorkspaceFilters, MoveWorkspaceData } from "../../types"
@@ -36,6 +36,7 @@ export interface WorkspaceLeftPanelProps {
     onEdit: (workspace: WorkspaceStoreItem) => void
     onDelete: (workspace: WorkspaceStoreItem) => void
     onAddChild: (workspace: WorkspaceStoreItem) => void
+    onCreate: () => void
     onIconChange: (workspace: WorkspaceStoreItem, icon: string) => void
     onColorChange: (workspace: WorkspaceStoreItem, color: string) => void
     onUnlink: (workspace: WorkspaceStoreItem) => void
@@ -61,6 +62,7 @@ export function WorkspaceLeftPanel({
     onEdit,
     onDelete,
     onAddChild,
+    onCreate,
     onIconChange,
     onColorChange,
     onUnlink,
@@ -121,29 +123,34 @@ export function WorkspaceLeftPanel({
                 </div>
 
                 {/* Search & Filter Controls */}
-                <div className="px-3 pb-2">
-                    <HeaderControls
-                        searchable
-                        searchProps={{
-                            value: searchValue,
-                            onChange: onSearchChange,
-                            placeholder: "Search workspaces...",
-                        }}
-                        filterable
-                        filterProps={{
-                            chips: filterChips,
-                            onRemoveChip: handleRemoveChip,
-                            onClearAll: onClearFilters,
-                            popoverContent: (
-                                <WorkspaceFilterPopover
-                                    filters={filters}
-                                    onFiltersChange={onFiltersChange}
-                                    typeOptions={typeOptions}
-                                />
-                            ),
-                        }}
-                        responsive
-                    />
+                <div className="px-3 pb-2 flex gap-2">
+                    <div className="flex-1">
+                        <HeaderControls
+                            searchable
+                            searchProps={{
+                                value: searchValue,
+                                onChange: onSearchChange,
+                                placeholder: "Search workspaces...",
+                            }}
+                            filterable
+                            filterProps={{
+                                chips: filterChips,
+                                onRemoveChip: handleRemoveChip,
+                                onClearAll: onClearFilters,
+                                popoverContent: (
+                                    <WorkspaceFilterPopover
+                                        filters={filters}
+                                        onFiltersChange={onFiltersChange}
+                                        typeOptions={typeOptions}
+                                    />
+                                ),
+                            }}
+                            responsive
+                        />
+                    </div>
+                    <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={onCreate}>
+                        <Plus className="h-4 w-4" />
+                    </Button>
                 </div>
             </div>
 

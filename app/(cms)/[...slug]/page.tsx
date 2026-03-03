@@ -6,10 +6,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Construction } from "lucide-react";
 
-interface PageProps {
-  params: {
-    slug?: string[];
-  };
+import { use } from "react";
+
+interface Props {
+  params: Promise<{
+    slug: string[];
+  }>;
 }
 
 /**
@@ -21,14 +23,15 @@ interface PageProps {
  * Note: This is a simplified version that shows "Coming Soon" state
  * until CMS Lite is fully integrated.
  */
-export default function CmsPublicPage({ params }: PageProps) {
-  const slug = params.slug ? params.slug.join("/") : "";
-  
+export default function CmsPublicPage({ params }: Props) {
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug ? resolvedParams.slug.join("/") : "";
+
   // Try to fetch page configuration from database
   const page = useQuery(api.features.cms_lite.pages.api.queries.getPageBySlug, {
     slug: slug || "home",
   });
-  
+
   // Loading state
   if (page === undefined) {
     return (
@@ -40,7 +43,7 @@ export default function CmsPublicPage({ params }: PageProps) {
       </div>
     );
   }
-  
+
   // Page not found in database - show Coming Soon for CMS Lite
   if (page === null) {
     return (
@@ -58,7 +61,7 @@ export default function CmsPublicPage({ params }: PageProps) {
               Requested page: <code className="bg-muted px-2 py-1 rounded">/{slug || "home"}</code>
             </p>
           </div>
-          <Link 
+          <Link
             href="/"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
@@ -69,23 +72,23 @@ export default function CmsPublicPage({ params }: PageProps) {
       </div>
     );
   }
-  
+
   // Page found - render basic content
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto p-8">
-        <Link 
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
-        
+
         <article className="prose prose-neutral dark:prose-invert max-w-none">
           <h1>{page.title || page.slug}</h1>
           {page.description && <p className="lead">{page.description}</p>}
-          
+
           {/* Render page content based on pageType */}
           <div className="mt-8 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground">

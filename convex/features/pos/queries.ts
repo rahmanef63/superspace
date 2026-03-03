@@ -41,7 +41,10 @@ export const getData = query({
     for (const tx of completedTx) {
       if (tx.items) {
         for (const item of tx.items) {
-          productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity
+          if (item.productId) {
+            const pId = item.productId as string;
+            productSales[pId] = (productSales[pId] || 0) + item.quantity
+          }
         }
       }
     }

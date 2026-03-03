@@ -1,9 +1,12 @@
-// @ts-nocheck - Bypass type checking due to Convex generated API type instantiation depth limits
 import { action } from "../../_generated/server";
 import type { ActionCtx } from "../../_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { api } from "../../_generated/api";
+import { generateText, tool, CoreMessage } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateEmbedding } from "./lib/embeddings";
+import { featureAgentRegistry } from "./registry";
 
 type ChatArgs = {
   workspaceId: string;
@@ -22,9 +25,6 @@ type RecommendArgs = {
 type AiSettingsDoc = Doc<"aiSettings">;
 type KnowledgeBaseDoc = Doc<"knowledgeBaseDocuments">;
 type ChatSessionDoc = Doc<"aiChatSessions">;
-type KnowledgeBaseDocWithSimilarity = KnowledgeBaseDoc & {
-  metadata?: NonNullable<KnowledgeBaseDoc["metadata"]> & { similarity?: number };
-};
 
 /**
  * Generate a chat response using AI
@@ -36,10 +36,22 @@ export const chat = action({
     message: v.string(),
     userId: v.string(),
   },
-  handler: async (ctx: ActionCtx, args: ChatArgs) => {
+  returns: v.object({
+    message: v.string(),
+    sessionId: v.id("aiChatSessions"),
+    contextIds: v.array(v.id("knowledgeBaseDocuments")),
+  }),
+  handler: async (
+    ctx: ActionCtx,
+    args: ChatArgs
+  ): Promise<{
+    message: string;
+    sessionId: Id<"aiChatSessions">;
+    contextIds: Id<"knowledgeBaseDocuments">[];
+  }> => {
     // Get AI settings
     const settings: AiSettingsDoc | null = await ctx.runQuery(
-      api.features.ai.queries.getSettings,
+      (api as any).features.ai.queries.getSettings,
       {
         workspaceId: args.workspaceId,
       }
@@ -52,7 +64,7 @@ export const chat = action({
     // Get or create chat session
     let sessionId = args.sessionId;
     if (!sessionId) {
-      const session = await ctx.runMutation(api.features.ai.mutations.createChatSession, {
+      const session = await ctx.runMutation((api as any).features.ai.mutations.createChatSession, {
         workspaceId: args.workspaceId,
         userId: args.userId,
         title: args.message.slice(0, 50) + "...",
@@ -60,72 +72,144 @@ export const chat = action({
       sessionId = session._id as Id<"aiChatSessions">;
     }
 
-    // Prepare context from knowledge base
-    const relevantDocs = await ctx.runQuery(api.features.ai.queries.searchKnowledgeBase, {
+    // 1. Generate Embedding for RAG
+    let embedding: number[] | undefined;
+    try {
+      embedding = await generateEmbedding(args.message, settings.apiKey);
+    } catch (e) {
+      console.error("Failed to generate embedding:", e);
+      // Fallback to text search if embedding fails
+    }
+
+    // 2. Prepare context from knowledge base
+    const relevantDocs = await ctx.runQuery((api as any).features.ai.queries.searchKnowledgeBase, {
       workspaceId: args.workspaceId,
       query: args.message,
+      embedding,
       limit: 3,
     }) as KnowledgeBaseDoc[];
 
     // Get chat history
-    const session = await ctx.runQuery(api.features.ai.queries.getChatSession, {
+    const session = await ctx.runQuery((api as any).features.ai.queries.getChatSession, {
       sessionId,
     }) as ChatSessionDoc;
 
     // Format messages for AI
-    const messages = [
-      { role: "system", content: settings.systemPrompt || "You are a helpful assistant." },
-      ...session.messages,
+    const history: CoreMessage[] = session.messages.map(m => ({
+      role: m.role as "user" | "assistant" | "system",
+      content: m.content
+    }));
+
+    const systemContent = settings.systemPrompt || "You are a helpful assistant.";
+    const contextContent = relevantDocs.length > 0
+      ? "\n\nContext from knowledge base:\n" + relevantDocs.map((doc) => "- " + doc.title + ":\n" + doc.content).join("\n\n")
+      : "";
+
+    const messages: CoreMessage[] = [
+      { role: "system", content: systemContent + contextContent },
+      ...history,
       { role: "user", content: args.message },
     ];
 
-    // Add context from knowledge base
-    if (relevantDocs.length > 0) {
-      messages.unshift({
-        role: "system",
-        content: "Context from knowledge base:\n" +
-          relevantDocs.map((doc) => "- " + doc.title + ":\n" + doc.content).join("\n\n"),
-      });
+    // 3. Prepare Tools
+    const tools: Record<string, any> = {};
+    for (const [feature, agent] of Object.entries(featureAgentRegistry)) {
+      for (const [name, def] of Object.entries(agent.tools)) {
+        tools[`${feature}_${name}`] = tool({
+          description: def.description,
+          parameters: def.args as any,
+          execute: async (toolArgs: any) => {
+            console.log(`Executing tool ${feature}.${name}`, toolArgs);
+            // Ensure workspaceId is present if needed
+            if (toolArgs.workspaceId && toolArgs.workspaceId !== args.workspaceId) {
+              throw new Error(`Access denied: Cannot access workspace ${toolArgs.workspaceId}`);
+            }
+
+            // Check for Approval Mode
+            if (settings.requiresApproval && def.type === "mutation") {
+              await ctx.runMutation((api as any).features.ai.mutations.createApprovalRequest, {
+                workspaceId: args.workspaceId,
+                agentId: feature,
+                toolName: name,
+                args: JSON.stringify(toolArgs),
+              });
+              return { status: "pending_approval", message: "Action requires approval. A request has been sent to the workspace admin." };
+            }
+
+            if (def.type === "mutation") {
+              return await ctx.runMutation(def.handler, toolArgs);
+            } else {
+              return await ctx.runQuery(def.handler, toolArgs);
+            }
+          }
+        } as any);
+      }
     }
 
+    // Add Handoff Tool
+    // Note: We use Zod for tool parameters as required by AI SDK, not Convex validators
+    const { z } = require("zod");
+    tools["system_handoff"] = tool({
+      description: "Hand off the conversation to a specialized agent or human. Use this when you cannot handle the request.",
+      parameters: z.object({ reason: z.string() }),
+      execute: async ({ reason }: { reason: string }) => {
+        return { status: "handed_off", message: `Conversation handed off: ${reason}` };
+      }
+    } as any);
+
     try {
-      // Make API call to AI provider
-      // This is a placeholder - implement actual API call based on settings.provider
-      const response = "This is a placeholder response. Implement actual API call.";
+      // 4. Call AI with Tools
+      const openai = createOpenAI({ apiKey: settings.apiKey });
+
+      // Fallback Logic
+      let model = openai(settings.model);
+      if (settings.model.includes("gpt-4")) {
+        // Simple fallback strategy: if GPT-4 fails, we might want to try 3.5 (though usually we want to retry the same model)
+        // For now, we'll stick to the configured model but wrap in try/catch for specific errors
+      }
+
+      const result = await generateText({
+        model,
+        messages,
+        tools,
+      });
 
       // Record the interaction
-      await ctx.runMutation(api.features.ai.mutations.appendChatMessage, {
+      await ctx.runMutation((api as any).features.ai.mutations.appendChatMessage, {
         sessionId,
         message: args.message,
         role: "user",
       });
 
-      await ctx.runMutation(api.features.ai.mutations.appendChatMessage, {
+      // We only store the final response for now to match schema
+      // Ideally we should store the full trace (tool calls)
+      await ctx.runMutation((api as any).features.ai.mutations.appendChatMessage, {
         sessionId,
-        message: response,
+        message: result.text,
         role: "assistant",
       });
 
       // Record usage stats
-      await ctx.runMutation(api.features.ai.mutations.recordUsage, {
+      await ctx.runMutation((api as any).features.ai.mutations.recordUsage, {
         workspaceId: args.workspaceId,
         provider: settings.provider,
         model: settings.model,
         requestCount: 1,
-        tokenCount: 100, // Replace with actual token count
-        cost: 0.002, // Replace with actual cost calculation
+        tokenCount: result.usage.totalTokens,
+        cost: 0, // Calculate based on model
         errors: 0,
       });
 
       return {
-        message: response,
+        message: result.text,
         sessionId,
         contextIds: relevantDocs.map((doc) => doc._id),
       };
 
     } catch (error) {
+      console.error("AI Error:", error);
       // Record error in usage stats
-      await ctx.runMutation(api.features.ai.mutations.recordUsage, {
+      await ctx.runMutation((api as any).features.ai.mutations.recordUsage, {
         workspaceId: args.workspaceId,
         provider: settings.provider,
         model: settings.model,
@@ -153,9 +237,27 @@ export const recommend = action({
     sourceId: v.string(),
     count: v.number(),
   },
-  handler: async (ctx: ActionCtx, args: RecommendArgs) => {
+  returns: v.array(
+    v.object({
+      id: v.string(),
+      title: v.string(),
+      url: v.optional(v.string()),
+      similarity: v.number(),
+    })
+  ),
+  handler: async (
+    ctx: ActionCtx,
+    args: RecommendArgs
+  ): Promise<
+    Array<{
+      id: string;
+      title: string;
+      url: string | undefined;
+      similarity: number;
+    }>
+  > => {
     // Get source document
-    const source = await ctx.runQuery(api.features.ai.queries.getKbDocument, {
+    const source = await ctx.runQuery((api as any).features.ai.queries.getKbDocument, {
       workspaceId: args.workspaceId,
       sourceType: args.sourceType,
       sourceId: args.sourceId,
@@ -166,15 +268,15 @@ export const recommend = action({
     }
 
     // Get similar documents based on content
-    const recommendations = await ctx.runQuery(api.features.ai.queries.getSimilarDocuments, {
+    const recommendations = await ctx.runQuery((api as any).features.ai.queries.getSimilarDocuments, {
       workspaceId: args.workspaceId,
       sourceType: args.sourceType,
       content: source.content,
       excludeId: source._id,
       limit: args.count,
-    }) as KnowledgeBaseDocWithSimilarity[];
+    }) as any[];
 
-    return recommendations.map((doc) => ({
+    return recommendations.map((doc: any) => ({
       id: doc.sourceId,
       title: doc.title,
       url: doc.url,
@@ -183,7 +285,7 @@ export const recommend = action({
   },
 });
 
-import { featureAgentRegistry } from "./registry";
+
 
 /**
  * Gateway for Feature Agents
@@ -196,9 +298,19 @@ export const callFeatureAgent = action({
     tool: v.string(),    // e.g. "create"
     args: v.any(),       // JSON arguments
   },
-  handler: async (ctx, args) => {
+  returns: v.any(), // Returning generic results based on the tool called
+  handler: async (
+    ctx: ActionCtx,
+    args: any
+  ): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+    details?: any;
+    schemaDescription?: string;
+  }> => {
     // 1. Verify Access
-    await ctx.runQuery(api.features.ai.queries.checkAgentAccess, {
+    await ctx.runQuery((api as any).features.ai.queries.checkAgentAccess, {
       workspaceId: args.workspaceId
     });
 

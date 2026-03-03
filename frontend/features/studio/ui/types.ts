@@ -21,3 +21,5 @@ export interface BuilderData {
     projects: BuilderProject[];
     templates: BuilderTemplate[];
 }
+
+export * from './types/index';

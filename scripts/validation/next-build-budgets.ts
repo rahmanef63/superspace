@@ -171,7 +171,7 @@ async function main() {
 
   for (const budget of DEFAULT_BUDGETS) {
     const measured = stats.get(budget.route);
-
+    console.log(
       `- ${budget.route}: ${measured ? measured.firstLoadLabel : "(missing)"} (max ${budget.max})`,
     );
   }

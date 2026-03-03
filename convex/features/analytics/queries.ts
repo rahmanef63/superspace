@@ -328,3 +328,52 @@ export const getReports = query({
     return reports
   },
 })
+
+// Analyze data from a specific source
+export const analyze = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    source: v.string(),
+    metric: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveMembership(ctx, args.workspaceId)
+
+    // Get overview stats as base analysis
+    const overview = await ctx.db
+      .query("analyticsEvents")
+      .withIndex("by_workspace_timestamp", (q) =>
+        q.eq("workspaceId", args.workspaceId)
+      )
+      .collect()
+
+    // Filter by source if specified
+    const sourceEvents = args.source
+      ? overview.filter((e: any) => e.eventType === args.source || e.eventName === args.source)
+      : overview
+
+    // Calculate basic metrics
+    const totalEvents = sourceEvents.length
+    const uniqueUsers = new Set(sourceEvents.map((e: any) => e.userId).filter(Boolean)).size
+
+    // Group by metric if specified
+    let metricData: Record<string, any> = {}
+    if (args.metric) {
+      metricData = sourceEvents.reduce((acc: any, event: any) => {
+        const value = event.properties?.[args.metric!] || 0
+        acc[args.metric!] = (acc[args.metric!] || 0) + (typeof value === 'number' ? value : 0)
+        return acc
+      }, {})
+    }
+
+    return {
+      source: args.source,
+      metric: args.metric,
+      totalEvents,
+      uniqueUsers,
+      metricData,
+      timeRange: "all",
+      generatedAt: Date.now(),
+    }
+  },
+})

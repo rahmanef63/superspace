@@ -109,6 +109,7 @@ export default defineSchema({
   // Inventory Categories
   inventoryCategories: defineTable({
     name: v.string(),
+    slug: v.string(),
     description: v.optional(v.string()),
     parent: v.optional(v.id("inventoryCategories")),
     path: v.string(), // Full path: /Category/Subcategory
@@ -123,6 +124,7 @@ export default defineSchema({
     updatedBy: v.id("users"),
   })
     .index("by_workspace", ["workspaceId"])
+    .index("by_slug", ["workspaceId", "slug"])
     .index("by_parent", ["workspaceId", "parent"]),
 
   // Warehouses
@@ -133,7 +135,11 @@ export default defineSchema({
     type: v.union(
       v.literal("warehouse"),
       v.literal("store"),
-      v.literal("virtual")
+      v.literal("virtual"),
+      v.literal("main"),
+      v.literal("branch"),
+      v.literal("distribution"),
+      v.literal("transit")
     ),
 
     // Address
@@ -210,6 +216,7 @@ export default defineSchema({
   })
     .index("by_item", ["item"])
     .index("by_warehouse", ["warehouse"])
+    .index("by_item_warehouse", ["item", "warehouse"])
     .index("by_low_stock", ["warehouse", "quantityAvailable"]),
 
   // Stock Movements

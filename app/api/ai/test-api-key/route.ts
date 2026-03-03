@@ -4,12 +4,37 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@clerk/nextjs/server"
 import { validateApiKeyFormat, testApiKey } from "../../../../frontend/features/ai/utils/api-key-validation"
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  // 1. Authentication
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    const body = await request.json()
+    const body = await req.json()
     const { providerId, apiKey, baseUrl } = body
+
+    // SSRF Protection
+    const ALLOWED_DOMAINS = [
+      "api.groq.com", "api.openai.com", "api.anthropic.com", "api.together.xyz",
+      "api.fireworks.ai", "api.perplexity.ai", "api.deepseek.com", "api.mistral.ai",
+      "api.x.ai", "localhost", "127.0.0.1", "generativelanguage.googleapis.com",
+      "api.cohere.ai", "api.z.ai", "openrouter.ai"
+    ];
+    if (baseUrl) {
+      try {
+        const url = new URL(baseUrl);
+        if (!ALLOWED_DOMAINS.some(domain => url.hostname === domain || url.hostname.endsWith(`.${domain}`))) {
+          return NextResponse.json({ error: "Invalid baseUrl" }, { status: 400 });
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid baseUrl format" }, { status: 400 });
+      }
+    }
 
     // Validate required fields
     if (!providerId || !apiKey) {

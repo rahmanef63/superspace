@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
 import { ensureUser, requireActiveMembership } from "../../auth/helpers";
 import { logAuditEvent } from "../../shared/audit";
+import { internal } from "../../_generated/api";
 
 /**
  * Create a new workflow
@@ -21,6 +22,15 @@ export const createWorkflow = mutation({
         id: v.string(),
         type: v.string(),
         config: v.any(),
+        retryConfig: v.optional(v.object({
+          maxAttempts: v.number(),
+          backoffMs: v.number(),
+        })),
+        timeoutMs: v.optional(v.number()),
+      })),
+      settings: v.optional(v.object({
+        slaDurationMs: v.optional(v.number()),
+        maxRetries: v.optional(v.number()),
       })),
     }),
   },
@@ -81,6 +91,15 @@ export const updateWorkflow = mutation({
         id: v.string(),
         type: v.string(),
         config: v.any(),
+        retryConfig: v.optional(v.object({
+          maxAttempts: v.number(),
+          backoffMs: v.number(),
+        })),
+        timeoutMs: v.optional(v.number()),
+      })),
+      settings: v.optional(v.object({
+        slaDurationMs: v.optional(v.number()),
+        maxRetries: v.optional(v.number()),
       })),
     })),
   },
@@ -120,6 +139,7 @@ export const updateWorkflow = mutation({
 export const executeWorkflow = mutation({
   args: {
     workflowId: v.id("workflows"),
+    isDryRun: v.optional(v.boolean()),
   },
   returns: v.id("workflowExecutions"),
   handler: async (ctx, args) => {
@@ -129,7 +149,8 @@ export const executeWorkflow = mutation({
     const userId = await ensureUser(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    if (workflow.status !== "active") {
+    // Allow running drafts if it's a dry run
+    if (workflow.status !== "active" && !args.isDryRun) {
       throw new Error("Workflow is not active");
     }
 
@@ -139,10 +160,11 @@ export const executeWorkflow = mutation({
       status: "running",
       startedAt: Date.now(),
       triggeredBy: userId,
+      isDryRun: args.isDryRun,
       logs: [{
         timestamp: Date.now(),
         level: "info",
-        message: "Workflow execution started",
+        message: `Workflow execution started${args.isDryRun ? " (Dry Run)" : ""}`,
       }],
     });
 
@@ -155,19 +177,10 @@ export const executeWorkflow = mutation({
       },
     });
 
-    // TODO: Implement actual workflow execution logic
-    // For now, we just mark it as completed
-    setTimeout(async () => {
-      try {
-        await ctx.db.patch(executionId, {
-          status: "completed",
-          completedAt: Date.now(),
-          result: { success: true },
-        });
-      } catch (e) {
-        console.error("Failed to update execution:", e);
-      }
-    }, 1000);
+    // Schedule the workflow execution via the executor action
+    await ctx.scheduler.runAfter(0, internal.features.studio.executor.processExecution, {
+      executionId,
+    });
 
     await logAuditEvent(ctx, {
       workspaceId: workflow.workspaceId,

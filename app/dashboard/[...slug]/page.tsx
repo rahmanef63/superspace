@@ -37,7 +37,7 @@ export default function CatchAllPage() {
 
   // Read dynamic route params in a Client Component via useParams
   const params = useParams<{ slug?: string[] }>()
-  const parts = (params?.slug as unknown as string[] | undefined) ?? []
+  const parts = useMemo(() => (params?.slug as unknown as string[] | undefined) ?? [], [params?.slug])
   const activeSlug = parts[0] || "overview"
   const navigationHasSlug = navigationSlugSet.has(activeSlug)
 

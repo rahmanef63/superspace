@@ -81,6 +81,12 @@ export function usePresenceMutations() {
     customStatus?: UserPresence["customStatus"]
     activity?: UserPresence["activity"]
   }) => {
+    console.log("updatePresence", data)
+  }
+
+  return {
+    updatePresence,
+  }
 }
 
 export default usePresence

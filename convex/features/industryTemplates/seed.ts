@@ -1,7 +1,7 @@
 ﻿import { mutation } from "../../_generated/server";
 
 // Feature module type matching the schema
-type FeatureModule = "pos" | "inventory" | "crm" | "marketing" | "hr" | "accounting" | "projects" | "support" | "bi" | "forms" | "workflows" | "docs" | "chat" | "calendar" | "bookings" | "cms" | "analytics" | "integrations";
+type FeatureModule = "pos" | "inventory" | "crm" | "marketing" | "hr" | "accounting" | "projects" | "support" | "bi" | "forms" | "workflows" | "docs" | "chat" | "calendar" | "bookings" | "cms" | "analytics" | "integrations" | "notifications" | "tasks";
 
 // Industry category type matching the schema
 type IndustryCategory = "restaurant" | "retail" | "healthcare" | "education" | "professional_services" | "manufacturing" | "hospitality" | "real_estate" | "fitness" | "salon_spa" | "automotive" | "construction" | "nonprofit" | "technology" | "creative_agency" | "logistics" | "custom";
@@ -126,6 +126,234 @@ export const seedOfficialTemplates = mutation({
         tags: ["restaurant", "food-service", "pos", "hospitality"],
         isPremium: false,
       },
+
+      // --- KA IRUL GROUP BUSINESS ENGINES ---
+
+      // 1. YAYASAN & SDIT (Education & Non-Profit)
+      {
+        name: "Education & Foundation Engine",
+        description: "Sistem manajemen terpadu untuk Sekolah (SDIT) dan Yayasan. Mengelola data siswa, SPP, donasi, aset wakaf, dan program kegiatan dalam satu dashboard.",
+        category: "education",
+        subcategory: "school",
+        features: ["crm", "accounting", "hr", "projects", "inventory", "calendar", "forms", "docs"],
+        featureConfigs: {
+          crm: { 
+            label: "Siswa & Wali Murid",
+            customFields: ["NIS", "Kelas", "Nama Wali", "Golongan Darah"]
+          },
+          projects: { 
+            label: "Program Yayasan",
+            view: "kanban"
+          },
+          accounting: { 
+            enableTuition: true,
+            enableDonations: true,
+            currency: "IDR"
+          },
+          calendar: {
+            mode: "academic",
+            features: ["class_schedule", "events"]
+          }
+        },
+        defaultRoles: [
+          { name: "Kepala Sekolah", description: "Akses penuh operasional sekolah", permissions: ["*"], isDefault: false },
+          { name: "Admin TU", description: "Kelola pembayaran SPP dan data siswa", permissions: ["crm.*", "accounting.*", "forms.*"], isDefault: true },
+          { name: "Guru", description: "Akses jadwal dan data siswa terbatas", permissions: ["calendar.view", "crm.view", "docs.view"], isDefault: false },
+          { name: "Pengurus Yayasan", description: "Monitor laporan dan program", permissions: ["reports.view", "projects.view", "accounting.view"], isDefault: false },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["sekolah", "yayasan", "pesantren", "sdit", "education"],
+        isPremium: false,
+      },
+
+      // 2. RETAIL FRANCHISE (Alfa, Apotik)
+      {
+        name: "Retail Franchise Engine",
+        description: "Engine ritel untuk minimarket atau apotik. Dilengkapi POS Cepat, manajemen stok dengan expiry date (FEFO), dan laporan penjualan real-time.",
+        category: "retail",
+        subcategory: "franchise",
+        features: ["pos", "inventory", "accounting", "hr", "analytics", "crm"],
+        featureConfigs: {
+          pos: { 
+            enableBarcode: true, 
+            fastCheckout: true,
+            receiptFormat: "thermal_80mm"
+          },
+          inventory: { 
+            enableExpiryTracking: true, // Critical for Apotik
+            enableBatchTracking: true,
+            valuationMethod: "FIFO"
+          },
+          analytics: {
+            dashboards: ["sales_daily", "stock_turnover"]
+          }
+        },
+        defaultRoles: [
+          { name: "Store Manager", description: "Kelola toko harian", permissions: ["*"], isDefault: false },
+          { name: "Kasir", description: "Akses POS dan Buka/Tutup Kasir", permissions: ["pos.sell", "pos.view", "crm.create"], isDefault: true },
+          { name: "Apoteker", description: "Validasi resep dan stok obat", permissions: ["inventory.*", "pos.view"], isDefault: false },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["retail", "minimarket", "apotik", "franchise", "pos"],
+        isPremium: false,
+      },
+
+      // 3. SERVICE BUSINESS (Laundry)
+      {
+        name: "Service & Laundry Engine",
+        description: "Sistem manajemen jasa laundry dengan pelacakan status cucian per item, notifikasi WA otomatis, dan kasir layanan.",
+        category: "custom",
+        subcategory: "laundry",
+        features: ["pos", "crm", "inventory", "accounting", "notifications", "tasks"],
+        featureConfigs: {
+          pos: { 
+            serviceMode: true, // Mode jasa
+            printJobSheet: true
+          },
+          notifications: { 
+            enableWhatsApp: true,
+            triggers: ["order_received", "order_ready", "order_completed"]
+          },
+          inventory: {
+            label: "Supplies (Deterjen/Parfum)"
+          }
+        },
+        defaultRoles: [
+          { name: "Owner", description: "Pemilik", permissions: ["*"], isDefault: false },
+          { name: "Front Desk", description: "Terima order dan kasir", permissions: ["pos.*", "crm.*", "notifications.send"], isDefault: true },
+          { name: "Bagian Cuci/Setrika", description: "Update status pengerjaan", permissions: ["tasks.update", "pos.view"], isDefault: false },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["laundry", "jasa", "service", "umkm"],
+        isPremium: false,
+      },
+
+      // 4. HOSPITALITY (Zian Inn)
+      {
+        name: "Hospitality Booking Engine",
+        description: "Engine manajemen penginapan (Guest House/Kost). Mengubah Kalender menjadi Booking System, manajemen check-in/out, dan housekeeping.",
+        category: "real_estate",
+        subcategory: "hospitality",
+        features: ["calendar", "bookings", "crm", "accounting", "inventory", "docs", "marketing"],
+        featureConfigs: {
+          calendar: { 
+            mode: "booking_timeline", // Special mode
+            resourceLabel: "Kamar"
+          },
+          bookings: {
+            enableOnlineBooking: true,
+            checkInTime: "14:00",
+            checkOutTime: "12:00"
+          },
+          crm: { label: "Tamu & Tenant" },
+          inventory: { label: "Amenities & Linen" }
+        },
+        defaultRoles: [
+          { name: "Property Manager", description: "Pengelola properti", permissions: ["*"], isDefault: false },
+          { name: "Resepsionis", description: "Check-in tamu dan terima booking", permissions: ["bookings.*", "calendar.*", "crm.*", "accounting.create"], isDefault: true },
+          { name: "Housekeeping", description: "Lihat jadwal bersih kamar", permissions: ["calendar.view", "tasks.view"], isDefault: false },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["hotel", "kost", "property", "guesthouse", "booking"],
+        isPremium: false,
+      },
+
+      // 5. F&B FRANCHISE (Rocket Chicken)
+      {
+        name: "QSR (Quick Service Resto) Engine",
+        description: "Engine spesialis Fast Food. POS Grid super cepat, manajemen resep (potong stok otomatis), dan Kitchen Display System.",
+        category: "restaurant",
+        subcategory: "fast_food",
+        features: ["pos", "inventory", "accounting", "hr", "analytics"],
+        featureConfigs: {
+          pos: { 
+            layout: "grid", 
+            enableModifiers: true, // Paha/Dada, Pedas/Original
+            kitchenDisplay: true
+          },
+          inventory: { 
+            enableRecipe: true, // Potong stok ayam saat terjual
+            autoRestock: true
+          }
+        },
+        defaultRoles: [
+          { name: "Outlet Manager", description: "Kepala Cabang", permissions: ["*"], isDefault: false },
+          { name: "Crew", description: "Kasir dan Dapur", permissions: ["pos.sell", "pos.view_orders"], isDefault: true },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["resto", "fried chicken", "f&b", "franchise"],
+        isPremium: false,
+      },
+
+      // 6. PROPERTY & REAL ESTATE
+      {
+        name: "Real Estate & Property Engine",
+        description: "Manajemen jual beli dan sewa properti. CRM untuk leads, manajemen kontrak dokumen, dan listing properti.",
+        category: "real_estate",
+        subcategory: "agency",
+        features: ["crm", "docs", "accounting", "projects", "marketing", "calendar"],
+        featureConfigs: {
+          crm: { 
+            label: "Leads & Clients",
+            pipeline: ["New Lead", "Viewing", "Negotiation", "Contract", "Closed"]
+          },
+          docs: { label: "Contracts & Deeds" },
+          projects: { label: "Renovations & Maintenance" }
+        },
+        defaultRoles: [
+          { name: "Agency Owner", description: "Pemilik Agensi", permissions: ["*"], isDefault: false },
+          { name: "Agent", description: "Sales properti", permissions: ["crm.*", "calendar.*", "docs.view"], isDefault: true },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["property", "real estate", "agent", "housing"],
+        isPremium: false,
+      },
+
+      // 7. MONEY CHANGER & TRADING (Tukar Real)
+      {
+        name: "Money Changer & Trading Engine",
+        description: "Sistem keuangan dengan dukungan Multi-Currency, manajemen kurs real-time, dan pencatatan transaksi valas.",
+        category: "professional_services",
+        subcategory: "finance",
+        features: ["accounting", "crm", "analytics", "forms"],
+        featureConfigs: {
+          accounting: { 
+            multiCurrency: true,
+            baseCurrency: "IDR",
+            supportedCurrencies: ["SAR", "USD", "EUR", "MYR"]
+          },
+          analytics: { label: "Kurs Trends" }
+        },
+        defaultRoles: [
+          { name: "Manager", description: "Kelola rate dan cash flow", permissions: ["*"], isDefault: false },
+          { name: "Teller", description: "Transaksi penukaran", permissions: ["accounting.create", "crm.view"], isDefault: true },
+        ],
+        visibility: "public",
+        version: "1.0.0",
+        isOfficial: true,
+        usageCount: 0,
+        tags: ["finance", "money changer", "forex", "trading"],
+        isPremium: false,
+      },
+
       // Retail Template
       {
         name: "Retail Store",

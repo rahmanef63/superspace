@@ -50,10 +50,11 @@ export const listTemplates = query({
     // Get templates based on category filter
     let allTemplates;
 
-    if (args.category) {
+    const category = args.category;
+    if (category) {
       allTemplates = await ctx.db
         .query("workspaceTemplates")
-        .withIndex("by_category", (q) => q.eq("category", args.category!))
+        .withIndex("by_category", (q) => q.eq("category", category))
         .collect();
     } else {
       allTemplates = await ctx.db.query("workspaceTemplates").collect();
@@ -481,8 +482,8 @@ export const saveWorkspaceAsTemplate = mutation({
         .filter((r) => !r.isSystemRole)
         .map((r) => ({
           name: r.name,
-          slug: r.slug,
-          description: r.description,
+          slug: r.slug ?? normalizeSlug(r.name),
+          description: r.description ?? undefined,
           permissions: r.permissions as string[],
           color: r.color,
           level: r.level ?? 50,

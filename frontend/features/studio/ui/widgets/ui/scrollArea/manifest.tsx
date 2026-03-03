@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { ScrollAreaWidget } from './ScrollAreaWidget';
 import React from 'react';
 import { ScrollText } from 'lucide-react';
@@ -28,8 +28,9 @@ export const scrollAreaManifest: WidgetConfig = {
     type: 'auto',
     height: '200px',
   },
-  render: (props, children) => <ScrollAreaWidget {...props}>{children}</ScrollAreaWidget>,
+  render: (props, children) => <ScrollAreaWidget {...(props as any)}>{children}</ScrollAreaWidget>,
   inspector: {
     fields: scrollAreaInspectorConfig,
   },
 };
+

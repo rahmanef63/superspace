@@ -144,10 +144,17 @@ export const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onImport }) 
                     filteredTemplates.map(template => {
                         const Icon = categoryIcons[template.category] || Database;
                         const colorClass = categoryColors[template.category] || 'text-gray-500 bg-gray-500/10';
+                        const tags = Array.isArray((template as any).tags) ? (template as any).tags : [];
+                        const nodeCount =
+                            Array.isArray((template as any).nodes)
+                                ? (template as any).nodes.length
+                                : Array.isArray((template as any).definition?.nodes)
+                                    ? (template as any).definition.nodes.length
+                                    : 0;
 
                         return (
                             <Card
-                                key={template.id}
+                                key={String(template._id)}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, template)}
                                 className={cn(
@@ -175,7 +182,7 @@ export const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onImport }) 
                                             {template.description}
                                         </p>
                                         <div className="flex gap-1.5 mt-2 flex-wrap">
-                                            {template.tags.slice(0, 3).map(tag => (
+                                            {tags.slice(0, 3).map((tag: string) => (
                                                 <span
                                                     key={tag}
                                                     className="px-1.5 py-0.5 bg-muted text-[10px] rounded"
@@ -184,7 +191,7 @@ export const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onImport }) 
                                                 </span>
                                             ))}
                                             <span className="text-[10px] text-muted-foreground">
-                                                {template.nodes.length} nodes
+                                                {nodeCount} nodes
                                             </span>
                                         </div>
                                     </div>

@@ -196,7 +196,11 @@ export function TiptapDocumentEditor({ documentId, onBack, className }: TiptapDo
 
       {showComments && (
         <div className="w-80 border-l border-border bg-muted/30">
-          <CommentsPanel documentId={documentId} />
+          <CommentsPanel
+            workspaceId={document.workspaceId ?? null}
+            entityId={String(documentId)}
+            entityType="document"
+          />
         </div>
       )}
     </div>

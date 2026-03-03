@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { DividerWidget } from './DividerWidget';
 import React from 'react';
 import { Minus } from 'lucide-react';
@@ -45,8 +45,9 @@ export const dividerManifest: WidgetConfig = {
     icon: Minus,
     tags: ['ui', 'layout', 'separator', 'divider'],
     defaults: { ...DEFAULTS },
-    render: (props) => <DividerWidget {...props} />,
+    render: (props) => <DividerWidget {...(props as any)} />,
     inspector: {
         fields: dividerInspectorConfig,
     },
 };
+

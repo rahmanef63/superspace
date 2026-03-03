@@ -1,4 +1,4 @@
-import { ThemeEditorState } from "../types/editor";
+import type { ThemeEditorState } from "../types/editor";
 
 // these are common between light and dark modes
 // we can assume that light mode's value will be used for dark mode as well

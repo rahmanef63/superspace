@@ -2,177 +2,101 @@
 /**
  * Feature Naming Validation
  *
- * Validates naming and folder conventions between:
- * - feature.id (canonical id)
- * - frontend/features/<slug>
- * - convex/features/<convexSlug>
- *
- * Usage: pnpm run validate:feature-naming
+ * Usage:
+ * - pnpm run validate:feature-naming
+ * - pnpm run validate:feature-naming -- --strict
+ * - pnpm run validate:feature-naming -- --json
  */
 
-import { existsSync } from "fs"
-import { join } from "path"
-import { getAllFeatures, getFeatureMeta } from "../../frontend/shared/lib/features/registry.server"
+import { resolve } from "node:path"
+import {
+  type ValidationIssue,
+  collectFeatureStandardsIssues,
+  shouldFailValidation,
+  summarizeIssues,
+} from "./rules/feature-standards"
 
-interface NamingIssue {
-  severity: "error" | "warning"
-  featureId: string
-  message: string
+interface CliOptions {
+  strict: boolean
+  json: boolean
+  rootDir: string
 }
 
-interface FlattenedFeature {
-  id: string
-  technical?: {
-    hasConvex?: boolean
+function parseArgs(argv: string[]): CliOptions {
+  const strict = argv.includes("--strict")
+  const json = argv.includes("--json")
+
+  const rootArgIndex = argv.indexOf("--root")
+  const rootArg = rootArgIndex >= 0 ? argv[rootArgIndex + 1] : undefined
+  const rootDir = resolve(rootArg ?? process.cwd())
+
+  return { strict, json, rootDir }
+}
+
+function printTextReport(
+  issues: ValidationIssue[],
+  summary: { errors: number; warnings: number },
+  options: CliOptions,
+): void {
+  console.log("Feature standards validation")
+  console.log(`Root: ${options.rootDir}`)
+  console.log(`Mode: ${options.strict ? "strict" : "default"}`)
+  console.log(`Errors: ${summary.errors}`)
+  console.log(`Warnings: ${summary.warnings}`)
+
+  if (issues.length === 0) {
+    console.log("\nNo rule violations found.")
+    return
   }
-  parent?: string
-  children?: any[]
-}
 
-const issues: NamingIssue[] = []
-
-function isKebabCase(value: string): boolean {
-  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
-}
-
-function toConvexSlug(slug: string): string {
-  return slug.replace(/-([a-z0-9])/g, (_, ch: string) => ch.toUpperCase())
-}
-
-function unique(values: string[]): string[] {
-  return [...new Set(values.filter(Boolean))]
-}
-
-function flattenFeatures(features: any[], parent?: string): FlattenedFeature[] {
-  return features.flatMap((feature) => {
-    const current: FlattenedFeature = {
-      id: feature.id,
-      technical: feature.technical,
-      parent,
-      children: feature.children,
-    }
-    const children = feature.children ? flattenFeatures(feature.children, feature.id) : []
-    return [current, ...children]
-  })
-}
-
-function addIssue(issue: NamingIssue): void {
-  issues.push(issue)
-}
-
-function validate(): void {
-  const rootDir = process.cwd()
-  const features = flattenFeatures(getAllFeatures())
-
-  for (const feature of features) {
-    const featureId = feature.id
-
-    if (!isKebabCase(featureId)) {
-      addIssue({
-        severity: "error",
-        featureId,
-        message: `feature.id must be kebab-case, got "${featureId}"`,
-      })
-    }
-
-    // Child features inherit parent folder structure and are not mapped 1:1 to folders.
-    if (feature.parent) {
-      continue
-    }
-
-    const meta = getFeatureMeta(featureId)
-    const frontendSlug = meta?.slug ?? featureId
-
-    if (!isKebabCase(frontendSlug)) {
-      addIssue({
-        severity: "warning",
-        featureId,
-        message: `frontend folder "${frontendSlug}" is not kebab-case`,
-      })
-    }
-
-    if (frontendSlug !== featureId) {
-      addIssue({
-        severity: "warning",
-        featureId,
-        message: `frontend folder "${frontendSlug}" differs from feature.id "${featureId}" (legacy mapping)`,
-      })
-    }
-
-    const hasConvex = Boolean(feature?.technical?.hasConvex)
-    if (!hasConvex) {
-      continue
-    }
-
-    const expectedConvexSlug = toConvexSlug(featureId)
-    const convexCandidates = unique([
-      expectedConvexSlug,
-      featureId,
-      featureId.replace(/-/g, "_"),
-      toConvexSlug(frontendSlug),
-      frontendSlug,
-    ])
-
-    const existingConvexSlug = convexCandidates.find((candidate) =>
-      existsSync(join(rootDir, "convex", "features", candidate))
-    )
-
-    if (!existingConvexSlug) {
-      addIssue({
-        severity: "error",
-        featureId,
-        message: `missing convex folder (checked: ${convexCandidates.join(", ")})`,
-      })
-      continue
-    }
-
-    if (existingConvexSlug !== expectedConvexSlug) {
-      addIssue({
-        severity: "warning",
-        featureId,
-        message: `convex folder uses "${existingConvexSlug}", expected "${expectedConvexSlug}"`,
-      })
-    }
-  }
-}
-
-function printReport(): void {
   const errors = issues.filter((issue) => issue.severity === "error")
   const warnings = issues.filter((issue) => issue.severity === "warning")
-
-  console.log("Feature naming validation")
-  console.log(`Errors: ${errors.length}`)
-  console.log(`Warnings: ${warnings.length}`)
 
   if (errors.length > 0) {
     console.log("\nErrors:")
     for (const issue of errors) {
-      console.log(`- [${issue.featureId}] ${issue.message}`)
+      console.log(`- [${issue.code}] [${issue.featureId}] ${issue.message}`)
+      if (issue.path) console.log(`  path: ${issue.path}`)
+      if (issue.suggestion) console.log(`  fix: ${issue.suggestion}`)
     }
   }
 
   if (warnings.length > 0) {
     console.log("\nWarnings:")
     for (const issue of warnings) {
-      console.log(`- [${issue.featureId}] ${issue.message}`)
+      console.log(`- [${issue.code}] [${issue.featureId}] ${issue.message}`)
+      if (issue.path) console.log(`  path: ${issue.path}`)
+      if (issue.suggestion) console.log(`  fix: ${issue.suggestion}`)
     }
-  }
-
-  if (issues.length === 0) {
-    console.log("\nAll naming conventions are compliant.")
   }
 }
 
 function main(): void {
   try {
-    validate()
-    printReport()
+    const options = parseArgs(process.argv.slice(2))
+    const issues = collectFeatureStandardsIssues(options.rootDir)
+    const summary = summarizeIssues(issues)
 
-    if (issues.some((issue) => issue.severity === "error")) {
-      process.exit(1)
+    const shouldFail = shouldFailValidation(summary, options.strict)
+
+    if (options.json) {
+      console.log(
+        JSON.stringify(
+          {
+            rootDir: options.rootDir,
+            mode: options.strict ? "strict" : "default",
+            summary,
+            issues,
+          },
+          null,
+          2,
+        ),
+      )
+    } else {
+      printTextReport(issues, summary, options)
     }
 
-    process.exit(0)
+    process.exit(shouldFail ? 1 : 0)
   } catch (error) {
     console.error("Unexpected error while validating feature naming")
     console.error(error)

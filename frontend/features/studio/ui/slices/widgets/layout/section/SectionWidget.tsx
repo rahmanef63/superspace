@@ -66,7 +66,7 @@ export const SectionWidget: React.FC<SectionWidgetProps> = ({
   className = "",
   children
 }) => {
-  const Tag = tag as keyof JSX.IntrinsicElements;
+  const Tag = tag as React.ElementType;
 
   const getDisplayClasses = () => {
     const classes: string[] = [display];

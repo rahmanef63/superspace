@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { CarouselWidget } from './CarouselWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -16,7 +16,7 @@ export const carouselManifest: WidgetConfig = {
         loop: false,
         className: '',
     },
-    render: (props, children) => <CarouselWidget {...props}>{children}</CarouselWidget>,
+    render: (props, children) => <CarouselWidget {...(props as any)}>{children}</CarouselWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -47,3 +47,4 @@ export const carouselManifest: WidgetConfig = {
         ),
     },
 };
+

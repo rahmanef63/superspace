@@ -8,6 +8,7 @@
         "dev": "next dev --hostname 0.0.0.0 --port 3000",
         "dev:fresh": "pnpm run clean:next && pnpm run dev",
         "lint": "next lint",
+        "lint:all": "pnpm run lint && pnpm run validate:feature-naming",
         "start": "next start",
         "test": "vitest",
         "test:ui": "vitest --ui",
@@ -51,7 +52,7 @@
         "audit:ui": "tsx scripts/validation/audit-ui-consistency.ts",
         "analyze:tests": "tsx scripts/validation/analyze-test-gaps.ts",
         "validate:complete": "pnpm run analyze:crud && pnpm run audit:ui && pnpm run analyze:tests",
-        "precommit": "pnpm run lint && pnpm run validate:all && pnpm test"
+        "precommit": "pnpm run lint:all && pnpm run validate:all && pnpm test"
     },
     "dependencies": {
         "@ai-sdk/openai": "latest",

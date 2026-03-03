@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { KanbanBlock } from '@/frontend/features/studio/ui/widgets/blocks/Kanban';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { KanbanSquare } from 'lucide-react';
@@ -12,7 +12,7 @@ export const kanbanManifest: WidgetConfig = {
         title: "Project Board",
         className: ""
     },
-    render: (props) => <KanbanBlock {...props} columns={props.columns || [{ id: '1', title: 'To Do', items: [] }]} />,
+    render: (props) => <KanbanBlock {...(props as any)} columns={props.columns || [{ id: '1', title: 'To Do', items: [] }]} />,
     inspector: {
         fields: [
             createCustomField({
@@ -23,3 +23,4 @@ export const kanbanManifest: WidgetConfig = {
         ]
     }
 };
+

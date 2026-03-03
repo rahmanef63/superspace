@@ -13,7 +13,7 @@ export const metricCardManifest: WidgetConfig = {
         value: "$12,345",
         className: ""
     },
-    render: (props) => <MetricCardBlock {...props} />,
+    render: (props) => <MetricCardBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({

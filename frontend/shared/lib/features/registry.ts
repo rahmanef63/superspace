@@ -16,10 +16,10 @@ import statusConfig from '@/frontend/features/status/config'
 import aiConfig from '@/frontend/features/ai/config'
 import workspaceStoreConfig from '@/frontend/features/workspace-store/config'
 import knowledgeConfig from '@/frontend/features/knowledge/config'
-import contactConfig from '@/frontend/features/contact/config'
+import contactsConfig from '@/frontend/features/contacts/config'
 import databaseConfig from '@/frontend/features/database/config'
 import documentsConfig from '@/frontend/features/documents/config'
-import menuStoreConfig from '@/frontend/features/menu-store/config'
+import menusConfig from '@/frontend/features/menus/config'
 import calendarConfig from '@/frontend/features/calendar/config'
 import userManagementConfig from '@/frontend/features/user-management/config'
 import reportsConfig from '@/frontend/features/reports/config'
@@ -44,6 +44,7 @@ import accountingConfig from '@/frontend/features/accounting/config'
 import inventoryConfig from '@/frontend/features/inventory/config'
 import crmConfig from '@/frontend/features/crm/config'
 import platformAdminConfig from '@/frontend/features/platform-admin/config'
+import exampleConfig from '@/frontend/features/example/config'
 
 const featureConfigs: FeatureConfig[] = [
   overviewConfig,
@@ -52,10 +53,10 @@ const featureConfigs: FeatureConfig[] = [
   aiConfig,
   workspaceStoreConfig,
   knowledgeConfig,
-  contactConfig,
+  contactsConfig,
   databaseConfig,
   documentsConfig,
-  menuStoreConfig,
+  menusConfig,
   calendarConfig,
   userManagementConfig,
   reportsConfig,
@@ -80,6 +81,7 @@ const featureConfigs: FeatureConfig[] = [
   inventoryConfig,
   crmConfig,
   platformAdminConfig,
+  exampleConfig,
 ]
 /**
  * Extract and validate all discovered features

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "../lib/format";
 import { getIconComponent, getColorValue } from "@/frontend/shared/ui";
 import { parseTableData } from "../utils/table-parser";
+import { Table2 } from "lucide-react";
 
 export interface DatabaseHeaderSectionProps {
   record: DatabaseRecord;
@@ -18,7 +19,7 @@ export function DatabaseHeaderSection({ record }: DatabaseHeaderSectionProps) {
     icon: { iconName, iconColor },
   } = parseTableData(table);
 
-  const IconComponent = getIconComponent(iconName);
+  const IconComponent = getIconComponent(iconName) ?? Table2;
   const colorValue = getColorValue(iconColor);
 
   return (

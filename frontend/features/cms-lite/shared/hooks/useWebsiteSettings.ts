@@ -78,17 +78,17 @@ export interface UseWebsiteSettingsReturn {
 export function useWebsiteSettings(workspaceId: Id<"workspaces"> | null): UseWebsiteSettingsReturn {
   // Query current settings - skip if workspaceId is null
   const settings = useQuery(
-    api.features.cms_lite.website_settings.api.queries.getWebsiteSettings,
+    api.features.cmsLite.website_settings.api.queries.getWebsiteSettings,
     workspaceId ? { workspaceId } : "skip"
   );
   
   // Mutations
   const updateSettingsMutation = useMutation(
-    api.features.cms_lite.website_settings.api.mutations.updateWebsiteSettings
+    api.features.cmsLite.website_settings.api.mutations.updateWebsiteSettings
   );
   
   const verifyDomainMutation = useMutation(
-    api.features.cms_lite.website_settings.api.mutations.verifyDomain
+    api.features.cmsLite.website_settings.api.mutations.verifyDomain
   );
   
   const updateSettings = async (data: WebsiteSettingsData) => {

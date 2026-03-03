@@ -53,13 +53,13 @@ export default function AdminNavigation() {
     if (item) {
       setEditingItem(item);
       setFormData({
-        labelId: item.labelId,
-        labelEn: item.labelEn,
-        labelAr: item.labelAr,
-        path: item.path,
-        displayOrder: item.displayOrder,
-        parentId: item.parentId,
-        isExternal: item.isExternal,
+        labelId: item.labelId ?? item.label ?? "",
+        labelEn: item.labelEn ?? item.label ?? "",
+        labelAr: item.labelAr ?? item.label ?? "",
+        path: item.path ?? item.url ?? "",
+        displayOrder: item.displayOrder ?? item.order ?? 0,
+        parentId: item.parentId ?? null,
+        isExternal: item.isExternal ?? false,
         active: item.active,
       });
     } else {
@@ -106,7 +106,7 @@ export default function AdminNavigation() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     if (!confirm("Are you sure you want to delete this navigation item?")) return;
     
     logger.delete("navigation item", "database/navigation_menu table", id);

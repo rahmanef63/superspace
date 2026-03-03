@@ -22,7 +22,7 @@ export default function AdminPosts() {
   const { toast } = useToast();
   
   // Use Convex query for real-time data
-  const postsData = useQuery(api.features.cms_lite.posts.api.queries.listAllPosts, {});
+  const postsData = useQuery(api.features.cmsLite.posts.api.queries.listAllPosts, {});
   const posts = postsData?.posts || [];
   const loading = postsData === undefined;
   

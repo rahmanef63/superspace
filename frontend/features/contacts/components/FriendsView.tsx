@@ -72,7 +72,7 @@ export function ContactsView({ workspaceId }: { workspaceId?: Id<"workspaces"> }
         onClick: async (r) => {
           if (!r.Contact?._id) return;
           if (!confirm("Remove this Contact?")) return;
-          await removeContact({ ContactId: r.Contact._id });
+          await removeContact({ contactId: r.Contact._id });
         },
       },
     ],

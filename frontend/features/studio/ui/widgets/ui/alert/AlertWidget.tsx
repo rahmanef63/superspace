@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from '@/components/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AlertWidgetProps {
   variant?: 'default' | 'destructive';
@@ -17,12 +17,9 @@ export const AlertWidget: React.FC<AlertWidgetProps> = ({
   className,
 }) => {
   return (
-    <Alert
-      variant={variant}
-      type={type}
-      title={title}
-      description={description}
-      className={className}
-    />
+    <Alert variant={variant} className={className} data-alert-type={type}>
+      <AlertTitle>{title}</AlertTitle>
+      <AlertDescription>{description}</AlertDescription>
+    </Alert>
   );
 };

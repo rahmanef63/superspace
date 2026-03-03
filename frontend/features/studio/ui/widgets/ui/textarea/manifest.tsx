@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { TextareaWidget } from './TextareaWidget';
 import React from 'react';
 import { FileText } from 'lucide-react';
@@ -35,8 +35,9 @@ export const textareaManifest: WidgetConfig = {
     rows: 3,
     disabled: false,
   },
-  render: (props) => <TextareaWidget {...props} />,
+  render: (props) => <TextareaWidget {...(props as any)} />,
   inspector: {
     fields: textareaInspectorConfig,
   },
 };
+

@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { TabsWidget } from './TabsWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -15,7 +15,7 @@ export const tabsManifest: WidgetConfig = {
         orientation: 'horizontal',
         className: '',
     },
-    render: (props, children) => <TabsWidget {...props}>{children}</TabsWidget>,
+    render: (props, children) => <TabsWidget {...(props as any)}>{children}</TabsWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -42,3 +42,4 @@ export const tabsManifest: WidgetConfig = {
         ),
     },
 };
+

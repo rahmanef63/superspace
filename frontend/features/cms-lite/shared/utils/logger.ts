@@ -1,4 +1,4 @@
-﻿export const logger = {
+export const logger = {
   save: (entity: string, location: string, data?: any) => {
   },
 
@@ -13,7 +13,7 @@
   },
 
   error: (action: string, entity: string, error: any) => {
-    console.error(`❌ Error ${action} ${entity}:`, {
+    console.error(`? Error ${action} ${entity}:`, {
       message: error?.message || error,
       details: error?.response?.data || error,
       stack: error?.stack,

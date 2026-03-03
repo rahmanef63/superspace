@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ContactSettings() {
-    const [settings, setSettings] = useContactSettingsStorage()
+    const { settings, updateSettings } = useContactSettingsStorage()
 
     return (
         <div className="space-y-6">
@@ -26,7 +26,7 @@ export function ContactSettings() {
                         <Switch
                             checked={settings.notificationsEnabled}
                             onCheckedChange={(checked) =>
-                                setSettings({ ...settings, notificationsEnabled: checked })
+                                updateSettings({ notificationsEnabled: checked })
                             }
                         />
                     </div>
@@ -40,7 +40,7 @@ export function ContactSettings() {
                         <Switch
                             checked={settings.autoSave}
                             onCheckedChange={(checked) =>
-                                setSettings({ ...settings, autoSave: checked })
+                                updateSettings({ autoSave: checked })
                             }
                         />
                     </div>

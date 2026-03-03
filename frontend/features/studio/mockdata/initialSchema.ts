@@ -1,4 +1,4 @@
-import type { Schema } from '../shared/types';
+import type { Schema } from '../ui/types';
 
 export const INITIAL_CMS_SCHEMA: Schema = {
   version: "0.4",

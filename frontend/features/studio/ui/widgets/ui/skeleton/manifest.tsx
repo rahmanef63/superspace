@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { SkeletonWidget } from './SkeletonWidget';
 import React from 'react';
 import { Square } from 'lucide-react';
@@ -35,8 +35,9 @@ export const skeletonManifest: WidgetConfig = {
     width: '100%',
     height: 20,
   },
-  render: (props) => <SkeletonWidget {...props} />,
+  render: (props) => <SkeletonWidget {...(props as any)} />,
   inspector: {
     fields: skeletonInspectorConfig,
   },
 };
+

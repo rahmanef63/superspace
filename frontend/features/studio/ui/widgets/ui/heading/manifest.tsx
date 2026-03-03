@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { HeadingWidget } from './HeadingWidget';
 import React from 'react';
 import { Heading } from 'lucide-react';
@@ -60,8 +60,9 @@ export const headingManifest: WidgetConfig = {
     icon: Heading,
     tags: ['ui', 'text', 'heading', 'title', 'typography'],
     defaults: { ...DEFAULTS },
-    render: (props) => <HeadingWidget {...props} />,
+    render: (props) => <HeadingWidget {...(props as any)} />,
     inspector: {
         fields: headingInspectorConfig,
     },
 };
+

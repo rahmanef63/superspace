@@ -119,9 +119,9 @@ export class TypeScriptConversionError extends ConversionError {
     message: string,
     public line?: number,
     public column?: number,
-    public code?: string
+    public sourceCode?: string
   ) {
-    super(message, { line, column, code })
+    super(message, { line, column, sourceCode })
   }
 }
 

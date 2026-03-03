@@ -1,5 +1,6 @@
 import React from 'react';
-import { Avatar } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AvatarWidgetProps {
   src?: string;
@@ -16,13 +17,13 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
   size = 'md',
   className,
 }) => {
+  const sizeClass =
+    size === 'sm' ? 'h-8 w-8' : size === 'lg' ? 'h-12 w-12' : 'h-10 w-10';
+
   return (
-    <Avatar
-      src={src}
-      alt={alt}
-      fallback={fallback}
-      size={size}
-      className={className}
-    />
+    <Avatar className={cn(sizeClass, className)}>
+      <AvatarImage src={src} alt={alt} />
+      <AvatarFallback>{fallback}</AvatarFallback>
+    </Avatar>
   );
 };

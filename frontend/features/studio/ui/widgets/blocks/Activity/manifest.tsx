@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { ActivityBlock } from './ActivityBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Activity } from 'lucide-react';
@@ -14,7 +14,7 @@ export const activityManifest: WidgetConfig = {
         activities: [],
         emptyMessage: "No recent activity"
     },
-    render: (props: any) => <ActivityBlock {...props} />,
+    render: (props: any) => <ActivityBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({
@@ -40,3 +40,4 @@ export const activityManifest: WidgetConfig = {
         ]
     }
 };
+

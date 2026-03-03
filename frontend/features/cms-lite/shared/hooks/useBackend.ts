@@ -12,42 +12,42 @@ import type { Id } from "@convex/_generated/dataModel";
  */
 export function useBackend() {
   // Quicklinks mutations
-  const createQuicklinkMutation = useMutation(api.features.cms_lite.quicklinks.api.mutations.createQuicklink);
-  const updateQuicklinkMutation = useMutation(api.features.cms_lite.quicklinks.api.mutations.updateQuicklink);
-  const deleteQuicklinkMutation = useMutation(api.features.cms_lite.quicklinks.api.mutations.deleteQuicklink);
+  const createQuicklinkMutation = useMutation(api.features.cmsLite.quicklinks.api.mutations.createQuicklink);
+  const updateQuicklinkMutation = useMutation(api.features.cmsLite.quicklinks.api.mutations.updateQuicklink);
+  const deleteQuicklinkMutation = useMutation(api.features.cmsLite.quicklinks.api.mutations.deleteQuicklink);
 
   // Products mutations
-  const createProductMutation = useMutation(api.features.cms_lite.products.api.mutations.createProduct);
-  const updateProductMutation = useMutation(api.features.cms_lite.products.api.mutations.updateProduct);
-  const deleteProductMutation = useMutation(api.features.cms_lite.products.api.mutations.deleteProduct);
-  const importProductsMutation = useMutation(api.features.cms_lite.products.api.mutations.importProducts);
+  const createProductMutation = useMutation(api.features.cmsLite.products.api.mutations.createProduct);
+  const updateProductMutation = useMutation(api.features.cmsLite.products.api.mutations.updateProduct);
+  const deleteProductMutation = useMutation(api.features.cmsLite.products.api.mutations.deleteProduct);
+  const importProductsMutation = useMutation(api.features.cmsLite.products.api.mutations.importProducts);
 
   // Posts mutations
-  const createPostMutation = useMutation(api.features.cms_lite.posts.api.mutations.createPost);
-  const updatePostMutation = useMutation(api.features.cms_lite.posts.api.mutations.updatePost);
-  const deletePostMutation = useMutation(api.features.cms_lite.posts.api.mutations.deletePost);
+  const createPostMutation = useMutation(api.features.cmsLite.posts.api.mutations.createPost);
+  const updatePostMutation = useMutation(api.features.cmsLite.posts.api.mutations.updatePost);
+  const deletePostMutation = useMutation(api.features.cmsLite.posts.api.mutations.deletePost);
 
   // Portfolio mutations
-  const createPortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.createPortfolio);
-  const updatePortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.updatePortfolio);
-  const deletePortfolioMutation = useMutation(api.features.cms_lite.portfolio.api.mutations.deletePortfolio);
+  const createPortfolioMutation = useMutation(api.features.cmsLite.portfolio.api.mutations.createPortfolio);
+  const updatePortfolioMutation = useMutation(api.features.cmsLite.portfolio.api.mutations.updatePortfolio);
+  const deletePortfolioMutation = useMutation(api.features.cmsLite.portfolio.api.mutations.deletePortfolio);
 
   // Website Settings mutations
-  const updateWebsiteSettingsMutation = useMutation(api.features.cms_lite.website_settings.api.mutations.updateWebsiteSettings);
-  const verifyDomainMutation = useMutation(api.features.cms_lite.website_settings.api.mutations.verifyDomain);
+  const updateWebsiteSettingsMutation = useMutation(api.features.cmsLite.website_settings.api.mutations.updateWebsiteSettings);
+  const verifyDomainMutation = useMutation(api.features.cmsLite.website_settings.api.mutations.verifyDomain);
 
   const backend = {
     products: {
       list: async (_params?: any) => {
-        console.warn('⚠️ products.list - use useQuery(api.features.cms_lite.products.api.queries.listProducts) directly');
+        console.warn('⚠️ products.list - use useQuery(api.features.cmsLite.products.api.queries.listProducts) directly');
         return { products: [] };
       },
       listAll: async (_params?: any) => {
-        console.warn('⚠️ products.listAll - use useQuery(api.features.cms_lite.products.api.queries.listAllProducts) directly');
+        console.warn('⚠️ products.listAll - use useQuery(api.features.cmsLite.products.api.queries.listAllProducts) directly');
         return { products: [] };
       },
       get: async (_params?: any) => {
-        console.warn('⚠️ products.get - use useQuery(api.features.cms_lite.products.api.queries.getProductBySlug) directly');
+        console.warn('⚠️ products.get - use useQuery(api.features.cmsLite.products.api.queries.getProductBySlug) directly');
         return { product: null };
       },
       create: async (params: any) => {
@@ -73,15 +73,15 @@ export function useBackend() {
     },
     posts: {
       list: async (_params?: any) => {
-        console.warn('⚠️ posts.list - use useQuery(api.features.cms_lite.posts.api.queries.listPosts) directly');
+        console.warn('⚠️ posts.list - use useQuery(api.features.cmsLite.posts.api.queries.listPosts) directly');
         return { posts: [] };
       },
       listAll: async (_params?: any) => {
-        console.warn('⚠️ posts.listAll - use useQuery(api.features.cms_lite.posts.api.queries.listAllPosts) directly');
+        console.warn('⚠️ posts.listAll - use useQuery(api.features.cmsLite.posts.api.queries.listAllPosts) directly');
         return { posts: [] };
       },
       get: async (_params?: any) => {
-        console.warn('⚠️ posts.get - use useQuery(api.features.cms_lite.posts.api.queries.getPostBySlug) directly');
+        console.warn('⚠️ posts.get - use useQuery(api.features.cmsLite.posts.api.queries.getPostBySlug) directly');
         return { post: null };
       },
       create: async (params: any) => {
@@ -123,11 +123,11 @@ export function useBackend() {
     },
     portfolio: {
       list: async (_params?: any) => {
-        console.warn('⚠️ portfolio.list - use useQuery(api.features.cms_lite.portfolio.api.queries.listPortfolio) directly');
+        console.warn('⚠️ portfolio.list - use useQuery(api.features.cmsLite.portfolio.api.queries.listPortfolio) directly');
         return { items: [] };
       },
       listAll: async (_params?: any) => {
-        console.warn('⚠️ portfolio.listAll - use useQuery(api.features.cms_lite.portfolio.api.queries.listAllPortfolio) directly');
+        console.warn('⚠️ portfolio.listAll - use useQuery(api.features.cmsLite.portfolio.api.queries.listAllPortfolio) directly');
         return { items: [] };
       },
       get: async (_params?: any) => {
@@ -173,6 +173,18 @@ export function useBackend() {
         console.warn('⚠️ services.delete not yet implemented');
         return { success: true };
       },
+      deleteService: async (params: any) => {
+        console.warn('⚠️ services.deleteService not yet implemented');
+        return { success: true };
+      },
+      exportJSON: async (_params?: any) => {
+        console.warn('⚠️ services.exportJSON not yet implemented');
+        return { data: [] };
+      },
+      importJSON: async (_params?: any) => {
+        console.warn('⚠️ services.importJSON not yet implemented');
+        return { imported: 0 };
+      },
     },
     settings: {
       get: async (_params?: any) => ({ settings: {} }),
@@ -205,6 +217,10 @@ export function useBackend() {
       },
       delete: async (params: any) => {
         console.warn('⚠️ navigation.delete not yet implemented');
+        return { success: true };
+      },
+      deleteNavigation: async (params: any) => {
+        console.warn('⚠️ navigation.deleteNavigation not yet implemented');
         return { success: true };
       },
     },
@@ -269,6 +285,9 @@ export function useBackend() {
       create: async (_params?: any) => ({ id: 1 }),
       update: async (_params?: any) => ({ success: true }),
       delete: async (_params?: any) => ({ success: true }),
+      deleteUser: async (_params?: any) => ({ success: true }),
+      exportJSON: async (_params?: any) => ({ users: [] }),
+      importJSON: async (_params?: any) => ({ imported: 0, updated: 0, failed: 0, errors: [] }),
     },
     ai: {
       getStats: async (_params?: any) => ({ 
@@ -297,6 +316,7 @@ export function useBackend() {
       updateKBDocument: async (_params?: any) => ({ success: true }),
       deleteKBDocument: async (_params?: any) => ({ success: true }),
       chat: async (_params?: any) => ({ reply: 'Hello! This is a mock response. Implement actual AI chat with Convex.', references: [] }),
+      recommend: async (_params?: any) => ({ recommendations: [] }),
     },
     comments: {
       list: async (_params?: any) => ({ comments: [] }),
@@ -310,7 +330,7 @@ export function useBackend() {
     },
     websiteSettings: {
       get: async (_params?: any) => {
-        console.warn('⚠️ websiteSettings.get - use useQuery(api.features.cms_lite.website_settings.api.queries.getWebsiteSettings) directly');
+        console.warn('⚠️ websiteSettings.get - use useQuery(api.features.cmsLite.website_settings.api.queries.getWebsiteSettings) directly');
         return null;
       },
       update: async (params: any) => {

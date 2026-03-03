@@ -89,13 +89,14 @@ export function SortableHeader({
 
   // State for PropertyMenu
   const [menuOpen, setMenuOpen] = useState(false);
-  const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
     return () => {
       if (clickTimeoutRef.current) {
         clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
       }
     };
   }, []);
@@ -117,7 +118,7 @@ export function SortableHeader({
     // Clear any pending single-click timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
-      clickTimeoutRef.current = undefined;
+      clickTimeoutRef.current = null;
     }
 
     // Single click - open menu (with small delay to detect double-click)
@@ -138,7 +139,7 @@ export function SortableHeader({
     // Clear single-click timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
-      clickTimeoutRef.current = undefined;
+      clickTimeoutRef.current = null;
     }
 
     // Double click - trigger rename directly

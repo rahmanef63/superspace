@@ -1,10 +1,10 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { AccordionWidget } from './AccordionWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
 import React from 'react';
 
-const accordionCustomFields = [
+const accordionCustomFields: InspectorField[] = [
   {
     key: 'type',
     label: 'Type',
@@ -89,7 +89,7 @@ export const accordionManifest: WidgetConfig = {
     type: 'single',
     collapsible: true,
   },
-  render: (props) => <AccordionWidget {...props} />,
+  render: (props) => <AccordionWidget {...(props as any)} />,
   inspector: {
     fields: combineFields(
       accordionCustomFields,
@@ -97,3 +97,4 @@ export const accordionManifest: WidgetConfig = {
     ),
   },
 };
+

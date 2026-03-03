@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BuilderData, BuilderProject } from '../types';
+import type { BuilderData, BuilderProject } from '../ui/types';
 
 export function useBuilder() {
     const [data, setData] = useState<BuilderData>({

@@ -6,13 +6,23 @@ import { useEffect, useState } from "react";
 import { useBackend } from "../shared/hooks/useBackend";
 import type { Settings } from "../types/cms-types";
 
+type FooterSettings = Partial<Settings> & {
+  email?: string;
+  phone?: string;
+  instagram?: string;
+};
 
 export default function Footer() {
   const { t } = useLanguage();
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const backend = useBackend();
+  const [settings, setSettings] = useState<FooterSettings | null>(null);
 
   useEffect(() => {
-    const backend = useBackend();    backend.settings.get().then((res) => setSettings(res.settings));
+    backend.settings
+      .get()
+      .then((res) => setSettings((res?.settings ?? null) as FooterSettings | null));
+    // useBackend returns a new object each render; run only on mount here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

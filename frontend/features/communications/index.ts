@@ -20,7 +20,7 @@ export { default as CommunicationsPage } from "./page"
 export { default as config } from "./config"
 
 // Main feature hook
-export { useCommunications, useConversation, useCall, useCallHistory } from "./hooks/useCommunications"
+export { useCommunications, useConversation, useCall } from "./hooks/useCommunications"
 
 // Types
 export * from "./shared/types"
@@ -74,7 +74,7 @@ export { default as CommunicationsPageView } from "./views/CommunicationsPage"
 export { CreateChannelDialog } from "./components/CreateChannelDialog"
 
 // Section components
-export { ChannelSidebar } from "./sections/ChannelSidebar"
+export { CommunicationSidebar, CommunicationSidebar as ChannelSidebar } from "./sections/CommunicationSidebar"
 export { DirectSidebar } from "./sections/DirectSidebar"
 export { MessageArea } from "./sections/MessageArea"
 export { MemberPanel } from "./sections/MemberPanel"
@@ -108,19 +108,17 @@ export {
   usePresence,
   useUserPresence as useUserPresenceQuery,
   usePresenceMutations,
-  useAutoPresence,
 } from "./hooks/usePresence"
 
 export {
   useDirectConversations as useDirectConversationsQuery,
+  useDirectConversation as useDirectConversationQuery,
   useDirectMessages as useDirectMessagesQuery,
   useDirectMessageMutations,
-  useStartConversation,
 } from "./hooks/useDirectMessages"
 
 export {
   useAIBots,
   useChannelBots as useChannelBotsQuery,
   useAIMutations,
-  useAIFeatures,
 } from "./hooks/useAI"

@@ -93,7 +93,7 @@ export function DatabaseViewRenderer({
     case "calendar":
       return (
         <UniversalCalendarView
-          records={viewModel.features.map(f => {
+          data={viewModel.features.map((f) => {
             // Map metadata to properties, and inject Name/Title
             const properties = { ...f.metadata };
 
@@ -106,27 +106,13 @@ export function DatabaseViewRenderer({
 
             return {
               id: String(f.id),
-              properties
+              properties,
             };
           })}
-          properties={convertFieldsToProperties(record.fields)}
+          properties={convertFieldsToProperties(record.fields) as any}
           dateProperty={(activeDbView?.settings as any)?.calendarDateProperty}
-          onDateChange={async (recordId, newDate, propertyKey) => {
-            if (propertyKey) {
-              // Cast recordId to DatabaseFeature["id"] (Id<"dbRows">)
-              // Assuming recordId comes from f.id which is Id<"dbRows">
-              await onUpdateCell(recordId as DatabaseFeature["id"], { [propertyKey]: newDate.getTime() });
-            }
-          }}
-          onRecordClick={(row) => {
-          }}
-          onAddRecord={(date, propertyKey) => {
-            if (propertyKey) {
-              onAddRow({ [propertyKey]: date.getTime() });
-            } else {
-              onAddRow();
-            }
-          }}
+          onEventClick={() => {}}
+          onAddRow={onAddRow}
         />
       );
 

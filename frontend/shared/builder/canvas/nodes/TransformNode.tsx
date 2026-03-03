@@ -1,4 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import type { CanvasNode, NodeConfig } from '../core/types';
 
@@ -12,7 +13,7 @@ export const TransformNode: React.FC<TransformNodeProps> = (props) => {
   const config: NodeConfig = {
     label: 'Transform',
     category: 'Processing',
-    icon: '🔄',
+    icon: RefreshCw,
     color: 'purple',
     defaults: {
       operation: 'map',

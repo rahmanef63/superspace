@@ -17,7 +17,7 @@ interface Quicklink {
 }
 
 export default function HelloPage() {
-  const quicklinksData = useQuery(api.features.cms_lite.quicklinks.api.queries.listQuicklinks);
+  const quicklinksData = useQuery(api.features.cmsLite.quicklinks.api.queries.listQuicklinks);
   
   const quicklinks = quicklinksData?.quicklinks ?? [];
   const loading = quicklinksData === undefined;

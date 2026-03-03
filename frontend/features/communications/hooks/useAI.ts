@@ -94,8 +94,11 @@ export function useAIMutations() {
       type: AIBot["type"]
       aiConfig: AIBot["aiConfig"]
     }) => {
-      // This would call an AI endpoint for translation
-      return message
+      // Placeholder until backend mutation is implemented.
+      return {
+        ...data,
+        id: `bot-${Date.now()}`,
+      }
     },
   }
 }

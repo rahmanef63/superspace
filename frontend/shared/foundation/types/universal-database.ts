@@ -20,6 +20,7 @@ export type PropertyType =
   // Core properties (14)
   | "title"              // Primary text field
   | "text"               // Formatted text with markdown
+  | "rich_text"          // Legacy alias for formatted text
   | "number"             // Numeric values with formatting
   | "select"             // Single choice from options
   | "multi_select"       // Multiple choices

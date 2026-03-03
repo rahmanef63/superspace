@@ -1,6 +1,6 @@
 import { FileText, Trash2, Edit, Pin, Star, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { ViewConfig, RowAction } from "@/frontend/shared/ui";
+import type { LegacyViewConfig } from "@/frontend/shared/ui/layout/view-system";
 import type { DocumentRecord } from "../types";
 import { formatRelativeTime } from "../utils";
 
@@ -12,7 +12,7 @@ export interface DocumentViewConfigOptions {
   onShowDetails?: (document: DocumentRecord) => void;
 }
 
-type Action = RowAction<DocumentRecord>;
+type Action = NonNullable<LegacyViewConfig<DocumentRecord>["actions"]>[number];
 
 const buildActions = (options: DocumentViewConfigOptions): Action[] => {
   const { onOpen, onDelete, onPin, onStar, onShowDetails } = options;
@@ -32,7 +32,7 @@ const buildActions = (options: DocumentViewConfigOptions): Action[] => {
   if (onPin) {
     actions.push({
       id: "pin",
-      label: (doc) => (doc.isPinned ? "Unpin" : "Pin"),
+      label: "Toggle Pin",
       icon: <Pin className="w-4 h-4" />,
       onClick: async (doc: DocumentRecord) => {
         await onPin(doc);
@@ -43,7 +43,7 @@ const buildActions = (options: DocumentViewConfigOptions): Action[] => {
   if (onStar) {
     actions.push({
       id: "star",
-      label: (doc) => (doc.isStarred ? "Unstar" : "Star"),
+      label: "Toggle Star",
       icon: <Star className="w-4 h-4" />,
       onClick: async (doc: DocumentRecord) => {
         await onStar(doc);
@@ -78,7 +78,7 @@ const buildActions = (options: DocumentViewConfigOptions): Action[] => {
 
 export const createDocumentViewConfig = (
   options: DocumentViewConfigOptions = {}
-): ViewConfig<DocumentRecord> => {
+): LegacyViewConfig<DocumentRecord> => {
   const actions = buildActions(options);
 
   return {

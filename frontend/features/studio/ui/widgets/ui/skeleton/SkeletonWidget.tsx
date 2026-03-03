@@ -1,5 +1,6 @@
 import React from 'react';
-import { Skeleton } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SkeletonWidgetProps {
   variant?: 'text' | 'circular' | 'rectangular';
@@ -14,12 +15,14 @@ export const SkeletonWidget: React.FC<SkeletonWidgetProps> = ({
   height = 20,
   className,
 }) => {
+  const shapeClass =
+    variant === 'circular'
+      ? 'rounded-full'
+      : variant === 'text'
+        ? 'h-4 rounded'
+        : 'rounded-md';
+
   return (
-    <Skeleton
-      variant={variant}
-      width={width}
-      height={height}
-      className={className}
-    />
+    <Skeleton className={cn(shapeClass, className)} style={{ width, height }} />
   );
 };

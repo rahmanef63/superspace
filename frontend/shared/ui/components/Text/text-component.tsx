@@ -41,7 +41,7 @@ export const TextComponent: React.FC<TextComponentProps> = ({
   whitespace = "normal",
   className = ""
 }) => {
-  const Tag = tag as keyof JSX.IntrinsicElements;
+  const Tag = tag as React.ElementType;
 
   const classes = cn(
     // Size

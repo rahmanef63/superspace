@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { StatsBlock } from './StatsBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { BarChart3 } from 'lucide-react';
@@ -12,7 +12,7 @@ export const statsManifest: WidgetConfig = {
         stats: [],
         columns: 4
     },
-    render: (props: any) => <StatsBlock {...props} />,
+    render: (props: any) => <StatsBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({
@@ -23,3 +23,4 @@ export const statsManifest: WidgetConfig = {
         ]
     }
 };
+

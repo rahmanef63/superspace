@@ -13,7 +13,7 @@ export type UseChatScrollOptions = {
 };
 
 export type UseChatScrollReturn = {
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
   isAtBottom: boolean;
   scrollToBottom: (smooth?: boolean) => void;
   scrollToMessage: (messageId: string, smooth?: boolean) => void;

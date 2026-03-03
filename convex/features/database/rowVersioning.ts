@@ -306,12 +306,13 @@ export const getRowHistory = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
+    const fieldId = args.fieldId;
     let query;
-    if (args.fieldId) {
+    if (fieldId) {
       query = ctx.db
         .query("dbRowHistory")
         .withIndex("by_field", (q) =>
-          q.eq("rowId", args.rowId).eq("fieldId", args.fieldId)
+          q.eq("rowId", args.rowId).eq("fieldId", fieldId!)
         );
     } else {
       query = ctx.db

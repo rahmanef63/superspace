@@ -25,12 +25,17 @@ pnpm test                     # Run tests
 
 ### Feature Structure
 ```
-frontend/features/{slug}/     →  convex/features/{slug}/
+frontend/features/{slug}/  ->  convex/features/{convexSlug}/
 ├── config.ts (SSOT)              ├── queries.ts (+ RBAC)
 ├── page.tsx                      ├── mutations.ts (+ RBAC + Audit)
 ├── agents/ (required)            ├── schema.ts
 └── settings/ (required)          └── agents/
 ```
+
+Naming:
+- `feature.id` uses `kebab-case`
+- `frontend/features/{slug}` uses `kebab-case`
+- `convex/features/{convexSlug}` uses `camelCase` derived from `feature.id`
 
 ### New to SuperSpace?
 1. Read this document
@@ -90,7 +95,7 @@ frontend/features/{feature-slug}/
 ├── shared/                # Shared within feature
 └── settings/              # Feature-specific settings
 
-convex/features/{feature-slug}/
+convex/features/{feature-convex-slug}/
 ├── queries.ts             # Read operations
 ├── mutations.ts           # Write operations
 ├── schema.ts              # Database schema
@@ -586,7 +591,7 @@ pnpm run delete:feature {slug}
 ### Rule #6: Mirror Frontend/Backend Structure
 
 ```
-frontend/features/{slug}/     ←→  convex/features/{slug}/
+frontend/features/{slug}/  ->  convex/features/{convexSlug}/
 ├── features/                 ←→  ├── features/
 ├── shared/                   ←→  ├── shared/
 └── components/               ←→  └── api/

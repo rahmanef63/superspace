@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { BadgeWidget } from './BadgeWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -16,7 +16,7 @@ export const badgeManifest: WidgetConfig = {
     children: 'Badge',
     variant: 'default',
   },
-  render: (props) => <BadgeWidget {...props} />,
+  render: (props) => <BadgeWidget {...(props as any)} />,
   inspector: {
     fields: combineFields(
       [
@@ -37,3 +37,4 @@ export const badgeManifest: WidgetConfig = {
     )
   },
 };
+

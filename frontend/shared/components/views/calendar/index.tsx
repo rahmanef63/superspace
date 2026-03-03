@@ -46,6 +46,20 @@ const yearAtom = atom<CalendarState["year"]>(new Date().getFullYear());
 export const useCalendarMonth = () => useAtom(monthAtom);
 export const useCalendarYear = () => useAtom(yearAtom);
 
+const toIntlLocale = (
+  locale: Intl.LocalesArgument
+): string | string[] | undefined => {
+  if (typeof locale === "string") {
+    return locale;
+  }
+
+  if (Array.isArray(locale)) {
+    return [...locale];
+  }
+
+  return locale?.toString();
+};
+
 type CalendarContextProps = {
   locale: Intl.LocalesArgument;
   startDay: number;
@@ -89,7 +103,7 @@ export const monthsForLocale = (
   localeName: Intl.LocalesArgument,
   monthFormat: Intl.DateTimeFormatOptions["month"] = "long"
 ) => {
-  const format = new Intl.DateTimeFormat(localeName, { month: monthFormat })
+  const format = new Intl.DateTimeFormat(toIntlLocale(localeName), { month: monthFormat })
     .format;
 
   return [...new Array(12).keys()].map((m) =>
@@ -106,7 +120,7 @@ export const daysForLocale = (
 
   for (let i = 0; i < 7; i++) {
     weekdays.push(
-      new Intl.DateTimeFormat(locale, { weekday: "short" }).format(baseDate)
+      new Intl.DateTimeFormat(toIntlLocale(locale), { weekday: "short" }).format(baseDate)
     );
     baseDate.setDate(baseDate.getDate() + 1);
   }

@@ -121,7 +121,7 @@ export function DynamicSettingsView({
   }
 
   // Set default category on mount
-  const lastAppliedDefault = React.useRef<string | undefined>()
+  const lastAppliedDefault = React.useRef<string | undefined>(undefined)
   const categoryIds = React.useMemo(
     () => allCategories.map((c) => c.id).join(","),
     [allCategories]

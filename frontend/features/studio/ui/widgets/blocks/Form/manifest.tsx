@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { FormBlock } from '@/frontend/features/studio/ui/widgets/blocks/Form';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { ClipboardList } from 'lucide-react';
@@ -13,7 +13,7 @@ export const formManifest: WidgetConfig = {
         submitButtonText: "Submit",
         className: ""
     },
-    render: (props) => <FormBlock {...props} fields={[]} />,
+    render: (props) => <FormBlock {...(props as any)} fields={[]} />,
     inspector: {
         fields: [
             createCustomField({
@@ -29,3 +29,4 @@ export const formManifest: WidgetConfig = {
         ]
     }
 };
+

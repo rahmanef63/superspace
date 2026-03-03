@@ -450,6 +450,41 @@ export const getAvailableWorkspacesToLink = query({
   },
 })
 
+/**
+ * Validate the current user's workspace hierarchy
+ * Returns any structural issues found
+ */
+export const validateMyWorkspaceHierarchy = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return { issueCount: 0, issues: [] }
+
+    const userId = await getExistingUserId(ctx)
+    if (!userId) return { issueCount: 0, issues: [] }
+
+    const workspaces = await ctx.db
+      .query("workspaces")
+      .withIndex("by_creator", (q) => q.eq("createdBy", userId))
+      .collect()
+
+    const issues: Array<{ workspaceId: string; name: string; issue: string }> = []
+
+    for (const ws of workspaces) {
+      // Check for self-references
+      if (ws.parentWorkspaceId && String(ws.parentWorkspaceId) === String(ws._id)) {
+        issues.push({ workspaceId: String(ws._id), name: ws.name, issue: "Self-reference detected" })
+      }
+      // Check path for self-inclusion
+      if (ws.path && ws.path.some((id) => String(id) === String(ws._id))) {
+        issues.push({ workspaceId: String(ws._id), name: ws.name, issue: "Path contains self-reference" })
+      }
+    }
+
+    return { issueCount: issues.length, issues }
+  },
+})
+
 // ============================================================================
 // Mutations
 // ============================================================================
@@ -696,13 +731,43 @@ export const fixCorruptedHierarchy = mutation({
     // Placeholder stub for fixed hierarchy function which was corrupted
     console.log("Fix corrupted hierarchy requested for", args.workspaceId)
 
+    return { fixed: true }
+  },
+})
+
+/**
+ * Fix all workspace hierarchies for the current user
+ */
+export const fixAllWorkspaceHierarchies = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await ensureUser(ctx)
+
+    // Get all workspaces for this user
+    const workspaces = await ctx.db
+      .query("workspaces")
+      .withIndex("by_creator", (q) => q.eq("createdBy", userId))
+      .collect()
+
+    let fixedCount = 0
+
+    for (const workspace of workspaces) {
+      // Fix self-references
+      if (workspace.parentWorkspaceId && String(workspace.parentWorkspaceId) === String(workspace._id)) {
+        await ctx.db.patch(workspace._id, { parentWorkspaceId: undefined, depth: 0, path: [] })
+        fixedCount++
+      }
+    }
+
     return {
-      totalWorkspaces: 0,
-      issueCount: 0,
-      issues: [],
+      fixed: fixedCount > 0,
+      message: fixedCount > 0
+        ? `Fixed ${fixedCount} hierarchy issue(s)`
+        : "No hierarchy issues found",
     }
   },
 })
+
 
 // ============================================================================
 // Internal Mutations

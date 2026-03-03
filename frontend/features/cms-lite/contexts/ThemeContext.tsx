@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -10,7 +10,7 @@ import type { Id } from "@convex/_generated/dataModel";
  * Currently uses local state for theme management.
  * 
  * TODO: Integrate with actual Convex settings API when ready
- * - Use useQuery(api.features.cms_lite.settings.queries.get)
+ * - Use useQuery(api.features.cmsLite.settings.queries.get)
  * - Apply theme colors from database settings
  */
 
@@ -70,7 +70,7 @@ export function ThemeProvider({
   });
 
   // TODO: Replace with Convex query
-  // const settings = useQuery(api.features.cms_lite.settings.queries.get, { workspaceId });
+  // const settings = useQuery(api.features.cmsLite.settings.queries.get, { workspaceId });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

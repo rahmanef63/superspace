@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { CheckboxWidget } from './CheckboxWidget';
 import React from 'react';
 import { CheckSquare } from 'lucide-react';
@@ -33,8 +33,9 @@ export const checkboxManifest: WidgetConfig = {
     label: 'Checkbox label',
     disabled: false,
   },
-  render: (props) => <CheckboxWidget {...props} />,
+  render: (props) => <CheckboxWidget {...(props as any)} />,
   inspector: {
     fields: checkboxInspectorConfig,
   },
 };
+

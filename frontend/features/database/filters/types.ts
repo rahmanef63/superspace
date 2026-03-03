@@ -48,6 +48,17 @@ export const PROPERTY_TYPE_OPERATORS: Record<PropertyType, FilterOperator[]> = {
     { value: 'empty', label: 'is empty' },
     { value: 'notEmpty', label: 'is not empty' },
   ],
+
+  rich_text: [
+    { value: 'contains', label: 'contains' },
+    { value: 'notContains', label: 'does not contain' },
+    { value: 'is', label: 'is' },
+    { value: 'isNot', label: 'is not' },
+    { value: 'startsWith', label: 'starts with' },
+    { value: 'endsWith', label: 'ends with' },
+    { value: 'empty', label: 'is empty' },
+    { value: 'notEmpty', label: 'is not empty' },
+  ],
   
   title: [
     { value: 'contains', label: 'contains' },
@@ -233,6 +244,7 @@ export const PROPERTY_TYPE_OPERATORS: Record<PropertyType, FilterOperator[]> = {
  */
 export const PROPERTY_TYPE_TO_FILTER_TYPE: Record<PropertyType, FilterFieldConfig['type']> = {
   text: 'text',
+  rich_text: 'text',
   title: 'text',
   number: 'number',
   select: 'select',
@@ -262,6 +274,7 @@ export const PROPERTY_TYPE_TO_FILTER_TYPE: Record<PropertyType, FilterFieldConfi
  */
 export const DEFAULT_OPERATORS: Record<PropertyType, string> = {
   text: 'contains',
+  rich_text: 'contains',
   title: 'contains',
   number: 'equals',
   select: 'is',

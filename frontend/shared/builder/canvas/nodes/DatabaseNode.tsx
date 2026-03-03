@@ -1,4 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
+import { Database as DatabaseIcon } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import type { CanvasNode, NodeConfig } from '../core/types';
 
@@ -12,7 +13,7 @@ export const DatabaseNode: React.FC<DatabaseNodeProps> = (props) => {
   const config: NodeConfig = {
     label: 'Database',
     category: 'Data',
-    icon: '🗄️',
+    icon: DatabaseIcon,
     color: 'blue',
     defaults: {
       tableName: 'users',

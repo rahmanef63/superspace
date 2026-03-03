@@ -147,7 +147,6 @@ export function HierarchySettings({ workspaceId }: HierarchySettingsProps) {
   const setWorkspaceColor = useMutation(api.workspace.hierarchy.setWorkspaceColor)
   const setWorkspaceParent = useMutation(api.workspace.hierarchy.setWorkspaceParent)
   const fixCorruptedHierarchy = useMutation(api.workspace.hierarchy.fixCorruptedHierarchy)
-  const fixAllHierarchies = useMutation(api.workspace.hierarchy.fixAllWorkspaceHierarchies)
   
   // Validation query
   const hierarchyValidation = useQuery(api.workspace.hierarchy.validateMyWorkspaceHierarchy)
@@ -180,11 +179,33 @@ export function HierarchySettings({ workspaceId }: HierarchySettingsProps) {
   const handleFixAllHierarchies = async () => {
     try {
       setIsUpdating(true)
-      const result = await fixAllHierarchies({})
-      if (result.fixed) {
-        toast.success(result.message)
+      const workspaceIds = Array.from(
+        new Set(
+          (hierarchyValidation?.issues ?? [])
+            .map((issue) => String(issue.workspaceId))
+            .filter(Boolean)
+        )
+      )
+
+      if (workspaceIds.length === 0) {
+        toast.info("No hierarchy issues found to fix")
+        return
+      }
+
+      let fixedCount = 0
+      for (const wsId of workspaceIds) {
+        const result = await fixCorruptedHierarchy({
+          workspaceId: wsId as Id<"workspaces">,
+        })
+        if (result.fixed) {
+          fixedCount += 1
+        }
+      }
+
+      if (fixedCount > 0) {
+        toast.success(`Fixed hierarchy issues in ${fixedCount} workspace(s)`)
       } else {
-        toast.info(result.message)
+        toast.info("No hierarchy issues were auto-fixable")
       }
     } catch (error) {
       toast.error("Failed to fix hierarchies")

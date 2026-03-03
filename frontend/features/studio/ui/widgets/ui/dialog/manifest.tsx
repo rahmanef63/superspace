@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { DialogWidget } from './DialogWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -16,7 +16,7 @@ export const dialogManifest: WidgetConfig = {
         showCloseButton: true,
         className: '',
     },
-    render: (props, children) => <DialogWidget {...props}>{children}</DialogWidget>,
+    render: (props, children) => <DialogWidget {...(props as any)}>{children}</DialogWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -48,3 +48,4 @@ export const dialogManifest: WidgetConfig = {
         ),
     },
 };
+

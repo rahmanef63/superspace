@@ -15,10 +15,10 @@ import type { ChatConfig } from "../types/config";
 export function getAttachmentKind(
   mimeType: string
 ): Attachment["kind"] | null {
-  if (ATTACHMENT_MIME_TYPES.IMAGE.includes(mimeType)) return "image";
-  if (ATTACHMENT_MIME_TYPES.VIDEO.includes(mimeType)) return "video";
-  if (ATTACHMENT_MIME_TYPES.AUDIO.includes(mimeType)) return "audio";
-  if (ATTACHMENT_MIME_TYPES.DOCUMENT.includes(mimeType)) return "file";
+  if (ATTACHMENT_MIME_TYPES.IMAGE.includes(mimeType as any)) return "image";
+  if (ATTACHMENT_MIME_TYPES.VIDEO.includes(mimeType as any)) return "video";
+  if (ATTACHMENT_MIME_TYPES.AUDIO.includes(mimeType as any)) return "audio";
+  if (ATTACHMENT_MIME_TYPES.DOCUMENT.includes(mimeType as any)) return "file";
   return "file"; // Default to file for unknown types
 }
 

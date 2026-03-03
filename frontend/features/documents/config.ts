@@ -23,7 +23,7 @@ export default defineFeature({
     // but don't treat as a default bundle feature.
     featureType: 'optional',
     hasUI: true,
-    hasConvex: true,
+    hasConvex: false,
     hasTests: true,
     version: '1.2.0',
   },

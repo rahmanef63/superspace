@@ -360,7 +360,9 @@ export function MenuTree({
 
     if (iconName) {
       const IconComponent = getIconComponent(iconName);
-      return <IconComponent className={className} style={style} />;
+      if (IconComponent) {
+        return <IconComponent className={className} style={style} />;
+      }
     }
 
     switch (type) {

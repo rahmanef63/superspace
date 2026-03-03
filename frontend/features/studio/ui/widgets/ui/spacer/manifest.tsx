@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { SpacerWidget } from './SpacerWidget';
 import React from 'react';
 import { Space } from 'lucide-react';
@@ -46,8 +46,9 @@ export const spacerManifest: WidgetConfig = {
     icon: Space,
     tags: ['ui', 'layout', 'spacing', 'gap'],
     defaults: { ...DEFAULTS },
-    render: (props) => <SpacerWidget {...props} />,
+    render: (props) => <SpacerWidget {...(props as any)} />,
     inspector: {
         fields: spacerInspectorConfig,
     },
 };
+

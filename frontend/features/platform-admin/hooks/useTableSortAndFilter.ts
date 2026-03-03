@@ -137,8 +137,8 @@ export function useTableSortAndFilter<T extends Record<string, any>>({
       const column = columns.find((col) => col.key === sortConfig.key);
 
       filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
+        const aValue = a[sortConfig.key] as unknown;
+        const bValue = b[sortConfig.key] as unknown;
 
         // Use custom sort function if provided
         if (column?.sortFn) {
@@ -154,7 +154,12 @@ export function useTableSortAndFilter<T extends Record<string, any>>({
           comparison = aValue.localeCompare(bValue);
         } else if (typeof aValue === "number" && typeof bValue === "number") {
           comparison = aValue - bValue;
-        } else if (aValue instanceof Date && bValue instanceof Date) {
+        } else if (
+          typeof aValue === "object" &&
+          aValue instanceof Date &&
+          typeof bValue === "object" &&
+          bValue instanceof Date
+        ) {
           comparison = aValue.getTime() - bValue.getTime();
         } else {
           // Convert to string comparison as fallback

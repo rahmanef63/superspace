@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { ProgressWidget } from './ProgressWidget';
 import React from 'react';
 import { BarChart3 } from 'lucide-react';
@@ -34,8 +34,9 @@ export const progressManifest: WidgetConfig = {
     max: 100,
     showValue: false,
   },
-  render: (props) => <ProgressWidget {...props} />,
+  render: (props) => <ProgressWidget {...(props as any)} />,
   inspector: {
     fields: progressInspectorConfig,
   },
 };
+

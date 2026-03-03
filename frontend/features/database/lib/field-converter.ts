@@ -13,7 +13,7 @@ import type { PropertyOptions, SelectOptions, NumberOptions } from '@/frontend/s
  * Map V1 field types to V2 property types
  */
 const FIELD_TYPE_MAPPING: Record<string, Property['type']> = {
-  'text': 'rich_text',
+  'text': 'text',
   'number': 'number',
   'select': 'select',
   'multiSelect': 'multi_select',
@@ -74,7 +74,7 @@ function convertFieldOptions(field: DatabaseField): PropertyOptions | undefined 
  * Convert V1 DatabaseField to V2 Property
  */
 export function convertFieldToProperty(field: DatabaseField): Property {
-  const v2Type = FIELD_TYPE_MAPPING[field.type] || 'rich_text';
+  const v2Type = FIELD_TYPE_MAPPING[field.type] || 'text';
 
   // Property interface doesn't have _id, so we use it for key
   const property: Property = {

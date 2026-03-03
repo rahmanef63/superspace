@@ -11,17 +11,17 @@ import { api } from "@convex/_generated/api";
  * NOTE: The CMS Lite Convex API structure varies by module:
  * - Some modules have queries/mutations in api folder
  * - Some only have actions
- * - Check convex/features/cms_lite/[module]/api/ for actual structure
+ * - Check convex/features/cmsLite/[module]/api/ for actual structure
  * 
  * RECOMMENDED USAGE - Use Convex hooks directly:
  * ```tsx
  * // Query example
- * const products = useQuery(api.features.cms_lite.products.api.actions.list, { 
+ * const products = useQuery(api.features.cmsLite.products.api.actions.list, { 
  *   workspaceId 
  * });
  * 
  * // Mutation example
- * const createProduct = useMutation(api.features.cms_lite.products.api.actions.create);
+ * const createProduct = useMutation(api.features.cmsLite.products.api.actions.create);
  * await createProduct({ workspaceId, ...data });
  * ```
  * 
@@ -36,7 +36,7 @@ export function useConvexBackend(workspaceId: string) {
   return {
     workspaceId,
     api, // Expose full API for direct access
-    
+
     // Re-export hooks for convenience
     useQuery,
     useMutation,

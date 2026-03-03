@@ -14,7 +14,22 @@
         "paths": [
           {
             "name": "@/frontend/shared",
-            "message": "❌ Import from specific domain: @/frontend/shared/builder, @/frontend/shared/ui, etc."
+            "message": "Import from a specific domain path under @/frontend/shared/* instead of root barrel."
+          }
+        ],
+        "patterns": [
+          {
+            "group": [
+              "@/frontend/features/*/config",
+              "@/frontend/features/*/config.ts",
+              "@/frontend/features/*/config/index",
+              "@/frontend/features/*/config/index.ts",
+              "frontend/features/*/config",
+              "frontend/features/*/config.ts",
+              "frontend/features/*/config/index",
+              "frontend/features/*/config/index.ts"
+            ],
+            "message": "Do not import feature config directly. Use feature registry auto-discovery."
           }
         ]
       }
@@ -36,7 +51,7 @@
                   "../../ui/**",
                   "../../foundation/**"
                 ],
-                "message": "❌ Import from other domains via facade only"
+                "message": "Import from other domains via facade only"
               }
             ]
           }

@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useBackend, useQuery, api } from "../../../shared/hooks/useBackend";
 import Image from "next/image";
 import { Button } from "../../../shared/components/Button";
@@ -19,7 +19,7 @@ export default function AdminProducts() {
   const { toast } = useToast();
   
   // Use Convex query for real-time data
-  const productsData = useQuery(api.features.cms_lite.products.api.queries.listAllProducts, {});
+  const productsData = useQuery(api.features.cmsLite.products.api.queries.listAllProducts, {});
   const products = productsData?.products || [];
   const loading = productsData === undefined;
   

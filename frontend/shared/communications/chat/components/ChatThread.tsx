@@ -16,7 +16,7 @@ export type ChatThreadProps = {
   currentUser: UserMeta;
   roomMeta: RoomMeta | null;
   config: ChatConfig;
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
   onEdit: (messageId: string, patch: Partial<Message>) => Promise<void>;
   onDelete: (messageId: string, hard?: boolean) => Promise<void>;
   onPin: (messageId: string, pinned: boolean) => Promise<void>;

@@ -12,7 +12,7 @@ import type {
   PropDefinition,
   ComponentJSON,
   NodeMetadata,
-} from "../../types"
+} from "@/frontend/shared/foundation/types"
 // TODO: validateProps causes issues with client components importing server-side code
 // import { validateProps } from '@/frontend/shared/foundation/utils'
 
@@ -69,10 +69,12 @@ export function createComponent<TProps = any>(
   const zodSchema = buildZodSchema(propDefinitions, defaults)
 
   // Default fromJSON
-  const fromJSON = options.fromJSON || ((json: any) => {
-    const props = json.props || json
-    return zodSchema.parse(props)
-  })
+  const fromJSON: (json: any) => TProps =
+    options.fromJSON ??
+    ((json: any) => {
+      const props = json.props || json
+      return zodSchema.parse(props) as TProps
+    })
 
   // Default toJSON
   const toJSON = options.toJSON || ((props: TProps) => {
@@ -90,11 +92,13 @@ export function createComponent<TProps = any>(
   })
 
   // Default validate
-  const validate = options.validate || ((props: any) => {
-    // TODO: validateProps causes issues - commented out temporarily
-    // validateProps(props, propDefinitions, id)
-    return zodSchema.parse(props)
-  })
+  const validate: (props: any) => TProps =
+    options.validate ??
+    ((props: any) => {
+      // TODO: validateProps causes issues - commented out temporarily
+      // validateProps(props, propDefinitions, id)
+      return zodSchema.parse(props) as TProps
+    })
 
   return {
     id,

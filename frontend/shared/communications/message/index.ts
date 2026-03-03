@@ -6,4 +6,9 @@
 export * from './types';
 export * from './MessageBubble';
 export * from './MessageReactions';
-export * from './UnifiedMessageBubble';
+export { UnifiedMessageBubble } from './UnifiedMessageBubble';
+export type {
+  UnifiedMessageBubbleProps,
+  MessageVariant,
+  ReplyContext,
+} from './UnifiedMessageBubble';

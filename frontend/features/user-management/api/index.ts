@@ -43,7 +43,7 @@ export {
   useAcceptContactRequest,
   useDeclineContactRequest,
   useRemoveContact,
-} from "@/frontend/features/contact/api";
+} from "@/frontend/features/contacts/api";
 
 // ============================================================================
 // Invitations API (previously from archives-features/invitations)

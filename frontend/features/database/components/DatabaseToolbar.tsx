@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +45,7 @@ import type { ConvexQueryFilter } from "@/frontend/features/database/filters";
 
 const VIEW_ICONS: Record<
   DatabaseViewType,
-  (props: { size?: number; className?: string }) => JSX.Element
+  (props: { size?: number; className?: string }) => ReactElement
 > = {
   gantt: ({ size, className }) => <GanttChartSquareIcon size={size} className={className} />,
   calendar: ({ size, className }) => <CalendarIcon size={size} className={className} />,

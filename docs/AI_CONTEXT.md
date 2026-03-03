@@ -44,7 +44,7 @@ frontend/features/{slug}/
 ├── init.ts
 └── page.tsx
 
-convex/features/{slug}/
+convex/features/{convexSlug}/
 ├── queries.ts
 ├── mutations.ts
 ├── agents/             # 🔴 WAJIB - Server-side tools
@@ -116,3 +116,4 @@ pnpm test                   # Run tests
 ---
 
 **Last Updated:** 2025-12-15
+

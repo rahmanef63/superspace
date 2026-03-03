@@ -13,9 +13,12 @@ export function useInspectorControls(widgetType: string) {
       return [];
     }
 
+    const widgetWithPreset = widget as typeof widget & { inspectorPreset?: string };
+    const presetKey = widgetWithPreset.inspectorPreset;
+
     // If widget has a preset defined, use it
-    if (widget.inspectorPreset) {
-      const preset = inspectorConfig.presets[widget.inspectorPreset];
+    if (presetKey) {
+      const preset = inspectorConfig.presets[presetKey];
       
       if (preset) {
         const controls: InspectorControl[] = [];

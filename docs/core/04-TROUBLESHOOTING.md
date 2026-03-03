@@ -598,7 +598,7 @@ Type 'undefined' is not assignable to type 'XyzType'
 
 ### Symptoms
 - Sidebar toast: `Feature Not Available` after navigating to `/dashboard/{slug}`.
-- Console shows `[frog] unknown-slug` output from `app/dashboard/[[...slug]]/page.tsx`.
+- Console shows `[frog] unknown-slug` output from `app/dashboard/[...slug]/page.tsx`.
 - Required sections (Reports, Support, Projects, CRM, Notifications, Workflows, etc.) disappear after a refactor.
 
 ### Fix Steps
@@ -935,3 +935,4 @@ console.log(health)
 
 **Last Updated:** 2025-01-19
 **Maintained by:** Development Team
+

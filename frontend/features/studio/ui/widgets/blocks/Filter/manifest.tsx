@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { FilterBlock } from '@/frontend/features/studio/ui/widgets/blocks/Filter';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Filter } from 'lucide-react';
@@ -11,8 +11,9 @@ export const filterManifest: WidgetConfig = {
     defaults: {
         className: ""
     },
-    render: (props) => <FilterBlock {...props} fields={[]} onFilterChange={() => { }} onSearchChange={() => { }} />,
+    render: (props) => <FilterBlock {...(props as any)} fields={[]} onFilterChange={() => { }} onSearchChange={() => { }} />,
     inspector: {
         fields: []
     }
 };
+

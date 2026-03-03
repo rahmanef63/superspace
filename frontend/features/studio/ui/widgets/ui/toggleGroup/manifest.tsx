@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { ToggleGroupWidget } from './ToggleGroupWidget';
 import React from 'react';
 import { ToggleLeft } from 'lucide-react';
@@ -98,8 +98,9 @@ export const toggleGroupManifest: WidgetConfig = {
     size: 'default',
     variant: 'default',
   },
-  render: (props) => <ToggleGroupWidget {...props} />,
+  render: (props) => <ToggleGroupWidget {...(props as any)} />,
   inspector: {
     fields: toggleGroupInspectorConfig,
   },
 };
+

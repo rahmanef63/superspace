@@ -14,7 +14,12 @@ export interface PortfolioItem {
   locale?: string;
   description: string | null;
   imageUrl?: string;
-  images?: Array<{imageUrl: string; altText?: string | null; displayOrder?: number}>; // Convex structure
+  images?: Array<{
+    id?: string | number;
+    imageUrl: string;
+    altText?: string | null;
+    displayOrder?: number;
+  }>; // Convex structure
   category?: string | null;
   tags?: string[];
   clientName?: string;
@@ -30,15 +35,19 @@ export interface PortfolioItem {
 }
 
 export interface ServiceItem {
-  id: number;
+  id: number | string;
   slug: string;
   name: string;
   description: string;
+  labelId?: string;
+  labelEn?: string;
+  labelAr?: string;
   imageUrl?: string;
   price?: number;
   duration?: string;
   active: boolean;
   order: number;
+  displayOrder?: number;
   features?: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -55,6 +64,9 @@ export interface Settings {
   currency: string;
   contactEmail?: string;
   contactPhone?: string;
+  email?: string;
+  phone?: string;
+  instagram?: string;
   socialMedia?: {
     facebook?: string;
     twitter?: string;
@@ -82,7 +94,7 @@ export interface Quicklink {
 
 export interface Post {
   id: number | string; // Support both number and Convex Id<"posts">
-  slug: string;
+  slug?: string;
   title: string;
   content?: string; // Frontend field
   body?: string; // Convex field
@@ -106,7 +118,7 @@ export interface Post {
 
 export interface Product {
   id: number | string; // Support both number and Convex Id<"products">
-  slug: string;
+  slug?: string;
   name?: string; // Frontend field
   titleId?: string; // Convex field
   titleEn?: string; // Convex field
@@ -126,6 +138,7 @@ export interface Product {
   tags?: string[];
   stock?: number;
   sku?: string;
+  status?: string;
   active?: boolean;
   available?: boolean; // Convex field
   featured?: boolean;
@@ -134,13 +147,19 @@ export interface Product {
 }
 
 export interface NavigationItem {
-  id: number;
-  label: string;
-  url: string;
-  order: number;
-  parentId?: number;
+  id: number | string;
+  label?: string;
+  labelId?: string;
+  labelEn?: string;
+  labelAr?: string;
+  url?: string;
+  path?: string;
+  order?: number;
+  displayOrder?: number;
+  parentId?: number | null;
   active: boolean;
-  openInNewTab: boolean;
+  openInNewTab?: boolean;
+  isExternal?: boolean;
   icon?: string;
   children?: NavigationItem[];
 }

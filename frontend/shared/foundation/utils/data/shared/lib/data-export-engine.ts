@@ -11,7 +11,7 @@ import type {
   ExportRequest,
   CSVOptions,
   ParsedCSVData,
-} from "./data-export-types"
+} from "../types/data-export-types"
 import { z } from "zod"
 
 // ============================================================================

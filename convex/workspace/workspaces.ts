@@ -3,7 +3,7 @@ import { query, mutation } from "../_generated/server"
 import { getAuthUserId } from "@convex-dev/auth/server"
 import { api, internal } from "../_generated/api"
 import { resolveCandidateUserIds, hasPermission, ensureUser, requirePermission, getUserByExternalId } from "../auth/helpers"
-import type { Id } from "../_generated/dataModel"
+import type { Doc, Id } from "../_generated/dataModel"
 import { PERMS } from "./permissions"
 import { ensureSystemRoles } from "./roles"
 import { normalizeSlug } from "../lib/utils"
@@ -40,7 +40,7 @@ export const getUserWorkspaces = query({
     const clerkId = identity.subject // Clerk ID like "user_32Na..."
 
     // Collect workspace IDs from multiple sources
-    const workspaceIds = new Set<string>()
+    const workspaceIds = new Set<Id<"workspaces">>()
 
     // 1. Get workspaces from memberships (if we have a Convex userId)
     if (userId) {
@@ -80,11 +80,13 @@ export const getUserWorkspaces = query({
 
     // Get all unique workspaces
     const workspaces = await Promise.all(
-      Array.from(workspaceIds).map((id) => ctx.db.get(id as any))
+      Array.from(workspaceIds).map((id) => ctx.db.get(id))
     )
 
     // Filter nulls (in case of dangling references) and return
-    return workspaces.filter((w): w is NonNullable<typeof w> => w !== null && w.isDeleted !== true)
+    return workspaces.filter(
+      (w): w is Doc<"workspaces"> => w !== null && w.isDeleted !== true,
+    )
   },
 })
 

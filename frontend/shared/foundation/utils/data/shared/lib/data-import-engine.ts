@@ -11,7 +11,7 @@ import type {
   ImportError,
   ImportWarning,
   ParsedCSVData,
-} from "./data-export-types"
+} from "../types/data-export-types"
 import { parseImportFile } from "./data-export-engine"
 import { z, ZodSchema } from "zod"
 

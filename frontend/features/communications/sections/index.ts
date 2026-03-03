@@ -8,7 +8,7 @@
  */
 
 // Sidebar sections
-export { ChannelSidebar } from "./ChannelSidebar"
+export { CommunicationSidebar, CommunicationSidebar as ChannelSidebar } from "./CommunicationSidebar"
 export { DirectSidebar } from "./DirectSidebar"
 
 // Content sections

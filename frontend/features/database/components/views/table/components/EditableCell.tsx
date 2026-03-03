@@ -106,7 +106,7 @@ interface V2EditorProps {
 function V2PropertyEditor({ property, value, onCommit, onPropertyUpdate }: V2EditorProps) {
   const config = propertyRegistry.get(property.type);
   const [localValue, setLocalValue] = useState(value);
-  const commitTimeoutRef = useRef<NodeJS.Timeout>();
+  const commitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     setLocalValue(value);
@@ -116,6 +116,7 @@ function V2PropertyEditor({ property, value, onCommit, onPropertyUpdate }: V2Edi
     return () => {
       if (commitTimeoutRef.current) {
         clearTimeout(commitTimeoutRef.current);
+        commitTimeoutRef.current = null;
       }
     };
   }, []);
@@ -131,6 +132,7 @@ function V2PropertyEditor({ property, value, onCommit, onPropertyUpdate }: V2Edi
     
     if (commitTimeoutRef.current) {
       clearTimeout(commitTimeoutRef.current);
+      commitTimeoutRef.current = null;
     }
     
     // Immediate commit for certain types

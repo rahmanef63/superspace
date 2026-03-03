@@ -2,8 +2,9 @@
  * Workspace Store Components Export
  */
 
-export { WorkspaceCard, type WorkspaceCardProps } from "./WorkspaceCard"
-export { WorkspaceTree, type WorkspaceTreeProps } from "./WorkspaceTree"
+export { WorkspaceCard } from "./WorkspaceCard"
+export { WorkspaceTree } from "./WorkspaceTree"
+export type { WorkspaceCardProps, WorkspaceTreeProps } from "../types"
 export { ColorPicker, InlineColorPicker } from "./ColorPicker"
 export { IconPicker, WorkspaceIcon, getIconByName } from "./IconPicker"
 export {

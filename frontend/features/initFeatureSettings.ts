@@ -32,7 +32,7 @@ import "@/frontend/features/ai/init"
 
 // Business features
 import "@/frontend/features/analytics/init"
-import "@/frontend/features/contact/init"
+import "@/frontend/features/contacts/init"
 import "@/frontend/features/forms/init"
 import "@/frontend/features/marketing/init"
 import "@/frontend/features/studio/init"
@@ -46,7 +46,7 @@ import "@/frontend/features/platform-admin/init"
 
 // Workspace & Admin stores
 import "@/frontend/features/workspace-store/init"
-import "@/frontend/features/menu-store/init"
+import "@/frontend/features/menus/init"
 
 // Admin & system
 import "@/frontend/features/user-management/init"

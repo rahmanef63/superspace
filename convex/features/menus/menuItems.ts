@@ -68,6 +68,23 @@ async function getRoleIdsForPermission(ctx: any, workspaceId: Id<"workspaces">, 
 import { DEFAULT_MENU_ITEMS } from "./menu_manifest_data"
 import { OPTIONAL_FEATURES_CATALOG } from "./optional_features_catalog"
 
+export interface FeatureManifestItem {
+  slug: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  version?: string;
+  category?: string;
+  featureType?: string;
+  tags?: string[];
+  status?: string;
+  isReady?: boolean;
+  expectedRelease?: string;
+  type?: string;
+  path?: string;
+  component?: string;
+}
+
 // Helper to get roles with a given permission for a workspace
 async function getRolesWithPermission(ctx: any, workspaceId: Id<"workspaces">, permKey?: string) {
   const permissionValue = normalizePermissionKey(permKey)
@@ -345,39 +362,42 @@ export const getAvailableFeatureMenus = query({
 
     // Get currently installed menu items - check BOTH menuSetId and workspaceId for compatibility
     let installedMenuItems: any[] = []
-    
+
     if (menuSetId) {
       installedMenuItems = await ctx.db
         .query("menuItems")
         .withIndex("by_menuSet", (q: any) => q.eq("menuSetId", menuSetId))
         .collect()
     }
-    
+
     // Also check by workspaceId (back-compat for old items without menuSetId)
     const wsItems = await ctx.db
       .query("menuItems")
       .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
       .collect()
-    
+
     // Merge and dedupe by slug
     const allInstalled = [...installedMenuItems, ...wsItems]
     const installedSlugs = new Set(allInstalled.map(item => item.slug))
 
     // Combine default features from manifest with optional features catalog
     const allFeatures = [
-      ...DEFAULT_MENU_ITEMS.map((item) => ({
-        slug: item.slug,
-        name: item.name,
-        description: item.description ?? "",
-        icon: item.icon ?? "Box",
-        version: item.version,
-        category: item.category,
-        featureType: item.featureType as "default" | "system" | "optional" | "custom" | undefined,
-        tags: item.tags ?? [],
-        status: normalizeFeatureStatus(item.status) ?? "stable" as const,
-        isReady: item.isReady ?? true,
-        expectedRelease: item.expectedRelease,
-      })),
+      ...DEFAULT_MENU_ITEMS.map((item) => {
+        const metadata = ((item as any).metadata ?? {}) as Record<string, any>
+        return {
+          slug: item.slug,
+          name: item.name,
+          description: (item as any).description ?? metadata.description ?? "",
+          icon: item.icon ?? "Box",
+          version: (item as any).version ?? metadata.version,
+          category: (item as any).category ?? metadata.category,
+          featureType: (item as any).featureType ?? metadata.featureType,
+          tags: (item as any).tags ?? metadata.tags ?? [],
+          status: normalizeFeatureStatus((item as any).status ?? metadata.status) ?? "stable" as const,
+          isReady: (item as any).isReady ?? metadata.isReady ?? true,
+          expectedRelease: (item as any).expectedRelease ?? metadata.expectedRelease,
+        }
+      }),
       ...OPTIONAL_FEATURES_CATALOG.map((item) => ({
         slug: item.slug,
         name: item.name,
@@ -389,7 +409,7 @@ export const getAvailableFeatureMenus = query({
         tags: item.tags ?? [],
         status: normalizeFeatureStatus(item.status) ?? "stable" as const,
         isReady: item.isReady ?? true,
-        expectedRelease: item.expectedRelease,
+        expectedRelease: (item as FeatureManifestItem).expectedRelease,
       })),
     ]
 
@@ -812,7 +832,7 @@ export const getMenuUpdates = query({
       if (!item.slug) continue
 
       // Look up in DEFAULT_MENU_ITEMS
-      const defaultItem = DEFAULT_MENU_ITEMS.find((d: any) => d.slug === item.slug)
+      const defaultItem = DEFAULT_MENU_ITEMS.find((d) => d.slug === item.slug) as FeatureManifestItem | undefined
       if (defaultItem && defaultItem.version) {
         const currentVersion = (item as any).version || "1.0.0"
         if (currentVersion !== defaultItem.version) {
@@ -826,7 +846,7 @@ export const getMenuUpdates = query({
       }
 
       // Look up in OPTIONAL_FEATURES_CATALOG
-      const optionalItem = OPTIONAL_FEATURES_CATALOG.find((o: any) => o.slug === item.slug)
+      const optionalItem = OPTIONAL_FEATURES_CATALOG.find((o) => o.slug === item.slug) as FeatureManifestItem | undefined
       if (optionalItem && optionalItem.version) {
         const currentVersion = (item as any).version || "1.0.0"
         if (currentVersion !== optionalItem.version) {
@@ -873,7 +893,7 @@ export const installFeatureMenus = mutation({
         .query("menuItems")
         .withIndex("by_workspace", (q: any) => q.eq("workspaceId", args.workspaceId))
         .collect()
-      
+
       // Merge and dedupe
       const allItems = [...existingItems, ...wsItems]
       const existingSlugs = new Set(allItems.map((item: any) => item.slug).filter(Boolean))
@@ -886,16 +906,33 @@ export const installFeatureMenus = mutation({
         if (existingSlugs.has(slug)) continue // Already installed
 
         // Look up in DEFAULT_MENU_ITEMS first
-        let featureData = DEFAULT_MENU_ITEMS.find((d: any) => d.slug === slug)
+        let featureData = DEFAULT_MENU_ITEMS.find((d) => d.slug === slug) as FeatureManifestItem | undefined
 
         // If not found, look in OPTIONAL_FEATURES_CATALOG
         if (!featureData) {
-          featureData = OPTIONAL_FEATURES_CATALOG.find((o: any) => o.slug === slug)
+          featureData = OPTIONAL_FEATURES_CATALOG.find((o) => o.slug === slug) as FeatureManifestItem | undefined
         }
 
         if (!featureData) continue // Feature not found in manifest
 
         maxOrder += 1
+        const normalizedType:
+          | "folder"
+          | "group"
+          | "route"
+          | "divider"
+          | "action"
+          | "chat"
+          | "document" =
+          featureData.type === "folder" ||
+            featureData.type === "group" ||
+            featureData.type === "route" ||
+            featureData.type === "divider" ||
+            featureData.type === "action" ||
+            featureData.type === "chat" ||
+            featureData.type === "document"
+            ? featureData.type
+            : "route"
 
         await ctx.db.insert("menuItems", {
           workspaceId: args.workspaceId,
@@ -903,7 +940,7 @@ export const installFeatureMenus = mutation({
           parentId: undefined,
           name: featureData.name || slug,
           slug: featureData.slug,
-          type: featureData.type || "feature",
+          type: normalizedType,
           icon: featureData.icon,
           path: featureData.path || `/${slug}`,
           component: featureData.component,
@@ -938,29 +975,29 @@ export const repairOrphanedMenuItems = mutation({
   args: {},
   handler: async (ctx) => {
     const allItems = await ctx.db.query("menuItems").collect()
-    
+
     let repaired = 0
     let skipped = 0
-    
+
     for (const item of allItems) {
       if (!item.workspaceId) {
         skipped++
         continue
       }
-      
+
       // Use the SAME index query as getWorkspaceMenuItems
       const wsAssignment = await ctx.db
         .query("workspaceMenuAssignments")
         .withIndex("by_workspace_default", (q: any) => q.eq("workspaceId", item.workspaceId).eq("isDefault", true))
         .first()
-      
+
       if (!wsAssignment) {
         skipped++
         continue
       }
-      
+
       const correctMenuSetId = wsAssignment.menuSetId
-      
+
       // Fix if missing or mismatched
       if (!item.menuSetId || item.menuSetId !== correctMenuSetId) {
         await ctx.db.patch(item._id, { menuSetId: correctMenuSetId })
@@ -968,7 +1005,7 @@ export const repairOrphanedMenuItems = mutation({
       }
     }
 
-    return { 
+    return {
       totalItems: allItems.length,
       repaired,
       skipped,

@@ -42,6 +42,8 @@ export {
   type SecondarySidebarLayoutProps,
   type SecondarySidebarHeaderProps,
   type SecondarySidebarProps,
+  type SecondarySidebarSectionProps,
+  type SecondarySidebarItem,
   type SecondaryListProps,
   type VariantId,
   type ItemBase,
@@ -119,6 +121,7 @@ export {
   MenuDisplay,
   MenuPreview,
   MenuTree,
+  type MenuItemMetadata,
   type SecondaryMenuContextValue,
   type SecondaryMenuProviderProps,
 } from "./menus";

@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { TableWidget } from './TableWidget';
 import React from 'react';
 import { Table2 } from 'lucide-react';
@@ -86,8 +86,9 @@ export const tableManifest: WidgetConfig = {
       { name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
     ],
   },
-  render: (props) => <TableWidget {...props} />,
+  render: (props) => <TableWidget {...(props as any)} />,
   inspector: {
     fields: tableInspectorConfig,
   },
 };
+

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Textarea } from '@/components/ui';
+import { Textarea } from '@/components/ui/textarea';
 
 interface TextareaWidgetProps {
   value?: string;
@@ -21,7 +21,7 @@ export const TextareaWidget: React.FC<TextareaWidgetProps> = ({
   return (
     <Textarea
       value={value}
-      onChange={onChange}
+      onChange={(event) => onChange?.(event.target.value)}
       placeholder={placeholder}
       rows={rows}
       disabled={disabled}

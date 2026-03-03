@@ -42,7 +42,7 @@ import { useCommunicationsStore } from "../shared"
 import { useDirectMessageMutations } from "../hooks/useDirectMessages"
 
 // Contacts API (formerly Contacts)
-import { useContactsApi } from "@/frontend/features/contact/api"
+import { useContactsApi } from "@/frontend/features/contacts/api"
 
 // Workspace context for members
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"

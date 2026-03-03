@@ -20,17 +20,17 @@ function useConversation() {
   return context
 }
 
-type ScrollBehavior = "smooth" | "instant" | "auto"
+type ConversationScrollBehavior = "smooth" | "instant" | "auto"
 
 interface ConversationProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Initial scroll behavior when new content is added
    */
-  initial?: ScrollBehavior
+  initial?: ConversationScrollBehavior
   /**
    * Behavior on container resize
    */
-  resize?: ScrollBehavior
+  resize?: ConversationScrollBehavior
 }
 
 /**
@@ -52,11 +52,13 @@ function Conversation({
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [isAtBottom, setIsAtBottom] = React.useState(true)
 
-  const scrollToBottom = React.useCallback((behavior: ScrollBehavior = initial) => {
+  const scrollToBottom = React.useCallback((behavior: ConversationScrollBehavior = initial) => {
     if (containerRef.current) {
+      const normalizedBehavior: ScrollBehavior =
+        behavior === "instant" ? "auto" : behavior
       containerRef.current.scrollTo({
         top: containerRef.current.scrollHeight,
-        behavior,
+        behavior: normalizedBehavior,
       })
     }
   }, [initial])

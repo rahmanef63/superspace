@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { CommentBlock } from '@/frontend/features/studio/ui/widgets/blocks/Comment';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { MessageSquare } from 'lucide-react';
@@ -11,8 +11,9 @@ export const commentManifest: WidgetConfig = {
     defaults: {
         className: ""
     },
-    render: (props) => <CommentBlock {...props} comments={[]} currentUser={{ name: "User", avatar: "" }} onAddComment={() => { }} />,
+    render: (props) => <CommentBlock {...(props as any)} comments={[]} currentUser={{ name: "User", avatar: "" }} onAddComment={() => { }} />,
     inspector: {
         fields: []
     }
 };
+

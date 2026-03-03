@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import React from 'react';
 import { Link2 } from 'lucide-react';
 
@@ -70,8 +70,9 @@ export const linkManifest: WidgetConfig = {
         variant: 'default',
         className: '',
     },
-    render: (props) => <LinkWidget {...props} />,
+    render: (props) => <LinkWidget {...(props as any)} />,
     inspector: {
         fields: linkInspectorConfig,
     },
 };
+

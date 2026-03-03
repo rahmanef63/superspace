@@ -34,7 +34,7 @@ export function useWorkspaceStoreMutations() {
   const setColorMutation = useMutation(api.workspace.hierarchy.setWorkspaceColor)
   const linkWorkspaceMutation = useMutation(api.workspace.hierarchy.linkWorkspaceAsChild)
   const unlinkWorkspaceMutation = useMutation(api.workspace.hierarchy.unlinkChildWorkspace)
-  const fixHierarchyMutation = useMutation(api.workspace.hierarchy.fixAllWorkspaceHierarchies)
+  const fixHierarchyMutation = useMutation(api.workspace.hierarchy.fixCorruptedHierarchy)
   
   // Store actions
   const closeCreateDialog = useWorkspaceStore((s) => s.closeCreateDialog)
@@ -251,14 +251,21 @@ export function useWorkspaceStoreMutations() {
   /**
    * Fix all workspace hierarchies
    */
-  const fixAllHierarchies = useCallback(async () => {
+  const fixAllHierarchies = useCallback(async (workspaceId?: string) => {
+    if (!workspaceId) {
+      toast.info("Select a workspace first to run hierarchy fix")
+      return { fixed: false }
+    }
+
     try {
-      const result = await fixHierarchyMutation({})
-      
+      const result = await fixHierarchyMutation({
+        workspaceId: workspaceId as Id<"workspaces">,
+      })
+
       if (result.fixed) {
-        toast.success(result.message)
+        toast.success("Hierarchy issues fixed successfully")
       } else {
-        toast.info(result.message)
+        toast.success("Workspace hierarchy looks healthy")
       }
       
       return result

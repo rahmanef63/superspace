@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import React from 'react';
 import { MousePointer2 } from 'lucide-react';
 
@@ -25,7 +25,7 @@ const ICON_BUTTON_STYLES = {
 
 // Icon Button Widget Component
 const IconButtonWidget: React.FC<any> = ({
-    icon = '⚡',
+    icon = 'âš¡',
     size = 'md',
     variant = 'default',
     label = 'Action',
@@ -49,7 +49,7 @@ const IconButtonWidget: React.FC<any> = ({
                 ${sizeClass} ${variantClass} ${className}
             `}
         >
-            <span style={{ fontSize: iconSize }}>{icon || '⚡'}</span>
+            <span style={{ fontSize: iconSize }}>{icon || 'âš¡'}</span>
         </button>
     );
 };
@@ -59,7 +59,7 @@ const iconButtonInspectorConfig: InspectorField[] = [
         key: 'icon',
         label: 'Icon (emoji or text)',
         type: 'text',
-        placeholder: '⚡',
+        placeholder: 'âš¡',
     },
     {
         key: 'label',
@@ -93,15 +93,16 @@ export const iconButtonManifest: WidgetConfig = {
     icon: MousePointer2,
     tags: ['action', 'button', 'icon', 'toolbar'],
     defaults: {
-        icon: '⚡',
+        icon: 'âš¡',
         size: 'md',
         variant: 'default',
         label: 'Action',
         disabled: false,
         className: '',
     },
-    render: (props) => <IconButtonWidget {...props} />,
+    render: (props) => <IconButtonWidget {...(props as any)} />,
     inspector: {
         fields: iconButtonInspectorConfig,
     },
 };
+

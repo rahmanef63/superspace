@@ -38,7 +38,7 @@ interface HeroCompositeWidgetProps {
   // Image Props
   imageUrl?: string;
   imageAlt?: string;
-  imageRounded?: string;
+  imageRounded?: boolean;
   imageClassName?: string;
 }
 
@@ -76,7 +76,7 @@ export const HeroCompositeWidget: React.FC<HeroCompositeWidgetProps> = ({
   // Image
   imageUrl = "https://picsum.photos/seed/hero/800/600",
   imageAlt = "Hero preview",
-  imageRounded = "lg",
+  imageRounded = true,
   imageClassName = "w-full h-auto shadow-lg"
 }) => {
   return (
@@ -86,9 +86,9 @@ export const HeroCompositeWidget: React.FC<HeroCompositeWidgetProps> = ({
       direction="row"
       align="center"
       gap="xl"
-      padding={heroPadding}
-      background={heroBackground}
-      maxWidth={heroMaxWidth}
+      padding={heroPadding as any}
+      background={heroBackground as any}
+      maxWidth={heroMaxWidth as any}
       className={heroClassName}
     >
       {/* Copywriting Section */}
@@ -96,8 +96,8 @@ export const HeroCompositeWidget: React.FC<HeroCompositeWidgetProps> = ({
         name="copywriting"
         display="flex"
         direction="column"
-        gap={copywritingGap}
-        align={copywritingAlign}
+        gap={copywritingGap as any}
+        align={copywritingAlign as any}
         width="1/2"
         className="space-y-6"
       >
@@ -105,26 +105,26 @@ export const HeroCompositeWidget: React.FC<HeroCompositeWidgetProps> = ({
         <TextWidget
           tag="h1"
           content={titleContent}
-          size={titleSize}
-          weight={titleWeight}
-          color={titleColor}
-          leading="tight"
+          fontSize={titleSize as any}
+          fontWeight={titleWeight as any}
+          textColor={titleColor as any}
+          lineHeight="tight"
         />
         
         {/* Subtitle */}
         <TextWidget
           tag="p"
           content={subtitleContent}
-          size={subtitleSize}
-          color={subtitleColor}
-          leading="relaxed"
+          fontSize={subtitleSize as any}
+          textColor={subtitleColor as any}
+          lineHeight="relaxed"
         />
         
         {/* CTA Button */}
         <ButtonWidget
           text={ctaText}
-          variant={ctaVariant}
-          size={ctaSize}
+          variant={ctaVariant as any}
+          size={ctaSize as any}
           href={ctaHref}
           className="w-fit"
         />
@@ -134,7 +134,7 @@ export const HeroCompositeWidget: React.FC<HeroCompositeWidgetProps> = ({
       <SectionWidget
         name="preview"
         display="flex"
-        align={previewAlign}
+        align={previewAlign as any}
         justify="center"
         width="1/2"
       >

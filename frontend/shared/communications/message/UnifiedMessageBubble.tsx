@@ -70,7 +70,7 @@ export interface MessageReaction {
   hasReacted?: boolean;
 }
 
-export interface MessageAttachment {
+export interface BubbleAttachment {
   id: string;
   name: string;
   type: string;
@@ -100,7 +100,7 @@ export interface UnifiedMessageBubbleProps {
   /** Reply context */
   replyContext?: ReplyContext;
   /** Attachments */
-  attachments?: MessageAttachment[];
+  attachments?: BubbleAttachment[];
   /** Reactions */
   reactions?: MessageReaction[];
   /** Selection mode */

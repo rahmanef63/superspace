@@ -33,7 +33,7 @@ export function ContactsList({ workspaceId }: ContactsListProps) {
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const { Contacts, pendingRequests, sentRequests, acceptContactRequest, declineContactRequest } = useContactsApi();
 
-  const handleAcceptRequest = async (requestId: Id<"contactsRequests">) => {
+  const handleAcceptRequest = async (requestId: ContactRequest["_id"]) => {
     try {
       await acceptContactRequest({ requestId });
       toast.success("Contact request accepted!");
@@ -42,7 +42,7 @@ export function ContactsList({ workspaceId }: ContactsListProps) {
     }
   };
 
-  const handleDeclineRequest = async (requestId: Id<"contactsRequests">) => {
+  const handleDeclineRequest = async (requestId: ContactRequest["_id"]) => {
     try {
       await declineContactRequest({ requestId });
       toast.success("Contact request declined");

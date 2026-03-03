@@ -14,9 +14,10 @@ export const listTemplates = query({
     // unless we have private workspace templates.
     // For now, return all public templates or filtered by category.
 
-    if (args.category) {
+    const category = args.category;
+    if (category) {
       return await ctx.db.query("workflowTemplates")
-        .withIndex("by_category", (q) => q.eq("category", args.category))
+        .withIndex("by_category", (q) => q.eq("category", category))
         .collect();
     }
 

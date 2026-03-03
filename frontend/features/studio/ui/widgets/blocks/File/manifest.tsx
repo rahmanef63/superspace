@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { FileBlock } from './FileBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { FileInput } from 'lucide-react';
@@ -12,7 +12,7 @@ export const fileManifest: WidgetConfig = {
         allowUpload: true,
         className: ""
     },
-    render: (props: any) => <FileBlock {...props} files={[]} />,
+    render: (props: any) => <FileBlock {...(props as any)} files={[]} />,
     inspector: {
         fields: [
             createCustomField({
@@ -23,3 +23,4 @@ export const fileManifest: WidgetConfig = {
         ]
     }
 };
+

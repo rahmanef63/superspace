@@ -40,7 +40,7 @@ export function DomainStep({
 
   // Check subdomain availability
   const subdomainAvailable = useQuery(
-    api.features.cms_lite.website_settings.api.queries.isSubdomainAvailable,
+    api.features.cmsLite.website_settings.api.queries.isSubdomainAvailable,
     checkingSubdomain && form.subdomain
       ? { subdomain: form.subdomain, excludeWorkspaceId: workspaceId }
       : "skip"

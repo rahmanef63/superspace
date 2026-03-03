@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { SelectWidget } from './SelectWidget';
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
@@ -54,8 +54,9 @@ export const selectManifest: WidgetConfig = {
         required: false,
         disabled: false,
     },
-    render: (props) => <SelectWidget {...props} />,
+    render: (props) => <SelectWidget {...(props as any)} />,
     inspector: {
         fields: selectInspectorConfig,
     },
 };
+

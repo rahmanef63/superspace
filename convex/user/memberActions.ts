@@ -165,7 +165,7 @@ export const getSharedMedia = query({
         let url: string | undefined;
         if (candidateId) {
           try {
-            url = await ctx.storage.getUrl(candidateId);
+            url = (await ctx.storage.getUrl(candidateId)) ?? undefined;
           } catch {
             // Ignore URL errors; still return metadata so UI can render filename
           }

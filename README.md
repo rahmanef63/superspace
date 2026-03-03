@@ -259,6 +259,8 @@ pnpm run analyze:feature    # Analyze feature structure
 
 # Validation
 pnpm run sync:all           # Sync features + generate registry
+pnpm run validate:feature-naming # Local check (warnings allowed)
+pnpm run validate:feature-naming -- --strict # CI gate (warnings fail)
 pnpm run validate:all       # Zod schema validation
 pnpm run precommit          # Lint + validate + tests
 

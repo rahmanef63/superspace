@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import type { Id } from "@/convex/_generated/dataModel"
-import type { ElementType } from "react"
+import type { ElementType, ReactElement } from "react"
 import { ChevronRight } from "lucide-react"
 
 import { getDefaultPages } from "@/frontend/shared/foundation/manifest"
@@ -75,7 +75,7 @@ export function NavMain({ workspaceId, activeView, onViewChange, items, workspac
   } as React.CSSProperties : undefined
 
   // Recursive function to render nested menu items
-  const renderNavItem = (item: NavItem, depth: number = 0): JSX.Element => {
+  const renderNavItem = (item: NavItem, depth: number = 0): ReactElement => {
     const hasChildren = item.children && item.children.length > 0
     const isActive = activeView === item.id
     const featureTag = item.tag || getFeatureTagFromMetadata(item.metadata)

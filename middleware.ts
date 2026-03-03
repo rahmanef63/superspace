@@ -6,7 +6,9 @@ const isProtectedRoute = createRouteMatcher(['/dashboard(.*)'])
 export default clerkMiddleware(async (auth, req) => {
   // Let Clerk handle pending/handshake auth states to avoid redirect loops.
   if (isProtectedRoute(req)) {
-    await auth.protect()
+    await auth.protect({
+      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+    })
   }
 })
 

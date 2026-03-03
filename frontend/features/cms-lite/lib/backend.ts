@@ -13,8 +13,8 @@ import type { Id } from "@convex/_generated/dataModel";
  * 
  * Usage in components:
  * - Import useConvex hook: import { useConvex } from "convex/react"
- * - Use Convex queries: const products = useQuery(api.features.cms_lite.products.queries.list, { workspaceId })
- * - Use Convex mutations: const createProduct = useMutation(api.features.cms_lite.products.mutations.create)
+ * - Use Convex queries: const products = useQuery(api.features.cmsLite.products.queries.list, { workspaceId })
+ * - Use Convex mutations: const createProduct = useMutation(api.features.cmsLite.products.mutations.create)
  */
 
 // This file is kept for backward compatibility but should be migrated away from

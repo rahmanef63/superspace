@@ -77,7 +77,7 @@ export function DatabaseSidebar({
       icon: { iconName, iconColor },
     } = parseTableData(table);
 
-    const IconComponent = getIconComponent(iconName);
+    const IconComponent = getIconComponent(iconName) ?? Table2;
     const colorValue = getColorValue(iconColor);
 
     return {

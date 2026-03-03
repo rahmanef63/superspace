@@ -402,7 +402,7 @@ function BlockRenderer({ block, onMentionClick }: BlockRendererProps) {
       )
 
     case 'heading':
-      const HeadingTag = `h${block.level || 2}` as keyof JSX.IntrinsicElements
+      const HeadingTag = `h${block.level || 2}` as React.ElementType
       const headingClasses: Record<number, string> = {
         1: 'text-2xl font-bold mt-4 mb-2',
         2: 'text-xl font-bold mt-3 mb-2',
@@ -446,6 +446,9 @@ function BlockRenderer({ block, onMentionClick }: BlockRendererProps) {
       return <hr className="my-4 border-border" />
 
     case 'image':
+      if (!block.src) {
+        return null
+      }
       return (
         <figure className="my-2">
           <Image

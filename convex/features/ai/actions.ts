@@ -203,9 +203,8 @@ export const chat = action({
       return {
         message: result.text,
         sessionId,
-        contextIds: relevantDocs.map((doc) => doc._id),
+        contextIds: relevantDocs.map((doc) => doc._id as Id<"knowledgeBaseDocuments">),
       };
-
     } catch (error) {
       console.error("AI Error:", error);
       // Record error in usage stats

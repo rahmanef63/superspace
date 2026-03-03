@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Layout, Globe, Clock, MoreVertical, Edit, ExternalLink, Trash2 } from "lucide-react";
-import { BuilderData, BuilderProject } from "../types";
+import type { BuilderData, BuilderProject } from "../ui/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface BuilderDashboardProps {

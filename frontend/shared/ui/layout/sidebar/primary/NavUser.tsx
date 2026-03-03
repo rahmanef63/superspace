@@ -3,7 +3,7 @@
 import React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { IconDotsVertical } from "@tabler/icons-react"
-import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs"
+import { SignInButton, useUser } from "@clerk/nextjs"
 import { LogOut, Settings, User, Sun, Moon, Monitor, Palette, Eye, Check } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -518,10 +518,11 @@ export function NavUser({
   onSettingsClick
 }: NavUserProps = {}) {
   const { isMobile } = useSidebar()
+  const { isLoaded, user } = useUser()
 
-  return (
-    <SidebarMenu>
-      <ClerkLoading>
+  if (!isLoaded) {
+    return (
+      <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" className="animate-pulse">
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted" />
@@ -531,19 +532,21 @@ export function NavUser({
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
-      </ClerkLoading>
-      <ClerkLoaded>
-        <SignedIn>
-          <SignedInNavUserContent
-            isMobile={isMobile}
-            profileSettingsComponent={profileSettingsComponent}
-            onSettingsClick={onSettingsClick}
-          />
-        </SignedIn>
-        <SignedOut>
-          <SignedOutNavUserContent />
-        </SignedOut>
-      </ClerkLoaded>
+      </SidebarMenu>
+    )
+  }
+
+  return (
+    <SidebarMenu>
+      {user ? (
+        <SignedInNavUserContent
+          isMobile={isMobile}
+          profileSettingsComponent={profileSettingsComponent}
+          onSettingsClick={onSettingsClick}
+        />
+      ) : (
+        <SignedOutNavUserContent />
+      )}
     </SidebarMenu>
   )
 }

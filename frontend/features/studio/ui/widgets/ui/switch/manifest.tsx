@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { SwitchWidget } from './SwitchWidget';
 import React from 'react';
 import { ToggleLeft } from 'lucide-react';
@@ -40,8 +40,9 @@ export const switchManifest: WidgetConfig = {
         checked: false,
         disabled: false,
     },
-    render: (props) => <SwitchWidget {...props} />,
+    render: (props) => <SwitchWidget {...(props as any)} />,
     inspector: {
         fields: switchInspectorConfig,
     },
 };
+

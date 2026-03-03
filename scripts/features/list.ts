@@ -109,15 +109,17 @@ function main() {
 
     feats.forEach((f) => {
       const statusIcon = f.status.isReady ? "✅" : "🚧"
-      const stateEmoji = {
+      const stateEmoji: Record<string, string> = {
         development: "🛠️",
         beta: "🧪",
         stable: "✅",
         deprecated: "⚠️",
-      }[f.status.state]
+        experimental: "🔬",
+      }
+      const stateEmojiIcon = stateEmoji[f.status.state] ?? "❓"
 
       console.log(`\n${statusIcon} ${f.name} (${f.id})`)
-      console.log(`   Status: ${stateEmoji} ${f.status.state} ${f.status.isReady ? "" : "(not ready)"}`)
+      console.log(`   Status: ${stateEmojiIcon} ${f.status.state} ${f.status.isReady ? "" : "(not ready)"}`)
       console.log(`   Category: ${f.ui.category}`)
       console.log(`   Path: ${f.ui.path}`)
       console.log(`   Version: ${f.technical.version}`)

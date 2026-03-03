@@ -111,7 +111,7 @@ export const getChatSession = query({
     if (!session) throw new Error("Chat session not found");
 
     if (session.workspaceId) {
-      await requireActiveMembership(ctx, session.workspaceId);
+      await requireActiveMembership(ctx, session.workspaceId as Id<"workspaces">);
     } else {
       const currentUserId = await ensureUser(ctx);
       if (session.userId !== currentUserId) throw new Error("Unauthorized");

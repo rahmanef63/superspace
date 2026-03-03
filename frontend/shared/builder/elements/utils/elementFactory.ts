@@ -111,10 +111,11 @@ export function createElement<TProps = any>(
   // Default explode
   const explode = options.explode || ((data: ElementNode): any[] => {
     // Return individual components that make up this element
-    return structure.children.map((child, index) => ({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return structure.children.map(({ type: _childType, ...childRest }, index) => ({
       id: `${data.id}-child-${index}`,
-      type: "component",
-      ...child,
+      type: "component" as const,
+      ...childRest,
     }))
   })
 

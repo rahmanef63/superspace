@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { RadioGroupWidget } from './RadioGroupWidget';
 import React from 'react';
 import { Circle } from 'lucide-react';
@@ -66,7 +66,7 @@ const radioGroupInspectorConfig: InspectorField[] = [
 export const radioGroupManifest: WidgetConfig = {
   label: 'Radio Group',
   category: 'Form',
-  description: 'A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.',
+  description: 'A set of checkable buttonsâ€”known as radio buttonsâ€”where no more than one of the buttons can be checked at a time.',
   icon: Circle,
   tags: ['ui', 'form', 'input', 'radio'],
   defaults: {
@@ -77,8 +77,9 @@ export const radioGroupManifest: WidgetConfig = {
       { value: 'option3', label: 'Option 3' },
     ],
   },
-  render: (props) => <RadioGroupWidget {...props} />,
+  render: (props) => <RadioGroupWidget {...(props as any)} />,
   inspector: {
     fields: radioGroupInspectorConfig,
   },
 };
+

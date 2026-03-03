@@ -61,7 +61,7 @@ export const TextWidget: React.FC<TextWidgetProps> = ({
   whitespace = "normal",
   className = ""
 }) => {
-  const Tag = tag as keyof JSX.IntrinsicElements;
+  const Tag = tag as React.ElementType;
 
   const getTextClasses = () => {
     const classes = [];

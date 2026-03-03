@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useBackend } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { Input, Select } from "../../../shared/components/Form";

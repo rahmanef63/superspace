@@ -11,7 +11,7 @@ import KnowledgePreview from '@/frontend/features/knowledge/features-preview/ind
 import AIPreview from '@/frontend/features/ai/features-preview/index'
 import DocumentsPreview from '@/frontend/features/documents/features-preview/index'
 import DatabasePreview from '@/frontend/features/database/features-preview/index'
-import ContactsPreview from '@/frontend/features/contact/features-preview/index'
+import ContactsPreview from '@/frontend/features/contacts/features-preview/index'
 import AnalyticsPreview from '@/frontend/features/analytics/features-preview/index'
 import CMSLitePreview from '@/frontend/features/cms-lite/features-preview/index'
 import TasksPreview from '@/frontend/features/tasks/features-preview/index'

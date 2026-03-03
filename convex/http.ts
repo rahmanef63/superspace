@@ -54,13 +54,13 @@ http.route({
     try {
       // Fetch all public CMS Lite data (no auth required)
       const [quicklinks, products, posts, portfolio] = await Promise.all([
-        ctx.runQuery(api.features.cms_lite.quicklinks.api.queries.listQuicklinks, {})
+        ctx.runQuery(api.features.cmsLite.quicklinks.api.queries.listQuicklinks, {})
           .catch(() => ({ quicklinks: [] })),
-        ctx.runQuery(api.features.cms_lite.products.api.queries.listProducts, {})
+        ctx.runQuery(api.features.cmsLite.products.api.queries.listProducts, {})
           .catch(() => ({ products: [] })),
-        ctx.runQuery(api.features.cms_lite.posts.api.queries.listPosts, { locale: "en" })
+        ctx.runQuery(api.features.cmsLite.posts.api.queries.listPosts, { locale: "en" })
           .catch(() => ({ posts: [] })),
-        ctx.runQuery(api.features.cms_lite.portfolio.api.queries.listPortfolio, { locale: "en" })
+        ctx.runQuery(api.features.cmsLite.portfolio.api.queries.listPortfolio, { locale: "en" })
           .catch(() => ({ items: [] })),
       ]);
 

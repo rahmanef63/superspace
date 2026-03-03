@@ -53,7 +53,7 @@ export function ChatMessage({
     config,
     onEdit: onStartEdit,
     onDelete: () => onDelete(false),
-    onPin,
+    onPin: (_messageId: string, pinned: boolean) => onPin(pinned),
     onReact,
   });
 
@@ -71,9 +71,8 @@ export function ChatMessage({
 
   return (
     <div
-      className={`chat-message ${isOwnMessage ? "own" : "other"} ${
-        isGrouped ? "grouped" : ""
-      } ${deleted ? "deleted" : ""}`}
+      className={`chat-message ${isOwnMessage ? "own" : "other"} ${isGrouped ? "grouped" : ""
+        } ${deleted ? "deleted" : ""}`}
       data-message-id={message.id}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}

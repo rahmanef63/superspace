@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { ListBlock } from './ListBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { List } from 'lucide-react';
@@ -15,7 +15,7 @@ export const listManifest: WidgetConfig = {
         showBadges: true,
         emptyMessage: "No items"
     },
-    render: (props: any) => <ListBlock {...props} />,
+    render: (props: any) => <ListBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({
@@ -36,7 +36,7 @@ export const listManifest: WidgetConfig = {
             createCustomField({
                 key: 'showBadges',
                 label: 'Show Badges',
-                type: 'boolean' // Assuming 'boolean' or 'switch' is supported by createCustomField logic or standard fields
+                type: 'switch'
             }),
             createCustomField({
                 key: 'emptyMessage',
@@ -46,3 +46,4 @@ export const listManifest: WidgetConfig = {
         ]
     }
 };
+

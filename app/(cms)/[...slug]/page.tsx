@@ -28,7 +28,7 @@ export default function CmsPublicPage({ params }: Props) {
   const slug = resolvedParams.slug ? resolvedParams.slug.join("/") : "";
 
   // Try to fetch page configuration from database
-  const page = useQuery(api.features.cms_lite.pages.api.queries.getPageBySlug, {
+  const page = useQuery(api.features.cmsLite.pages.api.queries.getPageBySlug, {
     slug: slug || "home",
   });
 

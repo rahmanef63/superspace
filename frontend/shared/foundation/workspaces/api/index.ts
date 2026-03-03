@@ -23,7 +23,9 @@ export const useWorkspacesApi = () => {
 
 // Members API hooks - Note: These functions need to be implemented
 export const useMembersApi = () => {
-  const addMember = useMutation(api.workspace.workspaces.addMember);
+  const addMember = async (..._args: unknown[]) => {
+    throw new Error("addMember is not available in workspace.workspaces API. Use invitations flow.");
+  };
   const removeMember = useMutation(api.workspace.workspaces.removeMember);
   const updateMemberRole = useMutation(api.workspace.workspaces.updateMemberRole);
 
@@ -47,6 +49,8 @@ export const useCreateWorkspace = () => useMutation(api.workspace.workspaces.cre
 // export const useJoinWorkspace = () => useMutation(api.workspaces.joinWorkspace);
 
 // Convenience member mutation hooks
-export const useAddMember = () => useMutation(api.workspace.workspaces.addMember);
+export const useAddMember = () => async (..._args: unknown[]) => {
+  throw new Error("addMember is not available in workspace.workspaces API. Use invitations flow.");
+};
 export const useRemoveMember = () => useMutation(api.workspace.workspaces.removeMember);
 export const useUpdateMemberRole = () => useMutation(api.workspace.workspaces.updateMemberRole);

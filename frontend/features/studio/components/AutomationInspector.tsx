@@ -77,11 +77,16 @@ export const AutomationInspector: React.FC<AutomationInspectorProps> = ({
 
     // Get inspector configuration
     const inspectorConfig = config?.inspector;
-    const sections = inspectorConfig?.sections || [];
     const fields = inspectorConfig?.fields || [];
+    const sections = fields.length > 0
+        ? [{ title: 'Properties', fields }]
+        : [];
 
     // Add Retry Configuration Section if not present
-    const hasRetryConfig = sections.some((s: any) => s.title === 'Retry Policy');
+    const hasRetryConfig = sections.some((s: any) =>
+        s.title === 'Retry Policy' ||
+        s.fields?.some((f: InspectorField) => f.key.startsWith('retryConfig.'))
+    );
     const enhancedSections = hasRetryConfig ? sections : [
         ...sections,
         {
@@ -148,7 +153,7 @@ export const AutomationInspector: React.FC<AutomationInspectorProps> = ({
                                 key={field.key}
                                 field={field}
                                 value={currentProps[field.key] ?? field.defaultValue ?? ''}
-                                onChange={(v) => setProp(field.key, v)}
+                                onChange={(v) => setNestedProp(field.key, v)}
                             />
                         ))}
                     </div>

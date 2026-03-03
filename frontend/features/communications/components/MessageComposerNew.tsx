@@ -661,7 +661,7 @@ export function MessageComposer({
 
   // Fetch real workspace members for mentions
   const workspaceMembers = useQuery(
-    api.workspace.workspaces.getWorkspaceMembers,
+    api.workspace.workspaces.getMembers,
     workspaceId ? { workspaceId: workspaceId as Id<"workspaces"> } : "skip"
   )
 
@@ -675,12 +675,13 @@ export function MessageComposer({
     // Add workspace members
     if (workspaceMembers) {
       for (const member of workspaceMembers) {
+        if (!member) continue
         items.push({
-          id: member.userId,
+          id: String(member.userId),
           type: "user",
-          name: member.user?.name?.toLowerCase().replace(/\s+/g, "") || member.userId,
+          name: member.user?.name?.toLowerCase().replace(/\s+/g, "") || String(member.userId),
           displayName: member.user?.name || "Unknown User",
-          avatar: member.user?.image || undefined,
+          avatar: member.user?.avatarUrl || undefined,
           status: "online",
           description: member.role?.name,
         })
@@ -820,18 +821,26 @@ export function MessageComposer({
         onSend={handleSend}
         onTyping={onTyping}
         onCancelReply={onCancelReply}
-        replyTo={replyTo}
-        mentions={mentionItems}
+        replyTo={
+          replyTo
+            ? {
+              id: replyTo.id,
+              content: replyTo.content,
+              senderName: replyTo.sender?.name || "Unknown User",
+            }
+            : null
+        }
+        mentionItems={mentionItems}
         onSlashCommand={handleSlashCommand}
         slashCommands={[
-          { id: "giphy", title: "GIF", description: "Search and insert a GIF", icon: Search },
-          { id: "poll", title: "Poll", description: "Create a poll", icon: Search },
-          { id: "voice", title: "Voice Message", description: "Record a voice clip", icon: Mic },
-          { id: "code", title: "Code Block", description: "Insert code snippet", icon: Search },
-          { id: "call", title: "Start Call", description: "Start an audio call", icon: Search },
-          { id: "video", title: "Start Video", description: "Start a video call", icon: Search },
-          { id: "image", title: "Upload Image", description: "Upload an image", icon: Search },
-          { id: "file", title: "Upload File", description: "Upload a file", icon: Search },
+          { id: "giphy", command: "/giphy", label: "GIF", description: "Search and insert a GIF", icon: Search, category: "actions" },
+          { id: "poll", command: "/poll", label: "Poll", description: "Create a poll", icon: Search, category: "actions" },
+          { id: "voice", command: "/voice", label: "Voice Message", description: "Record a voice clip", icon: Mic, category: "media" },
+          { id: "code", command: "/code", label: "Code Block", description: "Insert code snippet", icon: Search, category: "actions" },
+          { id: "call", command: "/call", label: "Start Call", description: "Start an audio call", icon: Search, category: "actions" },
+          { id: "video", command: "/video", label: "Start Video", description: "Start a video call", icon: Search, category: "media" },
+          { id: "image", command: "/image", label: "Upload Image", description: "Upload an image", icon: Search, category: "media" },
+          { id: "file", command: "/file", label: "Upload File", description: "Upload a file", icon: Search, category: "media" },
         ]}
       />
 

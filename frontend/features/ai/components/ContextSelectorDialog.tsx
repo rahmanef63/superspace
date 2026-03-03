@@ -22,10 +22,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import type { Doc } from "@/convex/_generated/dataModel"
 import { useWorkspaceContext } from "@/frontend/shared/foundation/provider/WorkspaceProvider"
 import { useAIStore } from "../stores"
-import type { KnowledgeSourceType } from "../types"
 
 // Types for the tree structure
 interface ContextNode {
@@ -53,10 +51,11 @@ export function ContextSelectorDialog({ open, onOpenChange }: ContextSelectorDia
   
   // Fetch workspaces
   const workspaces = useQuery(api.workspace.workspaces.getUserWorkspaces) || []
+  const workspaceList = workspaces as Array<{ _id: string; name?: string }>
   
   // Mock features for now (since we don't have a direct query for all features per workspace yet)
   // In a real implementation, we would fetch enabled features from workspace settings
-  const getWorkspaceFeatures = (wsId: string) => [
+  const getWorkspaceFeatures = (wsId: string): ContextNode[] => [
     { id: `${wsId}-wiki`, label: "Wiki & Documents", type: 'feature', icon: <FileText className="h-4 w-4" /> },
     { id: `${wsId}-chat`, label: "Chat History", type: 'feature', icon: <MessageSquare className="h-4 w-4" /> },
     { id: `${wsId}-tasks`, label: "Tasks & Projects", type: 'feature', icon: <Layout className="h-4 w-4" /> },
@@ -77,11 +76,12 @@ export function ContextSelectorDialog({ open, onOpenChange }: ContextSelectorDia
       label: 'Other Workspaces',
       type: 'workspace',
       icon: <Folder className="h-4 w-4 text-blue-400" />,
-      children: workspaces
-        .filter((ws: Doc<"workspaces">) => ws._id !== workspaceId)
-        .map((ws: Doc<"workspaces">) => ({
+      children: workspaceList
+        .filter((ws) => typeof ws.name === "string")
+        .filter((ws) => ws._id !== workspaceId)
+        .map((ws) => ({
           id: ws._id,
-          label: ws.name,
+          label: ws.name as string,
           type: 'workspace',
           children: getWorkspaceFeatures(ws._id)
         }))

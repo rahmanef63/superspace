@@ -39,11 +39,11 @@ export function validateNode(node: AnyNode): void {
   }
 
   if (!node.type) {
-    throw new ValidationError(`Node "${node.id}" is missing a type`)
+    throw new ValidationError("Node is missing a type")
   }
 
   if (!node.name) {
-    throw new ValidationError(`Node "${node.id}" is missing a name`)
+    throw new ValidationError("Node is missing a name")
   }
 
   // Type-specific validation

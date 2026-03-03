@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { SeparatorWidget } from './SeparatorWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -15,7 +15,7 @@ export const separatorManifest: WidgetConfig = {
         margin: 'md',
         className: '',
     },
-    render: (props) => <SeparatorWidget {...props} />,
+    render: (props) => <SeparatorWidget {...(props as any)} />,
     inspector: {
         fields: combineFields(
             [
@@ -41,3 +41,4 @@ export const separatorManifest: WidgetConfig = {
         ),
     },
 };
+

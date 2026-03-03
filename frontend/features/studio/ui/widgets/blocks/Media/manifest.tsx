@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { MediaBlock } from '@/frontend/features/studio/ui/widgets/blocks/Media';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Image } from 'lucide-react';
@@ -16,7 +16,7 @@ export const mediaManifest: WidgetConfig = {
         allowFullscreen: true,
         className: ""
     },
-    render: (props) => <MediaBlock {...props} type={props.type || "image"} src={props.src || ""} />,
+    render: (props) => <MediaBlock {...(props as any)} type={props.type || "image"} src={props.src || ""} />,
     inspector: {
         fields: [
             createCustomField({
@@ -48,3 +48,4 @@ export const mediaManifest: WidgetConfig = {
         ]
     }
 };
+

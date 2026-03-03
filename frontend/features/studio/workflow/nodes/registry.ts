@@ -92,6 +92,11 @@ export function getNodesByCategory(category: string): NodeManifest[] {
 // ============================================================================
 
 function manifestToComponentConfig(manifest: NodeManifest): ComponentConfig {
+    const inspector = manifest.inspector;
+    const fields = inspector?.sections
+        ? inspector.sections.flatMap((section) => section.fields)
+        : inspector?.fields ?? [];
+
     return {
         key: manifest.key,
         label: manifest.label,
@@ -101,10 +106,7 @@ function manifestToComponentConfig(manifest: NodeManifest): ComponentConfig {
         icon: manifest.icon,
         defaults: manifest.defaults,
         inspector: {
-            // Flatten sections into fields for compatibility
-            fields: manifest.inspector.sections
-                ? manifest.inspector.sections.flatMap(s => s.fields)
-                : manifest.inspector.fields || [],
+            fields,
         },
     };
 }

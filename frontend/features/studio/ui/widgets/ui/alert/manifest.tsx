@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { AlertWidget } from './AlertWidget';
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
@@ -42,8 +42,9 @@ export const alertManifest: WidgetConfig = {
     title: 'Alert Title',
     description: 'This is an alert description.',
   },
-  render: (props) => <AlertWidget {...props} />,
+  render: (props) => <AlertWidget {...(props as any)} />,
   inspector: {
     fields: alertInspectorConfig,
   },
 };
+

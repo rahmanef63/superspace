@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { AvatarWidget } from './AvatarWidget';
 import React from 'react';
 import { User } from 'lucide-react';
@@ -42,8 +42,9 @@ export const avatarManifest: WidgetConfig = {
     fallback: 'CN',
     size: 'md',
   },
-  render: (props) => <AvatarWidget {...props} />,
+  render: (props) => <AvatarWidget {...(props as any)} />,
   inspector: {
     fields: avatarInspectorConfig,
   },
 };
+

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -10,7 +10,7 @@ import type { Id } from "@convex/_generated/dataModel";
  * Currently uses local state to prevent build errors.
  * 
  * TODO: Integrate with actual Convex currency API when ready
- * - Use useQuery(api.features.cms_lite.currency.queries.getRates)
+ * - Use useQuery(api.features.cmsLite.currency.queries.getRates)
  */
 
 interface CurrencyContextType {
@@ -32,7 +32,7 @@ export const CurrencyProvider: React.FC<{
   const [isLoading] = useState(false);
   
   // TODO: Replace with Convex query
-  // const currencyData = useQuery(api.features.cms_lite.currency.queries.getRates, { workspaceId });
+  // const currencyData = useQuery(api.features.cmsLite.currency.queries.getRates, { workspaceId });
   const availableCurrencies = ["USD", "SAR", "EUR", "IDR"];
   const baseCurrency = "USD";
 

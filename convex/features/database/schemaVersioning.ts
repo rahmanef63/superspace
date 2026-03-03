@@ -6,6 +6,19 @@
 import { v } from "convex/values";
 import { mutation, query } from "../../_generated/server";
 
+type MigrationStepType =
+  | "rename_field"
+  | "change_type"
+  | "merge_fields"
+  | "split_field"
+  | "compute_values"
+  | "delete_field";
+
+interface MigrationStep {
+  type: MigrationStepType;
+  config: Record<string, any>;
+}
+
 // =============================================================================
 // Queries
 // =============================================================================
@@ -331,12 +344,13 @@ export const executeMigration = mutation({
       const errorLog: string[] = [];
 
       // Process migration steps
-      if (migration.migrationSteps) {
+      const migrationSteps = (migration.migrationSteps ?? []) as MigrationStep[];
+      if (migrationSteps.length > 0) {
         for (const row of rows) {
           try {
             let updatedData = { ...row.data };
 
-            for (const step of migration.migrationSteps) {
+            for (const step of migrationSteps) {
               switch (step.type) {
                 case "rename_field":
                   if (step.config.oldName in updatedData) {

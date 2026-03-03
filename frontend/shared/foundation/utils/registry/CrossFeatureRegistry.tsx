@@ -35,6 +35,7 @@ export interface ComponentConfig {
     fields: InspectorField[];
   };
   inspectorFields?: InspectorField[];
+  inspectorPreset?: string;
   autoConnect?: Record<string, {
     type: string;
     props?: Record<string, any>;

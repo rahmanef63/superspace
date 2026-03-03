@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { CollapsibleWidget } from './CollapsibleWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -14,7 +14,7 @@ export const collapsibleManifest: WidgetConfig = {
         defaultOpen: false,
         className: '',
     },
-    render: (props, children) => <CollapsibleWidget {...props}>{children}</CollapsibleWidget>,
+    render: (props, children) => <CollapsibleWidget {...(props as any)}>{children}</CollapsibleWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -34,3 +34,4 @@ export const collapsibleManifest: WidgetConfig = {
         ),
     },
 };
+

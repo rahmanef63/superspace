@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { AspectRatioWidget } from './AspectRatioWidget';
 import React from 'react';
 import { RectangleHorizontal } from 'lucide-react';
@@ -28,8 +28,9 @@ export const aspectRatioManifest: WidgetConfig = {
     ratio: 16/9,
     backgroundColor: undefined,
   },
-  render: (props, children) => <AspectRatioWidget {...props}>{children}</AspectRatioWidget>,
+  render: (props, children) => <AspectRatioWidget {...(props as any)}>{children}</AspectRatioWidget>,
   inspector: {
     fields: aspectRatioInspectorConfig,
   },
 };
+

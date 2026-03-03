@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { TableBlock } from '@/frontend/features/studio/ui/widgets/blocks/Table';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Table } from 'lucide-react';
@@ -13,7 +13,7 @@ export const tableManifest: WidgetConfig = {
         searchable: true,
         className: ""
     },
-    render: (props) => <TableBlock {...props} columns={[]} data={[]} />,
+    render: (props) => <TableBlock {...(props as any)} columns={[]} data={[]} />,
     inspector: {
         fields: [
             createCustomField({
@@ -29,3 +29,4 @@ export const tableManifest: WidgetConfig = {
         ]
     }
 };
+

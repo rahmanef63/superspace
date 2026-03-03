@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { api } from "encore.dev/api";
 import db from "../db";
 

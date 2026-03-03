@@ -220,8 +220,8 @@ export const exportWorkspace = mutation({
       },
       roles: roles.map((r) => ({
         name: r.name,
-        slug: r.slug,
-        description: r.description,
+        slug: r.slug ?? normalizeSlug(r.name),
+        description: r.description ?? undefined,
         permissions: r.permissions as string[],
         color: r.color,
         level: r.level,

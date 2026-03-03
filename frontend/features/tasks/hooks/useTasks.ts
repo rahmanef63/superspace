@@ -24,7 +24,7 @@ export function useTasks(workspaceId?: Id<"workspaces"> | null) {
 
   const tasksQuery = useQuery(
     api.features.tasks.queries.list,
-    workspaceId ? { workspaceId } : undefined,
+    workspaceId ? { workspaceId } : "skip",
   )
 
   const createTaskMutation = useMutation(api.features.tasks.mutations.create as any)
@@ -43,10 +43,10 @@ export function useTasks(workspaceId?: Id<"workspaces"> | null) {
       status: task.status as TaskStatus,
       priority: task.priority as TaskPriority,
       dueDate: task.dueDate ?? null,
-      assigneeId: task.assigneeId ?? null,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-      completedAt: task.completedAt ?? null,
+      assigneeId: (task as any).assigneeId ?? (task as any).assignedTo ?? null,
+      createdAt: (task as any).createdAt ?? task._creationTime,
+      updatedAt: (task as any).updatedAt ?? task._creationTime,
+      completedAt: (task as any).completedAt ?? (task as any).completedDate ?? null,
     }))
   }, [tasksQuery])
 

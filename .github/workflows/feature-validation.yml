@@ -58,6 +58,9 @@ jobs:
       - name: Validate audit logging
         run: pnpm run validate:audit
 
+      - name: Validate feature naming (strict)
+        run: pnpm run validate:feature-naming -- --strict
+
       - name: Validate feature config schema
         run: pnpm run validate:features
 

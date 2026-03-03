@@ -215,7 +215,7 @@ export const adjustStock = mutation({
     args: {
         workspaceId: v.id("workspaces"),
         itemId: v.id("inventoryItems"),
-        warehouseId: v.optional(v.id("warehouses")),
+        warehouseId: v.id("warehouses"),
         adjustmentType: v.union(
             v.literal("received"),
             v.literal("sold"),
@@ -286,36 +286,33 @@ export const adjustStock = mutation({
             serialNumbers: [],
         })
 
-        // Update warehouse stock if warehouse specified
-        if (args.warehouseId) {
-            const existingStock = await ctx.db
-                .query("stockLevels")
-                .withIndex("by_item_warehouse", (q) =>
-                    q.eq("item", args.itemId).eq("warehouse", args.warehouseId!)
-                )
-                .first()
+        const existingStock = await ctx.db
+            .query("stockLevels")
+            .withIndex("by_item_warehouse", (q) =>
+                q.eq("item", args.itemId).eq("warehouse", args.warehouseId)
+            )
+            .first()
 
-            if (existingStock) {
-                await ctx.db.patch(existingStock._id, {
-                    quantityOnHand: existingStock.quantityOnHand + args.quantity,
-                    quantityAvailable: existingStock.quantityAvailable + args.quantity,
-                    updatedAt: now,
-                })
-            } else {
-                await ctx.db.insert("stockLevels", {
-                    workspaceId: args.workspaceId,
-                    item: args.itemId,
-                    warehouse: args.warehouseId,
-                    quantityOnHand: args.quantity,
-                    quantityCommitted: 0,
-                    quantityAvailable: args.quantity,
-                    quantityOnOrder: 0,
-                    quantityInTransit: 0,
-                    totalCost: 0,
-                    averageCost: 0,
-                    updatedAt: now,
-                })
-            }
+        if (existingStock) {
+            await ctx.db.patch(existingStock._id, {
+                quantityOnHand: existingStock.quantityOnHand + args.quantity,
+                quantityAvailable: existingStock.quantityAvailable + args.quantity,
+                updatedAt: now,
+            })
+        } else {
+            await ctx.db.insert("stockLevels", {
+                workspaceId: args.workspaceId,
+                item: args.itemId,
+                warehouse: args.warehouseId,
+                quantityOnHand: args.quantity,
+                quantityCommitted: 0,
+                quantityAvailable: args.quantity,
+                quantityOnOrder: 0,
+                quantityInTransit: 0,
+                totalCost: 0,
+                averageCost: 0,
+                updatedAt: now,
+            })
         }
 
         await logAuditEvent(ctx, {

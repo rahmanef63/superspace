@@ -6,6 +6,7 @@ import { Input, Select } from "../../../../shared/components/Form";
 import { ImageEditor } from "../../../../shared/components/ImageEditor";
 import { RichTextEditor } from "../../../../shared/components/RichTextEditor";
 import { useAutosave, loadDraft, hasDraft } from "../../../../shared/hooks/useAutosave";
+import type { Post } from "../../../../types/cms-types";
 
 import { logger } from "../../../../shared/utils/logger";
 
@@ -17,7 +18,7 @@ interface PostFormProps {
 }
 
 export interface PostFormData {
-  id?: number;
+  id?: number | string;
   slug: string;
   locale: string;
   title: string;
@@ -50,15 +51,15 @@ export function PostForm({ isOpen, onClose, onSave, post }: PostFormProps) {
     if (post) {
       setForm({
         id: post.id,
-        slug: post.slug,
-        locale: post.locale,
+        slug: post.slug ?? "",
+        locale: post.locale ?? "id",
         title: post.title,
         excerpt: post.excerpt || "",
-        body: post.body,
+        body: post.body || post.content || "",
         coverImage: post.coverImage || "",
         publishedAt: post.publishedAt ? new Date(post.publishedAt) : undefined,
         scheduledPublishAt: (post as any).scheduledPublishAt ? new Date((post as any).scheduledPublishAt) : undefined,
-        status: post.status,
+        status: post.status || "draft",
       });
     } else {
       setForm({

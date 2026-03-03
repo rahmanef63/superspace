@@ -1,6 +1,12 @@
 import React from 'react';
 import type { CMSNode } from '@/frontend/features/studio/ui/types';
-import { Select } from '@/components/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
 
 interface NodeSelectorFieldProps {
@@ -33,13 +39,21 @@ export const NodeSelectorField: React.FC<NodeSelectorFieldProps> = ({
   });
 
   return (
-    <Select value={value} onChange={onChange}>
-      <option value="">{placeholder}</option>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
+    <Select
+      value={value || '__none'}
+      onValueChange={(nextValue) => onChange(nextValue === '__none' ? '' : nextValue)}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__none">{placeholder}</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
     </Select>
   );
 };

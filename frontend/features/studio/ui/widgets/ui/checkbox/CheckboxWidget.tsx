@@ -1,5 +1,6 @@
 import React from 'react';
-import { Checkbox } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CheckboxWidgetProps {
   checked?: boolean;
@@ -16,13 +17,19 @@ export const CheckboxWidget: React.FC<CheckboxWidgetProps> = ({
   disabled = false,
   className,
 }) => {
+  const id = React.useId();
+
   return (
-    <Checkbox
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      label={label}
-      disabled={disabled}
-      className={className}
-    />
+    <div className={cn("flex items-center gap-2", className)}>
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={(nextChecked) => onCheckedChange?.(nextChecked === true)}
+        disabled={disabled}
+      />
+      <label htmlFor={id} className="text-sm">
+        {label}
+      </label>
+    </div>
   );
 };

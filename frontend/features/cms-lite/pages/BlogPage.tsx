@@ -7,18 +7,20 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useBackend } from "../shared/hooks/useBackend";
+import type { Post } from "../types/cms-types";
 
 import { BookOpen } from "lucide-react";
 import { SearchFilterSort } from "../shared/components/SearchFilterSort";
 
 export default function BlogPage() {
   const { t, locale } = useLanguage();
+  const backend = useBackend();
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
-    const backend = useBackend();    backend.posts.list({ locale }).then((res) => setAllPosts(res.posts));
+    backend.posts.list({ locale }).then((res) => setAllPosts(res.posts));
   }, [locale]);
 
   const posts = useMemo(() => {

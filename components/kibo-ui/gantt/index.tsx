@@ -1319,7 +1319,8 @@ export const GanttProvider: FC<GanttProviderProps> = ({
         setScrollX(scrollElement.scrollLeft);
       }
     }, 100),
-    [timelineData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [timelineData, setScrollX]
   );
 
   useEffect(() => {

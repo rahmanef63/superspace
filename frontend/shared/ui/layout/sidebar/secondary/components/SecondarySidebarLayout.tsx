@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { TwoColumnLayout } from "../../../container/two-column";
 import { SecondarySidebarHeader, type SecondarySidebarHeaderProps } from "./SecondarySidebarHeader";
@@ -70,7 +70,7 @@ function SecondarySidebarLayoutBase({
 
 type SecondarySidebarLayoutComponent = ((
   props: SecondarySidebarLayoutProps
-) => JSX.Element) & {
+) => ReactElement) & {
   Header: typeof SecondarySidebarHeader;
   Sidebar: typeof SecondarySidebar;
 };

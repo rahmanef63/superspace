@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { EventsBlock } from './EventsBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Calendar } from 'lucide-react';
@@ -14,7 +14,7 @@ export const eventsManifest: WidgetConfig = {
         events: [],
         showOverdue: true
     },
-    render: (props: any) => <EventsBlock {...props} />,
+    render: (props: any) => <EventsBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({
@@ -35,8 +35,9 @@ export const eventsManifest: WidgetConfig = {
             createCustomField({
                 key: 'showOverdue',
                 label: 'Show Overdue',
-                type: 'boolean'
+                type: 'switch'
             }),
         ]
     }
 };
+

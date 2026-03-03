@@ -1,5 +1,13 @@
 import React from 'react';
-import { Table } from '@/components/ui';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface TableWidgetProps {
   columns?: Array<{
@@ -25,11 +33,24 @@ export const TableWidget: React.FC<TableWidgetProps> = ({
   className,
 }) => {
   return (
-    <Table
-      columns={columns}
-      data={data}
-      caption={caption}
-      className={className}
-    />
+    <Table className={className}>
+      {caption ? <TableCaption>{caption}</TableCaption> : null}
+      <TableHeader>
+        <TableRow>
+          {columns.map((column) => (
+            <TableHead key={column.key}>{column.header}</TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((row, rowIndex) => (
+          <TableRow key={rowIndex}>
+            {columns.map((column) => (
+              <TableCell key={column.key}>{String(row[column.key] ?? '')}</TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };

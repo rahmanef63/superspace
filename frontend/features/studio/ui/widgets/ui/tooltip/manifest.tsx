@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { TooltipWidget } from './TooltipWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -15,7 +15,7 @@ export const tooltipManifest: WidgetConfig = {
         triggerText: 'Hover me',
         className: '',
     },
-    render: (props, children) => <TooltipWidget {...props}>{children}</TooltipWidget>,
+    render: (props, children) => <TooltipWidget {...(props as any)}>{children}</TooltipWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -42,3 +42,4 @@ export const tooltipManifest: WidgetConfig = {
         ),
     },
 };
+

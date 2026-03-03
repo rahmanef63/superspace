@@ -17,7 +17,7 @@ export default function AdminQuicklinks() {
   const { toast } = useToast();
   
   // Use Convex query for real-time data
-  const quicklinksData = useQuery(api.features.cms_lite.quicklinks.api.queries.listAllQuicklinks, {});
+  const quicklinksData = useQuery(api.features.cmsLite.quicklinks.api.queries.listAllQuicklinks, {});
   const quicklinks = quicklinksData?.quicklinks || [];
   const loading = quicklinksData === undefined;
   

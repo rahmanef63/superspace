@@ -57,7 +57,10 @@ function Branch({
   const totalBranches = React.useMemo(() => {
     let count = 0
     React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child) && child.type === BranchMessages) {
+      if (
+        React.isValidElement<BranchMessagesProps>(child) &&
+        child.type === BranchMessages
+      ) {
         count = React.Children.count(child.props.children)
       }
     })

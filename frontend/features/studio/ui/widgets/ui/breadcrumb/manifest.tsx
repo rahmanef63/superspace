@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { BreadcrumbWidget } from './BreadcrumbWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -14,7 +14,7 @@ export const breadcrumbManifest: WidgetConfig = {
         separator: 'chevron',
         className: '',
     },
-    render: (props) => <BreadcrumbWidget {...props} />,
+    render: (props) => <BreadcrumbWidget {...(props as any)} />,
     inspector: {
         fields: combineFields(
             [
@@ -35,3 +35,4 @@ export const breadcrumbManifest: WidgetConfig = {
         ),
     },
 };
+

@@ -29,6 +29,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+/build_*.log
+/build_errors.txt
+/trace_theme.log
+/tsc-*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -47,4 +51,9 @@ tsc-output.txt
 
 # claude code local settings (machine-specific)
 .claude/settings.local.json
+
+# local tooling/temp files (machine-specific and can contain sensitive data)
+/.codex-tmp/
+/test.json
+/null
 

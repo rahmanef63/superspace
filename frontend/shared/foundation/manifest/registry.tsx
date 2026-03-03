@@ -38,6 +38,7 @@ import {
   Home,
   Layers3,
   Library,
+  Lightbulb,
   LineChart,
   Megaphone,
   Menu,
@@ -146,7 +147,7 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     title: "Contacts",
     description: "Manage your contacts and connections",
     icon: Contact,
-    component: lazy(() => import("@/frontend/features/contact/page")),
+    component: lazy(() => import("@/frontend/features/contacts/page")),
     path: "/dashboard/contacts",
     aliases: undefined,
     patterns: undefined,
@@ -180,10 +181,10 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     description: "Install and manage navigation menus",
     icon: Menu,
     component: lazy(async () => {
-        const module = await import("@/frontend/features/menu-store")
+        const module = await import("@/frontend/features/menus")
         const Component = module.MenuStorePage
         if (!Component) {
-          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menu-store")
+          throw new Error("Failed to load component MenuStorePage from @/frontend/features/menus")
         }
         return { default: Component }
       }),
@@ -474,6 +475,17 @@ export const DEFAULT_PAGE_MANIFEST: PageManifestItem[] = [
     icon: Shield,
     component: lazy(() => import("@/frontend/features/platform-admin/page")),
     path: "/dashboard/platform-admin",
+    aliases: undefined,
+    patterns: undefined,
+  },
+  {
+    id: "example",
+    componentId: "ExamplePage",
+    title: "Example Feature",
+    description: "A minimal example feature demonstrating SuperSpace patterns and conventions",
+    icon: Lightbulb,
+    component: lazy(() => import("@/frontend/features/example/page")),
+    path: "/dashboard/example",
     aliases: undefined,
     patterns: undefined,
   }

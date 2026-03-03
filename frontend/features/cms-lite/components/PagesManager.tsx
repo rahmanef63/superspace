@@ -52,13 +52,13 @@ export default function PagesManager() {
   });
   
   // Queries
-  const pagesData = useQuery(api.features.cms_lite.pages.api.queries.listPages, {});
+  const pagesData = useQuery(api.features.cmsLite.pages.api.queries.listPages, {});
   const pages = pagesData?.pages ?? [];
   
   // Mutations
-  const createPage = useMutation(api.features.cms_lite.pages.api.mutations.createPage);
-  const updatePage = useMutation(api.features.cms_lite.pages.api.mutations.updatePage);
-  const deletePage = useMutation(api.features.cms_lite.pages.api.mutations.deletePage);
+  const createPage = useMutation(api.features.cmsLite.pages.api.mutations.createPage);
+  const updatePage = useMutation(api.features.cmsLite.pages.api.mutations.updatePage);
+  const deletePage = useMutation(api.features.cmsLite.pages.api.mutations.deletePage);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

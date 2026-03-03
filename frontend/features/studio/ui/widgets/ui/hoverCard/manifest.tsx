@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { HoverCardWidget } from './HoverCardWidget';
 import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
@@ -17,7 +17,7 @@ export const hoverCardManifest: WidgetConfig = {
         openDelay: 200,
         className: '',
     },
-    render: (props, children) => <HoverCardWidget {...props}>{children}</HoverCardWidget>,
+    render: (props, children) => <HoverCardWidget {...(props as any)}>{children}</HoverCardWidget>,
     inspector: {
         fields: combineFields(
             [
@@ -56,3 +56,4 @@ export const hoverCardManifest: WidgetConfig = {
         ),
     },
 };
+

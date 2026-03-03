@@ -12,7 +12,6 @@ export {
   useCommunications,
   useConversation,
   useCall,
-  useCallHistory,
 } from "./useCommunications"
 
 // Sample data hook (for development/demo)
@@ -49,15 +48,14 @@ export {
   usePresence,
   useUserPresence,
   usePresenceMutations,
-  useAutoPresence,
 } from "./usePresence"
 
 // Direct message hooks
 export {
   useDirectConversations,
+  useDirectConversation,
   useDirectMessages,
   useDirectMessageMutations,
-  useStartConversation,
 } from "./useDirectMessages"
 
 // AI hooks
@@ -65,5 +63,4 @@ export {
   useAIBots,
   useChannelBots,
   useAIMutations,
-  useAIFeatures,
 } from "./useAI"

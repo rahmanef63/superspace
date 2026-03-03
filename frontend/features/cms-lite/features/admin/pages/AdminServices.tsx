@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useBackend } from "../../../shared/hooks/useBackend";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Form";
@@ -59,9 +59,9 @@ export default function AdminServices() {
     setEditingService(service);
     setForm({
       slug: service.slug,
-      labelId: service.labelId,
-      labelEn: service.labelEn,
-      labelAr: service.labelAr,
+      labelId: service.labelId ?? "",
+      labelEn: service.labelEn ?? "",
+      labelAr: service.labelAr ?? "",
     });
     setIsFormOpen(true);
   };
@@ -74,7 +74,7 @@ export default function AdminServices() {
         await backend.services.update({
           id: editingService.id,
           slug: form.slug,
-          displayOrder: editingService.displayOrder,
+          displayOrder: editingService.displayOrder ?? editingService.order ?? 0,
           labelId: form.labelId,
           labelEn: form.labelEn,
           labelAr: form.labelAr,
@@ -109,7 +109,7 @@ export default function AdminServices() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     if (!confirm("Are you sure you want to delete this service?")) return;
 
     logger.delete("service", "database/services table", id);
@@ -128,7 +128,7 @@ export default function AdminServices() {
     }
   };
 
-  const handleMove = async (id: number, direction: "up" | "down") => {
+  const handleMove = async (id: number | string, direction: "up" | "down") => {
     const index = services.findIndex((s) => s.id === id);
     if (
       (direction === "up" && index === 0) ||

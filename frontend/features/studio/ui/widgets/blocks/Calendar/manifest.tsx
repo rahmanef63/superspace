@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { CalendarBlock } from './CalendarBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Calendar } from 'lucide-react';
@@ -12,7 +12,7 @@ export const calendarManifest: WidgetConfig = {
         mode: "single",
         className: ""
     },
-    render: (props: any) => <CalendarBlock {...props} />,
+    render: (props: any) => <CalendarBlock {...(props as any)} />,
     inspector: {
         fields: [
             createCustomField({
@@ -24,3 +24,4 @@ export const calendarManifest: WidgetConfig = {
         ]
     }
 };
+

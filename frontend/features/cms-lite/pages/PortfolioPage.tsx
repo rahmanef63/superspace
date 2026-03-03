@@ -8,6 +8,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { ImageWithLightbox } from "../shared/components/Lightbox";
 import { ShareButtons } from "../shared/components/ShareButtons";
 import { useBackend } from "../shared/hooks/useBackend";
+import type { PortfolioItem } from "../types/cms-types";
 
 import { Briefcase } from "lucide-react";
 import { SearchFilterSort } from "../shared/components/SearchFilterSort";
@@ -15,12 +16,13 @@ import ContentRecommendations from "../shared/components/ContentRecommendations"
 
 export default function PortfolioPage() {
   const { t, locale } = useLanguage();
+  const backend = useBackend();
   const [allItems, setAllItems] = useState<PortfolioItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
-    const backend = useBackend();    backend.portfolio.list({ locale }).then((res) => setAllItems(res.items));
+    backend.portfolio.list({ locale }).then((res) => setAllItems(res.items));
   }, [locale]);
 
   const items = useMemo(() => {
@@ -32,16 +34,16 @@ export default function PortfolioPage() {
         (item) =>
           item.title.toLowerCase().includes(query) ||
           item.description?.toLowerCase().includes(query) ||
-          item.tags.some((tag) => tag.toLowerCase().includes(query))
+          (item.tags ?? []).some((tag: string) => tag.toLowerCase().includes(query))
       );
     }
 
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return b.id - a.id;
+          return Number(b.id) - Number(a.id);
         case "oldest":
-          return a.id - b.id;
+          return Number(a.id) - Number(b.id);
         case "title":
           return a.title.localeCompare(b.title);
         default:
@@ -95,28 +97,28 @@ export default function PortfolioPage() {
                   <ShareButtons
                     url={`/portfolio#${item.id}`}
                     title={item.title}
-                    description={item.description}
+                    description={item.description ?? undefined}
                     variant="compact"
                   />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {item.images.map((img, idx) => (
-                    <div key={img.id} className="aspect-square bg-muted rounded-lg overflow-hidden">
+                  {(item.images ?? []).map((img, idx) => (
+                    <div key={`${img.imageUrl}-${idx}`} className="aspect-square bg-muted rounded-lg overflow-hidden">
                       <ImageWithLightbox
                         src={img.imageUrl}
                         alt={img.altText || item.title}
                         className="w-full h-full object-cover hover:scale-105 transition-transform"
-                        images={item.images.map(i => i.imageUrl)}
-                        captions={item.images.map(i => i.altText || item.title)}
+                        images={(item.images ?? []).map((i) => i.imageUrl)}
+                        captions={(item.images ?? []).map((i) => i.altText || item.title)}
                       />
                     </div>
                   ))}
                 </div>
 
-                {item.tags.length > 0 && (
+                {(item.tags ?? []).length > 0 && (
                   <div className="flex gap-2 mt-6 flex-wrap">
-                    {item.tags.map((tag, idx) => (
+                    {(item.tags ?? []).map((tag: string, idx: number) => (
                       <span key={idx} className="px-3 py-1 bg-muted rounded-full text-sm">
                         {tag}
                       </span>

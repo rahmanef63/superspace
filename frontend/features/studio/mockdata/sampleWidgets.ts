@@ -1,5 +1,5 @@
-import type { CMSNode } from '../shared/types';
-import { uid } from '../shared/lib/utils';
+import type { CMSNode } from '../ui/types';
+import { uid } from '../ui/lib/utils';
 
 export const createSampleWidget = (type: string, position = { x: 150, y: 150 }): CMSNode => {
   const id = uid();

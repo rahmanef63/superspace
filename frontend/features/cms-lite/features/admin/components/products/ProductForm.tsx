@@ -3,6 +3,7 @@ import { Modal } from "../../../../shared/components/Modal";
 import { Button } from "../../../../shared/components/Button";
 import { Input, Textarea, Select } from "../../../../shared/components/Form";
 import { ImageEditor } from "../../../../shared/components/ImageEditor";
+import type { Product } from "../../../../types/cms-types";
 
 import { validateForm, required, slug as slugValidator, min, url as urlValidator, type ValidationErrors } from "../../../../shared/utils/validation";
 import { logger } from "../../../../shared/utils/logger";
@@ -15,7 +16,7 @@ interface ProductFormProps {
 }
 
 export interface ProductFormData {
-  id?: number;
+  id?: number | string;
   slug: string;
   titleId: string;
   titleEn: string;

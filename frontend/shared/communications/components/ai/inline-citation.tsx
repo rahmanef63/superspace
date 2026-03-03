@@ -160,20 +160,21 @@ function InlineCitationCarousel({ className, children, ...props }: InlineCitatio
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const [totalItems, setTotalItems] = React.useState(0)
 
+  const isCarouselContentElement = React.useCallback(
+    (child: React.ReactNode): child is React.ReactElement<InlineCitationCarouselContentProps> =>
+      React.isValidElement<InlineCitationCarouselContentProps>(child) &&
+      (child.type as { displayName?: string })?.displayName === "InlineCitationCarouselContent",
+    []
+  )
+
   // Count children to set total
   React.useEffect(() => {
-    const count = React.Children.count(
-      React.Children.toArray(children).find(
-        (child) => React.isValidElement(child) && (child.type as any)?.displayName === "InlineCitationCarouselContent"
-      )
-    )
-    // Actually count items in content
     React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child) && (child.type as any)?.displayName === "InlineCitationCarouselContent") {
+      if (isCarouselContentElement(child)) {
         setTotalItems(React.Children.count(child.props.children))
       }
     })
-  }, [children])
+  }, [children, isCarouselContentElement])
 
   const goToNext = React.useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % totalItems)

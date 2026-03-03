@@ -32,7 +32,7 @@ export function FileUploadZone({
   multiple = true
 }: FileUploadZoneProps) {
   const { currentWorkspace } = useWorkspaceContext();
-  const { upload } = useUploadAsset();
+  const { uploadAsset } = useUploadAsset();
   
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [error, setError] = useState<Error | null>(null);
@@ -56,19 +56,14 @@ export function FileUploadZone({
       const fileIndex = uploadingFiles.length + i;
 
       try {
-        const assetId = await upload(
-          currentWorkspace._id,
-          file,
-          (progress) => {
-            setUploadingFiles(prev => {
-              const updated = [...prev];
-              if (updated[fileIndex]) {
-                updated[fileIndex].progress = progress;
-              }
-              return updated;
-            });
+        const assetId = await uploadAsset(file, currentWorkspace._id);
+        setUploadingFiles(prev => {
+          const updated = [...prev];
+          if (updated[fileIndex]) {
+            updated[fileIndex].progress = 100;
           }
-        );
+          return updated;
+        });
 
         setTimeout(() => {
           setUploadingFiles(prev => prev.filter((_, idx) => idx !== fileIndex));
@@ -85,7 +80,7 @@ export function FileUploadZone({
         });
       }
     }
-  }, [currentWorkspace, upload, uploadingFiles.length, onUploadComplete]);
+  }, [currentWorkspace, uploadAsset, uploadingFiles.length, onUploadComplete]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

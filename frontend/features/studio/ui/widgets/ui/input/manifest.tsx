@@ -1,4 +1,4 @@
-import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig, InspectorField } from '@/frontend/features/studio/ui/types';
 import { InputWidget } from './InputWidget';
 import React from 'react';
 import { TextCursorInput } from 'lucide-react';
@@ -54,8 +54,9 @@ export const inputManifest: WidgetConfig = {
         required: false,
         disabled: false,
     },
-    render: (props) => <InputWidget {...props} />,
+    render: (props) => <InputWidget {...(props as any)} />,
     inspector: {
         fields: inputInspectorConfig,
     },
 };
+

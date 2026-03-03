@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '../../../types/index';
+﻿import type { WidgetConfig } from '../../../types/index';
 import { ChartBlock } from './ChartBlock';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { Activity } from 'lucide-react';
@@ -14,7 +14,7 @@ export const chartManifest: WidgetConfig = {
         description: "Monthly revenue stats",
         className: ""
     },
-    render: (props: any) => <ChartBlock {...props} type={props.type || "bar"} data={props.data || [{ name: 'A', value: 100 }, { name: 'B', value: 200 }]} />,
+    render: (props: any) => <ChartBlock {...(props as any)} type={props.type || "bar"} data={props.data || [{ name: 'A', value: 100 }, { name: 'B', value: 200 }]} />,
     inspector: {
         fields: [
             createCustomField({
@@ -31,3 +31,4 @@ export const chartManifest: WidgetConfig = {
         ]
     }
 };
+

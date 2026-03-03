@@ -33,14 +33,14 @@ export type SupportDashboardProps = {
 const useSupportTickets = (workspaceId: Id<"workspaces"> | null) => {
   const rawTickets = useQuery(
     api.features.support.queries.getWorkspaceTickets,
-    workspaceId ? { workspaceId } : undefined
+    workspaceId ? { workspaceId } : "skip"
   );
 
   const tickets: Ticket[] = (rawTickets ?? []).map(ticket => ({
-    id: ticket._id,
-    title: ticket.subject ?? "Support Request",
+    id: String(ticket._id),
+    title: (ticket as any).subject ?? (ticket as any).title ?? "Support Request",
     status: ticket.status as "open" | "pending" | "resolved" | "closed",
-    customerId: ticket.customerId,
+    customerId: String(ticket.customerId),
     customerName: ticket.customer?.name ?? "Customer",
     createdAt: ticket._creationTime ?? Date.now(),
     priority: ticket.priority as "low" | "normal" | "high" | undefined,

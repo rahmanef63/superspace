@@ -18,7 +18,7 @@ export function registerCmsLiteAgent() {
             data: {
               featureSlug: "cms-lite",
               workspaceId: ctx.workspaceId,
-              note: "Scaffolded tool. Implement real tools under convex/features/cms_lite/agents.",
+              note: "Scaffolded tool. Implement real tools under convex/features/cmsLite/agents.",
             },
             message: "OK",
           }

@@ -18,7 +18,7 @@
 
 **✅ ALLOWED:**
 - Feature-specific code in `frontend/features/{slug}/`
-- Feature-specific backend in `convex/features/{slug}/`
+- Feature-specific backend in `convex/features/{convexSlug}/`
 - Feature-specific tests in `tests/features/{slug}/`
 - Navigation definitions in `config.ts` (using `navigation` property)
 
@@ -152,7 +152,7 @@ frontend/features/{slug}/
 ├── hooks/              ✅ Feature hooks
 └── api/                ✅ Feature API adapters
 
-convex/features/{slug}/
+convex/features/{convexSlug}/
 ├── index.ts            ✅ Feature handlers
 ├── queries.ts          ✅ Feature queries
 ├── mutations.ts        ✅ Feature mutations
@@ -162,6 +162,25 @@ tests/features/{slug}/
 ├── {slug}.test.ts      ✅ Feature tests
 └── {slug}.integration.test.ts  ✅ Integration tests
 ```
+
+Naming convention:
+- `feature.id` MUST be `kebab-case`
+- `frontend/features/{slug}` SHOULD match `feature.id` (legacy exceptions are allowed temporarily)
+- `convex/features/{convexSlug}` MUST use `camelCase` derived from `feature.id`
+
+Validation codes (`pnpm run validate:feature-naming`):
+
+| Code | Severity | Rule | Quick Fix |
+|------|----------|------|-----------|
+| `FS001` | Error | `feature.id` missing/invalid (must be kebab-case) | Set `id` in `config.ts` to kebab-case (for example `my-feature`). |
+| `FS002` | Warning | Frontend folder differs from `feature.id` | Rename folder to match `feature.id` when legacy migration is ready. |
+| `FS003` | Error | `hasConvex=true` but convex folder not found | Create `convex/features/{convexSlug}` or set `hasConvex` to `false`. |
+| `FS004` | Warning | Convex folder not using expected camelCase slug | Rename convex folder to expected `camelCase(feature.id)` after import updates. |
+| `FS005` | Error | Duplicate `feature.id` across configs | Ensure each feature config has a unique `id`. |
+
+Validation modes:
+- Default mode: fails on errors only.
+- Strict mode (`--strict`): fails on errors and warnings (used in CI).
 
 #### 2. Auto-Discovery Systems
 ```

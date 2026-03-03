@@ -7,7 +7,6 @@ import {
   SharedSystemError,
   ValidationError,
   RegistryError,
-  ConversionError,
   ImportError,
   ExportError,
   NodeError,
@@ -17,6 +16,7 @@ import {
   type ErrorHandler,
   DefaultErrorHandler,
 } from "../../types"
+import { ConversionError } from "../../types/errors"
 
 export class ErrorHandlerManager {
   private handlers: ErrorHandler[] = []

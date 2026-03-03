@@ -19,7 +19,7 @@ type RouteStat = {
 };
 
 const DEFAULT_BUDGETS: Array<{ route: string; max: string }> = [
-  { route: "/dashboard/[[...slug]]", max: "450 kB" },
+  { route: "/dashboard/[...slug]", max: "450 kB" },
   { route: "/dashboard/workspace", max: "500 kB" },
   { route: "/dashboard/workspace-store", max: "550 kB" },
   { route: "/mock-dashboard/[[...slug]]", max: "250 kB" },

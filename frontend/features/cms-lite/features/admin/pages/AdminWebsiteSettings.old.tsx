@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWebsiteSettings, useWorkspaceId } from "../../../shared/hooks/useWebsiteSettings";
 import Image from "next/image";
 import { Button } from "../../../shared/components/Button";
@@ -61,7 +61,7 @@ export default function AdminWebsiteSettings() {
 
   // Check subdomain availability
   const subdomainAvailable = useQuery(
-    api.features.cms_lite.website_settings.api.queries.isSubdomainAvailable,
+    api.features.cmsLite.website_settings.api.queries.isSubdomainAvailable,
     checkingSubdomain && form.subdomain 
       ? { subdomain: form.subdomain, excludeWorkspaceId: workspaceId! }
       : "skip"
@@ -260,7 +260,7 @@ export default function AdminWebsiteSettings() {
       await updateSettings(form);
       logger.saved("website settings", "Convex");
       toast({ 
-        title: "✅ Settings saved!",
+        title: "? Settings saved!",
         description: "Your website settings have been updated successfully",
       });
       setValidationErrors({});
@@ -311,12 +311,12 @@ export default function AdminWebsiteSettings() {
       
       logger.action(`Domain ${form.customDomain} verified successfully`);
       toast({ 
-        title: "✅ Domain verified successfully!",
+        title: "? Domain verified successfully!",
         description: `${form.customDomain} is now active`,
       });
     } catch (err: any) {
       logger.error("verify", "domain", err);
-      console.error("❌ Error verify domain:", err);
+      console.error("? Error verify domain:", err);
       toast({
         title: "Domain verification failed",
         description: err?.message || "Please check your DNS settings.",
@@ -332,7 +332,7 @@ export default function AdminWebsiteSettings() {
     try {
       await navigator.clipboard.writeText(text);
       toast({ 
-        title: "✅ Copied!",
+        title: "? Copied!",
         description: `${label} copied to clipboard`,
       });
     } catch (err) {
@@ -390,7 +390,7 @@ export default function AdminWebsiteSettings() {
                 </h4>
                 <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                   {Object.entries(validationErrors).map(([field, error]) => (
-                    <li key={field}>• {error}</li>
+                    <li key={field}>� {error}</li>
                   ))}
                 </ul>
               </div>
@@ -431,7 +431,7 @@ export default function AdminWebsiteSettings() {
             </div>
             
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="font-medium mb-2">🎉 Free Superspace Subdomain</h3>
+              <h3 className="font-medium mb-2">?? Free Superspace Subdomain</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Your website is automatically available at a free subdomain
               </p>
@@ -542,7 +542,7 @@ export default function AdminWebsiteSettings() {
                               <Copy className="w-3 h-3" />
                             </Button>
                           </div>
-                          <code className="text-sm">@ → 76.76.21.21</code>
+                          <code className="text-sm">@ ? 76.76.21.21</code>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-3 rounded border">
                           <div className="flex justify-between items-center mb-2">
@@ -555,11 +555,11 @@ export default function AdminWebsiteSettings() {
                               <Copy className="w-3 h-3" />
                             </Button>
                           </div>
-                          <code className="text-sm">www → cname.superspace.app</code>
+                          <code className="text-sm">www ? cname.superspace.app</code>
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-3">
-                        💡 DNS changes can take up to 24-48 hours to propagate
+                        ?? DNS changes can take up to 24-48 hours to propagate
                       </p>
                     </div>
                   )}
@@ -600,7 +600,7 @@ export default function AdminWebsiteSettings() {
               />
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground">
-                  {form.siteDescription.length}/160 characters • Shown in search results
+                  {form.siteDescription.length}/160 characters � Shown in search results
                 </p>
                 {validationErrors.siteDescription && (
                   <p className="text-xs text-red-600 flex items-center gap-1">
@@ -744,10 +744,10 @@ export default function AdminWebsiteSettings() {
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="font-medium mb-2">📊 How to get your tracking IDs:</h4>
+              <h4 className="font-medium mb-2">?? How to get your tracking IDs:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Google Analytics: Visit <a href="https://analytics.google.com" target="_blank" className="text-primary hover:underline">analytics.google.com</a> → Admin → Data Streams</li>
-                <li>• Facebook Pixel: Visit <a href="https://business.facebook.com" target="_blank" className="text-primary hover:underline">business.facebook.com</a> → Events Manager</li>
+                <li>� Google Analytics: Visit <a href="https://analytics.google.com" target="_blank" className="text-primary hover:underline">analytics.google.com</a> ? Admin ? Data Streams</li>
+                <li>� Facebook Pixel: Visit <a href="https://business.facebook.com" target="_blank" className="text-primary hover:underline">business.facebook.com</a> ? Events Manager</li>
               </ul>
             </div>
           </div>

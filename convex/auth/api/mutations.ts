@@ -111,7 +111,7 @@ export const addToWorkspace = internalMutation({
     const existing = await db
       .query("workspaceMemberships")
       .withIndex("by_workspace_user", (q) =>
-        q.eq("workspaceId", workspaceId).eq("userId", targetUser._id),
+        q.eq("workspaceId", workspaceId as any).eq("userId", targetUser._id)
       )
       .unique();
 
@@ -244,14 +244,14 @@ export const initializeCurrentUserAsAdmin = internalMutation({
     if (!user) {
       const email = (identity.email ?? identity.emailVerified ?? "no-email@example.com") as string;
       const name = (identity.name ?? identity.nickname ?? "User") as string;
-      
+
       const userId = await ctx.db.insert("users", {
         email,
         name,
         clerkId: identity.subject,
         status: "active",
       });
-      
+
       const createdUser = await ctx.db.get(userId);
       if (!createdUser) {
         throw new ConvexError("Failed to create user record");
@@ -293,23 +293,22 @@ export const initializeCurrentUserAsAdmin = internalMutation({
       if (ownerMembership && !isOwner) {
       } else {
       }
-      
+
       const name = (identity.name ?? identity.nickname ?? guaranteedUser.name ?? "User") as string;
       const userName = name.split(" ")[0] || "My";
-      
-      // Create Main Workspace via hierarchy mutation
+
       // This is the user's personal hub workspace with special settings
       const workspaceId = await ctx.runMutation(
-        internal.workspace.hierarchy.createMainWorkspace,
+        (internal as any).workspace.hierarchy.createMainWorkspace,
         {
           userId: guaranteedUser._id,
           userName,
         }
       );
-      
+
       // Mark as owner since we just created the workspace
       isOwner = true;
-      
+
       // Refresh membership query
       ownerMembership = await ctx.db
         .query("workspaceMemberships")

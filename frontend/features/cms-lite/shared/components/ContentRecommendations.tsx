@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useBackend } from "../shared/hooks/useBackend";
+import { useBackend } from "../hooks/useBackend";
 import { ArrowRight } from "lucide-react";
 import { LazyImage } from "./LazyImage";
 import { Loading } from "./Loading";
@@ -22,6 +22,7 @@ interface ContentRecommendationsProps {
 }
 
 export default function ContentRecommendations({ contentId, contentType, locale }: ContentRecommendationsProps) {
+  const backend = useBackend();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
 

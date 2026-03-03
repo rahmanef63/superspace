@@ -48,6 +48,7 @@ export interface MenuItemMetadata {
   description?: string;
   badge?: string;
   color?: string;
+  tags?: string[];
   version?: string;
   category?: string;
   lastUpdated?: number;

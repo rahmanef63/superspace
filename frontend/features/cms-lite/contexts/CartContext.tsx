@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { createContext, useContext, useState } from "react";
 import type { Id } from "@convex/_generated/dataModel";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
  * Currently provides mock functionality to prevent build errors.
  * 
  * TODO: Integrate with actual Convex cart API when ready
- * - Use useQuery(api.features.cms_lite.cart.queries.getCurrentCart)
+ * - Use useQuery(api.features.cmsLite.cart.queries.getCurrentCart)
  * - Use useMutation for add/update/remove operations
  */
 
@@ -48,8 +48,8 @@ export const CartProvider: React.FC<{
   const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Replace with Convex queries
-  // const cartItems = useQuery(api.features.cms_lite.cart.queries.getCurrentCart, { workspaceId });
-  // const addToCartMutation = useMutation(api.features.cms_lite.cart.actions.addToCart);
+  // const cartItems = useQuery(api.features.cmsLite.cart.queries.getCurrentCart, { workspaceId });
+  // const addToCartMutation = useMutation(api.features.cmsLite.cart.actions.addToCart);
   
   const addToCart = async (productId: string, quantity: number = 1) => {
     setIsLoading(true);

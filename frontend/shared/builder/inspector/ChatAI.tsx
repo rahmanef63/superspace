@@ -105,7 +105,7 @@ export function ChatAI({ selectedNode }: ChatAIProps) {
       <div className="flex gap-2">
         <Input
           value={input}
-          onChange={(newValue) => setInput(newValue)}
+          onChange={(event) => setInput(event.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={selectedNode ? `Ask about the ${selectedNode.type} component...` : "Select a component to start chatting..."}
           className="flex-1"

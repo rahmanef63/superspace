@@ -16,7 +16,7 @@ interface PortfolioFormProps {
 }
 
 export interface PortfolioFormData {
-  id?: number;
+  id?: number | string;
   slug: string;
   locale: string;
   title: string;
@@ -42,17 +42,17 @@ export function PortfolioForm({ isOpen, onClose, onSave, item }: PortfolioFormPr
     if (item) {
       setForm({
         id: item.id,
-        slug: item.slug,
-        locale: item.locale,
+        slug: item.slug ?? "",
+        locale: item.locale ?? "id",
         title: item.title,
         description: item.description || "",
-        tags: item.tags,
-        images: item.images.map((img: { imageUrl: string; altText?: string }, idx: number) => ({
+        tags: item.tags ?? [],
+        images: (item.images ?? []).map((img: { imageUrl: string; altText?: string | null }, idx: number) => ({
           imageUrl: img.imageUrl,
           altText: img.altText || "",
           displayOrder: idx,
         })),
-        status: item.status,
+        status: item.status ?? "draft",
       });
     } else {
       setForm({
@@ -303,4 +303,3 @@ export function PortfolioForm({ isOpen, onClose, onSave, item }: PortfolioFormPr
     </Modal>
   );
 }
-

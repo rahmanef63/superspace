@@ -300,7 +300,9 @@ export function MenuDisplay({
     const style = color ? { color: getColorValue(color) } : undefined;
     if (item.icon) {
       const CustomIcon = getIconComponent(item.icon);
-      return <CustomIcon className="h-5 w-5" style={style} />;
+      if (CustomIcon) {
+        return <CustomIcon className="h-5 w-5" style={style} />;
+      }
     }
 
     switch (item.type) {

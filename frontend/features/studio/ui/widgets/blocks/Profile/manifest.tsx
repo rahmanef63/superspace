@@ -1,4 +1,4 @@
-import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
+﻿import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { ProfileBlock } from '@/frontend/features/studio/ui/widgets/blocks/Profile';
 import { createCustomField } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { UserCircle } from 'lucide-react';
@@ -13,7 +13,7 @@ export const profileManifest: WidgetConfig = {
         role: "Product Manager",
         className: ""
     },
-    render: (props) => <ProfileBlock {...props} name={props.name || "John Doe"} />,
+    render: (props) => <ProfileBlock {...(props as any)} name={props.name || "John Doe"} />,
     inspector: {
         fields: [
             createCustomField({
@@ -34,3 +34,4 @@ export const profileManifest: WidgetConfig = {
         ]
     }
 };
+

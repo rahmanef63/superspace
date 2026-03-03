@@ -17,7 +17,7 @@ export default function AdminPortfolio() {
   const { toast } = useToast();
   
   // Use Convex query for real-time data
-  const portfolioData = useQuery(api.features.cms_lite.portfolio.api.queries.listAllPortfolio, {});
+  const portfolioData = useQuery(api.features.cmsLite.portfolio.api.queries.listAllPortfolio, {});
   const items = portfolioData?.items || [];
   const loading = portfolioData === undefined;
   

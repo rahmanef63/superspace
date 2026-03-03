@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CMS Lite Feature Initialization
  * Registers cms-lite settings with the shared settings registry
  */

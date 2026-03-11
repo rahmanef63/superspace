@@ -25,6 +25,7 @@
 *.pem
 
 # debug
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -56,4 +57,10 @@ tsc-output.txt
 /.codex-tmp/
 /test.json
 /null
+/progress.md
+/.audit-vitest.json
+/err_summary.txt
+/extracted_errors.txt
+/all_next_errors.txt
+/tsc_project.log
 

@@ -64,12 +64,10 @@ const edgeTypes: EdgeTypes = {
 
 // ... (imports will be handled by the replacement)
 
-import { StudioLeftHeader } from '../views/header/StudioLeftHeader';
-import { StudioCenterHeader } from '../views/header/StudioCenterHeader';
-import { StudioRightHeader } from '../views/header/StudioRightHeader';
 import { StudioGlobalHeader } from '../views/header/StudioGlobalHeader';
 import { StudioLeftPanel } from '../views/StudioLeftPanel';
 import { StudioRightPanel } from '../views/StudioRightPanel';
+import { StudioDocsDialog } from '../components/StudioDocsDialog';
 
 // ... (keep necessary imports)
 
@@ -319,11 +317,20 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         );
     };
 
+    const [docsOpen, setDocsOpen] = React.useState(false);
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
+            {/* Single-row unified header — all controls in one bar */}
             <StudioGlobalHeader
                 mode={mode}
                 setMode={setMode}
+                layoutTab={layoutTab}
+                setLayoutTab={setLayoutTab}
+                contentTab={contentTab}
+                setContentTab={setContentTab}
+                leftTab={leftTab}
+                setLeftTab={setLeftTab}
                 undo={undo}
                 canUndo={canUndo}
                 redo={redo}
@@ -331,21 +338,12 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 handleExport={handleExport}
                 handleImport={handleImport}
                 handleClear={handleClear}
+                onOpenDocs={() => setDocsOpen(true)}
             />
             <div className="flex-1 min-h-0">
                 <ThreeColumnLayoutAdvanced
                     preset="ide"
-                    leftHeader={<StudioLeftHeader />}
-                    centerHeader={
-                        <StudioCenterHeader
-                            mode={mode}
-                            layoutTab={layoutTab}
-                            setLayoutTab={setLayoutTab}
-                            contentTab={contentTab}
-                            setContentTab={setContentTab}
-                        />
-                    }
-                    rightHeader={<StudioRightHeader />}
+                    /* No per-column headers — all controls are in the single top bar */
                     left={
                         <StudioLeftPanel
                             mode={mode}
@@ -372,6 +370,11 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     showCollapseButtons={false}
                 />
             </div>
+            {docsOpen && (
+                <React.Suspense fallback={null}>
+                    <StudioDocsDialog open={docsOpen} onClose={() => setDocsOpen(false)} />
+                </React.Suspense>
+            )}
         </div>
     );
 };

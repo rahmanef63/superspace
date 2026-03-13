@@ -157,16 +157,16 @@ export const Renderer: React.FC<RendererProps> = ({
   const pageCandidates = useMemo(() => {
     const fromMenu = menuForSidebar ? getChildren(menuForSidebar).filter((cid: string) => {
       const type = nodeType(cid);
-      return type === "container" || type === "section";
+      return type === "container" || type === "section" || type === "div";
     }) : [];
 
     if (fromMenu.length > 0) return fromMenu;
 
-    // Look for any container or section widgets with path property
+    // Look for any container / section / div widgets with path property
     return Object.keys(byId).filter((id: string) => {
       const type = byId[id].type;
       const props = nodeProps(id);
-      return (type === "container" || type === "section") && props.path;
+      return (type === "container" || type === "section" || type === "div") && props.path;
     });
   }, [byId, menuForSidebar]);
 

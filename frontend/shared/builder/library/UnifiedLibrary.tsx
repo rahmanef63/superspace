@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import type { FeatureTab, ComponentConfig } from '@/frontend/shared/foundation';
 import { DraggableLibraryItem } from './DraggableLibraryItem';
@@ -98,13 +99,13 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
           })}
         </TabsList>
 
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           {currentTabs.map((tab: FeatureTab) => (
             <TabsContent key={tab.id} value={tab.id} className="p-3">
               {renderComponentGrid(getFilteredComponents(tab.id))}
             </TabsContent>
           ))}
-        </div>
+        </ScrollArea>
       </Tabs>
     </div>
   );

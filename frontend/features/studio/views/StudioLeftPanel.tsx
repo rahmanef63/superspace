@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card, Button, Input, Label } from '@/components/ui';
-import { Layout, BookOpen, Settings } from 'lucide-react';
+import { Card, Input, Label } from '@/components/ui';
 import { UnifiedLibrary } from '@/frontend/shared/builder';
 import { TemplatesGallery } from '@/frontend/features/studio/components/TemplatesGallery';
 import { TemplateLibrary } from '@/frontend/shared/builder';
@@ -24,36 +23,7 @@ export const StudioLeftPanel: React.FC<LeftPanelProps> = ({
 }) => {
     return (
         <Card className="h-full flex flex-col overflow-hidden border-0 rounded-none">
-            {/* Compact icon-only header for panel switching */}
-            <div className="px-2 py-1.5 border-b flex items-center justify-end gap-1">
-                <Button
-                    variant={leftTab === 'library' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => setLeftTab('library')}
-                    title="Components"
-                >
-                    <Layout size={14} />
-                </Button>
-                <Button
-                    variant={leftTab === 'templates' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => setLeftTab('templates')}
-                    title="Templates"
-                >
-                    <BookOpen size={14} />
-                </Button>
-                <Button
-                    variant={leftTab === 'settings' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => setLeftTab('settings')}
-                    title="Settings"
-                >
-                    <Settings size={14} />
-                </Button>
-            </div>
+            {/* Tab content — tab switcher is in the global header */}
             <div className="flex-1 overflow-hidden">
                 {leftTab === 'library' && (
                     <div className="h-full">

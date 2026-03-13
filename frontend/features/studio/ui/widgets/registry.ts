@@ -9,8 +9,12 @@ import { textManifest } from '../slices/widgets/content/text/manifest';
 import { columnManifest } from '../slices/widgets/layout/column/manifest';
 import { containerManifest } from '../slices/widgets/layout/container/manifest';
 import { rowManifest } from '../slices/widgets/layout/row/manifest';
-import { sectionManifest } from '../slices/widgets/layout/section/manifest';
+import { sectionManifest as _sectionManifest } from '../slices/widgets/layout/section/manifest';
+import { divManifest } from '../slices/widgets/layout/div/manifest';
 import { imageManifest } from '../slices/widgets/media/image/manifest';
+
+// Patch section label so it appears as "Page" in the library (routing container)
+const sectionManifest = { ..._sectionManifest, label: 'Page', description: 'Routable page container. Set a Route Path to link from a Menu.' };
 import { navGroupManifest } from '../slices/widgets/navigation/navGroup/manifest';
 import { heroManifest } from '../slices/widgets/templates/hero/manifest';
 import { heroCompositeManifest } from '../slices/widgets/templates/heroComposite/manifest';
@@ -87,8 +91,9 @@ import { timeRangeManifest as timeRangeBlockManifest } from './blocks/TimeRange/
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
   // Layout
-  section: sectionManifest,
-  container: containerManifest,
+  div: divManifest,           // Universal container (replaces container + section in library)
+  section: sectionManifest,   // Page / routing container (kept for Renderer routing)
+  container: { ...containerManifest, label: 'Container (legacy)', category: 'Layout' as const },
   row: rowManifest,
   column: columnManifest,
   threeColumn: threeColumnManifest,

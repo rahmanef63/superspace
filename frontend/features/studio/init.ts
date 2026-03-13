@@ -7,7 +7,9 @@ import { registerFeatureSettings } from "@/frontend/shared/settings";
 import { Layers3 } from "lucide-react";
 import { AutomationSettings } from "./settings/AutomationSettings";
 import { BuilderSettings } from "./settings/BuilderSettings";
+import { StudioLLMSettings } from "./settings/StudioLLMSettings";
 import { registerStudioAgent } from "./agents";
+import { Cpu } from "lucide-react";
 
 registerFeatureSettings("studio", () => [
     {
@@ -23,6 +25,13 @@ registerFeatureSettings("studio", () => [
         icon: Layers3,
         order: 101,
         component: AutomationSettings,
+    },
+    {
+        id: "studio-llm",
+        label: "AI Builder",
+        icon: Cpu,
+        order: 102,
+        component: StudioLLMSettings,
     },
 ]);
 

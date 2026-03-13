@@ -9,6 +9,7 @@ import { Toaster } from "sonner"
 
 import ConvexClientProvider from "@/components/ConvexClientProvider"
 import { SafeClerkProvider } from "@/components/SafeClerkProvider"
+import { ChunkErrorHandler } from "@/components/ChunkErrorHandler"
 import { InitFeatureSettingsClient } from "@/frontend/features/InitFeatureSettingsClient"
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default async function RootLayout({
           <ActiveThemeProvider initialTheme={activeTheme}>
             <SafeClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
               <ConvexClientProvider>
+                <ChunkErrorHandler />
                 <InitFeatureSettingsClient />
                 {children}
                 <Toaster position="top-right" richColors />

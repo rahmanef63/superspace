@@ -96,6 +96,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         isPinned,
         pin,
         unpin,
+        pinnedIds,
         clearAll,
         undo,
         redo,
@@ -223,6 +224,9 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     );
 
     // Render preview (UI mode)
+    // When a node is pinned, render its subtree directly (no page nav required)
+    const pinnedRootId = pinnedIds.length > 0 ? pinnedIds[0] : null;
+
     const renderPreview = () => {
         if (contentTab === 'json') {
             return (
@@ -239,6 +243,17 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 currentMode={previewMode}
                 showSidebar={false}
             >
+                {pinnedRootId && (
+                    <div className="px-3 py-1 text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-center gap-2">
+                        <span>📌 Pinned preview: node {pinnedRootId.slice(0, 8)}</span>
+                        <button
+                            className="underline text-amber-700 dark:text-amber-400"
+                            onClick={() => unpin(pinnedRootId)}
+                        >
+                            Unpin
+                        </button>
+                    </div>
+                )}
                 <Renderer
                     schema={schema}
                     activeWs={activeWs}
@@ -251,6 +266,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     onSelectNode={previewMode === 'design' ? setSelectedNodeId : () => { }}
                     selectedId={selectedNodeId}
                     designMode={previewMode === 'design'}
+                    rootId={pinnedRootId}
                 />
             </CMSPreview>
         );

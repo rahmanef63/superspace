@@ -1,12 +1,15 @@
 /**
  * Studio Docs Dialog
  *
- * Opens a dialog showing the JSON Schema guide (studio-json-template.md).
- * Provides Copy and Download buttons so designers can use it as AI context.
+ * Opens a dialog showing the JSON Schema guide (studio-json-template.md)
+ * rendered as formatted markdown.
+ * Provides Copy and Download buttons for AI context use.
  */
 "use client";
 
 import React, { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
     Dialog,
     DialogContent,
@@ -23,7 +26,6 @@ interface StudioDocsDialogProps {
     onClose: () => void;
 }
 
-// Inline the docs content so it works without a fetch (static import)
 const DOCS_URL = "/docs/studio-json-template.md";
 
 export const StudioDocsDialog: React.FC<StudioDocsDialogProps> = ({ open, onClose }) => {
@@ -35,10 +37,7 @@ export const StudioDocsDialog: React.FC<StudioDocsDialogProps> = ({ open, onClos
         fetch(DOCS_URL)
             .then((r) => r.text())
             .then(setContent)
-            .catch(() => {
-                // Fallback: show a helpful message
-                setContent(FALLBACK_CONTENT);
-            });
+            .catch(() => setContent(FALLBACK_CONTENT));
     }, [open]);
 
     const handleCopy = async () => {
@@ -46,9 +45,7 @@ export const StudioDocsDialog: React.FC<StudioDocsDialogProps> = ({ open, onClos
             await navigator.clipboard.writeText(content);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
-        } catch {
-            /* ignore */
-        }
+        } catch { /* ignore */ }
     };
 
     const handleDownload = () => {
@@ -76,9 +73,23 @@ export const StudioDocsDialog: React.FC<StudioDocsDialogProps> = ({ open, onClos
                 </DialogHeader>
 
                 <ScrollArea className="flex-1 min-h-0">
-                    <pre className="p-5 text-xs font-mono whitespace-pre-wrap leading-relaxed text-foreground/90">
-                        {content || "Loading…"}
-                    </pre>
+                    <div className="px-6 py-5 prose prose-sm dark:prose-invert max-w-none
+                        prose-headings:font-semibold prose-headings:text-foreground
+                        prose-p:text-foreground/90 prose-p:leading-relaxed
+                        prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                        prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border
+                        prose-strong:text-foreground prose-li:text-foreground/90
+                        prose-table:text-xs prose-td:border prose-td:border-border prose-th:border prose-th:border-border
+                        prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
+                    ">
+                        {content ? (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {content}
+                            </ReactMarkdown>
+                        ) : (
+                            <p className="text-muted-foreground text-sm">Loading…</p>
+                        )}
+                    </div>
                 </ScrollArea>
 
                 <div className="px-5 py-3 border-t shrink-0 flex items-center justify-end gap-2 bg-muted/30">
@@ -96,12 +107,13 @@ export const StudioDocsDialog: React.FC<StudioDocsDialogProps> = ({ open, onClos
     );
 };
 
-// Shown if the static file can't be fetched (e.g. dev server not serving /docs/)
 const FALLBACK_CONTENT = `# Studio JSON Schema
 
-Place the file docs/studio-json-template.md in your public/ folder to load it here.
+Place the file \`docs/studio-json-template.md\` in your \`public/docs/\` folder to load it here.
 
-Basic schema structure:
+## Basic schema structure
+
+\`\`\`json
 {
   "version": "0.4",
   "root": ["node-id"],
@@ -113,4 +125,5 @@ Basic schema structure:
     }
   }
 }
+\`\`\`
 `;

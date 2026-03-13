@@ -186,6 +186,14 @@ interface SharedCanvasContextType {
   cut: () => void;
   paste: () => void;
   canPaste: boolean;
+
+  // Group / Ungroup (SketchUp-style components)
+  groupSelectedNodes: () => void;
+  ungroupNode: (groupId: string) => void;
+  // Focus mode: "enter" a group to edit its children in isolation
+  focusedGroupId: string | null;
+  enterGroup: (groupId: string) => void;
+  exitGroup: () => void;
 }
 
 export const SharedCanvasContext = createContext<SharedCanvasContextType | undefined>(

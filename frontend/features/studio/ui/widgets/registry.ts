@@ -80,6 +80,9 @@ import { activityManifest as activityBlockManifest } from './blocks/Activity/man
 import { listManifest as listBlockManifest } from './blocks/List/manifest';
 import { eventsManifest as eventsBlockManifest } from './blocks/Events/manifest';
 import { statsManifest as statsBlockManifest } from './blocks/Stats/manifest';
+import { agentManifest as agentBlockManifest } from './blocks/Agent/manifest';
+import { teamManifest as teamBlockManifest } from './blocks/Team/manifest';
+import { timeRangeManifest as timeRangeBlockManifest } from './blocks/TimeRange/manifest';
 
 // Raw widget configurations
 const rawWidgetRegistry: Record<string, WidgetConfig> = {
@@ -164,6 +167,9 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   listBlock: listBlockManifest,
   eventsBlock: eventsBlockManifest,
   statsBlock: statsBlockManifest,
+  agentBlock: agentBlockManifest,
+  teamBlock: teamBlockManifest,
+  timeRangeBlock: timeRangeBlockManifest,
 };
 
 // Standardize all widgets and validate in development

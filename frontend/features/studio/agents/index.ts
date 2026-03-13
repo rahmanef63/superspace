@@ -1,12 +1,12 @@
 import { subAgentRegistry } from "@/frontend/features/ai/agents"
 import type { SubAgent } from "@/frontend/features/ai/agents"
 
-export function registerAutomationAgent() {
+export function registerStudioAgent() {
   const agent: SubAgent = {
-    id: "automation-agent",
-    name: "Automation Agent",
-    description: "Helps create and monitor automations.",
-    featureId: "automation",
+    id: "studio-agent",
+    name: "Studio Agent",
+    description: "Helps create and monitor automations and UI in Studio.",
+    featureId: "studio",
     tools: [
       {
         name: "summarize",
@@ -16,7 +16,7 @@ export function registerAutomationAgent() {
           return {
             success: true,
             data: {
-              featureSlug: "automation",
+              featureSlug: "studio",
               workspaceId: ctx.workspaceId,
               note: "Scaffolded tool. Implement real tools under convex/features/automation/agents.",
             },
@@ -27,7 +27,7 @@ export function registerAutomationAgent() {
     ],
     canHandle: (query) => {
       const q = query.toLowerCase()
-      if (q.includes("automation") || q.includes("workflow") || q.includes("trigger")) return 0.6
+      if (q.includes("studio") || q.includes("builder") || q.includes("automation") || q.includes("workflow") || q.includes("trigger")) return 0.6
       return 0
     },
   }

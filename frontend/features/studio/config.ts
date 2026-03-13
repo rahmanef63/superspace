@@ -22,7 +22,7 @@ export const studioConfig = defineFeature({
     technical: {
         featureType: 'optional',
         hasUI: true,
-        hasConvex: false,
+        hasConvex: true,
         hasTests: false,
         version: '1.0.0',
     },

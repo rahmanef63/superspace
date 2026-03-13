@@ -19,11 +19,6 @@ export { cmsWidgetRegistry };
 // ============================================================================
 
 /**
- * Combines all component configs from both Builder and Automation
- */
-export const studioComponentRegistry: Record<string, ComponentConfig> = {};
-
-/**
  * Register CMS components to the cross-feature registry
  */
 function registerCMSComponents(registerComponent: (config: ComponentConfig) => void): void {

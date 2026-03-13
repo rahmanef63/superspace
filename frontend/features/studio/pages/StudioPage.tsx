@@ -30,6 +30,7 @@ import { registerStudioComponents, registerStudioLibraryTabs, type StudioMode } 
 
 // Node types from both features
 import { ShadcnNode } from '@/frontend/features/studio/ui/slices/canvas/components/ShadcnNode';
+import { GroupNode } from '@/frontend/features/studio/ui/slices/canvas/components/GroupNode';
 import { AutomationNode } from '@/frontend/features/studio/components/AutomationNode';
 import { AutomationInspector } from '@/frontend/features/studio/components/AutomationInspector';
 import { CMSInspectorRenderer } from '@/frontend/features/studio/components/CMSInspectorRenderer';
@@ -50,6 +51,7 @@ import { studioEdgeTypes } from '../connections';
 
 const nodeTypes: NodeTypes = {
     shadcnNode: ShadcnNode,
+    groupNode: GroupNode as any,
     automationNode: AutomationNode as any,
 };
 
@@ -97,6 +99,11 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         pin,
         unpin,
         pinnedIds,
+        groupSelectedNodes,
+        ungroupNode,
+        focusedGroupId,
+        enterGroup,
+        exitGroup,
         clearAll,
         undo,
         redo,
@@ -214,18 +221,34 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     }, [mode, clearFlow, clearAll]);
 
     // Render canvas based on mode
+    // In focus mode, show only the focused group's subtree
     const renderCanvas = () => (
-        <SharedCanvas
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onNodeSelect={setSelectedNodeId}
-            showLayoutControls={true}
-        />
+        <div className="h-full flex flex-col">
+            {focusedGroupId && (
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/10 text-primary border-b border-primary/20 shrink-0">
+                    <span>📂 Focus mode — editing group</span>
+                    <button
+                        className="underline hover:no-underline ml-auto"
+                        onClick={exitGroup}
+                    >
+                        ✕ Exit
+                    </button>
+                </div>
+            )}
+            <div className="flex-1 min-h-0">
+                <SharedCanvas
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onNodeSelect={setSelectedNodeId}
+                    showLayoutControls={true}
+                />
+            </div>
+        </div>
     );
 
     // Render preview (UI mode)
-    // When a node is pinned, render its subtree directly (no page nav required)
-    const pinnedRootId = pinnedIds.length > 0 ? pinnedIds[0] : null;
+    // When a node is pinned OR a group is focused, render its subtree directly
+    const pinnedRootId = pinnedIds.length > 0 ? pinnedIds[0] : (focusedGroupId ?? null);
 
     const renderPreview = () => {
         if (contentTab === 'json') {
@@ -362,6 +385,9 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 rightCollapsed={rightCollapsed}
                 toggleLeft={() => setLeftCollapsed(v => !v)}
                 toggleRight={() => setRightCollapsed(v => !v)}
+                onGroup={groupSelectedNodes}
+                focusedGroupId={focusedGroupId}
+                onExitGroup={exitGroup}
             />
             <div className="flex-1 min-h-0">
                 <ThreeColumnLayoutAdvanced

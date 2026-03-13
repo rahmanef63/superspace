@@ -27,7 +27,13 @@ export function registerStudioAgent() {
     ],
     canHandle: (query) => {
       const q = query.toLowerCase()
-      if (q.includes("studio") || q.includes("builder") || q.includes("automation") || q.includes("workflow") || q.includes("trigger")) return 0.6
+      if (
+        q.includes("studio") || q.includes("builder") || q.includes("automation") ||
+        q.includes("workflow") || q.includes("trigger") || q.includes("widget") ||
+        q.includes("canvas") || q.includes("inspector") || q.includes("template") ||
+        q.includes("group") || q.includes("block") || q.includes("json schema") ||
+        q.includes("pin") || q.includes("preview") || q.includes("renderer")
+      ) return 0.7
       return 0
     },
   }

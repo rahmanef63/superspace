@@ -478,6 +478,64 @@ export const SharedCanvasProvider: React.FC<{
   useBuilderKeyboardShortcuts(undo, redo, true);
   useBuilderClipboardShortcuts(copy, cut, paste, true);
 
+  // ── Group / Ungroup (SketchUp-style components) ────────────────────────────
+  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+
+  const groupSelectedNodes = useCallback(() => {
+    const selectedIds = nodes.filter(n => n.selected).map(n => n.id);
+    if (selectedIds.length < 2) {
+      // also allow single selected node via selectedNodeId
+      const single = selectedNodeId && !selectedIds.includes(selectedNodeId) ? [selectedNodeId] : selectedIds;
+      if (single.length < 2) return;
+    }
+    const ids = nodes.filter(n => n.selected).map(n => n.id);
+    if (ids.length === 0 && selectedNodeId) ids.push(selectedNodeId);
+    if (ids.length === 0) return;
+
+    // Compute bounding-box center for group node position
+    const selected = nodes.filter(n => ids.includes(n.id));
+    const minX = Math.min(...selected.map(n => n.position.x));
+    const minY = Math.min(...selected.map(n => n.position.y));
+
+    const groupId = uid();
+    const groupNode: Node<any> = {
+      id: groupId,
+      type: 'groupNode',
+      position: { x: minX - 20, y: minY - 40 },
+      data: { comp: 'group', props: { label: 'Group', savedAsBlock: false } },
+    };
+
+    // Wire: groupNode → each selected node
+    const newEdges = ids.map((childId, idx) => ({
+      id: uid(),
+      source: groupId,
+      target: childId,
+      data: { order: idx },
+      animated: false,
+    }));
+
+    setNodes(ns => [...ns, groupNode]);
+    setEdges(es => [...es, ...newEdges]);
+    setSelectedNodeId(groupId);
+  }, [nodes, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
+
+  const ungroupNode = useCallback((groupId: string) => {
+    // Remove group node + its outgoing edges (children become independent)
+    setEdges(es => es.filter(e => e.source !== groupId));
+    setNodes(ns => ns.filter(n => n.id !== groupId));
+    if (selectedNodeId === groupId) setSelectedNodeId(null);
+    if (focusedGroupId === groupId) setFocusedGroupId(null);
+  }, [setEdges, setNodes, selectedNodeId, setSelectedNodeId, focusedGroupId]);
+
+  const enterGroup = useCallback((groupId: string) => {
+    setFocusedGroupId(groupId);
+    setSelectedNodeId(null);
+  }, [setSelectedNodeId]);
+
+  const exitGroup = useCallback(() => {
+    setFocusedGroupId(null);
+  }, []);
+
   const value = {
     canvasMode,
     setCanvasMode,
@@ -523,6 +581,12 @@ export const SharedCanvasProvider: React.FC<{
     cut,
     paste,
     canPaste,
+    // Group / focus mode
+    groupSelectedNodes,
+    ungroupNode,
+    focusedGroupId,
+    enterGroup,
+    exitGroup,
   };
 
   return (

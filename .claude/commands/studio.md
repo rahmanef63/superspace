@@ -17,6 +17,43 @@ You are working on the **Studio** feature — SuperSpace's unified visual builde
 - **Library**: `frontend/shared/builder/library/UnifiedLibrary.tsx`
 - **Header**: `frontend/features/studio/views/header/StudioGlobalHeader.tsx` — single unified toolbar
 - **Settings**: `frontend/features/studio/settings/` — Builder + Automation + LLM settings
+- **Docs**: `public/docs/studio-json-template.md` — served statically, shown in StudioDocsDialog with react-markdown
+
+## Canvas Node Types
+
+| Type | File | Purpose |
+|------|------|---------|
+| `shadcnNode` | `ui/slices/canvas/components/ShadcnNode.tsx` | All UI widgets |
+| `groupNode` | `ui/slices/canvas/components/GroupNode.tsx` | SketchUp-style groups |
+| `automationNode` | `components/AutomationNode.tsx` | Workflow nodes |
+
+## Group / Focus Mode (SketchUp-style components)
+
+- **Group**: Select 2+ nodes → header "Group" button → creates `groupNode` wrapping them via edges
+- **Ungroup**: GroupNode "Ungroup" button → dissolves group, children independent
+- **Enter Group / Focus Mode**: GroupNode "Enter" button → `focusedGroupId` set → canvas shows focus banner, preview renders group subtree
+- **Save as Block**: GroupNode "Save Block" → marks `savedAsBlock: true` in props
+- **Context API**: `groupSelectedNodes()`, `ungroupNode(id)`, `enterGroup(id)`, `exitGroup()`, `focusedGroupId`
+
+## Pin Node → Preview
+
+- `pin(id)` / `unpin(id)` stores in `pinnedIds[]`
+- `StudioPage` passes `rootId={pinnedIds[0] ?? focusedGroupId ?? null}` to `<Renderer>`
+- Renderer with `rootId` renders only that node's subtree (no sidebar/nav)
+- Pinned banner shown in preview with Unpin button
+
+## Inspector Flow
+
+- `StudioRightPanel` always uses `<InspectorTabs>` (3 tabs: Properties / Layers / AI)
+- `DynamicInspector` renders widget-specific `WidgetConfig.inspector.fields` at top
+- **Style props are applied in Renderer wrapper div** via `propsToStyle()` — changes to fontFamily, color, padding etc. are immediately visible in preview
+- `ChildrenManager` (Layers tab): reorder, detach, Explode layout blocks
+
+## Project Settings (localStorage)
+
+- Key: `studio-project-settings` → `{ name, description, author }`
+- "Save as Template" saves canvas JSON schema to TemplateLibrary localStorage
+- Template key: `cms-asset-templates`
 
 ## Common Tasks
 
@@ -37,11 +74,31 @@ You are working on the **Studio** feature — SuperSpace's unified visual builde
 4. Export from `blocks/index.ts`
 
 ### Generate a Studio JSON layout
-See `docs/studio-json-template.md` for full schema reference and AI prompt template.
+See `docs/studio-json-template.md` (also served at `/docs/studio-json-template.md`) for full schema + AI prompt template.
 
 ### Fix inspector fields
-Inspector fields follow `InspectorField` type from `frontend/shared/foundation`.
-Use `createCustomField()` from `standardFields.ts` for convenience.
+- `InspectorField` type in `frontend/features/studio/ui/types/index.ts`
+- Fields added to `WidgetConfig.inspector.fields` auto-render in the Properties tab
+- Style overrides (color, fontSize, etc.) are applied via `propsToStyle()` in Renderer
+
+## ⚠️ Known Error Patterns (don't repeat these)
+
+### 1. `useThreeColumnLayout must be used within ThreeColumnLayoutAdvanced`
+**Cause**: Calling `useThreeColumnLayout()` in a component that renders ABOVE `<ThreeColumnLayoutAdvanced>` in the tree.
+**Fix**: Lift collapse state to the parent (`StudioPage`), pass as controlled props (`leftCollapsed`, `rightCollapsed`, `onLeftCollapsedChange`, `onRightCollapsedChange`) to `ThreeColumnLayoutAdvanced`, and pass as regular props to the header component.
+**Never**: Call `useThreeColumnLayout()` outside the `ThreeColumnLayoutAdvanced` provider.
+
+### 2. Docs dialog shows raw markdown/broken HTML
+**Cause**: Rendering markdown in `<pre>` tag without a parser.
+**Fix**: Use `react-markdown` + `remark-gfm`. File must be in `public/docs/` for static fetch.
+
+### 3. Inspector style changes don't appear in preview
+**Cause**: Inspector saves props to `data.props` but Renderer wrapper div ignores them.
+**Fix**: `propsToStyle(p)` in `Renderer.tsx` converts props to inline CSS on the wrapper div.
+
+### 4. Pin node doesn't filter preview
+**Cause**: `pinnedIds` state existed but was never passed to Renderer as `rootId`.
+**Fix**: `rootId={pinnedIds[0] ?? focusedGroupId ?? null}` on `<Renderer>`.
 
 ## File Structure
 ```
@@ -50,14 +107,17 @@ frontend/features/studio/
 ├── agents/index.ts        # registerStudioAgent()
 ├── settings/index.ts      # Builder + Automation + LLM settings
 ├── init.ts                # registerFeatureSettings + registerStudioAgent
-├── pages/StudioPage.tsx   # Main layout
-├── views/header/StudioGlobalHeader.tsx  # Single-row toolbar
-├── views/StudioLeftPanel.tsx   # Library / Templates / Settings panel
-├── views/StudioRightPanel.tsx  # Inspector panel
-├── ui/widgets/registry.ts # cmsWidgetRegistry (89+ widgets)
-├── ui/slices/renderer/    # Live JSON → React renderer
+├── pages/StudioPage.tsx   # Main layout (group state, pin, focus mode)
+├── views/header/StudioGlobalHeader.tsx  # Single-row toolbar (group/focus buttons)
+├── views/StudioLeftPanel.tsx   # Library / Templates / Settings (localStorage)
+├── views/StudioRightPanel.tsx  # InspectorTabs (Properties/Layers/AI)
+├── ui/widgets/registry.ts # cmsWidgetRegistry (54+ widgets)
+├── ui/slices/canvas/components/
+│   ├── ShadcnNode.tsx     # UI widget canvas node
+│   └── GroupNode.tsx      # Group/component node (focus mode, ungroup, save as block)
+├── ui/slices/renderer/    # Live JSON → React renderer (propsToStyle applied here)
 ├── workflow/nodes/        # 26+ automation node manifests
-├── components/StudioDocsDialog.tsx  # JSON schema docs dialog
+├── components/StudioDocsDialog.tsx  # JSON schema docs (react-markdown)
 └── registry/studioRegistry.ts      # Unified component registry
 ```
 

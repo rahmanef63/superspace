@@ -7,7 +7,7 @@
  * Right:  Undo/Redo | Export/Import/Docs/Clear
  */
 import React from 'react';
-import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight } from 'lucide-react';
+import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup } from 'lucide-react';
 import { FeatureHeader } from '@/frontend/shared/ui/layout/header';
 import { Button } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -35,6 +35,10 @@ interface StudioGlobalHeaderProps {
     rightCollapsed: boolean;
     toggleLeft: () => void;
     toggleRight: () => void;
+    // Group operations
+    onGroup: () => void;
+    focusedGroupId: string | null;
+    onExitGroup: () => void;
 }
 
 const Tip = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -67,6 +71,7 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
     undo, canUndo, redo, canRedo,
     handleExport, handleImport, handleClear, onOpenDocs,
     leftCollapsed, rightCollapsed, toggleLeft, toggleRight,
+    onGroup, focusedGroupId, onExitGroup,
 }) => {
 
     const toolbar = (
@@ -147,6 +152,24 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                         <PanelRight size={12} />
                     </Button>
                 </Tip>
+                <Sep />
+
+                {/* ── Group controls ───────────────────────────── */}
+                <Tip label="Group selected nodes (G)">
+                    <Button variant="ghost" size="sm" onClick={onGroup} className="h-7 w-7 p-0 shrink-0">
+                        <Group size={12} />
+                    </Button>
+                </Tip>
+                {focusedGroupId && (
+                    <button
+                        onClick={onExitGroup}
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+                        title="Exit group focus mode"
+                    >
+                        <Ungroup size={10} />
+                        Exit Group
+                    </button>
+                )}
                 <Sep />
             </div>
         </TooltipProvider>

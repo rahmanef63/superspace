@@ -82,6 +82,26 @@ pnpm run analyze:feature studio --save  # Analyze + document a feature
 7. Full TypeScript coverage
 8. `validate:features` passes
 
+## ⚠️ Critical Error Patterns (session-learned)
+
+### React Context: "must be used within Provider" errors
+**Cause**: Using a context hook in a component that renders ABOVE or OUTSIDE the provider.
+**Example**: `useThreeColumnLayout()` called in `StudioGlobalHeader` which renders above `<ThreeColumnLayoutAdvanced>`.
+**Fix pattern**: Lift state up to the parent that owns both the provider and the consumer component. Pass state as regular props. Never call context hooks outside their provider boundary.
+
+### Markdown rendered as raw text
+**Fix**: Use `react-markdown` + `remark-gfm`. Static `.md` files must be in `public/` directory for Next.js static serving.
+
+### Inspector style changes not visible in preview
+**Cause**: Widget `render()` functions may not apply all CSS props from `data.props`. The Renderer wrapper div was not applying styles.
+**Fix**: Add `propsToStyle(props)` helper in Renderer to convert inspector-controlled props (color, fontSize, padding, etc.) into inline CSS on the wrapper div.
+
+### "pin node" / state stored but never consumed
+**Pattern**: Always trace the full data flow — storing state (e.g., `pinnedIds`) is not enough. Find every consumer and ensure the state is passed/used (e.g., as `rootId` on `<Renderer>`).
+
+### Empty callback stubs in JSX
+**Pattern**: `onOpen={() => {}}` — always wire callbacks to actual handlers. Empty stubs make features silently non-functional.
+
 ## Task
 $ARGUMENTS
 

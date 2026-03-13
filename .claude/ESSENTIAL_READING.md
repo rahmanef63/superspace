@@ -1,146 +1,79 @@
-# 📖 Essential Reading for SuperSpace Development
+# 📚 ESSENTIAL READING: SuperSpace Onboarding Guide
 
-## 🎯 **Must-Read Order (New Developers)**
+> **Welcome to SuperSpace!** 🚀
+> Whether you are a human developer or an AI Agent, this document is your absolute starting point. It synthesizes the core context, architectural mandates, available AI tools, and API integrations of the SuperSpace monorepo.
 
-### 1. **Start Here** (5 min)
-- `docs/00_BASE_KNOWLEDGE.md` - Core concepts & terminology
-- `.claude/PROJECT_QUICK_REFERENCE.md` - Quick commands reference
+---
 
-### 2. **Architecture** (15 min)
-- `docs/1-core/1_SYSTEM_OVERVIEW.md` - Complete system architecture
-- `docs/1-core/2_TECH_STACK.md` - Tech decisions & rationale
+## 1. What is SuperSpace?
 
-### 3. **Critical Rules** (10 min)
-- `docs/2-rules/FEATURE_RULES.md` - ⚠️ MUST FOLLOW rules
-- `docs/2-rules/MUTATION_TEMPLATE_GUIDE.md` - Backend patterns
-- `docs/2-rules/PERMISSIONS_GUIDE.md` - RBAC implementation
+SuperSpace is a **"Unified App Builder"** and modular SaaS platform. Rather than building scattered, standalone applications, we build **Universal Features** that are composed into various business systems (CRM, ERP, HRIS, Projects, CMS).
 
-### 4. **Feature System** (20 min)
-- `docs/5-features/FEATURE_REGISTRY_SYSTEM.md` - Auto-discovery magic
-- `docs/5-features/FEATURE_STRUCTURE.md` - Feature anatomy
-- `docs/5-features/CREATING_FEATURES.md` - Step-by-step guide
+### Tech Stack
+- **Frontend:** Next.js 15 (App Router) + React 19 + TailwindCSS v4 + shadcn/ui
+- **Backend:** Convex (Real-time Serverless Database)
+- **Auth & Billing:** Clerk
+- **Language:** TypeScript + Zod (Strict Validation)
 
-### 5. **Universal Database** (30 min)
-- `docs/3-universal-database/1_PROPERTY_SYSTEM.md` - 21 property types
-- `docs/3-universal-database/2_VIEW_SYSTEM.md` - 10 view layouts
-- `docs/3-universal-database/3_FILTER_SYSTEM.md` - Universal filters
+---
 
-## 🔥 **For Specific Tasks**
+## 2. The Golden Rules (Core Mandates)
 
-### Working on Features?
-- `docs/5-features/FEATURE_REGISTRY_SYSTEM.md`
-- `docs/5-features/FEATURE_CONFIG_GUIDE.md`
-- Check `frontend/features/*/config.ts` examples
+If you write code for SuperSpace, you **MUST** follow these rules without exception:
 
-### Backend Development?
-- `docs/2-rules/MUTATION_TEMPLATE_GUIDE.md`
-- `docs/2-rules/PERMISSIONS_GUIDE.md`
-- `docs/1-core/4_CONVEX_PATTERNS.md`
+1. **Zero Hardcoding**: Never hardcode lists of features or menus. Everything is auto-discovered via `config.ts`.
+2. **Single Source of Truth (SSOT)**: A feature's `frontend/features/{slug}/config.ts` is the only place its metadata lives.
+3. **Mandatory RBAC**: EVERY Convex query and mutation MUST verify user permissions using `requirePermission(ctx, workspaceId, 'permission.name')`.
+4. **Audit Logging**: EVERY Convex mutation MUST record its action using `logAuditEvent(ctx, { ... })`.
+5. **AI-Ready Surfaces**: Every feature must include two specific folders:
+   - `agents/`: Exposes permission-gated Server-Side tools for AI agents.
+   - `settings/`: Exposes dynamic UI configurations.
 
-### UI Components?
-- `docs/1-core/3_UI_COMPONENT_SYSTEM.md`
-- Check `components/README.md`
-- Look at existing components in `components/ui/`
+---
 
-### Database Work?
-- `docs/3-universal-database/`
-- `convex/schema.ts`
-- Check `convex/features/database/`
+## 3. The "Dynamic Menu" Concept
 
-## 🚨 **Critical Rules Summary**
+Instead of building 150+ different menus for various apps, SuperSpace relies on **19 Universal Dynamic Menus** (e.g., Overview, Reports, Settings, Tasks, Files, Calendar). 
+- **Efficiency:** 88% reduction in redundant code.
+- **Implementation:** Menus map to specific Workspaces based on the active Industry Template (e.g., Accounting Firm vs. Clinic).
 
-### Never Do This
-- ❌ Hardcode feature names/paths
-- ❌ Skip permission checks
-- ❌ Forget audit logging
-- ❌ Bypass Zod validation
-- ❌ Edit generated files (`convex/_generated/`)
+*For a full breakdown of the 19 menus, see `docs/features/00-ROADMAP.md`.*
 
-### Always Do This
-- ✅ Use auto-discovery system
-- ✅ Follow 6-step mutation pattern
-- ✅ Check RBAC permissions
-- ✅ Log all mutations
-- ✅ Validate with Zod
-- ✅ Write tests
-- ✅ Run `validate:all` before commit
+---
 
-## 📝 **Common Workflows**
+## 4. AI Agents & Skills
 
-### 1. Creating a New Feature
-```bash
-# Read: docs/5-features/CREATING_FEATURES.md
-pnpm run create:feature my-feature
-# Edit: frontend/features/my-feature/config.ts
-pnpm run sync:all
-```
+SuperSpace is built to be manipulated and extended by AI. We have specialized agents and skills to enforce quality:
 
-### 2. Adding a Mutation
-```bash
-# Read: docs/2-rules/MUTATION_TEMPLATE_GUIDE.md
-# Follow 6-step pattern exactly
-```
+### 🛠️ superspace-architect (Gemini CLI Skill)
+- **Location:** `.agents/skills/superspace-architect/SKILL.md`
+- **Role:** Enforces the architectural guidelines (Zero Hardcoding, SSOT, RBAC).
+- **When to use:** Activate this skill when planning new features, scaffolding new folders, or verifying structural integrity.
 
-### 3. Fixing Permission Issues
-```bash
-# Read: docs/2-rules/PERMISSIONS_GUIDE.md
-# Check RBAC levels (0-90)
-# Use hasPermission helper
-```
+### 🕵️ Feature Auditor Agent (Claude / General)
+- **Location:** `.claude/agents/feature-auditor.md`
+- **Role:** An automated checklist agent.
+- **When to use:** Run this agent to review a PR or a newly completed feature. It will check for the presence of `agents/`, `settings/`, `requirePermission`, and `logAuditEvent`.
 
-## 🎯 **Key Mental Models**
+---
 
-### 1. Auto-Discovery
-- Features are NOT registered manually
-- Everything comes from `config.ts`
-- Glob patterns find everything
+## 5. External API & Integrations
 
-### 2. Three-Tier Architecture
-- Global (`frontend/shared/`, `convex/shared/`)
-- Feature (`{feature}/shared/`)
-- Local (specific files)
+SuperSpace is not a walled garden. Mature features (like CMS Lite, CRM, Projects) are exposed to external web applications via our API Gateway.
 
-### 3. Permission First
-- Every mutation checks permissions
-- Workspace isolation is mandatory
-- Audit logs are immutable
+- **Gateway File:** `convex/http.ts` (Routes under `/api/v1/*`)
+- **Authentication:** Bearer token (API Keys starting with `sk_live_...` scoped to Workspaces).
+- **Documentation:** OpenAPI specs and REST documentation are located in `docs/api/`.
 
-### 4. Schema-Driven
-- Zod validates everything
-- TypeScript infers from schema
-- Generated types are source of truth
+If you are building a feature that needs to be consumed externally, you must route it through the v1 API Gateway.
 
-## 🔗 **Quick Links**
+---
 
-### Documentation
-- All docs: `docs/`
-- Feature docs: `docs/features/`
-- API docs: `docs/api/`
+## 6. Next Steps
 
-### Code Examples
-- Feature configs: `frontend/features/*/config.ts`
-- Mutations: `convex/features/*/mutations.ts`
-- Components: `frontend/features/*/components/`
+Before you write your first line of code or prompt:
+1. **Read** `docs/00_BASE_KNOWLEDGE.md` for deep technical concepts.
+2. **Review** `GEMINI.md` to understand prompt-level instructions.
+3. **Explore** the `frontend/features/example/` directory to see a perfectly structured feature.
 
-### Tools
-- Validation: `scripts/validate-*.ts`
-- Feature CLI: `scripts/features/`
-- Tests: `tests/`
-
-## 💡 **Pro Tips**
-
-1. **Lost?** Run `pnpm run analyze:feature <name>`
-2. **Error?** Check `pnpm run validate:all`
-3. **New feature?** Copy existing config
-4. **Permission bug?** Check RBAC levels
-5. **Type error?** Regenerate with `pnpm dev`
-
-## 🎓 **Learning Path**
-
-1. **Day 1:** Read "Start Here" section + explore codebase
-2. **Day 2:** Read "Architecture" + understand file structure
-3. **Day 3:** Read "Critical Rules" + try fix a bug
-4. **Day 4:** Read "Feature System" + create a simple feature
-5. **Day 5:** Read "Universal Database" + understand data model
-
-Remember: This is a sophisticated, production-grade system. Take time to understand the patterns before making changes.
+*Happy Building!* ✨

@@ -219,4 +219,85 @@ http.route({
   }),
 });
 
+// =============================================================================
+// API Gateway v1 (External Integrations)
+// =============================================================================
+
+http.route({
+  pathPrefix: "/api/v1/",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type",
+      },
+    });
+  }),
+});
+
+http.route({
+  pathPrefix: "/api/v1/",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    return handleApiRequest(ctx, request);
+  }),
+});
+
+http.route({
+  pathPrefix: "/api/v1/",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    return handleApiRequest(ctx, request);
+  }),
+});
+
+async function handleApiRequest(ctx: any, request: Request): Promise<Response> {
+  try {
+    // 1. Authenticate Request
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer sk_live_")) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized. Missing or invalid API key." }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const apiKey = authHeader.replace("Bearer ", "");
+    
+    // TODO: Verify API Key against 'apiKeys' table and get workspaceId
+    // For now, this is a placeholder implementation.
+    const workspaceId = "dummy_workspace_id"; 
+
+    // 2. Route Request
+    const url = new URL(request.url);
+    const path = url.pathname.replace("/api/v1", "");
+
+    if (request.method === "GET" && path === "/cms/posts") {
+      // Dummy response for illustration
+      return new Response(JSON.stringify({
+        success: true,
+        data: [{ id: "1", title: "Hello API", content: "Integration successful" }]
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: false, error: "Not Found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+
+  } catch (error) {
+    console.error("API Gateway Error:", error);
+    return new Response(JSON.stringify({ success: false, error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+}
+
 export default http;

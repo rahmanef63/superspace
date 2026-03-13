@@ -11,7 +11,6 @@ import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Uplo
 import { FeatureHeader } from '@/frontend/shared/ui/layout/header';
 import { Button } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { useThreeColumnLayout } from '@/frontend/shared/ui/layout/container';
 import type { StudioMode } from '@/frontend/features/studio/registry';
 
 interface StudioGlobalHeaderProps {
@@ -31,6 +30,11 @@ interface StudioGlobalHeaderProps {
     handleImport: () => void;
     handleClear: () => void;
     onOpenDocs: () => void;
+    // Panel collapse — managed in StudioPage (outside ThreeColumnLayoutAdvanced context)
+    leftCollapsed: boolean;
+    rightCollapsed: boolean;
+    toggleLeft: () => void;
+    toggleRight: () => void;
 }
 
 const Tip = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -62,8 +66,8 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
     leftTab, setLeftTab,
     undo, canUndo, redo, canRedo,
     handleExport, handleImport, handleClear, onOpenDocs,
+    leftCollapsed, rightCollapsed, toggleLeft, toggleRight,
 }) => {
-    const layout = useThreeColumnLayout();
 
     const toolbar = (
         <TooltipProvider delayDuration={400}>
@@ -133,21 +137,17 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                 <Sep />
 
                 {/* ── Panel collapse shortcuts ─────────────── */}
-                {layout && (
-                    <>
-                        <Tip label={layout.leftCollapsed ? 'Show Library' : 'Hide Library'}>
-                            <Button variant="ghost" size="sm" onClick={layout.toggleLeft} className="h-7 w-7 p-0 shrink-0">
-                                <PanelLeft size={12} />
-                            </Button>
-                        </Tip>
-                        <Tip label={layout.rightCollapsed ? 'Show Inspector' : 'Hide Inspector'}>
-                            <Button variant="ghost" size="sm" onClick={layout.toggleRight} className="h-7 w-7 p-0 shrink-0">
-                                <PanelRight size={12} />
-                            </Button>
-                        </Tip>
-                        <Sep />
-                    </>
-                )}
+                <Tip label={leftCollapsed ? 'Show Library' : 'Hide Library'}>
+                    <Button variant="ghost" size="sm" onClick={toggleLeft} className="h-7 w-7 p-0 shrink-0">
+                        <PanelLeft size={12} />
+                    </Button>
+                </Tip>
+                <Tip label={rightCollapsed ? 'Show Inspector' : 'Hide Inspector'}>
+                    <Button variant="ghost" size="sm" onClick={toggleRight} className="h-7 w-7 p-0 shrink-0">
+                        <PanelRight size={12} />
+                    </Button>
+                </Tip>
+                <Sep />
             </div>
         </TooltipProvider>
     );

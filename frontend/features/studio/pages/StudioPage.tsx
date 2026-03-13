@@ -130,6 +130,9 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     const [layoutTab, setLayoutTab] = useState<'split' | 'canvas' | 'preview'>('split');
     const [contentTab, setContentTab] = useState<'preview' | 'json'>('preview');
     const [previewMode, setPreviewMode] = useState<'design' | 'interactive'>('design');
+    // Panel collapse state — managed here so the header (outside ThreeColumnLayoutAdvanced) can access it
+    const [leftCollapsed, setLeftCollapsed] = useState(false);
+    const [rightCollapsed, setRightCollapsed] = useState(false);
 
     // Schema for preview
     const schema = useMemo(() => toSchema(nodes as any, edges as any), [nodes, edges]);
@@ -339,10 +342,18 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 handleImport={handleImport}
                 handleClear={handleClear}
                 onOpenDocs={() => setDocsOpen(true)}
+                leftCollapsed={leftCollapsed}
+                rightCollapsed={rightCollapsed}
+                toggleLeft={() => setLeftCollapsed(v => !v)}
+                toggleRight={() => setRightCollapsed(v => !v)}
             />
             <div className="flex-1 min-h-0">
                 <ThreeColumnLayoutAdvanced
                     preset="ide"
+                    leftCollapsed={leftCollapsed}
+                    rightCollapsed={rightCollapsed}
+                    onLeftCollapsedChange={setLeftCollapsed}
+                    onRightCollapsedChange={setRightCollapsed}
                     /* No per-column headers — all controls are in the single top bar */
                     left={
                         <StudioLeftPanel

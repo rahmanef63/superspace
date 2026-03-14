@@ -3,11 +3,21 @@ import { Handle, Position, type NodeProps } from 'reactflow';
 import { cn } from '@/lib/utils';
 import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
 import { useOptionalSharedCanvas } from '@/frontend/shared/builder';
+import { Pin, PinOff, Image, Tag, Type, Link2, FileText, Layers } from 'lucide-react';
 
 type ShadcnNodeData = {
   comp: string;
   props: Record<string, any>;
 };
+
+/** Small lucide icon that best describes the node content */
+function ContentIcon({ data }: { data: ShadcnNodeData }) {
+  if (data.props?.src) return <Image size={10} className="text-sky-400 shrink-0" />;
+  if (data.props?.href) return <Link2 size={10} className="text-blue-400 shrink-0" />;
+  if (data.props?.tag) return <Tag size={10} className="text-amber-400 shrink-0" />;
+  if (data.props?.content || data.props?.text || data.props?.title) return <Type size={10} className="text-green-400 shrink-0" />;
+  return <Layers size={10} className="text-muted-foreground/40 shrink-0" />;
+}
 
 export const ShadcnNode: React.FC<NodeProps<ShadcnNodeData>> = ({ id, data, selected }) => {
   const config = getWidgetConfig(data.comp);
@@ -17,58 +27,59 @@ export const ShadcnNode: React.FC<NodeProps<ShadcnNodeData>> = ({ id, data, sele
   const togglePin = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!shared) return;
-    if (shared.isPinned(id)) {
-      shared.unpin(id);
-    } else {
-      shared.pin(id);
-    }
+    isPinned ? shared.unpin(id) : shared.pin(id);
   };
-  
+
+  const labelText = (() => {
+    const p = data.props ?? {};
+    if (p.content) return String(p.content).slice(0, 40);
+    if (p.title) return String(p.title).slice(0, 40);
+    if (p.text) return String(p.text).slice(0, 40);
+    if (p.src) return String(p.src).split('/').pop()?.slice(0, 30) ?? '';
+    return '';
+  })();
+
   return (
     <div className={cn(
-      "min-w-[220px] rounded-2xl border bg-card shadow-sm", 
-      selected ? "border-primary" : "border-border"
-    )}> 
-      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border">
-        <span className="text-xs font-medium">
-          {config?.label || data.comp}
-        </span>
-        <div className="flex items-center gap-2">
+      'min-w-[200px] rounded-xl border bg-card shadow-sm transition-all',
+      selected ? 'border-primary ring-1 ring-primary/30' : 'border-border',
+    )}>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {config?.icon
+            ? React.createElement(config.icon as any, { size: 12, className: 'text-primary shrink-0' })
+            : <FileText size={12} className="text-muted-foreground shrink-0" />
+          }
+          <span className="text-xs font-medium truncate">{config?.label || data.comp}</span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
           <button
-            className={cn(
-              "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
-              isPinned ? "bg-amber-100 border-amber-300 text-amber-900" : "bg-card border-border text-muted-foreground hover:bg-muted"
-            )}
-            title={isPinned ? "Unpin from preview" : "Pin to preview"}
             onClick={togglePin}
+            title={isPinned ? 'Unpin from preview' : 'Pin to preview'}
+            className={cn(
+              'p-0.5 rounded transition-colors',
+              isPinned ? 'text-amber-500 hover:text-amber-600' : 'text-muted-foreground/40 hover:text-muted-foreground',
+            )}
           >
-            {isPinned ? "Pinned" : "Pin"}
+            {isPinned ? <PinOff size={11} /> : <Pin size={11} />}
           </button>
-          <span className="text-[10px] text-muted-foreground">
-            {id.slice(1, 5)}
-          </span>
+          <span className="text-[9px] text-muted-foreground/30 font-mono">{id.slice(-4)}</span>
         </div>
       </div>
-      <div className="p-3 text-[11px] text-muted-foreground space-y-0.5">
-        <div className="truncate text-[10px] text-muted-foreground/60">type: {data.comp}</div>
-        {data.props?.content && (
-          <div className="truncate font-medium text-foreground/80">"{String(data.props.content).slice(0, 40)}"</div>
-        )}
-        {data.props?.title && !data.props?.content && (
-          <div className="truncate font-medium text-foreground/80">{String(data.props.title).slice(0, 40)}</div>
-        )}
-        {data.props?.text && !data.props?.content && !data.props?.title && (
-          <div className="truncate font-medium text-foreground/80">{String(data.props.text).slice(0, 40)}</div>
-        )}
-        {data.props?.src && (
-          <div className="truncate text-blue-500/70">🖼 {String(data.props.src).split('/').pop()}</div>
-        )}
-        {data.props?.tag && (
-          <div className="text-amber-500/80">&lt;{data.props.tag}&gt;</div>
-        )}
-      </div>
-      <Handle type="target" position={Position.Top} style={{ borderRadius: 0 }} />
-      <Handle type="source" position={Position.Bottom} />
+
+      {/* Content preview */}
+      {(labelText || data.props?.tag) && (
+        <div className="px-3 py-1.5 flex items-center gap-1.5">
+          <ContentIcon data={data} />
+          <span className="text-[10px] text-muted-foreground truncate">
+            {data.props?.tag ? `<${data.props.tag}> ` : ''}{labelText}
+          </span>
+        </div>
+      )}
+
+      <Handle type="target" position={Position.Top} style={{ width: 8, height: 8 }} />
+      <Handle type="source" position={Position.Bottom} style={{ width: 8, height: 8 }} />
     </div>
   );
 };

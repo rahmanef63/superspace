@@ -18,6 +18,7 @@ import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import { ANIMATION_INSPECTOR_FIELDS } from '@/frontend/features/studio/ui/lib/animations';
 
 const TAG_MAP: Record<string, string> = {
     div: 'div', section: 'section', article: 'article',
@@ -66,8 +67,10 @@ const divRender = (p: Record<string, any>, children?: React.ReactNode) => {
     const isFlexDisplay = p.display === 'flex' || p.display === 'inline-flex';
     const isGridDisplay = p.display === 'grid';
     const cls = cn(
-        // display
-        p.display && p.display !== 'block' ? p.display : 'block',
+        // Only emit explicit display class when set to non-default value.
+        // Omitting 'block' avoids conflicting with 'flex'/'grid' in className prop,
+        // since browser default for div is already block.
+        p.display && p.display !== 'block' && p.display !== 'Default' ? p.display : undefined,
         // flex props (only active when display=flex)
         isFlexDisplay && FLEX_DIR_CLASS[p.flexDirection ?? 'col'],
         isFlexDisplay && JUSTIFY_CLASS[p.justifyContent ?? p.justify ?? ''],
@@ -109,6 +112,8 @@ export const divManifest: WidgetConfig = {
             { key: 'alignItems',     label: 'Align Items',   type: 'select', options: ['flex-start', 'center', 'flex-end', 'stretch', 'baseline'] },
             { key: 'gap',            label: 'Gap',           type: 'select', options: ['', '0.25rem', '0.5rem', '1rem', '1.5rem', '2rem', '3rem'] },
             { key: 'className',      label: 'CSS Classes',   type: 'text',   placeholder: 'max-w-6xl mx-auto py-20 px-8 ...' },
+            // ── Animation ──────────────────────────────────────────────────────
+            ...ANIMATION_INSPECTOR_FIELDS,
         ],
     },
 };

@@ -7,13 +7,15 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { useSharedCanvas, useDnD, getLayoutedElements } from '@/frontend/shared/builder';
+import { useSharedCanvas, useDnD, getLayoutedElements, useOptionalSharedCanvas } from '@/frontend/shared/builder';
 import { CanvasToolbar } from './CanvasToolbar';
 
 interface SharedCanvasProps {
   nodeTypes: Record<string, React.ComponentType<any>>;
   edgeTypes?: Record<string, React.ComponentType<any>>;
   onNodeSelect?: (nodeId: string | null) => void;
+  /** Called when a node is double-clicked (e.g. enter group focus mode) */
+  onNodeDoubleClick?: (nodeId: string, nodeType: string) => void;
   showLayoutControls?: boolean;
   className?: string;
   onCanvasContextMenu?: (e: React.MouseEvent) => void;
@@ -24,6 +26,7 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
   nodeTypes,
   edgeTypes,
   onNodeSelect,
+  onNodeDoubleClick,
   showLayoutControls = true,
   className = "",
   onCanvasContextMenu,
@@ -49,6 +52,14 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
     setSelectedNodeId(node.id);
     onNodeSelect?.(node.id);
   }, [setSelectedNodeId, onNodeSelect]);
+
+  // Double-click: enter group focus mode (SketchUp-style) or delegate to caller
+  const onNodeDblClick = useCallback((event: React.MouseEvent, node: any) => {
+    event.stopPropagation();
+    if (onNodeDoubleClick) {
+      onNodeDoubleClick(node.id, node.type ?? node.data?.comp ?? '');
+    }
+  }, [onNodeDoubleClick]);
 
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
@@ -115,6 +126,7 @@ const SharedCanvasInner: React.FC<SharedCanvasProps> = ({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
+        onNodeDoubleClick={onNodeDblClick}
         onPaneClick={onPaneClick}
         onDrop={onDrop}
         onDragOver={onDragOver}

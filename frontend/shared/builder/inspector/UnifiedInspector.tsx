@@ -8,12 +8,15 @@ interface UnifiedInspectorProps {
   feature?: 'cms' | 'automation' | 'database' | 'studio';
   customRenderers?: Record<string, React.ComponentType<any>>;
   selectedNode?: any;
+  /** Optional widget-specific fields getter injected by the host feature (e.g. Studio). */
+  getWidgetFields?: (comp: string) => import('./DynamicInspector').InspectorField[] | undefined;
 }
 
 export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
   feature = 'cms',
   customRenderers = {},
-  selectedNode: propSelectedNode
+  selectedNode: propSelectedNode,
+  getWidgetFields,
 }) => {
   const { selectedNode: contextSelectedNode, setNodeProps } = useSharedCanvas();
   const { getComponent, getWidget } = useCrossFeatureRegistry();
@@ -57,7 +60,7 @@ export const UnifiedInspector: React.FC<UnifiedInspectorProps> = ({
   }
 
   // Use the new DynamicInspector for better control handling
-  return <DynamicInspector selectedNode={selectedNode} />;
+  return <DynamicInspector selectedNode={selectedNode} getWidgetFields={getWidgetFields} />;
 };
 
 function getFeatureIcon(feature: string): string {

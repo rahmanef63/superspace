@@ -5,6 +5,12 @@ import { InspectorTabs } from '@/frontend/shared/builder/inspector/InspectorTabs
 import { AutomationInspector } from '@/frontend/features/studio/components/AutomationInspector';
 import { useSharedCanvas } from '@/frontend/shared/builder';
 import type { StudioMode } from '@/frontend/features/studio/registry';
+import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
+
+/** Extracts widget-specific inspector fields from the Studio widget registry. */
+function studioGetWidgetFields(comp: string) {
+    return getWidgetConfig(comp)?.inspector?.fields;
+}
 
 interface RightPanelProps {
     mode: StudioMode;
@@ -59,7 +65,7 @@ export const StudioRightPanel: React.FC<RightPanelProps> = ({
                 {mode === 'workflow' ? (
                     <AutomationInspector />
                 ) : (
-                    <InspectorTabs selectedNode={selectedNode} />
+                    <InspectorTabs selectedNode={selectedNode} getWidgetFields={studioGetWidgetFields} />
                 )}
             </div>
         </Card>

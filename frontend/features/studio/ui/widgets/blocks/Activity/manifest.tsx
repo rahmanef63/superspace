@@ -37,6 +37,12 @@ export const activityManifest: WidgetConfig = {
                 label: 'Empty Message',
                 type: 'text'
             }),
+            createCustomField({
+                key: 'activities',
+                label: 'Activities (JSON)',
+                type: 'json',
+                placeholder: '[{"id":"1","user":"Alice","action":"created document","timestamp":"2 min ago"},{"id":"2","user":"Bob","action":"commented","timestamp":"5 min ago"}]',
+            }),
         ]
     }
 };

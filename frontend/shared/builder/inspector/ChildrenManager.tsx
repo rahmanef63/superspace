@@ -11,9 +11,10 @@ import { Button } from '@/components/ui';
 import { ArrowUp, ArrowDown, X, Ungroup } from 'lucide-react';
 import { useSharedCanvas } from '../canvas/core';
 
-// Layout block types that can be "exploded" (broken apart into independent nodes)
+// Node types whose children can be released as independent nodes (ungroup/explode)
 const EXPLODABLE_TYPES = new Set([
     'threeColumn', 'twoColumn', 'grid', 'flex', 'row', 'column', 'div', 'section', 'container', 'accordion',
+    'card', 'groupNode',
 ]);
 
 interface ChildrenManagerProps {
@@ -30,7 +31,7 @@ export const ChildrenManager: React.FC<ChildrenManagerProps> = ({ selectedNode: 
     const handleExplode = () => {
         if (!node || !childrenOrdered?.length) return;
         const confirmed = window.confirm(
-            `Explode "${nodeType}"? This removes the wrapper node and releases ${childrenOrdered.length} child(ren) as independent blocks.`
+            `Ungroup "${nodeType}"?\n\nIni akan membebaskan ${childrenOrdered.length} child node menjadi node independen di canvas.\nWrapper node akan dihapus, tapi semua isinya tetap ada.`
         );
         if (!confirmed) return;
 
@@ -39,7 +40,7 @@ export const ChildrenManager: React.FC<ChildrenManagerProps> = ({ selectedNode: 
         const parentId = node.id;
 
         setEdges((eds: any[]) => eds.filter((e: any) => !(e.source === parentId && childIds.has(e.target))));
-        // Remove the parent wrapper node
+        // Remove the parent wrapper node only — children stay on canvas
         setNodes((ns: any[]) => ns.filter((n: any) => n.id !== parentId));
     };
 
@@ -49,8 +50,8 @@ export const ChildrenManager: React.FC<ChildrenManagerProps> = ({ selectedNode: 
             {canExplode && (
                 <div className="rounded-lg border border-dashed border-border p-3 space-y-2">
                     <p className="text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">{nodeType}</span> is a layout wrapper.
-                        Explode it to release its {childrenOrdered?.length} child(ren) as independent blocks.
+                        <span className="font-medium text-foreground">{nodeType}</span> memiliki {childrenOrdered?.length} child.
+                        Ungroup untuk membebaskannya sebagai node independen yang bisa diedit dan ditambahkan.
                     </p>
                     <Button
                         variant="outline"
@@ -59,7 +60,7 @@ export const ChildrenManager: React.FC<ChildrenManagerProps> = ({ selectedNode: 
                         onClick={handleExplode}
                     >
                         <Ungroup size={13} />
-                        Explode Block
+                        Ungroup (Explode)
                     </Button>
                 </div>
             )}

@@ -4,7 +4,7 @@ export interface InspectorField {
   label: string;
   type: 'text' | 'number' | 'select' | 'switch' | 'textarea' | 'custom' | 'nodeSelector'
   // Extended types for studio
-  | 'slider' | 'color' | 'checkbox' | 'button' | 'buttonGroup' | 'range' | 'code';
+  | 'slider' | 'color' | 'checkbox' | 'button' | 'buttonGroup' | 'range' | 'code' | 'json';
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;

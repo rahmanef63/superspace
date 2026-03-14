@@ -152,9 +152,21 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     }, [createNode]);
 
     const handleImportTemplate = useCallback((template: any) => {
+        if (!template) return;
+
+        // Schema v0.4/v0.5 format: { version, root, nodes: Record<string, SchemaNode> }
+        if (template.root && template.nodes && !Array.isArray(template.nodes)) {
+            clearAll();
+            const { nodes: importedNodes, edges: importedEdges } = fromSchema(template);
+            setNodes(importedNodes as any);
+            setEdges(importedEdges as any);
+            return;
+        }
+
+        // Legacy ReactFlow array format: { nodes: Node[], edges: Edge[] }
         clearFlow();
         const idMap: Record<string, string> = {};
-        const newNodes = template.nodes.map((templateNode: any) => {
+        const newNodes = (template.nodes || []).map((templateNode: any) => {
             const newId = `${templateNode.id}-${Date.now()}`;
             idMap[templateNode.id] = newId;
             return {
@@ -164,14 +176,14 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 data: templateNode.data,
             };
         });
-        const newEdges = template.edges.map((templateEdge: any, idx: number) => ({
+        const newEdges = (template.edges || []).map((templateEdge: any, idx: number) => ({
             id: `e-${Date.now()}-${idx}`,
             source: idMap[templateEdge.source],
             target: idMap[templateEdge.target],
         }));
         setNodes(newNodes);
         setEdges(newEdges);
-    }, [clearFlow, setNodes, setEdges]);
+    }, [clearFlow, clearAll, setNodes, setEdges]);
 
     /** Download a JSON blob as a file */
     const downloadJson = useCallback((data: unknown, filename: string) => {

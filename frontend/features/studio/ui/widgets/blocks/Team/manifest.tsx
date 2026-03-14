@@ -19,6 +19,12 @@ export const teamManifest: WidgetConfig = {
         fields: [
             createCustomField({ key: 'title', label: 'Title', type: 'text' }),
             createCustomField({ key: 'description', label: 'Description', type: 'text' }),
+            createCustomField({
+                key: 'roles',
+                label: 'Roles (JSON)',
+                type: 'json',
+                placeholder: '{"Engineering":[{"name":"Alice","avatar":""},{"name":"Bob","avatar":""}],"Design":[{"name":"Carol","avatar":""}]}',
+            }),
         ]
     }
 };

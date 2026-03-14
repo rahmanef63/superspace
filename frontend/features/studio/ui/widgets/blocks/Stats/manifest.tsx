@@ -20,6 +20,12 @@ export const statsManifest: WidgetConfig = {
                 label: 'Columns',
                 type: 'number'
             }),
+            createCustomField({
+                key: 'stats',
+                label: 'Stats Items (JSON)',
+                type: 'json',
+                placeholder: '[{"title":"Users","value":"1,234","description":"Total users"},{"title":"Revenue","value":"$5.6k","description":"This month"}]',
+            }),
         ]
     }
 };

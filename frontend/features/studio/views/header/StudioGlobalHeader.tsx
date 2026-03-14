@@ -7,7 +7,7 @@
  * Right:  Undo/Redo | Export/Import/Docs/Clear
  */
 import React from 'react';
-import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup, ArrowRightLeft } from 'lucide-react';
+import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup, ArrowRightLeft, ExternalLink } from 'lucide-react';
 import { FeatureHeader } from '@/frontend/shared/ui/layout/header';
 import { Button } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -31,6 +31,7 @@ interface StudioGlobalHeaderProps {
     handleClear: () => void;
     onOpenDocs: () => void;
     onOpenConverter: () => void;
+    onOpenPreview: () => void;
     // Panel collapse — managed in StudioPage (outside ThreeColumnLayoutAdvanced context)
     leftCollapsed: boolean;
     rightCollapsed: boolean;
@@ -70,7 +71,7 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
     contentTab, setContentTab,
     leftTab, setLeftTab,
     undo, canUndo, redo, canRedo,
-    handleExport, handleImport, handleClear, onOpenDocs, onOpenConverter,
+    handleExport, handleImport, handleClear, onOpenDocs, onOpenConverter, onOpenPreview,
     leftCollapsed, rightCollapsed, toggleLeft, toggleRight,
     onGroup, focusedGroupId, onExitGroup,
 }) => {
@@ -213,6 +214,11 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                 <Tip label="Convert JSON ↔ HTML / TSX">
                     <Button variant="ghost" size="sm" onClick={onOpenConverter} className="h-7 w-7 p-0">
                         <ArrowRightLeft size={13} />
+                    </Button>
+                </Tip>
+                <Tip label="Open Preview in New Tab">
+                    <Button variant="ghost" size="sm" onClick={onOpenPreview} className="h-7 w-7 p-0">
+                        <ExternalLink size={13} />
                     </Button>
                 </Tip>
                 <Sep />

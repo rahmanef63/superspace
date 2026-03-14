@@ -52,6 +52,7 @@ import type { NodeTypes, EdgeTypes } from 'reactflow';
 
 // Custom edge types for data/event binding
 import { studioEdgeTypes } from '../connections';
+import { FolderOpen, X } from 'lucide-react';
 
 // ============================================================================
 // Combined Node Types
@@ -330,18 +331,33 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         toast({ title: 'Canvas cleared' });
     }, [mode, clearFlow, clearAll, toast]);
 
+    // Double-click on a node: enter group focus mode for groupNode, pin for shadcn widgets
+    const handleNodeDoubleClick = useCallback((nodeId: string, nodeType: string) => {
+        if (nodeType === 'groupNode' || nodeType === 'group') {
+            enterGroup(nodeId);
+        } else {
+            // For regular nodes: toggle pin to preview (quick preview shortcut)
+            if (isPinned(nodeId)) {
+                unpin(nodeId);
+            } else {
+                pin(nodeId);
+            }
+        }
+    }, [enterGroup, isPinned, pin, unpin]);
+
     // Render canvas based on mode
     // In focus mode, show only the focused group's subtree
     const renderCanvas = () => (
         <div className="h-full flex flex-col">
             {focusedGroupId && (
                 <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/10 text-primary border-b border-primary/20 shrink-0">
-                    <span>📂 Focus mode — editing group</span>
+                    <FolderOpen size={12} />
+                    <span>Focus mode — editing group</span>
                     <button
-                        className="underline hover:no-underline ml-auto"
+                        className="underline hover:no-underline ml-auto flex items-center gap-1"
                         onClick={exitGroup}
                     >
-                        ✕ Exit
+                        <X size={10} /> Exit
                     </button>
                 </div>
             )}
@@ -350,6 +366,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     nodeTypes={nodeTypes}
                     edgeTypes={edgeTypes}
                     onNodeSelect={setSelectedNodeId}
+                    onNodeDoubleClick={handleNodeDoubleClick}
                     showLayoutControls={true}
                 />
             </div>
@@ -472,6 +489,11 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     const [docsOpen, setDocsOpen] = React.useState(false);
     const [converterOpen, setConverterOpen] = React.useState(false);
 
+    const handleOpenPreview = React.useCallback(() => {
+        localStorage.setItem('studio-preview-schema', JSON.stringify(schema));
+        window.open('/dashboard/studio/preview', '_blank');
+    }, [schema]);
+
     return (
 
         <div className="flex flex-col h-full overflow-hidden">
@@ -494,6 +516,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 handleClear={handleClear}
                 onOpenDocs={() => setDocsOpen(true)}
                 onOpenConverter={() => setConverterOpen(true)}
+                onOpenPreview={handleOpenPreview}
                 leftCollapsed={leftCollapsed}
                 rightCollapsed={rightCollapsed}
                 toggleLeft={() => setLeftCollapsed(v => !v)}

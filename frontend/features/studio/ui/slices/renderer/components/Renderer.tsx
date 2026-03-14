@@ -3,6 +3,8 @@ import type { Schema, Workspace } from '@/frontend/features/studio/ui/types';
 import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
 import { cn } from '@/lib/utils';
 import { getTemplateByKey, isBuiltinKey, instantiateDefaultTemplate } from '@/frontend/features/studio/ui/state/templateStore';
+import { AnimationWrapper } from '@/frontend/features/studio/ui/lib/animations';
+import { studioErrorLog } from '@/frontend/features/studio/ui/lib/studioErrorLog';
 
 interface RendererProps {
   schema: Schema;
@@ -162,6 +164,7 @@ class WidgetErrorBoundary extends React.Component<
 
   componentDidCatch(error: any, errorInfo: any) {
     console.error(`[Studio] Widget "${this.props.id}" render error:`, error, errorInfo);
+    studioErrorLog.push(this.props.id, error);
   }
 
   handleCopy = () => {
@@ -404,6 +407,19 @@ export const Renderer: React.FC<RendererProps> = ({
         });
       }
 
+      // Wrap with Framer Motion animation when `animation` prop is set
+      const animatedBody = p.animation && p.animation !== 'none' && !designMode ? (
+        <AnimationWrapper
+          animation={p.animation}
+          animationDelay={Number(p.animationDelay) || 0}
+          animationDuration={Number(p.animationDuration) || 0.5}
+          animationEasing={p.animationEasing || 'easeOut'}
+          animationOnce={p.animationOnce !== false}
+        >
+          {styledBody}
+        </AnimationWrapper>
+      ) : styledBody;
+
       return (
         <WidgetErrorBoundary key={id} id={id}>
           <div
@@ -415,7 +431,7 @@ export const Renderer: React.FC<RendererProps> = ({
             )}
             onClick={(e) => { if (!selectable) return; e.stopPropagation(); onSelectNode?.(id); }}
           >
-            {styledBody}
+            {animatedBody}
           </div>
         </WidgetErrorBoundary>
       );

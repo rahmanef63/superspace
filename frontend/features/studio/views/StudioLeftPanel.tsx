@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Label, Button, Textarea } from '@/components/ui';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Save, FolderOpen } from 'lucide-react';
 import { UnifiedLibrary } from '@/frontend/shared/builder';
 import { TemplatesGallery } from '@/frontend/features/studio/components/TemplatesGallery';
@@ -87,7 +88,8 @@ export const StudioLeftPanel: React.FC<LeftPanelProps> = ({
                     </div>
                 )}
                 {leftTab === 'settings' && (
-                    <div className="h-full overflow-auto p-3 space-y-4">
+                    <ScrollArea className="h-full">
+                    <div className="p-3 space-y-4">
                         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Project Settings
                         </div>
@@ -139,6 +141,7 @@ export const StudioLeftPanel: React.FC<LeftPanelProps> = ({
                             </p>
                         </div>
                     </div>
+                    </ScrollArea>
                 )}
             </div>
         </Card>

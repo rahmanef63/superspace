@@ -40,7 +40,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'hero-btns': { type: 'div', props: { className: 'flex flex-row gap-3 flex-wrap' }, children: ['btn-start', 'btn-demo'] },
       'btn-start': { type: 'button', props: { text: 'Mulai Gratis', size: 'lg', href: '#pricing', className: 'bg-white text-slate-900 hover:bg-slate-100' }, children: [] },
       'btn-demo': { type: 'button', props: { text: 'Lihat Demo', variant: 'outline', size: 'lg', href: '#demo', className: 'border-white/20 text-white hover:bg-white/10' }, children: [] },
-      'hero-img': { type: 'image', props: { src: 'https://picsum.photos/seed/saas/800/500', alt: 'Dashboard preview', className: 'flex-1 rounded-2xl shadow-2xl' }, children: [] },
+      'hero-img': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80', alt: 'Dashboard preview', className: 'flex-1 rounded-2xl shadow-2xl' }, children: [] },
 
       // ── Features ───────────────────────────────────────────────────────
       's-features': { type: 'div', props: { className: 'py-20 px-8 bg-slate-50' }, children: ['feat-inner'] },
@@ -97,8 +97,8 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'port-inner': { type: 'div', props: { className: 'max-w-6xl mx-auto flex flex-col gap-8' }, children: ['port-h2', 'port-grid'] },
       'port-h2': { type: 'text', props: { tag: 'h2', content: 'Portfolio', className: 'text-3xl font-bold text-center' }, children: [] },
       'port-grid': { type: 'grid', props: { columns: '2', gap: 'md', className: '' }, children: ['port-1', 'port-2'] },
-      'port-1': { type: 'image', props: { src: 'https://picsum.photos/seed/agency1/600/400', alt: 'Project 1', className: 'w-full rounded-xl' }, children: [] },
-      'port-2': { type: 'image', props: { src: 'https://picsum.photos/seed/agency2/600/400', alt: 'Project 2', className: 'w-full rounded-xl' }, children: [] },
+      'port-1': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80', alt: 'Project 1', className: 'w-full rounded-xl' }, children: [] },
+      'port-2': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=80', alt: 'Project 2', className: 'w-full rounded-xl' }, children: [] },
 
       // Contact
       's-contact': { type: 'div', props: { className: 'py-20 px-8 bg-black text-white text-center flex flex-col items-center gap-6' }, children: ['ct-h2', 'ct-btn'] },
@@ -138,8 +138,8 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'proj-inner': { type: 'div', props: { className: 'max-w-5xl mx-auto flex flex-col gap-8' }, children: ['proj-h2', 'proj-grid'] },
       'proj-h2': { type: 'text', props: { tag: 'h2', content: 'Featured Projects', className: 'text-2xl font-bold text-center' }, children: [] },
       'proj-grid': { type: 'grid', props: { columns: '2', gap: 'md', className: '' }, children: ['proj-1', 'proj-2'] },
-      'proj-1': { type: 'card', props: { title: 'Project Alpha', description: 'SaaS platform dengan 10k+ users. Built dengan Next.js dan Convex.', imageUrl: 'https://picsum.photos/seed/proj1/600/350', className: 'border rounded-xl overflow-hidden' }, children: [] },
-      'proj-2': { type: 'card', props: { title: 'Project Beta', description: 'E-commerce mobile app dengan AR try-on feature.', imageUrl: 'https://picsum.photos/seed/proj2/600/350', className: 'border rounded-xl overflow-hidden' }, children: [] },
+      'proj-1': { type: 'card', props: { title: 'Project Alpha', description: 'SaaS platform dengan 10k+ users. Built dengan Next.js dan Convex.', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80', className: 'border rounded-xl overflow-hidden' }, children: [] },
+      'proj-2': { type: 'card', props: { title: 'Project Beta', description: 'E-commerce mobile app dengan AR try-on feature.', imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80', className: 'border rounded-xl overflow-hidden' }, children: [] },
 
       // Contact
       's-contact': { type: 'div', props: { className: 'py-16 px-8 text-center bg-slate-900 text-white flex flex-col items-center gap-5' }, children: ['ct-h2', 'ct-p', 'ct-btn'] },
@@ -179,7 +179,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       's-solution': { type: 'div', props: { className: 'py-20 px-8 bg-violet-50' }, children: ['sol-inner'] },
       'sol-inner': { type: 'div', props: { className: 'max-w-4xl mx-auto flex flex-col items-center gap-8' }, children: ['sol-h2', 'sol-img', 'sol-p'] },
       'sol-h2': { type: 'text', props: { tag: 'h2', content: 'Satu workspace untuk segalanya', className: 'text-3xl font-bold' }, children: [] },
-      'sol-img': { type: 'image', props: { src: 'https://picsum.photos/seed/startup/900/500', alt: 'Product overview', className: 'w-full rounded-2xl shadow-xl' }, children: [] },
+      'sol-img': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?auto=format&fit=crop&w=900&q=80', alt: 'Product overview', className: 'w-full rounded-2xl shadow-xl' }, children: [] },
       'sol-p': { type: 'text', props: { tag: 'p', content: 'Chat, docs, project management, dan analytics — semuanya dalam satu tab.', className: 'text-gray-600' }, children: [] },
 
       // Waitlist
@@ -208,7 +208,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'hero-h1': { type: 'text', props: { tag: 'h1', content: 'Belajar skill spesifik lebih cepat', className: 'text-4xl font-bold leading-tight' }, children: [] },
       'hero-p': { type: 'text', props: { tag: 'p', content: 'Course outcome-based. Bukan teori, langsung ke praktik nyata yang bisa kamu pakai besok.', className: 'text-gray-600 text-lg' }, children: [] },
       'hero-cta': { type: 'button', props: { text: 'Enroll Sekarang', size: 'lg', href: '#pricing', className: 'bg-amber-500 text-white hover:bg-amber-600' }, children: [] },
-      'hero-img': { type: 'image', props: { src: 'https://picsum.photos/seed/course/600/400', alt: 'Course preview', className: 'flex-1 rounded-2xl shadow-lg' }, children: [] },
+      'hero-img': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80', alt: 'Course preview', className: 'flex-1 rounded-2xl shadow-lg' }, children: [] },
 
       // Outcomes
       's-outcomes': { type: 'div', props: { className: 'py-16 px-8 bg-white' }, children: ['out-inner'] },
@@ -223,7 +223,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       // Instructor
       's-instructor': { type: 'div', props: { className: 'py-16 px-8 bg-amber-50' }, children: ['inst-inner'] },
       'inst-inner': { type: 'div', props: { className: 'max-w-3xl mx-auto flex flex-row gap-8 items-center' }, children: ['inst-img', 'inst-copy'] },
-      'inst-img': { type: 'image', props: { src: 'https://picsum.photos/seed/instructor/200/200', alt: 'Instructor', className: 'w-24 h-24 rounded-full object-cover shrink-0' }, children: [] },
+      'inst-img': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80', alt: 'Instructor', className: 'w-24 h-24 rounded-full object-cover shrink-0' }, children: [] },
       'inst-copy': { type: 'div', props: { className: 'flex flex-col gap-2' }, children: ['inst-h3', 'inst-p'] },
       'inst-h3': { type: 'text', props: { tag: 'h3', content: 'Nama Instructor', className: 'text-xl font-bold' }, children: [] },
       'inst-p': { type: 'text', props: { tag: 'p', content: '10+ tahun di industri. Pernah memimpin engineering di 3 startup yang sukses exit.', className: 'text-gray-600' }, children: [] },
@@ -255,7 +255,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'hero-stores': { type: 'div', props: { className: 'flex flex-row gap-4 flex-wrap' }, children: ['store-ios', 'store-android'] },
       'store-ios': { type: 'button', props: { text: '🍎 App Store', size: 'lg', href: '#', className: 'bg-white text-blue-700 font-semibold' }, children: [] },
       'store-android': { type: 'button', props: { text: '▶ Google Play', variant: 'outline', size: 'lg', href: '#', className: 'border-white text-white' }, children: [] },
-      'hero-phone': { type: 'image', props: { src: 'https://picsum.photos/seed/app/300/500', alt: 'App mockup', className: 'rounded-3xl shadow-2xl max-w-xs' }, children: [] },
+      'hero-phone': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=300&q=80', alt: 'App mockup', className: 'rounded-3xl shadow-2xl max-w-xs' }, children: [] },
 
       // Features
       's-features': { type: 'div', props: { className: 'py-20 px-8 bg-white' }, children: ['feat-inner'] },
@@ -306,9 +306,9 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'gal-inner': { type: 'div', props: { className: 'max-w-5xl mx-auto flex flex-col gap-6' }, children: ['gal-h2', 'gal-grid'] },
       'gal-h2': { type: 'text', props: { tag: 'h2', content: 'Galeri', className: 'text-2xl font-bold text-center' }, children: [] },
       'gal-grid': { type: 'grid', props: { columns: '3', gap: 'sm', className: '' }, children: ['g-1', 'g-2', 'g-3'] },
-      'g-1': { type: 'image', props: { src: 'https://picsum.photos/seed/biz1/400/300', alt: 'Gallery 1', className: 'w-full rounded-xl object-cover' }, children: [] },
-      'g-2': { type: 'image', props: { src: 'https://picsum.photos/seed/biz2/400/300', alt: 'Gallery 2', className: 'w-full rounded-xl object-cover' }, children: [] },
-      'g-3': { type: 'image', props: { src: 'https://picsum.photos/seed/biz3/400/300', alt: 'Gallery 3', className: 'w-full rounded-xl object-cover' }, children: [] },
+      'g-1': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80', alt: 'Gallery 1', className: 'w-full rounded-xl object-cover' }, children: [] },
+      'g-2': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=400&q=80', alt: 'Gallery 2', className: 'w-full rounded-xl object-cover' }, children: [] },
+      'g-3': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1559329007-40df8a9345d8?auto=format&fit=crop&w=400&q=80', alt: 'Gallery 3', className: 'w-full rounded-xl object-cover' }, children: [] },
 
       // Booking
       's-booking': { type: 'div', props: { className: 'py-16 px-8 bg-white text-center flex flex-col items-center gap-5' }, children: ['bk-h2', 'bk-info', 'bk-btn'] },
@@ -340,9 +340,9 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'sp-inner': { type: 'div', props: { className: 'max-w-5xl mx-auto flex flex-col gap-10' }, children: ['sp-h2', 'sp-grid'] },
       'sp-h2': { type: 'text', props: { tag: 'h2', content: 'Keynote Speakers', className: 'text-3xl font-bold text-center' }, children: [] },
       'sp-grid': { type: 'grid', props: { columns: '3', gap: 'md', className: 'text-center' }, children: ['sp-1', 'sp-2', 'sp-3'] },
-      'sp-1': { type: 'card', props: { title: 'Speaker 1', description: 'CEO · Tech Company', imageUrl: 'https://picsum.photos/seed/sp1/200/200', className: 'border rounded-xl p-5' }, children: [] },
-      'sp-2': { type: 'card', props: { title: 'Speaker 2', description: 'VP Engineering · Scale-up', imageUrl: 'https://picsum.photos/seed/sp2/200/200', className: 'border rounded-xl p-5' }, children: [] },
-      'sp-3': { type: 'card', props: { title: 'Speaker 3', description: 'Founder · Open Source', imageUrl: 'https://picsum.photos/seed/sp3/200/200', className: 'border rounded-xl p-5' }, children: [] },
+      'sp-1': { type: 'card', props: { title: 'Speaker 1', description: 'CEO · Tech Company', imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80', className: 'border rounded-xl p-5' }, children: [] },
+      'sp-2': { type: 'card', props: { title: 'Speaker 2', description: 'VP Engineering · Scale-up', imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=200&q=80', className: 'border rounded-xl p-5' }, children: [] },
+      'sp-3': { type: 'card', props: { title: 'Speaker 3', description: 'Founder · Open Source', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', className: 'border rounded-xl p-5' }, children: [] },
 
       // Tickets
       's-tickets': { type: 'div', props: { className: 'py-20 px-8 bg-indigo-50' }, children: ['tix-inner'] },
@@ -378,7 +378,7 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'hero-price': { type: 'text', props: { tag: 'span', content: 'Mulai dari Rp 1.999.000', className: 'text-2xl font-bold text-blue-600' }, children: [] },
       'hero-p': { type: 'text', props: { tag: 'p', content: 'Kualitas premium, desain modern, dan garansi 2 tahun. Dibuat untuk profesional yang menuntut yang terbaik.', className: 'text-gray-600 text-lg' }, children: [] },
       'hero-cta': { type: 'button', props: { text: 'Beli Sekarang', size: 'lg', href: '#buy', className: 'bg-blue-600 text-white text-lg' }, children: [] },
-      'hero-img': { type: 'image', props: { src: 'https://picsum.photos/seed/product/600/500', alt: 'Product', className: 'flex-1 rounded-2xl shadow-xl' }, children: [] },
+      'hero-img': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80', alt: 'Product', className: 'flex-1 rounded-2xl shadow-xl' }, children: [] },
 
       // Benefits
       's-benefits': { type: 'div', props: { className: 'py-16 px-8 bg-blue-50' }, children: ['ben-inner'] },
@@ -394,9 +394,9 @@ const BUILTIN_TEMPLATES: Record<string, () => any> = {
       'gal-inner': { type: 'div', props: { className: 'max-w-5xl mx-auto flex flex-col gap-6' }, children: ['gal-h2', 'gal-grid'] },
       'gal-h2': { type: 'text', props: { tag: 'h2', content: 'Lihat dari semua sudut', className: 'text-2xl font-bold text-center' }, children: [] },
       'gal-grid': { type: 'grid', props: { columns: '3', gap: 'sm', className: '' }, children: ['g-1', 'g-2', 'g-3'] },
-      'g-1': { type: 'image', props: { src: 'https://picsum.photos/seed/prod1/400/300', alt: 'View 1', className: 'w-full rounded-xl' }, children: [] },
-      'g-2': { type: 'image', props: { src: 'https://picsum.photos/seed/prod2/400/300', alt: 'View 2', className: 'w-full rounded-xl' }, children: [] },
-      'g-3': { type: 'image', props: { src: 'https://picsum.photos/seed/prod3/400/300', alt: 'View 3', className: 'w-full rounded-xl' }, children: [] },
+      'g-1': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=400&q=80', alt: 'View 1', className: 'w-full rounded-xl' }, children: [] },
+      'g-2': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?auto=format&fit=crop&w=400&q=80', alt: 'View 2', className: 'w-full rounded-xl' }, children: [] },
+      'g-3': { type: 'image', props: { src: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=400&q=80', alt: 'View 3', className: 'w-full rounded-xl' }, children: [] },
 
       // Buy CTA
       's-buy': { type: 'div', props: { className: 'py-16 px-8 bg-blue-600 text-white text-center flex flex-col items-center gap-5' }, children: ['buy-h2', 'buy-p', 'buy-btn'] },

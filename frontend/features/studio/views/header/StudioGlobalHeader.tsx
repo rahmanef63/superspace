@@ -7,7 +7,7 @@
  * Right:  Undo/Redo | Export/Import/Docs/Clear
  */
 import React from 'react';
-import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup } from 'lucide-react';
+import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup, ArrowRightLeft } from 'lucide-react';
 import { FeatureHeader } from '@/frontend/shared/ui/layout/header';
 import { Button } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -30,6 +30,7 @@ interface StudioGlobalHeaderProps {
     handleImport: () => void;
     handleClear: () => void;
     onOpenDocs: () => void;
+    onOpenConverter: () => void;
     // Panel collapse — managed in StudioPage (outside ThreeColumnLayoutAdvanced context)
     leftCollapsed: boolean;
     rightCollapsed: boolean;
@@ -69,7 +70,7 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
     contentTab, setContentTab,
     leftTab, setLeftTab,
     undo, canUndo, redo, canRedo,
-    handleExport, handleImport, handleClear, onOpenDocs,
+    handleExport, handleImport, handleClear, onOpenDocs, onOpenConverter,
     leftCollapsed, rightCollapsed, toggleLeft, toggleRight,
     onGroup, focusedGroupId, onExitGroup,
 }) => {
@@ -207,6 +208,11 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                 <Tip label="JSON Schema Docs">
                     <Button variant="ghost" size="sm" onClick={onOpenDocs} className="h-7 w-7 p-0">
                         <BookMarked size={13} />
+                    </Button>
+                </Tip>
+                <Tip label="Convert JSON ↔ HTML / TSX">
+                    <Button variant="ghost" size="sm" onClick={onOpenConverter} className="h-7 w-7 p-0">
+                        <ArrowRightLeft size={13} />
                     </Button>
                 </Tip>
                 <Sep />

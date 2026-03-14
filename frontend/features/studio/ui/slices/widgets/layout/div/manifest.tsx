@@ -66,8 +66,10 @@ const divRender = (p: Record<string, any>, children?: React.ReactNode) => {
     const isFlexDisplay = p.display === 'flex' || p.display === 'inline-flex';
     const isGridDisplay = p.display === 'grid';
     const cls = cn(
-        // display
-        p.display && p.display !== 'block' ? p.display : 'block',
+        // Only emit explicit display class when set to non-default value.
+        // Omitting 'block' avoids conflicting with 'flex'/'grid' in className prop,
+        // since browser default for div is already block.
+        p.display && p.display !== 'block' && p.display !== 'Default' ? p.display : undefined,
         // flex props (only active when display=flex)
         isFlexDisplay && FLEX_DIR_CLASS[p.flexDirection ?? 'col'],
         isFlexDisplay && JUSTIFY_CLASS[p.justifyContent ?? p.justify ?? ''],

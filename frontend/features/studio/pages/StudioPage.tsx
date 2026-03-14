@@ -77,6 +77,7 @@ import { StudioLeftPanel } from '../views/StudioLeftPanel';
 import { StudioRightPanel } from '../views/StudioRightPanel';
 import { StudioDocsDialog } from '../components/StudioDocsDialog';
 import { ImportJsonDialog } from '../components/ImportJsonDialog';
+import { StudioConverterDialog } from '../components/StudioConverterDialog';
 
 // ============================================================================
 // Main Layout
@@ -469,6 +470,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     };
 
     const [docsOpen, setDocsOpen] = React.useState(false);
+    const [converterOpen, setConverterOpen] = React.useState(false);
 
     return (
 
@@ -491,6 +493,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 handleImport={handleImport}
                 handleClear={handleClear}
                 onOpenDocs={() => setDocsOpen(true)}
+                onOpenConverter={() => setConverterOpen(true)}
                 leftCollapsed={leftCollapsed}
                 rightCollapsed={rightCollapsed}
                 toggleLeft={() => setLeftCollapsed(v => !v)}
@@ -537,6 +540,18 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 <React.Suspense fallback={null}>
                     <StudioDocsDialog open={docsOpen} onClose={() => setDocsOpen(false)} />
                 </React.Suspense>
+            )}
+            {converterOpen && (
+                <StudioConverterDialog
+                    open={converterOpen}
+                    onClose={() => setConverterOpen(false)}
+                    schema={mode === 'ui' || mode === 'unified' ? schema : null}
+                    onImportSchema={(s) => {
+                        const { nodes: n, edges: e } = fromSchema(s);
+                        setNodes(n as any);
+                        setEdges(e as any);
+                    }}
+                />
             )}
             <ImportJsonDialog
                 open={importDialogOpen}

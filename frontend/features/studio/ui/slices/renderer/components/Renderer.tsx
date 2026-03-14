@@ -362,7 +362,30 @@ export const Renderer: React.FC<RendererProps> = ({
     const children = (n.children || []).map((cid: string) => renderContentNode(cid, newVisited));
     const config = getWidgetConfig(t);
     const renderer = config?.render;
-    if (!renderer) return null;
+
+    // Unknown node type → render as a custom block placeholder so templates/imports never silently disappear
+    if (!renderer) {
+      if (!designMode) return null;
+      return (
+        <WidgetErrorBoundary key={id} id={id}>
+          <div
+            className="relative group border-2 border-dashed border-purple-500/50 bg-purple-950/20 rounded-lg p-3 text-xs"
+            onClick={(e) => { e.stopPropagation(); onSelectNode?.(id); }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="font-bold text-purple-400">⬡ Custom Block: <code className="font-mono text-purple-300">{t}</code></span>
+              <span className="text-purple-500/60 text-[10px]">id: {id}</span>
+            </div>
+            {Object.keys(p).length > 0 && (
+              <pre className="text-[10px] text-purple-300/70 overflow-hidden max-h-24 leading-tight">
+                {JSON.stringify(p, null, 2)}
+              </pre>
+            )}
+            {children && <div className="mt-2 border-t border-purple-500/20 pt-2 space-y-1">{children}</div>}
+          </div>
+        </WidgetErrorBoundary>
+      );
+    }
 
     try {
       const body = renderer(p, children, { ...helpers });
@@ -420,7 +443,15 @@ export const Renderer: React.FC<RendererProps> = ({
       renderTemplateNode(templateSchema, cid, newVisited)
     );
     const renderer = cfg?.render;
-    if (!renderer) return null;
+    if (!renderer) {
+      // Custom block fallback for unknown types in template schemas
+      return (
+        <div key={id} className="border border-dashed border-purple-500/40 bg-purple-950/10 rounded p-2 text-xs text-purple-400">
+          ⬡ <code>{n.type}</code>
+          {children}
+        </div>
+      );
+    }
     return renderer(p, children, helpers);
   };
 

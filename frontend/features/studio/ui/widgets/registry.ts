@@ -93,9 +93,10 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   // Layout
   div: divManifest,           // Universal container (replaces container + section in library)
   section: sectionManifest,   // Page / routing container (kept for Renderer routing)
-  container: { ...containerManifest, label: 'Container (legacy)', category: 'Layout' as const },
-  row: rowManifest,
-  column: columnManifest,
+  // Legacy aliases — kept for backward-compat of saved schemas, hidden from Library
+  container: { ...containerManifest, label: 'Container (legacy)', category: 'Layout' as const, hidden: true },
+  row: { ...rowManifest, hidden: true },
+  column: { ...columnManifest, hidden: true },
   threeColumn: threeColumnManifest,
   twoColumn: twoColumnManifest,
   grid: gridManifest,
@@ -150,10 +151,10 @@ const rawWidgetRegistry: Record<string, WidgetConfig> = {
   select: selectManifest,
   switch: switchManifest,
 
-  // Content Widgets (P2)
-  divider: dividerManifest,
+  // Content Widgets (P2) — divider duplicates separator; heading duplicates text (hidden from Library)
+  divider: { ...dividerManifest, hidden: true },
   spacer: spacerManifest,
-  heading: headingManifest,
+  heading: { ...headingManifest, hidden: true },
 
   // Blocks
   chartBlock: chartBlockManifest,

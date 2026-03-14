@@ -25,73 +25,124 @@ interface RendererProps {
   rootId?: string | null;
 }
 
+// ─── Tailwind token → CSS value maps ────────────────────────────────────────
+// DynamicInspector writes Tailwind shorthand tokens for some fields.
+// We convert them to real CSS so inline styles work correctly.
+const TW_FONT_SIZE: Record<string, string> = {
+  xs: '0.75rem', sm: '0.875rem', base: '1rem', lg: '1.125rem',
+  xl: '1.25rem', '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
+};
+const TW_BORDER_RADIUS: Record<string, string> = {
+  none: '0', sm: '0.125rem', md: '0.375rem', lg: '0.5rem',
+  xl: '0.75rem', '2xl': '1rem', full: '9999px',
+};
+const TW_BOX_SHADOW: Record<string, string> = {
+  none: 'none',
+  sm: '0 1px 2px 0 rgb(0 0 0/0.05)',
+  md: '0 4px 6px -1px rgb(0 0 0/0.1),0 2px 4px -2px rgb(0 0 0/0.1)',
+  lg: '0 10px 15px -3px rgb(0 0 0/0.1),0 4px 6px -4px rgb(0 0 0/0.1)',
+  xl: '0 20px 25px -5px rgb(0 0 0/0.1),0 8px 10px -6px rgb(0 0 0/0.1)',
+  '2xl': '0 25px 50px -12px rgb(0 0 0/0.25)',
+};
+
+// Sentinel values that should not be emitted as CSS
+const SKIP_SENTINELS = new Set(['Default', 'default', 'Regular', 'none', '', undefined, null]);
+
+// Only apply gap as CSS if it has units or is '0'
+const isGapCss = (v: any) => v === '0' || (typeof v === 'string' && /\d+(px|rem|em|%|vw|vh)/.test(v));
+
 /**
  * Convert inspector-controlled props to inline CSS style.
- * These are the "visual override" props that the DynamicInspector writes directly.
- * Widgets that already apply these in their render() receive them via `p` too,
- * but the outer wrapper applies any that the widget doesn't handle internally.
+ * Applies styles DIRECTLY to the widget's root element (via React.cloneElement),
+ * so inline styles correctly override any Tailwind classes on that element.
+ *
+ * Tailwind shorthand tokens (e.g. fontSize: 'lg', borderRadius: 'md') are
+ * mapped to real CSS values before application.
  */
 function propsToStyle(p: Record<string, any>): React.CSSProperties {
   const s: React.CSSProperties = {};
-  if (p.color) s.color = p.color;
-  if (p.backgroundColor) s.backgroundColor = p.backgroundColor;
-  if (p.fontFamily) s.fontFamily = p.fontFamily;
-  if (p.fontSize) s.fontSize = p.fontSize;
-  if (p.fontWeight) s.fontWeight = p.fontWeight;
-  if (p.lineHeight) s.lineHeight = p.lineHeight;
-  if (p.letterSpacing) s.letterSpacing = p.letterSpacing;
-  if (p.textAlign) s.textAlign = p.textAlign as any;
-  if (p.textDecoration) s.textDecoration = p.textDecoration;
-  if (p.width) s.width = p.width;
-  if (p.height) s.height = p.height;
-  if (p.minWidth) s.minWidth = p.minWidth;
-  if (p.minHeight) s.minHeight = p.minHeight;
-  if (p.maxWidth) s.maxWidth = p.maxWidth;
-  if (p.maxHeight) s.maxHeight = p.maxHeight;
-  if (p.display) s.display = p.display as any;
-  if (p.flexDirection) s.flexDirection = p.flexDirection as any;
-  if (p.flexWrap) s.flexWrap = p.flexWrap as any;
-  if (p.alignItems) s.alignItems = p.alignItems as any;
-  if (p.justifyContent) s.justifyContent = p.justifyContent as any;
-  if (p.gap) s.gap = p.gap;
-  if (p.paddingTop) s.paddingTop = p.paddingTop;
-  if (p.paddingBottom) s.paddingBottom = p.paddingBottom;
-  if (p.paddingLeft) s.paddingLeft = p.paddingLeft;
-  if (p.paddingRight) s.paddingRight = p.paddingRight;
-  if (p.marginTop) s.marginTop = p.marginTop;
-  if (p.marginBottom) s.marginBottom = p.marginBottom;
-  if (p.marginLeft) s.marginLeft = p.marginLeft;
-  if (p.marginRight) s.marginRight = p.marginRight;
-  if (p.borderStyle) s.borderStyle = p.borderStyle as any;
-  if (p.borderColor) s.borderColor = p.borderColor;
-  if (p.borderWidth) s.borderWidth = p.borderWidth;
-  if (p.borderRadius) s.borderRadius = p.borderRadius;
-  if (p.boxShadow) s.boxShadow = p.boxShadow;
-  if (p.opacity !== undefined && p.opacity !== '') s.opacity = Number(p.opacity);
-  if (p.overflow) s.overflow = p.overflow as any;
-  if (p.overflowX) s.overflowX = p.overflowX as any;
-  if (p.overflowY) s.overflowY = p.overflowY as any;
-  if (p.position) s.position = p.position as any;
-  if (p.zIndex) s.zIndex = Number(p.zIndex);
-  if (p.top) s.top = p.top;
-  if (p.right) s.right = p.right;
-  if (p.bottom) s.bottom = p.bottom;
-  if (p.left) s.left = p.left;
-  if (p.cursor) s.cursor = p.cursor;
-  if (p.pointerEvents) s.pointerEvents = p.pointerEvents as any;
-  if (p.userSelect) s.userSelect = p.userSelect as any;
-  if (p.visibility) s.visibility = p.visibility as any;
-  if (p.transition) s.transition = p.transition;
-  if (p.transform) s.transform = p.transform;
-  if (p.objectFit) s.objectFit = p.objectFit as any;
-  if (p.objectPosition) s.objectPosition = p.objectPosition;
-  if (p.whiteSpace) s.whiteSpace = p.whiteSpace as any;
-  if (p.textOverflow) s.textOverflow = p.textOverflow as any;
-  if (p.wordBreak) s.wordBreak = p.wordBreak as any;
-  if (p.gridTemplateColumns) s.gridTemplateColumns = p.gridTemplateColumns;
-  if (p.gridTemplateRows) s.gridTemplateRows = p.gridTemplateRows;
-  if (p.gridColumn) s.gridColumn = p.gridColumn;
-  if (p.gridRow) s.gridRow = p.gridRow;
+  const v = (val: any) => !SKIP_SENTINELS.has(val);
+
+  // Typography (color/font)
+  if (v(p.color)) s.color = p.color;
+  if (v(p.backgroundColor)) s.backgroundColor = p.backgroundColor;
+  if (v(p.fontFamily)) s.fontFamily = p.fontFamily;
+  if (v(p.fontSize)) s.fontSize = TW_FONT_SIZE[p.fontSize] ?? p.fontSize;
+  if (v(p.fontWeight) && !isNaN(Number(p.fontWeight))) s.fontWeight = p.fontWeight;
+  if (v(p.lineHeight)) s.lineHeight = p.lineHeight;
+  if (v(p.letterSpacing)) s.letterSpacing = p.letterSpacing;
+  if (v(p.textAlign)) s.textAlign = p.textAlign as any;
+  if (v(p.textDecoration) && p.textDecoration !== 'none') s.textDecoration = p.textDecoration;
+
+  // Dimensions
+  if (v(p.width) && p.width !== 'auto') s.width = p.width;
+  if (v(p.height) && p.height !== 'auto') s.height = p.height;
+  if (v(p.minWidth)) s.minWidth = p.minWidth;
+  if (v(p.minHeight)) s.minHeight = p.minHeight;
+  if (v(p.maxWidth) && p.maxWidth !== 'none') s.maxWidth = p.maxWidth;
+  if (v(p.maxHeight)) s.maxHeight = p.maxHeight;
+
+  // Display & Flex/Grid layout
+  if (v(p.display)) s.display = p.display as any;
+  if (v(p.flexDirection)) s.flexDirection = p.flexDirection as any;
+  if (v(p.flexWrap)) s.flexWrap = p.flexWrap as any;
+  if (v(p.alignItems)) s.alignItems = p.alignItems as any;
+  if (v(p.justifyContent)) s.justifyContent = p.justifyContent as any;
+  if (isGapCss(p.gap)) s.gap = p.gap;
+
+  // Spacing (individual sides — written by DynamicInspector layout section)
+  if (v(p.paddingTop) && p.paddingTop !== '0px') s.paddingTop = p.paddingTop;
+  if (v(p.paddingBottom) && p.paddingBottom !== '0px') s.paddingBottom = p.paddingBottom;
+  if (v(p.paddingLeft) && p.paddingLeft !== '0px') s.paddingLeft = p.paddingLeft;
+  if (v(p.paddingRight) && p.paddingRight !== '0px') s.paddingRight = p.paddingRight;
+  if (v(p.marginTop) && p.marginTop !== '0px') s.marginTop = p.marginTop;
+  if (v(p.marginBottom) && p.marginBottom !== '0px') s.marginBottom = p.marginBottom;
+  if (v(p.marginLeft) && p.marginLeft !== '0px') s.marginLeft = p.marginLeft;
+  if (v(p.marginRight) && p.marginRight !== '0px') s.marginRight = p.marginRight;
+
+  // Border
+  if (v(p.borderStyle) && p.borderStyle !== 'Default') s.borderStyle = p.borderStyle as any;
+  if (v(p.borderColor) && !['Default', 'default'].includes(p.borderColor)) s.borderColor = p.borderColor;
+  if (v(p.borderWidth) && p.borderWidth !== '0px') s.borderWidth = p.borderWidth;
+  if (v(p.borderRadius) && p.borderRadius !== 'Default') {
+    s.borderRadius = TW_BORDER_RADIUS[p.borderRadius] ?? p.borderRadius;
+  }
+
+  // Appearance
+  if (v(p.boxShadow) && p.boxShadow !== 'Default') {
+    s.boxShadow = TW_BOX_SHADOW[p.boxShadow] ?? p.boxShadow;
+  }
+  if (p.opacity !== undefined && p.opacity !== '' && p.opacity !== '100') {
+    s.opacity = Number(p.opacity) / 100;
+  }
+  if (v(p.overflow)) s.overflow = p.overflow as any;
+  if (v(p.overflowX)) s.overflowX = p.overflowX as any;
+  if (v(p.overflowY)) s.overflowY = p.overflowY as any;
+
+  // Position
+  if (v(p.position) && p.position !== 'static') s.position = p.position as any;
+  if (v(p.zIndex)) s.zIndex = Number(p.zIndex);
+  if (v(p.top)) s.top = p.top;
+  if (v(p.right)) s.right = p.right;
+  if (v(p.bottom)) s.bottom = p.bottom;
+  if (v(p.left)) s.left = p.left;
+
+  // Misc
+  if (v(p.cursor)) s.cursor = p.cursor;
+  if (v(p.pointerEvents)) s.pointerEvents = p.pointerEvents as any;
+  if (v(p.userSelect)) s.userSelect = p.userSelect as any;
+  if (v(p.visibility)) s.visibility = p.visibility as any;
+  if (v(p.transition)) s.transition = p.transition;
+  if (v(p.transform)) s.transform = p.transform;
+  if (v(p.objectFit)) s.objectFit = p.objectFit as any;
+  if (v(p.objectPosition)) s.objectPosition = p.objectPosition;
+  if (v(p.whiteSpace)) s.whiteSpace = p.whiteSpace as any;
+  if (v(p.textOverflow)) s.textOverflow = p.textOverflow as any;
+  if (v(p.wordBreak)) s.wordBreak = p.wordBreak as any;
+  if (v(p.gridTemplateColumns)) s.gridTemplateColumns = p.gridTemplateColumns;
+  if (v(p.gridTemplateRows)) s.gridTemplateRows = p.gridTemplateRows;
+  if (v(p.gridColumn)) s.gridColumn = p.gridColumn;
+  if (v(p.gridRow)) s.gridRow = p.gridRow;
   return s;
 }
 
@@ -291,10 +342,22 @@ export const Renderer: React.FC<RendererProps> = ({
       const body = renderer(p, children, { ...helpers });
       const selectable = designMode;
       const overrideStyle = propsToStyle(p);
+      const hasOverride = Object.keys(overrideStyle).length > 0;
+
+      // Apply inspector-driven inline styles DIRECTLY on the widget's root element
+      // so they correctly override any Tailwind utility classes on that element.
+      // Falls back to a wrapper div when the body isn't a clonable React element
+      // (e.g. null, string, fragment).
+      let styledBody: React.ReactNode = body;
+      if (hasOverride && React.isValidElement(body)) {
+        styledBody = React.cloneElement(body as React.ReactElement<any>, {
+          style: { ...((body as any).props?.style ?? {}), ...overrideStyle },
+        });
+      }
+
       return (
         <WidgetErrorBoundary key={id} id={id}>
           <div
-            style={overrideStyle}
             className={cn(
               "relative group",
               selectable && selectedId === id
@@ -303,7 +366,7 @@ export const Renderer: React.FC<RendererProps> = ({
             )}
             onClick={(e) => { if (!selectable) return; e.stopPropagation(); onSelectNode?.(id); }}
           >
-            {body}
+            {styledBody}
           </div>
         </WidgetErrorBoundary>
       );

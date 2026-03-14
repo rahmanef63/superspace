@@ -23,6 +23,7 @@ export { cmsWidgetRegistry };
  */
 function registerCMSComponents(registerComponent: (config: ComponentConfig) => void): void {
     Object.entries(cmsWidgetRegistry).forEach(([key, config]) => {
+        if (config.hidden) return; // skip legacy/redundant widgets
         registerComponent({
             key,
             label: config.label,

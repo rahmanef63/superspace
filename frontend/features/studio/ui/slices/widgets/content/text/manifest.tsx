@@ -1,6 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { TextWidget } from './TextWidget';
-import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
 import React from 'react';
 
@@ -12,57 +11,16 @@ export const textManifest: WidgetConfig = {
   defaults: {
     tag: "p",
     content: "Text content",
-    fontSize: "base",
-    fontWeight: "normal",
-    textColor: "gray-900",
-    textAlign: "left",
-    textTransform: "none",
-    textDecoration: "none",
-    letterSpacing: "normal",
-    lineHeight: "normal",
-    fontFamily: "sans",
-    fontStyle: "normal",
-    margin: "none",
-    padding: "none",
-    background: "none",
-    border: false,
-    borderColor: "gray-200",
-    borderRadius: "none",
-    shadow: "none",
-    maxWidth: "none",
-    truncate: false,
-    whitespace: "normal",
-    className: ""
+    className: "",
   },
   render: (p) => <TextWidget {...p} />,
   inspector: {
-    fields: combineFields(
-      [
-        createCustomField({
-          key: 'tag',
-          label: 'HTML Tag',
-          type: 'select',
-          options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div', 'strong', 'em', 'small']
-        }),
-        createCustomField({
-          key: 'content',
-          label: 'Content',
-          type: 'textarea',
-          placeholder: 'Text content'
-        }),
-        createCustomField({
-          key: 'truncate',
-          label: 'Truncate Text',
-          type: 'switch'
-        }),
-        createCustomField({
-          key: 'whitespace',
-          label: 'Whitespace',
-          type: 'select',
-          options: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap']
-        }),
-      ],
-      createInspectorFieldGroups.content()
-    )
+    fields: [
+      { key: 'tag',       label: 'HTML Tag',  type: 'select',   options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div', 'strong', 'em', 'small'] },
+      { key: 'content',   label: 'Content',   type: 'textarea', placeholder: 'Text content' },
+      { key: 'truncate',  label: 'Truncate',  type: 'switch' },
+      { key: 'whitespace', label: 'Whitespace', type: 'select', options: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap'] },
+      { key: 'className', label: 'CSS Classes', type: 'text',   placeholder: 'text-4xl font-bold text-white ...' },
+    ]
   }
 };

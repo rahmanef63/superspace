@@ -8,6 +8,7 @@
 "use client";
 
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import type { Id } from "@convex/_generated/dataModel";
 import { useSharedCanvas } from '@/frontend/shared/builder';
 import { StudioCanvasProvider } from '../canvas/StudioCanvasProvider';
@@ -75,6 +76,7 @@ import { StudioGlobalHeader } from '../views/header/StudioGlobalHeader';
 import { StudioLeftPanel } from '../views/StudioLeftPanel';
 import { StudioRightPanel } from '../views/StudioRightPanel';
 import { StudioDocsDialog } from '../components/StudioDocsDialog';
+import { ImportJsonDialog } from '../components/ImportJsonDialog';
 
 // ============================================================================
 // Main Layout
@@ -133,6 +135,8 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         clearFlow,
     } = useAutomationExecution();
 
+    const { toast } = useToast();
+
     // State
     const [mode, setMode] = useState<StudioMode>('unified');
     const [leftTab, setLeftTab] = useState<'library' | 'templates' | 'settings'>('library');
@@ -142,6 +146,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     // Panel collapse state — managed here so the header (outside ThreeColumnLayoutAdvanced) can access it
     const [leftCollapsed, setLeftCollapsed] = useState(false);
     const [rightCollapsed, setRightCollapsed] = useState(false);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
 
     // Schema for preview
     const schema = useMemo(() => toSchema(nodes as any, edges as any), [nodes, edges]);
@@ -238,110 +243,91 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         }
     }, [mode, exportFlow, schema, nodes, edges, downloadJson]);
 
-    /**
-     * Import Studio JSON or n8n workflow JSON.
-     * Auto-detects format by checking for `nodes`/`connections` (n8n) vs `studioVersion`/`flow`.
-     */
+    /** Open the import dialog */
     const handleImport = useCallback(() => {
-        const processJson = (text: string) => {
-            try {
-                const parsed = JSON.parse(text);
+        setImportDialogOpen(true);
+    }, []);
 
-                if (mode === 'workflow') {
-                    // Detect n8n format: has `connections` and `nodes` as array
-                    const isN8n = Array.isArray(parsed.nodes) && parsed.connections !== undefined;
-                    // Detect Studio unified format
-                    const isStudioUnified = parsed.studioVersion && parsed.flow;
-
-                    if (isN8n) {
-                        const studioDoc = fromN8nWorkflow(parsed);
-                        if (studioDoc.flow) {
-                            // Convert StudioFlow back to legacy canvas format for importFlow
-                            const legacyJson = JSON.stringify({
-                                flow: {
-                                    id: studioDoc.metadata.id,
-                                    name: studioDoc.metadata.name,
-                                    nodes: studioDoc.flow.nodes.map(n => ({
-                                        id: n.id,
-                                        type: 'automationNode',
-                                        position: n.position,
-                                        data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
-                                    })),
-                                    edges: studioDoc.flow.edges.map(e => ({
-                                        id: e.id, source: e.source, target: e.target,
-                                        data: { order: e.order, label: e.label, condition: e.condition },
-                                    })),
-                                },
-                                exportedAt: new Date().toISOString(),
-                            });
-                            importFlow(legacyJson);
-                        }
-                    } else if (isStudioUnified) {
-                        const flow = parsed.flow;
-                        const legacyJson = JSON.stringify({
-                            flow: {
-                                id: parsed.metadata?.id ?? 'imported',
-                                name: parsed.metadata?.name ?? 'Imported Flow',
-                                nodes: flow.nodes.map((n: any) => ({
-                                    id: n.id,
-                                    type: 'automationNode',
-                                    position: n.position,
-                                    data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
-                                })),
-                                edges: flow.edges.map((e: any) => ({
-                                    id: e.id, source: e.source, target: e.target,
-                                    data: { order: e.order, label: e.label, condition: e.condition },
-                                })),
-                            },
-                            exportedAt: new Date().toISOString(),
-                        });
-                        importFlow(legacyJson);
-                    } else {
-                        // Legacy Studio flow format
-                        importFlow(text);
-                    }
-                } else {
-                    // UI layout import: accept v0.4/v0.5 or Studio unified doc
-                    const uiSchema = parsed.ui ?? parsed;
-                    if (uiSchema.root && uiSchema.nodes) {
-                        const { nodes: importedNodes, edges: importedEdges } = fromSchema(uiSchema);
-                        setNodes(importedNodes as any);
-                        setEdges(importedEdges as any);
-                    } else {
-                        alert('Invalid UI layout JSON (missing root/nodes)');
-                    }
-                }
-            } catch {
-                alert('Invalid JSON — could not parse file.');
+    /** Handle UI layout import from ImportJsonDialog */
+    const handleImportUI = useCallback((uiSchema: any) => {
+        try {
+            if (uiSchema.root && uiSchema.nodes) {
+                const { nodes: importedNodes, edges: importedEdges } = fromSchema(uiSchema);
+                setNodes(importedNodes as any);
+                setEdges(importedEdges as any);
+                toast({ title: 'Layout imported', description: `${Object.keys(uiSchema.nodes).length} nodes loaded.` });
+            } else {
+                toast({ title: 'Import failed', description: 'Missing root/nodes in schema.', variant: 'destructive' });
             }
-        };
-
-        // Try clipboard paste first, then file picker
-        const json = prompt('Paste Studio JSON or n8n workflow JSON:\n(Leave empty to open file picker)');
-        if (json && json.trim()) {
-            processJson(json);
-        } else {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            input.onchange = async () => {
-                const file = input.files?.[0];
-                if (!file) return;
-                processJson(await file.text());
-            };
-            input.click();
+        } catch (err: any) {
+            toast({ title: 'Import failed', description: err?.message ?? 'Unknown error', variant: 'destructive' });
         }
-    }, [mode, importFlow, nodes, edges]);
+    }, [setNodes, setEdges, toast]);
+
+    /** Handle workflow / n8n import from ImportJsonDialog */
+    const handleImportWorkflow = useCallback((text: string) => {
+        try {
+            const parsed = JSON.parse(text);
+            const isN8n = Array.isArray(parsed.nodes) && parsed.connections !== undefined;
+            const isStudioUnified = parsed.studioVersion && parsed.flow;
+
+            if (isN8n) {
+                const studioDoc = fromN8nWorkflow(parsed);
+                if (studioDoc.flow) {
+                    const legacyJson = JSON.stringify({
+                        flow: {
+                            id: studioDoc.metadata.id,
+                            name: studioDoc.metadata.name,
+                            nodes: studioDoc.flow.nodes.map(n => ({
+                                id: n.id, type: 'automationNode', position: n.position,
+                                data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
+                            })),
+                            edges: studioDoc.flow.edges.map(e => ({
+                                id: e.id, source: e.source, target: e.target,
+                                data: { order: e.order, label: e.label, condition: e.condition },
+                            })),
+                        },
+                        exportedAt: new Date().toISOString(),
+                    });
+                    importFlow(legacyJson);
+                    toast({ title: 'n8n workflow imported' });
+                }
+            } else if (isStudioUnified) {
+                const flow = parsed.flow;
+                const legacyJson = JSON.stringify({
+                    flow: {
+                        id: parsed.metadata?.id ?? 'imported',
+                        name: parsed.metadata?.name ?? 'Imported Flow',
+                        nodes: flow.nodes.map((n: any) => ({
+                            id: n.id, type: 'automationNode', position: n.position,
+                            data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
+                        })),
+                        edges: flow.edges.map((e: any) => ({
+                            id: e.id, source: e.source, target: e.target,
+                            data: { order: e.order, label: e.label, condition: e.condition },
+                        })),
+                    },
+                    exportedAt: new Date().toISOString(),
+                });
+                importFlow(legacyJson);
+                toast({ title: 'Studio workflow imported' });
+            } else {
+                importFlow(text);
+                toast({ title: 'Workflow imported' });
+            }
+        } catch (err: any) {
+            toast({ title: 'Import failed', description: err?.message ?? 'Unknown error', variant: 'destructive' });
+        }
+    }, [importFlow, toast]);
 
     const handleClear = useCallback(() => {
-        if (confirm('Clear canvas? This cannot be undone.')) {
-            if (mode === 'workflow') {
-                clearFlow();
-            } else {
-                clearAll();
-            }
+        if (mode === 'workflow') {
+            clearFlow();
+        } else {
+            clearAll();
         }
-    }, [mode, clearFlow, clearAll]);
+        toast({ title: 'Canvas cleared' });
+    }, [mode, clearFlow, clearAll, toast]);
 
     // Render canvas based on mode
     // In focus mode, show only the focused group's subtree
@@ -485,6 +471,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     const [docsOpen, setDocsOpen] = React.useState(false);
 
     return (
+
         <div className="flex flex-col h-full overflow-hidden">
             {/* Single-row unified header — all controls in one bar */}
             <StudioGlobalHeader
@@ -551,6 +538,12 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     <StudioDocsDialog open={docsOpen} onClose={() => setDocsOpen(false)} />
                 </React.Suspense>
             )}
+            <ImportJsonDialog
+                open={importDialogOpen}
+                onClose={() => setImportDialogOpen(false)}
+                onImportUI={handleImportUI}
+                onImportWorkflow={handleImportWorkflow}
+            />
         </div>
     );
 };

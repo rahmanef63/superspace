@@ -146,26 +146,52 @@ function propsToStyle(p: Record<string, any>): React.CSSProperties {
   return s;
 }
 
-// Internal Error Boundary Component
-class WidgetErrorBoundary extends React.Component<{ children: React.ReactNode, id: string }, { hasError: boolean }> {
-  constructor(props: { children: React.ReactNode, id: string }) {
+// Internal Error Boundary — shown in canvas when a widget crashes during render
+class WidgetErrorBoundary extends React.Component<
+  { children: React.ReactNode; id: string },
+  { hasError: boolean; message: string; copied: boolean }
+> {
+  constructor(props: { children: React.ReactNode; id: string }) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, message: '', copied: false };
   }
 
   static getDerivedStateFromError(error: any) {
-    return { hasError: true };
+    return { hasError: true, message: error?.message ?? String(error) };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    console.error(`Error rendering widget ${this.props.id}:`, error, errorInfo);
+    console.error(`[Studio] Widget "${this.props.id}" render error:`, error, errorInfo);
   }
+
+  handleCopy = () => {
+    const text = `[Studio Error] node "${this.props.id}": ${this.state.message}`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.setState({ copied: true });
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    });
+  };
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-2 border border-destructive/50 bg-destructive/10 rounded text-xs text-destructive">
-          Error rendering widget
+        <div className="flex flex-col gap-1 p-2 border-2 border-red-500 bg-red-950/40 rounded text-xs text-red-300 ring-2 ring-red-500/40">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-bold text-red-400 truncate">⚠ Widget error: <code className="font-mono opacity-80">{this.props.id}</code></span>
+            <button
+              onClick={this.handleCopy}
+              className="shrink-0 px-1.5 py-0.5 rounded bg-red-800/60 hover:bg-red-700/60 text-[10px] text-red-200 transition-colors"
+            >
+              {this.state.copied ? '✓ Copied' : '⎘ Copy'}
+            </button>
+          </div>
+          <p className="text-[11px] text-red-400/80 font-mono truncate">{this.state.message}</p>
+          <button
+            onClick={() => this.setState({ hasError: false, message: '' })}
+            className="self-start text-[10px] underline text-red-400/60 hover:text-red-300"
+          >
+            Retry
+          </button>
         </div>
       );
     }
@@ -370,9 +396,13 @@ export const Renderer: React.FC<RendererProps> = ({
           </div>
         </WidgetErrorBoundary>
       );
-    } catch (err) {
-      console.error(`Error rendering widget ${id}:`, err);
-      return <div key={id} className="text-red-500 text-xs p-2 border border-red-200 bg-red-50">Widget Error</div>;
+    } catch (err: any) {
+      console.error(`[Studio] Widget "${id}" sync render error:`, err);
+      return (
+        <div key={id} className="flex items-center justify-between gap-2 p-2 border-2 border-red-500 bg-red-950/40 rounded text-xs text-red-300">
+          <span>⚠ <code className="font-mono">{id}</code> — {err?.message ?? 'render error'}</span>
+        </div>
+      );
     }
   };
 

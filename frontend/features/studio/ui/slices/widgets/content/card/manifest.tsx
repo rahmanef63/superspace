@@ -37,7 +37,7 @@ export const cardManifest: WidgetConfig = {
     },
     image: {
       type: 'image',
-      props: { src: 'https://picsum.photos/400/200', alt: 'Card image' }
+      props: { src: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80', alt: 'Card image' }
     }
   },
   inspector: {
@@ -58,7 +58,7 @@ export const cardManifest: WidgetConfig = {
         key: 'imageUrl',
         label: 'Image URL (fallback)',
         type: 'text',
-        placeholder: 'https://picsum.photos/400/200'
+        placeholder: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80'
       },
       {
         key: 'className',

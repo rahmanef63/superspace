@@ -85,6 +85,8 @@ export interface WidgetConfig {
   };
   previewImage?: string;
   tags?: string[];
+  /** Hide from the Library panel (still renderable from saved schemas). */
+  hidden?: boolean;
 }
 
 export interface InspectorField {

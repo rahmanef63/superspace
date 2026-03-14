@@ -1,6 +1,5 @@
 import type { WidgetConfig } from '@/frontend/features/studio/ui/types';
 import { ButtonWidget } from './ButtonWidget';
-import { createCustomField, createInspectorFieldGroups, combineFields } from '@/frontend/features/studio/ui/inspector/standardFields';
 import { resolveWidgetIcon } from '@/frontend/features/studio/ui/utils/iconUtils';
 import React from 'react';
 
@@ -9,11 +8,11 @@ export const buttonManifest: WidgetConfig = {
   category: "Action",
   description: "Interactive button for user actions.",
   icon: resolveWidgetIcon(undefined, 'Action', 'button'),
-  defaults: { 
-    text: "Button", 
-    variant: "default", 
-    size: "md", 
-    href: "", 
+  defaults: {
+    text: "Button",
+    variant: "default",
+    size: "md",
+    href: "",
     className: "",
     icon: "",
     iconPosition: "left",
@@ -23,54 +22,21 @@ export const buttonManifest: WidgetConfig = {
     shadow: "sm",
     animation: "none",
     gradient: false,
-    borderWidth: "1",
-    padding: "md",
-    margin: "none",
-    textAlign: "center",
-    fontWeight: "medium",
-    textTransform: "none",
-    letterSpacing: "normal"
   },
   render: (p) => <ButtonWidget {...p} />,
   inspector: {
-    fields: combineFields(
-      [
-        createCustomField({
-          key: 'text',
-          label: 'Button Text',
-          type: 'text',
-          placeholder: 'Button'
-        }),
-        createCustomField({
-          key: 'href',
-          label: 'Link (optional)',
-          type: 'text',
-          placeholder: 'https://example.com'
-        }),
-        createCustomField({
-          key: 'icon',
-          label: 'Icon',
-          type: 'text',
-          placeholder: 'Icon name or emoji'
-        }),
-        createCustomField({
-          key: 'iconPosition',
-          label: 'Icon Position',
-          type: 'select',
-          options: ['left', 'right', 'top', 'bottom']
-        }),
-        createCustomField({
-          key: 'fullWidth',
-          label: 'Full Width',
-          type: 'switch'
-        }),
-        createCustomField({
-          key: 'gradient',
-          label: 'Gradient Background',
-          type: 'switch'
-        }),
-      ],
-      createInspectorFieldGroups.interactive()
-    )
+    fields: [
+      { key: 'text',         label: 'Button Text',       type: 'text',   placeholder: 'Button' },
+      { key: 'href',         label: 'Link URL',           type: 'text',   placeholder: 'https://example.com' },
+      { key: 'variant',      label: 'Variant',            type: 'select', options: ['default', 'primary', 'secondary', 'destructive', 'outline', 'ghost', 'link'] },
+      { key: 'size',         label: 'Size',               type: 'select', options: ['xs', 'sm', 'md', 'lg', 'xl'] },
+      { key: 'icon',         label: 'Icon (emoji/text)',  type: 'text',   placeholder: '🚀' },
+      { key: 'iconPosition', label: 'Icon Position',      type: 'select', options: ['left', 'right', 'top', 'bottom'] },
+      { key: 'fullWidth',    label: 'Full Width',         type: 'switch' },
+      { key: 'disabled',     label: 'Disabled',           type: 'switch' },
+      { key: 'gradient',     label: 'Gradient BG',        type: 'switch' },
+      { key: 'animation',    label: 'Animation',          type: 'select', options: ['none', 'bounce', 'pulse', 'ping', 'spin'] },
+      { key: 'className',    label: 'CSS Classes',        type: 'text',   placeholder: 'bg-blue-600 text-white ...' },
+    ]
   }
 };

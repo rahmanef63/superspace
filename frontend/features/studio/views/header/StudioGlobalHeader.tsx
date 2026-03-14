@@ -26,7 +26,7 @@ interface StudioGlobalHeaderProps {
     canUndo: boolean;
     redo: () => void;
     canRedo: boolean;
-    handleExport: () => void;
+    handleExport: (format?: 'studio' | 'n8n') => void;
     handleImport: () => void;
     handleClear: () => void;
     onOpenDocs: () => void;
@@ -189,12 +189,17 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                     </Button>
                 </Tip>
                 <Sep />
-                <Tip label="Export JSON">
-                    <Button variant="ghost" size="sm" onClick={handleExport} className="h-7 w-7 p-0">
+                <Tip label="Export Studio JSON">
+                    <Button variant="ghost" size="sm" onClick={() => handleExport('studio')} className="h-7 w-7 p-0">
                         <Download size={13} />
                     </Button>
                 </Tip>
-                <Tip label="Import JSON">
+                <Tip label="Export as n8n workflow JSON">
+                    <Button variant="ghost" size="sm" onClick={() => handleExport('n8n')} className="h-7 px-1.5 text-[10px] gap-1 font-mono text-muted-foreground hover:text-foreground">
+                        n8n
+                    </Button>
+                </Tip>
+                <Tip label="Import JSON (Studio or n8n format)">
                     <Button variant="ghost" size="sm" onClick={handleImport} className="h-7 w-7 p-0">
                         <Upload size={13} />
                     </Button>

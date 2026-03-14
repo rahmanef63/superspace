@@ -1,17 +1,77 @@
 # Studio JSON Schema — Guide, Rules & Context
 
-> Use this document as **base knowledge** when asking an AI to generate Studio layouts in JSON format.
-> The AI should return a valid Schema object that can be imported directly into Studio.
+> Use this document as **base knowledge** when asking an AI to generate Studio layouts or automation workflows in JSON format.
+> Studio uses a **unified JSON format** that covers both UI layouts and automation flows — and is compatible with [n8n](https://n8n.io/) workflow JSON.
 
 ---
 
-## 1. Schema Structure
+## Formats at a Glance
 
-Every Studio layout is a **Schema** JSON object:
+| Format | Use case | Export button |
+|--------|---------|---------------|
+| **Studio Unified v1.0** | Full projects (UI + flow), default format | ↓ Download |
+| **UI Schema v0.5** (legacy v0.4) | AI-generated UI layouts only | ↓ Download (UI mode) |
+| **n8n Workflow JSON** | Import/export with n8n | `n8n` button |
+
+---
+
+## 1. Studio Unified JSON (Recommended)
+
+The full document format covering UI layouts, automation flows, or both:
 
 ```json
 {
-  "version": "0.4",
+  "$schema": "https://superspace.app/schemas/studio/v1.0",
+  "studioVersion": "1.0",
+  "kind": "ui-layout",
+  "metadata": {
+    "id": "unique-project-id",
+    "name": "My Dashboard",
+    "description": "A sample dashboard layout",
+    "author": "Studio AI",
+    "tags": ["dashboard"],
+    "version": "1.0.0",
+    "createdAt": "2026-03-14T10:00:00Z",
+    "updatedAt": "2026-03-14T10:00:00Z"
+  },
+  "ui": {
+    "version": "0.5",
+    "root": ["node-1"],
+    "nodes": {
+      "node-1": {
+        "type": "div",
+        "props": { "tag": "section", "display": "flex", "flexDirection": "col", "gap": "6", "padding": "6" },
+        "children": ["node-2", "node-3"]
+      },
+      "node-2": {
+        "type": "text",
+        "props": { "tag": "h1", "content": "Hello World", "fontSize": "2xl", "fontWeight": "bold" },
+        "children": []
+      },
+      "node-3": {
+        "type": "button",
+        "props": { "text": "Get Started", "variant": "default" },
+        "children": []
+      }
+    }
+  }
+}
+```
+
+**`kind` values:**
+- `"ui-layout"` → only `ui` section
+- `"workflow"` → only `flow` section
+- `"unified"` → both `ui` and `flow` sections
+
+---
+
+## 2. UI Schema Only (v0.5 / v0.4 legacy)
+
+For AI-generated UI layouts, you can use just the `ui` section content directly. The old v0.4 format is still valid:
+
+```json
+{
+  "version": "0.5",
   "root": ["node-1"],
   "nodes": {
     "node-1": {
@@ -35,7 +95,7 @@ Every Studio layout is a **Schema** JSON object:
 
 | Field     | Type            | Description                                      |
 |-----------|-----------------|--------------------------------------------------|
-| `version` | `"0.4"`         | Always `"0.4"` — do not change                  |
+| `version` | `"0.5"` or `"0.4"` | Schema version — both accepted             |
 | `root`    | `string[]`      | IDs of top-level nodes (no parent)               |
 | `nodes`   | `Record<id, SchemaNode>` | All nodes keyed by unique string ID    |
 

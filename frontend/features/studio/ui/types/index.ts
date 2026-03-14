@@ -33,10 +33,33 @@ export interface SchemaNode {
   children: string[];
 }
 
+/**
+ * UI JSON Schema
+ *
+ * v0.4 → v0.5: added optional `metadata` block for name/description/author/tags.
+ * All v0.4 documents (without metadata) remain valid — metadata is optional.
+ */
 export interface Schema {
+  /** Schema version. "0.5" adds metadata; "0.4" is still accepted. */
   version: string;
+  /** Top-level node IDs (page roots) */
   root: string[];
+  /** All nodes keyed by stable ID */
   nodes: Record<string, SchemaNode>;
+  /**
+   * Optional project metadata.
+   * Consistent with StudioProjectMetadata in workflow/schema/studio-unified.types.ts.
+   */
+  metadata?: {
+    id?: string;
+    name?: string;
+    description?: string;
+    author?: string;
+    tags?: string[];
+    version?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
 }
 
 export interface Workspace {

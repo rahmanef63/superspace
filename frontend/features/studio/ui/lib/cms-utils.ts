@@ -1,5 +1,4 @@
-export const cn = (...classes: (string | undefined | null | false)[]) => 
-  classes.filter(Boolean).join(" ");
+export { cn } from '@/lib/utils';
 
 export const deepMerge = (target: any, source: any): any => {
   const result = { ...target };

@@ -1,14 +1,6 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-export const uid = () => "_" + Math.random().toString(36).slice(2, 9);
-
-export const clamp = (n: number, min: number, max: number) => 
-  Math.max(min, Math.min(max, n));
+// Re-export shared utilities from global lib to avoid duplication
+export { cn, uid, clamp } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 export function generateContainerClasses(props: {
   maxWidth?: string;

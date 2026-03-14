@@ -185,7 +185,14 @@ const standardizeRegistry = (registry: Record<string, WidgetConfig>): Record<str
     standardized[key] = standardizeWidget(key, config);
   });
 
-  // Validate in development
+  // Validate in development: warn on widgets missing required fields
+  if (process.env.NODE_ENV === 'development') {
+    Object.entries(standardized).forEach(([key, config]) => {
+      if (!config.label) console.warn(`[Studio] Widget "${key}" is missing a label`);
+      if (!config.render) console.warn(`[Studio] Widget "${key}" is missing a render function`);
+      if (!config.category) console.warn(`[Studio] Widget "${key}" is missing a category`);
+    });
+  }
 
   return standardized;
 };

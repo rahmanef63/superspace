@@ -69,8 +69,29 @@ function propsToStyle(p: Record<string, any>): React.CSSProperties {
   if (p.boxShadow) s.boxShadow = p.boxShadow;
   if (p.opacity !== undefined && p.opacity !== '') s.opacity = Number(p.opacity);
   if (p.overflow) s.overflow = p.overflow as any;
+  if (p.overflowX) s.overflowX = p.overflowX as any;
+  if (p.overflowY) s.overflowY = p.overflowY as any;
   if (p.position) s.position = p.position as any;
   if (p.zIndex) s.zIndex = Number(p.zIndex);
+  if (p.top) s.top = p.top;
+  if (p.right) s.right = p.right;
+  if (p.bottom) s.bottom = p.bottom;
+  if (p.left) s.left = p.left;
+  if (p.cursor) s.cursor = p.cursor;
+  if (p.pointerEvents) s.pointerEvents = p.pointerEvents as any;
+  if (p.userSelect) s.userSelect = p.userSelect as any;
+  if (p.visibility) s.visibility = p.visibility as any;
+  if (p.transition) s.transition = p.transition;
+  if (p.transform) s.transform = p.transform;
+  if (p.objectFit) s.objectFit = p.objectFit as any;
+  if (p.objectPosition) s.objectPosition = p.objectPosition;
+  if (p.whiteSpace) s.whiteSpace = p.whiteSpace as any;
+  if (p.textOverflow) s.textOverflow = p.textOverflow as any;
+  if (p.wordBreak) s.wordBreak = p.wordBreak as any;
+  if (p.gridTemplateColumns) s.gridTemplateColumns = p.gridTemplateColumns;
+  if (p.gridTemplateRows) s.gridTemplateRows = p.gridTemplateRows;
+  if (p.gridColumn) s.gridColumn = p.gridColumn;
+  if (p.gridRow) s.gridRow = p.gridRow;
   return s;
 }
 

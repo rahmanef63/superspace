@@ -40,9 +40,9 @@ import { ShadcnNode } from '@/frontend/features/studio/ui/slices/canvas/componen
 import { GroupNode } from '@/frontend/features/studio/ui/slices/canvas/components/GroupNode';
 import { AutomationNode } from '@/frontend/features/studio/components/AutomationNode';
 import { AutomationInspector } from '@/frontend/features/studio/components/AutomationInspector';
-import { CMSInspectorRenderer } from '@/frontend/features/studio/components/CMSInspectorRenderer';
 import { Renderer } from '@/frontend/features/studio/ui/slices/renderer/components/Renderer';
 import { toSchema } from '@/frontend/features/studio/ui/hooks/useSchema';
+import { fromSchema } from '@/frontend/features/studio/ui/hooks/useSchemaParser';
 import { useAutomationExecution } from '@/frontend/features/studio/hooks/useAutomationExecution';
 import { TemplateLibrary } from '@/frontend/shared/builder';
 import { cmsTemplateProvider } from '@/frontend/features/studio/ui/state/templateProvider';
@@ -68,19 +68,13 @@ const edgeTypes: EdgeTypes = {
 };
 
 // ============================================================================
-// UI Components  
+// UI Components
 // ============================================================================
-
-// ... (imports will be handled by the replacement)
 
 import { StudioGlobalHeader } from '../views/header/StudioGlobalHeader';
 import { StudioLeftPanel } from '../views/StudioLeftPanel';
 import { StudioRightPanel } from '../views/StudioRightPanel';
 import { StudioDocsDialog } from '../components/StudioDocsDialog';
-
-// ... (keep necessary imports)
-
-// Removing: TopBarButton, ModeToggle, LeftPanel, RightPanel, TopBar, StudioLeftHeader, StudioCenterHeader
 
 // ============================================================================
 // Main Layout
@@ -298,8 +292,9 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     // UI layout import: accept v0.4/v0.5 or Studio unified doc
                     const uiSchema = parsed.ui ?? parsed;
                     if (uiSchema.root && uiSchema.nodes) {
-                        // TODO: wire up parseSchema → setNodes/setEdges for UI
-                        alert('UI layout import: schema parsed. Wire-up pending.');
+                        const { nodes: importedNodes, edges: importedEdges } = fromSchema(uiSchema);
+                        setNodes(importedNodes as any);
+                        setEdges(importedEdges as any);
                     } else {
                         alert('Invalid UI layout JSON (missing root/nodes)');
                     }
@@ -556,6 +551,36 @@ export interface StudioPageProps {
     workspaceId?: Id<"workspaces">;
 }
 
+class StudioErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean; error: Error | null }
+> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+    override render() {
+        if (this.state.hasError) {
+            return (
+                <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
+                    <div className="text-4xl">⚠️</div>
+                    <div>
+                        <p className="font-semibold text-destructive">Studio encountered an error</p>
+                        <p className="text-sm text-muted-foreground mt-1">{this.state.error?.message}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => this.setState({ hasError: false, error: null })}>
+                        Try again
+                    </Button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 export const StudioPage: React.FC<StudioPageProps> = ({ workspaceId }) => {
     const { registerComponent, registerFeatureTabs } = useCrossFeatureRegistry();
 
@@ -565,11 +590,13 @@ export const StudioPage: React.FC<StudioPageProps> = ({ workspaceId }) => {
     }, [registerComponent, registerFeatureTabs]);
 
     return (
-        <StudioCanvasProvider initialMode="studio">
-            <DnDProvider>
-                <StudioLayoutInner workspaceId={workspaceId} />
-            </DnDProvider>
-        </StudioCanvasProvider>
+        <StudioErrorBoundary>
+            <StudioCanvasProvider initialMode="studio">
+                <DnDProvider>
+                    <StudioLayoutInner workspaceId={workspaceId} />
+                </DnDProvider>
+            </StudioCanvasProvider>
+        </StudioErrorBoundary>
     );
 };
 

@@ -6,6 +6,8 @@ import { Settings2, Bot, Layers } from 'lucide-react';
 
 interface InspectorTabsProps {
   selectedNode: any | null;
+  /** Optional widget-specific fields getter injected by the host feature (e.g. Studio). */
+  getWidgetFields?: (comp: string) => import('./DynamicInspector').InspectorField[] | undefined;
 }
 
 type InspectorTab = 'properties' | 'layers' | 'chat-ai';
@@ -16,7 +18,7 @@ const TABS: { id: InspectorTab; label: string; icon: React.ElementType }[] = [
   { id: 'chat-ai',    label: 'AI',         icon: Bot },
 ];
 
-export function InspectorTabs({ selectedNode }: InspectorTabsProps) {
+export function InspectorTabs({ selectedNode, getWidgetFields }: InspectorTabsProps) {
   const [activeTab, setActiveTab] = React.useState<InspectorTab>('properties');
 
   return (
@@ -41,7 +43,7 @@ export function InspectorTabs({ selectedNode }: InspectorTabsProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0 mt-1">
-        {activeTab === 'properties' && <UnifiedInspector selectedNode={selectedNode} />}
+        {activeTab === 'properties' && <UnifiedInspector selectedNode={selectedNode} getWidgetFields={getWidgetFields} />}
         {activeTab === 'layers'     && <ChildrenManager selectedNode={selectedNode} />}
         {activeTab === 'chat-ai'    && <ChatAI selectedNode={selectedNode} />}
       </div>

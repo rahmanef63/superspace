@@ -458,6 +458,44 @@ export const removeMember = mutation({
 });
 
 /**
+ * Add a user to a workspace with a specific role.
+ * Creates a new active membership record.
+ */
+export const addMember = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    userId: v.id("users"),
+    roleId: v.id("roles"),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) throw new Error("Unauthenticated");
+
+    await requirePermission(ctx, args.workspaceId, PERMS.MANAGE_MEMBERS);
+
+    // Check for existing membership
+    const existing = await ctx.db
+      .query("workspaceMemberships")
+      .withIndex("by_user_workspace", (q) =>
+        q.eq("userId", args.userId).eq("workspaceId", args.workspaceId)
+      )
+      .first();
+
+    if (existing) throw new Error("User is already a member of this workspace");
+
+    await ctx.db.insert("workspaceMemberships", {
+      workspaceId: args.workspaceId,
+      userId: args.userId,
+      roleId: args.roleId,
+      status: "active",
+      invitedBy: currentUserId,
+      joinedAt: Date.now(),
+      additionalPermissions: [],
+    });
+  },
+});
+
+/**
  * Update a member's role.
  */
 export const updateMemberRole = mutation({

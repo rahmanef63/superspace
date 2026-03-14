@@ -9,6 +9,7 @@ import { saveAssetTemplate } from '@/frontend/features/studio/ui/state/templateS
 import { useSharedCanvas } from '@/frontend/shared/builder';
 import { toSchema } from '@/frontend/features/studio/ui/hooks/useSchema';
 import type { StudioMode } from '@/frontend/features/studio/registry';
+import { STUDIO_TAB_ICONS } from '@/frontend/features/studio/registry/studioLibraryTabs';
 
 const SETTINGS_KEY = 'studio-project-settings';
 
@@ -67,7 +68,7 @@ export const StudioLeftPanel: React.FC<LeftPanelProps> = ({
             <div className="flex-1 overflow-hidden">
                 {leftTab === 'library' && (
                     <div className="h-full">
-                        <UnifiedLibrary currentFeature="studio" onAdd={onAddComponent} />
+                        <UnifiedLibrary currentFeature="studio" onAdd={onAddComponent} tabIcons={STUDIO_TAB_ICONS} />
                     </div>
                 )}
                 {leftTab === 'templates' && (

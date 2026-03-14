@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui';
+import { Button, Input, Label, Switch, Slider } from '@/components/ui';
 import {
   Trash2,
   MoreHorizontal,
@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { useSharedCanvas } from '../canvas/core';
+import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
+import type { InspectorField } from '@/frontend/features/studio/ui/types';
 import { useInspectorControls, getNestedValue, setNestedValue } from './hooks/useInspectorControls';
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl';
 import {
@@ -93,6 +95,69 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
   const widget = registry.getWidget(selectedNode.data.comp) || registry.getComponent(selectedNode.data.comp);
   const nodeType = widget?.label || selectedNode.data.comp;
 
+  // Widget-specific inspector fields from WidgetConfig.inspector.fields
+  const widgetConfig = getWidgetConfig(selectedNode.data.comp);
+  const widgetFields: InspectorField[] = widgetConfig?.inspector?.fields ?? [];
+
+  // Renderer for a single InspectorField
+  const renderField = (field: InspectorField) => {
+    const value = currentProps[field.key] ?? '';
+    const update = (v: any) => setProp(field.key, v);
+    switch (field.type) {
+      case 'textarea':
+        return (
+          <textarea
+            key={field.key}
+            value={value}
+            onChange={e => update(e.target.value)}
+            placeholder={field.placeholder}
+            className="w-full min-h-[64px] px-2.5 py-1.5 text-sm rounded-md border border-border/50 bg-background resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        );
+      case 'select':
+        return (
+          <select
+            key={field.key}
+            value={value}
+            onChange={e => update(e.target.value)}
+            className="w-full h-8 px-2.5 text-sm rounded-md border border-border/50 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {(field.options || []).map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        );
+      case 'switch':
+      case 'checkbox':
+        return (
+          <div key={field.key} className="flex items-center gap-2">
+            <Switch checked={!!value} onCheckedChange={update} />
+          </div>
+        );
+      case 'color':
+        return (
+          <input key={field.key} type="color" value={value || '#000000'} onChange={e => update(e.target.value)} className="h-8 w-full rounded-md border border-border/50" />
+        );
+      case 'slider':
+      case 'range':
+        return (
+          <Slider key={field.key} value={[Number(value) || field.min || 0]} min={field.min ?? 0} max={field.max ?? 100} step={field.step ?? 1} onValueChange={([v]) => update(v)} className="w-full" />
+        );
+      case 'number':
+        return (
+          <Input key={field.key} type="number" value={value} onChange={e => update(Number(e.target.value))} placeholder={field.placeholder} className="h-8" min={field.min} max={field.max} step={field.step} />
+        );
+      case 'custom':
+        if (field.component) {
+          const Comp = field.component;
+          return <Comp key={field.key} value={value} onChange={update} />;
+        }
+        return null;
+      default:
+        return (
+          <Input key={field.key} value={value} onChange={e => update(e.target.value)} placeholder={field.placeholder} className="h-8" />
+        );
+    }
+  };
+
   // Convert SSOT arrays to button group options
   const alignmentOptions = TEXT_ALIGNMENTS.map(a => ({
     value: a.value,
@@ -154,8 +219,23 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
 
       {/* Scrollable Content - Design Properties */}
       <div className="flex-1 overflow-y-auto">
-        {/* Content Section */}
-        {currentProps.content !== undefined && (
+
+        {/* Widget-specific fields (from WidgetConfig.inspector.fields) */}
+        {widgetFields.length > 0 && (
+          <InspectorSection title="Content" defaultOpen={true}>
+            <div className="space-y-3">
+              {widgetFields.map(field => (
+                <div key={field.key} className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">{field.label}</Label>
+                  {renderField(field)}
+                </div>
+              ))}
+            </div>
+          </InspectorSection>
+        )}
+
+        {/* Content Section (for nodes with raw content prop not in widgetFields) */}
+        {currentProps.content !== undefined && !widgetFields.some(f => f.key === 'content') && (
           <InspectorSection {...INSPECTOR_SECTIONS.content}>
             <textarea
               value={currentProps.content || ''}

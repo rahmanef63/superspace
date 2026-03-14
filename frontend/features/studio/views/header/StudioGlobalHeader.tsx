@@ -7,7 +7,7 @@
  * Right:  Undo/Redo | Export/Import/Docs/Clear
  */
 import React from 'react';
-import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight } from 'lucide-react';
+import { Layers3, Zap, Layout, BookOpen, Settings2, Undo2, Redo2, Download, Upload, Eraser, BookMarked, Eye, Code, PanelLeft, PanelRight, Group, Ungroup } from 'lucide-react';
 import { FeatureHeader } from '@/frontend/shared/ui/layout/header';
 import { Button } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -26,7 +26,7 @@ interface StudioGlobalHeaderProps {
     canUndo: boolean;
     redo: () => void;
     canRedo: boolean;
-    handleExport: () => void;
+    handleExport: (format?: 'studio' | 'n8n') => void;
     handleImport: () => void;
     handleClear: () => void;
     onOpenDocs: () => void;
@@ -35,6 +35,10 @@ interface StudioGlobalHeaderProps {
     rightCollapsed: boolean;
     toggleLeft: () => void;
     toggleRight: () => void;
+    // Group operations
+    onGroup: () => void;
+    focusedGroupId: string | null;
+    onExitGroup: () => void;
 }
 
 const Tip = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -67,6 +71,7 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
     undo, canUndo, redo, canRedo,
     handleExport, handleImport, handleClear, onOpenDocs,
     leftCollapsed, rightCollapsed, toggleLeft, toggleRight,
+    onGroup, focusedGroupId, onExitGroup,
 }) => {
 
     const toolbar = (
@@ -148,6 +153,24 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                     </Button>
                 </Tip>
                 <Sep />
+
+                {/* ── Group controls ───────────────────────────── */}
+                <Tip label="Group selected nodes (G)">
+                    <Button variant="ghost" size="sm" onClick={onGroup} className="h-7 w-7 p-0 shrink-0">
+                        <Group size={12} />
+                    </Button>
+                </Tip>
+                {focusedGroupId && (
+                    <button
+                        onClick={onExitGroup}
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+                        title="Exit group focus mode"
+                    >
+                        <Ungroup size={10} />
+                        Exit Group
+                    </button>
+                )}
+                <Sep />
             </div>
         </TooltipProvider>
     );
@@ -166,12 +189,17 @@ export const StudioGlobalHeader: React.FC<StudioGlobalHeaderProps> = ({
                     </Button>
                 </Tip>
                 <Sep />
-                <Tip label="Export JSON">
-                    <Button variant="ghost" size="sm" onClick={handleExport} className="h-7 w-7 p-0">
+                <Tip label="Export Studio JSON">
+                    <Button variant="ghost" size="sm" onClick={() => handleExport('studio')} className="h-7 w-7 p-0">
                         <Download size={13} />
                     </Button>
                 </Tip>
-                <Tip label="Import JSON">
+                <Tip label="Export as n8n workflow JSON">
+                    <Button variant="ghost" size="sm" onClick={() => handleExport('n8n')} className="h-7 px-1.5 text-[10px] gap-1 font-mono text-muted-foreground hover:text-foreground">
+                        n8n
+                    </Button>
+                </Tip>
+                <Tip label="Import JSON (Studio or n8n format)">
                     <Button variant="ghost" size="sm" onClick={handleImport} className="h-7 w-7 p-0">
                         <Upload size={13} />
                     </Button>

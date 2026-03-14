@@ -25,6 +25,55 @@ interface RendererProps {
   rootId?: string | null;
 }
 
+/**
+ * Convert inspector-controlled props to inline CSS style.
+ * These are the "visual override" props that the DynamicInspector writes directly.
+ * Widgets that already apply these in their render() receive them via `p` too,
+ * but the outer wrapper applies any that the widget doesn't handle internally.
+ */
+function propsToStyle(p: Record<string, any>): React.CSSProperties {
+  const s: React.CSSProperties = {};
+  if (p.color) s.color = p.color;
+  if (p.backgroundColor) s.backgroundColor = p.backgroundColor;
+  if (p.fontFamily) s.fontFamily = p.fontFamily;
+  if (p.fontSize) s.fontSize = p.fontSize;
+  if (p.fontWeight) s.fontWeight = p.fontWeight;
+  if (p.lineHeight) s.lineHeight = p.lineHeight;
+  if (p.letterSpacing) s.letterSpacing = p.letterSpacing;
+  if (p.textAlign) s.textAlign = p.textAlign as any;
+  if (p.textDecoration) s.textDecoration = p.textDecoration;
+  if (p.width) s.width = p.width;
+  if (p.height) s.height = p.height;
+  if (p.minWidth) s.minWidth = p.minWidth;
+  if (p.minHeight) s.minHeight = p.minHeight;
+  if (p.maxWidth) s.maxWidth = p.maxWidth;
+  if (p.maxHeight) s.maxHeight = p.maxHeight;
+  if (p.display) s.display = p.display as any;
+  if (p.flexDirection) s.flexDirection = p.flexDirection as any;
+  if (p.flexWrap) s.flexWrap = p.flexWrap as any;
+  if (p.alignItems) s.alignItems = p.alignItems as any;
+  if (p.justifyContent) s.justifyContent = p.justifyContent as any;
+  if (p.gap) s.gap = p.gap;
+  if (p.paddingTop) s.paddingTop = p.paddingTop;
+  if (p.paddingBottom) s.paddingBottom = p.paddingBottom;
+  if (p.paddingLeft) s.paddingLeft = p.paddingLeft;
+  if (p.paddingRight) s.paddingRight = p.paddingRight;
+  if (p.marginTop) s.marginTop = p.marginTop;
+  if (p.marginBottom) s.marginBottom = p.marginBottom;
+  if (p.marginLeft) s.marginLeft = p.marginLeft;
+  if (p.marginRight) s.marginRight = p.marginRight;
+  if (p.borderStyle) s.borderStyle = p.borderStyle as any;
+  if (p.borderColor) s.borderColor = p.borderColor;
+  if (p.borderWidth) s.borderWidth = p.borderWidth;
+  if (p.borderRadius) s.borderRadius = p.borderRadius;
+  if (p.boxShadow) s.boxShadow = p.boxShadow;
+  if (p.opacity !== undefined && p.opacity !== '') s.opacity = Number(p.opacity);
+  if (p.overflow) s.overflow = p.overflow as any;
+  if (p.position) s.position = p.position as any;
+  if (p.zIndex) s.zIndex = Number(p.zIndex);
+  return s;
+}
+
 // Internal Error Boundary Component
 class WidgetErrorBoundary extends React.Component<{ children: React.ReactNode, id: string }, { hasError: boolean }> {
   constructor(props: { children: React.ReactNode, id: string }) {
@@ -220,9 +269,11 @@ export const Renderer: React.FC<RendererProps> = ({
     try {
       const body = renderer(p, children, { ...helpers });
       const selectable = designMode;
+      const overrideStyle = propsToStyle(p);
       return (
         <WidgetErrorBoundary key={id} id={id}>
           <div
+            style={overrideStyle}
             className={cn(
               "relative group",
               selectable && selectedId === id

@@ -27,9 +27,16 @@ import { DnDProvider } from '@/frontend/shared/builder';
 
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { registerStudioComponents, registerStudioLibraryTabs, type StudioMode } from '../registry';
+import {
+    toN8nWorkflow,
+    fromN8nWorkflow,
+    legacyFlowToStudioFlow,
+} from '../workflow/schema/n8n-converter';
+import { createStudioDocument } from '../workflow/schema/studio-unified.types';
 
 // Node types from both features
 import { ShadcnNode } from '@/frontend/features/studio/ui/slices/canvas/components/ShadcnNode';
+import { GroupNode } from '@/frontend/features/studio/ui/slices/canvas/components/GroupNode';
 import { AutomationNode } from '@/frontend/features/studio/components/AutomationNode';
 import { AutomationInspector } from '@/frontend/features/studio/components/AutomationInspector';
 import { CMSInspectorRenderer } from '@/frontend/features/studio/components/CMSInspectorRenderer';
@@ -50,6 +57,7 @@ import { studioEdgeTypes } from '../connections';
 
 const nodeTypes: NodeTypes = {
     shadcnNode: ShadcnNode,
+    groupNode: GroupNode as any,
     automationNode: AutomationNode as any,
 };
 
@@ -96,6 +104,12 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         isPinned,
         pin,
         unpin,
+        pinnedIds,
+        groupSelectedNodes,
+        ungroupNode,
+        focusedGroupId,
+        enterGroup,
+        exitGroup,
         clearAll,
         undo,
         redo,
@@ -164,43 +178,152 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
         setEdges(newEdges);
     }, [clearFlow, setNodes, setEdges]);
 
-    const handleExport = useCallback(() => {
-        if (mode === 'workflow') {
-            exportFlow();
-        } else {
-            const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'studio-export.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    }, [mode, exportFlow, schema]);
+    /** Download a JSON blob as a file */
+    const downloadJson = useCallback((data: unknown, filename: string) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }, []);
 
-    const handleImport = useCallback(() => {
+    /**
+     * Export in Studio format (default) or n8n format.
+     * - Workflow mode: exports StudioDocument (flow only) or n8n JSON
+     * - UI mode: exports StudioDocument (ui-layout) with v0.5 metadata
+     */
+    const handleExport = useCallback((format: 'studio' | 'n8n' = 'studio') => {
+        const ts = Date.now();
         if (mode === 'workflow') {
-            const json = prompt('Paste workflow JSON:');
-            if (json) importFlow(json);
+            if (format === 'n8n') {
+                // Convert canvas nodes/edges → StudioFlow → n8n workflow JSON
+                const studioFlow = legacyFlowToStudioFlow({
+                    id: 'current-flow',
+                    name: 'Automation Flow',
+                    nodes: nodes as any[],
+                    edges: edges as any[],
+                });
+                const n8nWorkflow = toN8nWorkflow(studioFlow);
+                downloadJson(n8nWorkflow, `n8n-workflow-${ts}.json`);
+            } else {
+                exportFlow();
+            }
         } else {
-            // File input for UI import
+            // UI layout export with v0.5 metadata
+            const projectSettings = (() => {
+                try {
+                    return JSON.parse(localStorage.getItem('studio-project-settings') ?? '{}');
+                } catch { return {}; }
+            })();
+            const doc = createStudioDocument('ui-layout', {
+                name: projectSettings.name || 'Studio Layout',
+                description: projectSettings.description,
+                author: projectSettings.author,
+            });
+            if (doc.ui) {
+                doc.ui.version = '0.5';
+                doc.ui.root = schema.root ?? [];
+                doc.ui.nodes = schema.nodes ?? {};
+            }
+            downloadJson(doc, `studio-ui-${ts}.json`);
+        }
+    }, [mode, exportFlow, schema, nodes, edges, downloadJson]);
+
+    /**
+     * Import Studio JSON or n8n workflow JSON.
+     * Auto-detects format by checking for `nodes`/`connections` (n8n) vs `studioVersion`/`flow`.
+     */
+    const handleImport = useCallback(() => {
+        const processJson = (text: string) => {
+            try {
+                const parsed = JSON.parse(text);
+
+                if (mode === 'workflow') {
+                    // Detect n8n format: has `connections` and `nodes` as array
+                    const isN8n = Array.isArray(parsed.nodes) && parsed.connections !== undefined;
+                    // Detect Studio unified format
+                    const isStudioUnified = parsed.studioVersion && parsed.flow;
+
+                    if (isN8n) {
+                        const studioDoc = fromN8nWorkflow(parsed);
+                        if (studioDoc.flow) {
+                            // Convert StudioFlow back to legacy canvas format for importFlow
+                            const legacyJson = JSON.stringify({
+                                flow: {
+                                    id: studioDoc.metadata.id,
+                                    name: studioDoc.metadata.name,
+                                    nodes: studioDoc.flow.nodes.map(n => ({
+                                        id: n.id,
+                                        type: 'automationNode',
+                                        position: n.position,
+                                        data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
+                                    })),
+                                    edges: studioDoc.flow.edges.map(e => ({
+                                        id: e.id, source: e.source, target: e.target,
+                                        data: { order: e.order, label: e.label, condition: e.condition },
+                                    })),
+                                },
+                                exportedAt: new Date().toISOString(),
+                            });
+                            importFlow(legacyJson);
+                        }
+                    } else if (isStudioUnified) {
+                        const flow = parsed.flow;
+                        const legacyJson = JSON.stringify({
+                            flow: {
+                                id: parsed.metadata?.id ?? 'imported',
+                                name: parsed.metadata?.name ?? 'Imported Flow',
+                                nodes: flow.nodes.map((n: any) => ({
+                                    id: n.id,
+                                    type: 'automationNode',
+                                    position: n.position,
+                                    data: { type: n.type, props: n.parameters, label: n.name, category: n.category },
+                                })),
+                                edges: flow.edges.map((e: any) => ({
+                                    id: e.id, source: e.source, target: e.target,
+                                    data: { order: e.order, label: e.label, condition: e.condition },
+                                })),
+                            },
+                            exportedAt: new Date().toISOString(),
+                        });
+                        importFlow(legacyJson);
+                    } else {
+                        // Legacy Studio flow format
+                        importFlow(text);
+                    }
+                } else {
+                    // UI layout import: accept v0.4/v0.5 or Studio unified doc
+                    const uiSchema = parsed.ui ?? parsed;
+                    if (uiSchema.root && uiSchema.nodes) {
+                        // TODO: wire up parseSchema → setNodes/setEdges for UI
+                        alert('UI layout import: schema parsed. Wire-up pending.');
+                    } else {
+                        alert('Invalid UI layout JSON (missing root/nodes)');
+                    }
+                }
+            } catch {
+                alert('Invalid JSON — could not parse file.');
+            }
+        };
+
+        // Try clipboard paste first, then file picker
+        const json = prompt('Paste Studio JSON or n8n workflow JSON:\n(Leave empty to open file picker)');
+        if (json && json.trim()) {
+            processJson(json);
+        } else {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'application/json';
             input.onchange = async () => {
                 const file = input.files?.[0];
                 if (!file) return;
-                const text = await file.text();
-                try {
-                    const parsed = JSON.parse(text);
-                    // TODO: parseSchema from builder
-                } catch {
-                    alert('Invalid JSON');
-                }
+                processJson(await file.text());
             };
             input.click();
         }
-    }, [mode, importFlow]);
+    }, [mode, importFlow, nodes, edges]);
 
     const handleClear = useCallback(() => {
         if (confirm('Clear canvas? This cannot be undone.')) {
@@ -213,16 +336,35 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
     }, [mode, clearFlow, clearAll]);
 
     // Render canvas based on mode
+    // In focus mode, show only the focused group's subtree
     const renderCanvas = () => (
-        <SharedCanvas
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onNodeSelect={setSelectedNodeId}
-            showLayoutControls={true}
-        />
+        <div className="h-full flex flex-col">
+            {focusedGroupId && (
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/10 text-primary border-b border-primary/20 shrink-0">
+                    <span>📂 Focus mode — editing group</span>
+                    <button
+                        className="underline hover:no-underline ml-auto"
+                        onClick={exitGroup}
+                    >
+                        ✕ Exit
+                    </button>
+                </div>
+            )}
+            <div className="flex-1 min-h-0">
+                <SharedCanvas
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onNodeSelect={setSelectedNodeId}
+                    showLayoutControls={true}
+                />
+            </div>
+        </div>
     );
 
     // Render preview (UI mode)
+    // When a node is pinned OR a group is focused, render its subtree directly
+    const pinnedRootId = pinnedIds.length > 0 ? pinnedIds[0] : (focusedGroupId ?? null);
+
     const renderPreview = () => {
         if (contentTab === 'json') {
             return (
@@ -239,6 +381,17 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 currentMode={previewMode}
                 showSidebar={false}
             >
+                {pinnedRootId && (
+                    <div className="px-3 py-1 text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-center gap-2">
+                        <span>📌 Pinned preview: node {pinnedRootId.slice(0, 8)}</span>
+                        <button
+                            className="underline text-amber-700 dark:text-amber-400"
+                            onClick={() => unpin(pinnedRootId)}
+                        >
+                            Unpin
+                        </button>
+                    </div>
+                )}
                 <Renderer
                     schema={schema}
                     activeWs={activeWs}
@@ -251,6 +404,7 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                     onSelectNode={previewMode === 'design' ? setSelectedNodeId : () => { }}
                     selectedId={selectedNodeId}
                     designMode={previewMode === 'design'}
+                    rootId={pinnedRootId}
                 />
             </CMSPreview>
         );
@@ -346,6 +500,9 @@ const StudioLayoutInner: React.FC<StudioLayoutInnerProps> = ({ workspaceId }) =>
                 rightCollapsed={rightCollapsed}
                 toggleLeft={() => setLeftCollapsed(v => !v)}
                 toggleRight={() => setRightCollapsed(v => !v)}
+                onGroup={groupSelectedNodes}
+                focusedGroupId={focusedGroupId}
+                onExitGroup={exitGroup}
             />
             <div className="flex-1 min-h-0">
                 <ThreeColumnLayoutAdvanced

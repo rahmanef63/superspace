@@ -1,6 +1,6 @@
 /**
  * Node Manifest Types for Automation Module
- * 
+ *
  * Re-exports shared foundation types and adds automation-specific extensions.
  */
 
@@ -82,9 +82,29 @@ export interface PropDefinition {
     max?: number;
     /** Step for number/slider */
     step?: number;
+    /**
+     * Whether this field is required for the node to be valid.
+     * Missing required fields surface as validation warnings.
+     */
+    required?: boolean;
 }
 
 export type PropsConfig = Record<string, PropDefinition>;
+
+// ============================================================================
+// n8n-compatible Credential Definition
+// ============================================================================
+
+export interface CredentialDefinition {
+    /** Credential type key (e.g., "httpBasicAuth", "oAuth2Api", "apiKey") */
+    type: string;
+    /** Display name */
+    displayName: string;
+    /** Whether this credential is required */
+    required?: boolean;
+    /** Which props are only shown when this credential type is selected */
+    testedBy?: string;
+}
 
 // ============================================================================
 // Node Manifest
@@ -98,8 +118,57 @@ export interface NodeManifest {
     description: string;
     icon?: LucideIcon;
 
+    /**
+     * Equivalent n8n node type key.
+     * Used by the n8n converter for round-trip export/import.
+     * Example: "n8n-nodes-base.httpRequest"
+     */
+    n8nType?: string;
+
+    /**
+     * Equivalent n8n typeVersion.
+     * Defaults to 1 if not specified.
+     */
+    n8nTypeVersion?: number;
+
     // NEW: Single source of truth for props (replaces defaults + inspector)
     props?: PropsConfig;
+
+    /**
+     * Credential types this node can use.
+     * Displayed in the inspector under "Credentials" section.
+     * Example: [{ type: 'httpBasicAuth', displayName: 'Basic Auth' }]
+     */
+    credentials?: CredentialDefinition[];
+
+    /**
+     * Default retry configuration for this node type.
+     * Users can override in per-node settings.
+     */
+    retryDefaults?: {
+        maxRetries: number;
+        waitBetweenTries: number;
+    };
+
+    /**
+     * Whether this node type supports continueOnFail.
+     * Most nodes do; trigger nodes typically don't.
+     */
+    canContinueOnFail?: boolean;
+
+    /**
+     * Number of outputs this node produces.
+     * 1 = single main output (default)
+     * 2 = two outputs (e.g., IF node: true / false)
+     * N = N outputs (e.g., Switch node)
+     */
+    outputCount?: number;
+
+    /**
+     * Output port labels (shown on canvas node handles).
+     * Length must match outputCount.
+     */
+    outputLabels?: string[];
 
     // LEGACY: Keep for backward compatibility
     defaults?: Record<string, any>;
@@ -157,3 +226,4 @@ export interface NodeRegistry {
     getByCategory: (category: NodeCategory) => NodeManifest[];
     register: (manifest: NodeManifest) => void;
 }
+

@@ -56,22 +56,50 @@ import React, {
 import { addEdge, useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge, OnConnect, ReactFlowInstance } from 'reactflow';
 
-// Builder foundation hooks
+// Builder foundation hooks (canonical location: shared/builder/hooks)
 import {
   useBuilderHistory,
   useBuilderKeyboardShortcuts,
   type HistorySnapshot,
-} from '@/frontend/features/studio/ui/hooks/useBuilderHistory';
+} from '@/frontend/shared/builder/hooks/useBuilderHistory';
 import {
   useBuilderClipboard,
   useBuilderClipboardShortcuts,
-} from '@/frontend/features/studio/ui/hooks/useBuilderClipboard';
+} from '@/frontend/shared/builder/hooks/useBuilderClipboard';
 
 // Import from builder feature (restored from archived CMS)
 import { uid, clamp } from '@/lib/utils';
-import type { CMSNode, CMSEdge, Schema, Workspace } from '@/frontend/features/studio/ui/types/index';
-import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
-import { INITIAL_CMS_SCHEMA } from '@/frontend/features/studio/mockdata';
+
+// Generic types - kept local to avoid coupling to studio
+export interface CMSNode {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: { comp: string; props: Record<string, any> };
+}
+
+export interface CMSEdge {
+  id: string;
+  source: string;
+  target: string;
+  data?: { order?: number };
+  animated?: boolean;
+}
+
+export interface Schema {
+  version: string;
+  root: string[];
+  nodes: Record<string, { type: string; props: Record<string, any>; children: string[] }>;
+  metadata?: Record<string, any>;
+}
+
+export interface Workspace {
+  category: string;
+  key: string;
+}
+
+/** Injectable widget config getter - defaults to returning undefined (no widget config) */
+type WidgetConfigGetter = (type: string) => { defaults?: Record<string, any>; label?: string } | undefined;
 
 interface ChildInfo {
   id: string;
@@ -82,8 +110,12 @@ interface ChildInfo {
 // Key used for localStorage
 const STORAGE_KEY = "shadcn-cms-builder-sidebar-v3";
 
-// Schema parser, kept here to avoid import cycles
-const fromSchema = (schema: Schema): { nodes: CMSNode[], edges: CMSEdge[] } => {
+// Schema parser, kept here to avoid import cycles.
+// Accepts an optional widgetConfigGetter for resolving widget defaults.
+const fromSchema = (
+  schema: Schema,
+  widgetConfigGetter?: WidgetConfigGetter
+): { nodes: CMSNode[], edges: CMSEdge[] } => {
   if (!schema || !schema.nodes || typeof schema.nodes !== 'object') {
     return { nodes: [], edges: [] };
   }
@@ -94,7 +126,7 @@ const fromSchema = (schema: Schema): { nodes: CMSNode[], edges: CMSEdge[] } => {
       return null;
     }
 
-    const config = getWidgetConfig(v.type);
+    const config = widgetConfigGetter ? widgetConfigGetter(v.type) : undefined;
 
     return {
       id,
@@ -200,8 +232,8 @@ export const SharedCanvasContext = createContext<SharedCanvasContextType | undef
   undefined
 );
 
-const newNode = (comp: string, pos = { x: 0, y: 0 }): CMSNode => {
-  const config = getWidgetConfig(comp);
+const newNode = (comp: string, pos = { x: 0, y: 0 }, widgetConfigGetter?: WidgetConfigGetter): CMSNode => {
+  const config = widgetConfigGetter ? widgetConfigGetter(comp) : undefined;
   return {
     id: uid(),
     type: "shadcnNode",
@@ -216,7 +248,13 @@ const newNode = (comp: string, pos = { x: 0, y: 0 }): CMSNode => {
 export const SharedCanvasProvider: React.FC<{
   children: React.ReactNode;
   initialMode?: 'cms' | 'automation' | 'database' | 'studio';
-}> = ({ children, initialMode = 'cms' }) => {
+  /** Injectable widget config getter. Studio passes getWidgetConfig; other consumers can pass their own or omit. */
+  widgetConfigGetter?: WidgetConfigGetter;
+  /** Initial schema to load. Studio passes INITIAL_CMS_SCHEMA; defaults to empty canvas. */
+  initialSchema?: Schema;
+}> = ({ children, initialMode = 'cms', widgetConfigGetter, initialSchema }) => {
+  // Use a stable no-op getter when none provided
+  const getWidgetConfig = widgetConfigGetter ?? (() => undefined);
   const [canvasMode, setCanvasMode] = useState(initialMode);
   // Use proper generic types for React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
@@ -245,7 +283,7 @@ export const SharedCanvasProvider: React.FC<{
 
   const createNode = useCallback((compKey: string) => {
     const pos = reactFlowInstance.current?.project({ x: 140, y: 120 }) || { x: 140, y: 120 };
-    const node = newNode(compKey, pos);
+    const node = newNode(compKey, pos, getWidgetConfig);
     setNodes((ns) => [...ns, node as Node<any>]);
     return node;
   }, [setNodes]);
@@ -349,7 +387,7 @@ export const SharedCanvasProvider: React.FC<{
           return;
         }
         if (parsed && parsed.nodes && typeof parsed.nodes === 'object' && !Array.isArray(parsed.nodes)) {
-          const { nodes: ns, edges: es } = fromSchema(parsed);
+          const { nodes: ns, edges: es } = fromSchema(parsed, getWidgetConfig);
           setNodes(ns as Node<any>[]);
           setEdges(es as Edge<{ order?: number }>[]);
           return;
@@ -359,10 +397,13 @@ export const SharedCanvasProvider: React.FC<{
         clearAll();
       }
     }
-    const { nodes: ns, edges: es } = fromSchema(INITIAL_CMS_SCHEMA);
-    setNodes(ns as Node<any>[]);
-    setEdges(es as Edge<{ order?: number }>[]);
-  }, [setNodes, setEdges, clearAll]);
+    // Fall back to initialSchema prop (e.g. INITIAL_CMS_SCHEMA from studio) or empty canvas
+    if (initialSchema) {
+      const { nodes: ns, edges: es } = fromSchema(initialSchema, getWidgetConfig);
+      setNodes(ns as Node<any>[]);
+      setEdges(es as Edge<{ order?: number }>[]);
+    }
+  }, [setNodes, setEdges, clearAll, initialSchema]);
 
   const commands = useMemo(() => ({
     newWorkspace: () => {

@@ -31,6 +31,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 // ============================================================================
 // SHARED BLOCKS - New Structure Import
 // ============================================================================
+// Block components live in studio/ui/widgets/blocks (vertical slice)
 import {
     // Block Components
     StatsBlock,
@@ -47,7 +48,7 @@ import {
     type ListItem,
     type EventItem,
     type ActivityType,
-} from "@/frontend/shared/builder/blocks"
+} from "@/frontend/features/studio/ui/widgets/blocks"
 
 // Local components
 import { OverviewSkeleton, PendingInvitationsSection } from "./components"

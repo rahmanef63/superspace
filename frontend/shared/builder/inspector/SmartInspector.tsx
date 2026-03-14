@@ -6,6 +6,7 @@
 
 import React from 'react'
 import { DynamicInspector } from './DynamicInspector'
+import type { InspectorField } from './DynamicInspector'
 import { CompositeInspector, useCompositeInspector } from './CompositeInspector'
 
 interface SmartInspectorProps {
@@ -22,6 +23,8 @@ interface SmartInspectorProps {
     showChildrenProperties?: boolean
     maxDepth?: number
   }
+  /** Injectable widget fields getter — injected by feature wrappers (e.g., Studio) */
+  getWidgetFields?: (comp: string) => InspectorField[] | undefined;
 }
 
 /**
@@ -50,9 +53,10 @@ interface SmartInspectorProps {
 export function SmartInspector({
   selectedNode,
   mode = 'auto',
-  compositeOptions = {}
+  compositeOptions = {},
+  getWidgetFields,
 }: SmartInspectorProps) {
-  const { isComposite, childCount } = useCompositeInspector(selectedNode)
+  const { isComposite } = useCompositeInspector(selectedNode)
 
   // Determine which inspector to use
   const shouldUseComposite =
@@ -68,7 +72,7 @@ export function SmartInspector({
     )
   }
 
-  return <DynamicInspector selectedNode={selectedNode} />
+  return <DynamicInspector selectedNode={selectedNode} getWidgetFields={getWidgetFields} />
 }
 
 /**

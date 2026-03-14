@@ -7,15 +7,14 @@ import { DraggableLibraryItem } from './DraggableLibraryItem';
 import { getCategoryIcon, getFeatureIcon } from '@/frontend/shared/ui';
 import type { LucideIcon } from 'lucide-react';
 
-// Studio tab icons
-import { STUDIO_TAB_ICONS } from '@/frontend/features/studio/registry/studioLibraryTabs';
-
 interface UnifiedLibraryProps {
   currentFeature: 'cms' | 'automation' | 'database' | 'studio';
   onAdd?: (componentKey: string, category: string) => void;
+  /** Injectable tab icons map. Studio passes STUDIO_TAB_ICONS; defaults to empty (no icons). */
+  tabIcons?: Record<string, React.ComponentType<any>>;
 }
 
-export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, onAdd }) => {
+export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, onAdd, tabIcons }) => {
   const [query, setQuery] = useState('');
   const { getFeatureTabs, getComponentsForTab } = useCrossFeatureRegistry();
 
@@ -82,9 +81,9 @@ export const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({ currentFeature, 
       <Tabs defaultValue={currentTabs[0]?.id || 'layout'} className="flex-1 flex flex-col">
         <TabsList className="px-2 pt-2 flex flex-wrap gap-1 h-auto justify-start bg-transparent">
           {currentTabs.map((tab: FeatureTab) => {
-            // Get icon for studio tabs, otherwise use feature icon
-            const TabIcon = tab.feature === 'studio'
-              ? STUDIO_TAB_ICONS[tab.id as keyof typeof STUDIO_TAB_ICONS]
+            // Get icon for studio tabs from injected tabIcons, otherwise use feature icon
+            const TabIcon = (tab.feature === 'studio' && tabIcons)
+              ? tabIcons[tab.id]
               : getFeatureIcon(tab.feature);
             return (
               <TabsTrigger

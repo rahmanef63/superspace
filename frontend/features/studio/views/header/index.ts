@@ -1,0 +1,1 @@
+export { StudioGlobalHeader } from './StudioGlobalHeader';

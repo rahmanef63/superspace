@@ -1,9 +1,20 @@
 /**
- * Blocks Re-export Shim
- * 
- * DEPRECATED: Blocks have been moved to @/frontend/features/studio/ui/widgets/blocks
- * This file exists for backward compatibility.
+ * Shared Builder Blocks
+ *
+ * Generic block registry + convenience re-exports.
+ *
+ * Architecture:
+ *   - Registry API:  blockRegistry, getBlockWrapper, getAllBlockWrappers
+ *   - Studio blocks: imported directly from @/frontend/features/studio/ui/widgets/blocks
+ *
+ * If you need Studio UI blocks, import from the feature directly:
+ *   import { StatsBlock } from '@/frontend/features/studio/ui/widgets/blocks'
  */
 
-// Re-export everything from the new location
-export * from '@/frontend/features/studio/ui/widgets/blocks';
+// Generic registry (for feature auto-discovery tests)
+export {
+  blockRegistry,
+  getBlockWrapper,
+  getAllBlockWrappers,
+  registerAllBlocks,
+} from './registry';

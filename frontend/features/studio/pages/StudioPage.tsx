@@ -9,7 +9,8 @@
 
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import type { Id } from "@convex/_generated/dataModel";
-import { SharedCanvasProvider, useSharedCanvas } from '@/frontend/shared/builder';
+import { useSharedCanvas } from '@/frontend/shared/builder';
+import { StudioCanvasProvider } from '../canvas/StudioCanvasProvider';
 import {
     ResizablePanelGroup,
     ResizablePanel,
@@ -564,11 +565,11 @@ export const StudioPage: React.FC<StudioPageProps> = ({ workspaceId }) => {
     }, [registerComponent, registerFeatureTabs]);
 
     return (
-        <SharedCanvasProvider initialMode="studio">
+        <StudioCanvasProvider initialMode="studio">
             <DnDProvider>
                 <StudioLayoutInner workspaceId={workspaceId} />
             </DnDProvider>
-        </SharedCanvasProvider>
+        </StudioCanvasProvider>
     );
 };
 

@@ -9,8 +9,35 @@ import {
 } from 'lucide-react';
 import { useCrossFeatureRegistry } from '@/frontend/shared/foundation';
 import { useSharedCanvas } from '../canvas/core';
-import { getWidgetConfig } from '@/frontend/features/studio/ui/registry';
-import type { InspectorField } from '@/frontend/features/studio/ui/types';
+// InspectorField type - defined locally to avoid coupling to studio
+export interface InspectorField {
+  key: string;
+  label: string;
+  type:
+  | 'text'
+  | 'number'
+  | 'select'
+  | 'switch'
+  | 'textarea'
+  | 'custom'
+  | 'nodeSelector'
+  | 'slider'
+  | 'color'
+  | 'checkbox'
+  | 'button'
+  | 'buttonGroup'
+  | 'range';
+  options?: string[];
+  placeholder?: string;
+  component?: React.ComponentType<any>;
+  min?: number;
+  max?: number;
+  step?: number;
+  buttonLabel?: string;
+  buttonVariant?: 'default' | 'outline' | 'ghost' | 'destructive';
+  onButtonClick?: () => void;
+  buttons?: Array<{ value: string; label: string; icon?: React.ComponentType<any> }>;
+}
 import { useInspectorControls, getNestedValue, setNestedValue } from './hooks/useInspectorControls';
 import { DynamicInspectorControl } from './controls/DynamicInspectorControl';
 import {
@@ -55,9 +82,11 @@ import { Layers } from 'lucide-react';
 
 interface DynamicInspectorProps {
   selectedNode: any | null;
+  /** Injectable widget fields getter. Studio passes a function based on getWidgetConfig; defaults to () => undefined */
+  getWidgetFields?: (comp: string) => InspectorField[] | undefined;
 }
 
-export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
+export function DynamicInspector({ selectedNode, getWidgetFields }: DynamicInspectorProps) {
   const registry = useCrossFeatureRegistry();
   const canvas = useSharedCanvas();
   const controls = useInspectorControls(selectedNode?.data.comp || '');
@@ -96,8 +125,7 @@ export function DynamicInspector({ selectedNode }: DynamicInspectorProps) {
   const nodeType = widget?.label || selectedNode.data.comp;
 
   // Widget-specific inspector fields from WidgetConfig.inspector.fields
-  const widgetConfig = getWidgetConfig(selectedNode.data.comp);
-  const widgetFields: InspectorField[] = widgetConfig?.inspector?.fields ?? [];
+  const widgetFields: InspectorField[] = (getWidgetFields ? getWidgetFields(selectedNode.data.comp) : undefined) ?? [];
 
   // Renderer for a single InspectorField
   const renderField = (field: InspectorField) => {

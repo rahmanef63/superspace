@@ -5,7 +5,7 @@ import { UnifiedLibrary } from '@/frontend/shared/builder';
 import { TemplatesGallery } from '@/frontend/features/studio/components/TemplatesGallery';
 import { TemplateLibrary } from '@/frontend/shared/builder';
 import { cmsTemplateProvider } from '@/frontend/features/studio/ui/state/templateProvider';
-import { saveAssetTemplate } from '@/frontend/features/studio/ui/state/templateStore';
+import { saveAssetTemplate, getTemplateByKey } from '@/frontend/features/studio/ui/state/templateStore';
 import { useSharedCanvas } from '@/frontend/shared/builder';
 import { toSchema } from '@/frontend/features/studio/ui/hooks/useSchema';
 import type { StudioMode } from '@/frontend/features/studio/registry';
@@ -76,7 +76,13 @@ export const StudioLeftPanel: React.FC<LeftPanelProps> = ({
                         {mode === 'workflow' ? (
                             <TemplatesGallery onImport={onImportTemplate} />
                         ) : (
-                            <TemplateLibrary onOpen={(schema) => onImportTemplate(schema)} templateProvider={cmsTemplateProvider} />
+                            <TemplateLibrary
+                                onOpen={(key) => {
+                                    const schema = getTemplateByKey(key);
+                                    if (schema) onImportTemplate(schema);
+                                }}
+                                templateProvider={cmsTemplateProvider}
+                            />
                         )}
                     </div>
                 )}

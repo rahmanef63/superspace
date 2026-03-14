@@ -43,6 +43,12 @@ export const listManifest: WidgetConfig = {
                 label: 'Empty Message',
                 type: 'text'
             }),
+            createCustomField({
+                key: 'items',
+                label: 'Items (JSON)',
+                type: 'json',
+                placeholder: '[{"id":"1","title":"Item 1","subtitle":"Subtitle","badge":"new"},{"id":"2","title":"Item 2"}]',
+            }),
         ]
     }
 };

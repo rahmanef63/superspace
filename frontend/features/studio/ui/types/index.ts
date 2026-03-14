@@ -103,7 +103,8 @@ export interface InspectorField {
     | 'checkbox'
     | 'button'
     | 'buttonGroup'
-    | 'range';
+    | 'range'
+    | 'json';
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;

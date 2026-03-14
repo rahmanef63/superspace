@@ -26,7 +26,8 @@ export interface InspectorField {
   | 'checkbox'
   | 'button'
   | 'buttonGroup'
-  | 'range';
+  | 'range'
+  | 'json';
   options?: string[];
   placeholder?: string;
   component?: React.ComponentType<any>;
@@ -79,6 +80,51 @@ import {
   toLabeledSelectOptions,
 } from './config/inspector.config';
 import { Layers } from 'lucide-react';
+
+/** JSON array/object editor used by fields with type='json' */
+function JsonFieldEditor({
+  value,
+  placeholder,
+  nodeId,
+  onChange,
+}: {
+  value: any;
+  placeholder?: string;
+  nodeId?: string;
+  onChange: (v: any) => void;
+}) {
+  const toStr = (v: any) =>
+    typeof v === 'string' ? v : JSON.stringify(v ?? [], null, 2);
+  const [text, setText] = React.useState(() => toStr(value));
+  const [hasError, setHasError] = React.useState(false);
+
+  React.useEffect(() => {
+    setText(toStr(value));
+    setHasError(false);
+  }, [nodeId]);
+
+  return (
+    <div className="space-y-1">
+      <textarea
+        value={text}
+        onChange={e => {
+          setText(e.target.value);
+          try {
+            onChange(JSON.parse(e.target.value));
+            setHasError(false);
+          } catch {
+            setHasError(true);
+          }
+        }}
+        placeholder={placeholder || '[]'}
+        rows={6}
+        className={`w-full px-2.5 py-1.5 text-xs rounded-md border font-mono resize-y focus:outline-none focus:ring-1 focus:ring-ring bg-background ${hasError ? 'border-destructive' : 'border-border/50'}`}
+      />
+      {hasError && <p className="text-[10px] text-destructive">Invalid JSON</p>}
+      <p className="text-[10px] text-muted-foreground">Edit as JSON. Changes apply on valid JSON.</p>
+    </div>
+  );
+}
 
 interface DynamicInspectorProps {
   selectedNode: any | null;
@@ -172,6 +218,16 @@ export function DynamicInspector({ selectedNode, getWidgetFields }: DynamicInspe
       case 'number':
         return (
           <Input key={field.key} type="number" value={value} onChange={e => update(Number(e.target.value))} placeholder={field.placeholder} className="h-8" min={field.min} max={field.max} step={field.step} />
+        );
+      case 'json':
+        return (
+          <JsonFieldEditor
+            key={field.key}
+            value={value}
+            placeholder={field.placeholder}
+            nodeId={selectedNode?.id}
+            onChange={update}
+          />
         );
       case 'custom':
         if (field.component) {

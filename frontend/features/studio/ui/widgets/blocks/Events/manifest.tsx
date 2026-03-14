@@ -37,6 +37,12 @@ export const eventsManifest: WidgetConfig = {
                 label: 'Show Overdue',
                 type: 'switch'
             }),
+            createCustomField({
+                key: 'events',
+                label: 'Events (JSON)',
+                type: 'json',
+                placeholder: '[{"id":"1","title":"Team Meeting","date":"2026-03-20","time":"10:00","location":"Room A"},{"id":"2","title":"Sprint Review","date":"2026-03-22"}]',
+            }),
         ]
     }
 };

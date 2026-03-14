@@ -49,8 +49,23 @@ export const ShadcnNode: React.FC<NodeProps<ShadcnNodeData>> = ({ id, data, sele
           </span>
         </div>
       </div>
-      <div className="p-3 text-[11px] text-muted-foreground">
-        <div className="truncate">type: {data.comp}</div>
+      <div className="p-3 text-[11px] text-muted-foreground space-y-0.5">
+        <div className="truncate text-[10px] text-muted-foreground/60">type: {data.comp}</div>
+        {data.props?.content && (
+          <div className="truncate font-medium text-foreground/80">"{String(data.props.content).slice(0, 40)}"</div>
+        )}
+        {data.props?.title && !data.props?.content && (
+          <div className="truncate font-medium text-foreground/80">{String(data.props.title).slice(0, 40)}</div>
+        )}
+        {data.props?.text && !data.props?.content && !data.props?.title && (
+          <div className="truncate font-medium text-foreground/80">{String(data.props.text).slice(0, 40)}</div>
+        )}
+        {data.props?.src && (
+          <div className="truncate text-blue-500/70">🖼 {String(data.props.src).split('/').pop()}</div>
+        )}
+        {data.props?.tag && (
+          <div className="text-amber-500/80">&lt;{data.props.tag}&gt;</div>
+        )}
       </div>
       <Handle type="target" position={Position.Top} style={{ borderRadius: 0 }} />
       <Handle type="source" position={Position.Bottom} />
